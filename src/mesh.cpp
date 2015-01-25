@@ -5,10 +5,6 @@ namespace glre
 {
     Mesh::Mesh() : m_VAO(0)
     {
-        m_Buffers[0]=0;
-        m_Buffers[1]=0;
-        m_Buffers[2]=0;
-        m_Buffers[3]=0;
     }
 
     /*
@@ -106,32 +102,27 @@ namespace glre
 
         // Generate and populate the buffers with vertex attributes and the indices
 
+
         //===================================================================================================
                // Activate the Position Buffer
+
         mPosition.sendToGPU();
-        //glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[POS_VB]);
-        //       // Send the position data to the GPU
-        //glBufferData(GL_ARRAY_BUFFER, sizeof(Pos[0]) * Pos.size(), &(Pos[0])[0],  GL_STATIC_DRAW);
                // Enablee the 0th vertex attribute
         glEnableVertexAttribArray(0);
                // tell the GPU that the first attribute is 3 floats
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
         //===================================================================================================
                 // Activate the UV buffer
+
         mUV.sendToGPU();
-        //glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[TEXCOORD_VB]);
-        //        // Send the UV data to the GPU
-        //glBufferData(GL_ARRAY_BUFFER, sizeof(UV[0]) * UV.size(), &UV[0],  GL_STATIC_DRAW);
                 // enable the second attribute
         glEnableVertexAttribArray(1);
                 // tell the GPU that second attribute is 2 floats
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
         //===================================================================================================
                 // Activate the Normal buffer
+
         mNormal.sendToGPU();
-        //glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[NORMAL_VB]);
-        //        // Send the Normal data to the GPU
-        //glBufferData(GL_ARRAY_BUFFER, sizeof(Normal[0]) * Normal.size(), &Normal[0], GL_STATIC_DRAW);
                 // enable the third attribute
         glEnableVertexAttribArray(2);
                 // tell the GPU that third attribute is 3 floats

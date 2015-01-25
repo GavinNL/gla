@@ -1,11 +1,12 @@
 
 #include <glre/global.h>
-
 #include <vector>
+#include <tuple>
 
 namespace glre
 {
 
+    //template <class IndexBuffer, class... Args>
     class Mesh
     {
         public:
@@ -24,10 +25,11 @@ namespace glre
             bool sendToGPU();
             void clearGPU();
 
-            //std::vector<V2> & getUVBuffer()       { return UV;     };
-            //std::vector<V3> & getPosBuffer()      { return Pos;    };
-            //std::vector<V3> & getNormalBuffer()   { return Normal; };
-            //std::vector<V3> & getColorBuffer()    { return Colour; };
+            ArrayBuffer_V3  & getPosition() { return mPosition;};
+            ArrayBuffer_V3  & getNormal  () { return mNormal;  };
+            ArrayBuffer_V2  & getUV      () { return mUV;      };
+            ArrayBuffer_V4  & getColour  () { return mColour;  };
+            ArrayBuffer_uV3 & getIndex   () { return mIndex;   };
 
         private:
     //        bool InitFromScene(const aiScene* pScene, const std::string& Filename);
@@ -52,7 +54,6 @@ namespace glre
             #define NUMBER_OF_BUFFERS 5
 
             GLuint m_VAO;
-            GLuint m_Buffers[NUMBER_OF_BUFFERS];
 
             ArrayBuffer_V3  mPosition;
             ArrayBuffer_V3  mNormal;
@@ -60,12 +61,6 @@ namespace glre
             ArrayBuffer_V4  mColour;
             ArrayBuffer_uV3 mIndex;
 
-            //std::vector<V2>  UV;
-            //std::vector<V3>  Pos;
-            //std::vector<V3>  Normal;
-            //std::vector<V4>  Colour;
-            //std::vector<uV3> Indices;
-
-
+            //std::tuple<Args> ArrayTuples;
     };
 }

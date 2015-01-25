@@ -432,6 +432,11 @@ std::string  json = R"raw(
     //=============================================================================
     //
     //=============================================================================
+//    Mesh<ArrayBuffer_uV3,
+//         ArrayBuffer_V3,
+//         ArrayBuffer_V3,
+//         ArrayBuffer_V2,
+//         ArrayBuffer_V4> M;
     Mesh M;
 
     for(auto a : Ch.Vertex) M.insertVertex(a-V3(16,16,16), V3(0.0,0.0,1.0) ,V2(0,0));

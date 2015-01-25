@@ -16,7 +16,7 @@ class Line
         void sendToGPU();
         void clearGPU();
 
-        std::vector<uV2> Indices;
+        //std::vector<uV2> Indices;
         std::vector<V3>  Pos;
         std::vector<V4>  Colour;
 };

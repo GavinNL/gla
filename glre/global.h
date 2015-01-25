@@ -29,6 +29,12 @@ namespace glre
     typedef ArrayBuffer<V4, GL_ARRAY_BUFFER>         ArrayBuffer_V4;
     typedef ArrayBuffer<uV3,GL_ELEMENT_ARRAY_BUFFER> ArrayBuffer_uV3;
 
+    typedef enum
+    {
+        LINES = GL_LINES,
+        QUADS = GL_QUADS,
+        TRIANGLES = GL_TRIANGLES
+    } Primitave;
 }
 
 
