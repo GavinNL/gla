@@ -9,7 +9,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
 #include <glre/arraybuffer.h>
 
 #include <string>
@@ -20,6 +19,7 @@ namespace glre
     typedef glm::vec3  V3;
     typedef glm::vec4  V4;
     typedef glm::uvec3 uV3;
+    typedef glm::uvec2 uV2;
     typedef glm::ivec3 iV3;
     typedef glm::mat4  M4;
     typedef glm::quat  Quat;
@@ -28,6 +28,7 @@ namespace glre
     typedef ArrayBuffer<V3, GL_ARRAY_BUFFER>         ArrayBuffer_V3;
     typedef ArrayBuffer<V4, GL_ARRAY_BUFFER>         ArrayBuffer_V4;
     typedef ArrayBuffer<uV3,GL_ELEMENT_ARRAY_BUFFER> ArrayBuffer_uV3;
+    typedef ArrayBuffer<uV2,GL_ELEMENT_ARRAY_BUFFER> ArrayBuffer_uV2;
 
     typedef enum
     {
@@ -35,6 +36,7 @@ namespace glre
         QUADS = GL_QUADS,
         TRIANGLES = GL_TRIANGLES
     } Primitave;
+
 }
 
 

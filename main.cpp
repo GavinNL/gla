@@ -14,12 +14,7 @@
 #include <streambuf>
 #include <functional>
 
-#include <glre/global.h>
-#include <glre/transformation.h>
-#include <glre/mesh.h>
-#include <glre/shader.h>
-#include <glre/camera.h>
-
+#include <glre/glre.h>
 #include <rgui/rgui.h>
 
 #include <rgui/SDL_InputHandler.h>
@@ -349,8 +344,6 @@ public:
 //=============================
 
 
-
-
 int main(int argc, char **argv)
 {
 
@@ -432,18 +425,23 @@ std::string  json = R"raw(
     //=============================================================================
     //
     //=============================================================================
-//    Mesh<ArrayBuffer_uV3,
-//         ArrayBuffer_V3,
-//         ArrayBuffer_V3,
-//         ArrayBuffer_V2,
-//         ArrayBuffer_V4> M;
-    Mesh M;
+    TriMesh_PNU M;
 
-    for(auto a : Ch.Vertex) M.insertVertex(a-V3(16,16,16), V3(0.0,0.0,1.0) ,V2(0,0));
+    for(auto a : Ch.Vertex)
+    {
+        M.insertVertexAttribute<0>( a-V3(16,16,16)  );
+        M.insertVertexAttribute<1>( V3(0.0,0.0,1.0) );
+        M.insertVertexAttribute<2>( V2(0,0)         );
+    }
 
     //std::cout << "Number of vertices: " << M.getPosBuffer().size() << std::endl;
 
-    for(auto a : Ch.Face)   M.insertFace(a);
+    for(auto a : Ch.Face)
+    {
+        M.insertElement( a );
+    }
+
+    //M.printTuple( M.ArrayObjects );
 
 
 

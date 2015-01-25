@@ -11,7 +11,9 @@ HEADERS +=  glre/mesh.h \
             glre/camera.h \
     glre/transformation.h \
     glre/line.h \
-    glre/arraybuffer.h
+    glre/arraybuffer.h \
+    glre/vertexarrayobject.h \
+    glre/glre.h
 
 
 SOURCES += src/mesh.cpp \

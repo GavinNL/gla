@@ -29,12 +29,12 @@ class ArrayBuffer
                          GL_STATIC_DRAW);
         };
 
-        inline std::size_t size()
+        inline std::size_t size() const
         {
             return( mVector.size() );
         }
 
-        inline std::size_t byteSize()
+        inline std::size_t byteSize() const
         {
             return( mVector.size() * sizeof(T) );
         }
@@ -59,6 +59,8 @@ class ArrayBuffer
         {
             glBindBuffer(GL_ARRAY_TARGET, mGLID);
         };
+
+        T & operator[](int i){return mVector[i];}
 
         GLuint getGLHandle() { return mGLID; };
 
