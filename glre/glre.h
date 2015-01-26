@@ -20,7 +20,7 @@ typedef  glre::VertexArrayObject<
                                  glre::ArrayBuffer_uV3,    // indices for triangles
                                  glre::ArrayBuffer_V3,     // position
                                  glre::ArrayBuffer_V3,     // normal
-                                 glre::ArrayBuffer_V4,     // normal
+                                 glre::ArrayBuffer_V4,     // Colour
                                  glre::ArrayBuffer_V2      // UV
                                 > TriMesh_PNCU;
 

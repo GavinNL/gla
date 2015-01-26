@@ -102,7 +102,7 @@ namespace glre
               auto & buff              = std::get< std::tuple_size<Tuple>::value-Pos >(t);
               int index                = std::tuple_size<Tuple>::value-Pos;
               int ElementsPerAttribute = ( (int)sizeof(buff[0]) / (int)sizeof(buff[0][0]));
-
+              std::cout << "Vertex Array index: " << index << "   Elements per attribute: " << ElementsPerAttribute << std::endl;
               buff.sendToGPU();
               glEnableVertexAttribArray(index);
               glVertexAttribPointer(index, ElementsPerAttribute, GL_FLOAT, GL_FALSE, 0, 0);
@@ -117,6 +117,7 @@ namespace glre
                 int index                = std::tuple_size<Tuple>::value-1;
                 int ElementsPerAttribute = ( (int)sizeof(buff[0]) / (int)sizeof(buff[0][0]));
 
+                std::cout << "Vertex Array index: " << index << "   Elements per attribute: " << ElementsPerAttribute << std::endl;
                 buff.sendToGPU();
                 glEnableVertexAttribArray(index);
                 glVertexAttribPointer(index, ElementsPerAttribute, GL_FLOAT, GL_FALSE, 0, 0);

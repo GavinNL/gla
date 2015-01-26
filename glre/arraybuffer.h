@@ -6,6 +6,7 @@
 #include <GL/glext.h>
 #include <GL/gl.h>
 
+#include <iostream>
 
 template<class T, GLenum GL_ARRAY_TARGET>
 class ArrayBuffer
@@ -27,6 +28,7 @@ class ArrayBuffer
                          byteSize(),
                          &(mVector[0]),
                          GL_STATIC_DRAW);
+            std::cout << "Array Sent to gpu. ByteSize: " << byteSize() << std::endl;
         };
 
         inline std::size_t size() const

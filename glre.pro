@@ -30,5 +30,7 @@ QMAKE_CXXFLAGS += -std=c++11 -w -O3
 
 OTHER_FILES += \ 
     CMakeLists.txt \
+    shaders/Basic_PNCU.v \
+    shaders/Basic_PNCU.f
 
 

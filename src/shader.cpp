@@ -1,6 +1,9 @@
 #include <glre/shader.h>
 #include <iostream>
 #include <vector>
+#include <string>
+#include <fstream>
+#include <streambuf>
 
 namespace glre
 {
@@ -14,13 +17,27 @@ Shader::~Shader()
     glDeleteProgram(mProgram);
 }
 
-GLuint Shader::compileShader(std::string &vertex, std::string &fragment)
+GLuint Shader::compileShader(const std::string &vertex, const std::string &fragment)
 {
     mVertexCode   = vertex;
     mFragmentCode = fragment;
 
-
     return( compileShader() );
+}
+
+GLuint Shader::compileFromFile(const std::string & vertex_path, const std::string & fragment_path)
+{
+
+
+    std::ifstream v(vertex_path);
+    std::string V((std::istreambuf_iterator<char>(v)),
+                     std::istreambuf_iterator<char>());
+
+    std::ifstream f(fragment_path);
+    std::string F((std::istreambuf_iterator<char>(f)),
+                     std::istreambuf_iterator<char>());
+
+    compileShader(V, F);
 }
 
 GLuint Shader::compileShader()
@@ -61,7 +78,9 @@ GLuint Shader::compileShader()
     glUseProgram (shader);
 
     mProgram = shader;
-    std::cout << "SHADER CREATED: " << shader << std::endl;
+    std::cout << "Vertex Shader created: " << V << std::endl;
+    std::cout << "Fragment Shader created: " << F << std::endl;
+    std::cout << "Shader Program created: " << shader << std::endl;
     return shader;
 }
 

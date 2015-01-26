@@ -21,7 +21,8 @@ class Shader
             glUniformMatrix4fv(location, 1, GL_FALSE, &M[0][0]);
         };
 
-        GLuint compileShader(std::string & vertex, std::string & fragment);
+        GLuint compileFromFile(const std::string & vertex_path, const std::string & fragment_path);
+        GLuint compileShader(const std::string & vertex, const std::string & fragment);
         GLuint compileShader();
         bool   checkShader(GLuint shader);
 

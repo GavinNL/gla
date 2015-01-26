@@ -425,13 +425,14 @@ std::string  json = R"raw(
     //=============================================================================
     //
     //=============================================================================
-    TriMesh_PNU M;
+    TriMesh_PNCU M;
 
     for(auto a : Ch.Vertex)
     {
         M.insertVertexAttribute<0>( a-V3(16,16,16)  );
-        M.insertVertexAttribute<1>( V3(0.0,0.0,1.0) );
-        M.insertVertexAttribute<2>( V2(0,0)         );
+        M.insertVertexAttribute<1>( V3(0.0,1.0,0.0) );
+        M.insertVertexAttribute<2>( V4(1.0,0.0,0.0,1.0) );
+        M.insertVertexAttribute<3>( V2(0,0)         );
     }
 
     //std::cout << "Number of vertices: " << M.getPosBuffer().size() << std::endl;
@@ -473,7 +474,9 @@ std::string  json = R"raw(
 
 
     Shader S;
-    S.compileShader( V, F );
+    //S.compileShader(V, F);
+    S.compileFromFile("shaders/Basic_PNCU.v", "shaders/Basic_PNCU.f");
+
     M.sendToGPU();
     std::cout << "Mesh sent to gpu\n";
 
@@ -517,17 +520,19 @@ std::string  json = R"raw(
        // std::cout << "Sliding\n";
         Tr.setRoll( C.value / 100 * 2 * 3.14159);
     };
-    auto yawSlider = I->getWidgetByName<rgui::Slider>("RootWidget_W1_yaw");
+    auto yawSlider   = I->getWidgetByName<rgui::Slider>("RootWidget_W1_yaw");
     auto pitchSlider = I->getWidgetByName<rgui::Slider>("RootWidget_W1_pitch");
-    auto rollSlider = I->getWidgetByName<rgui::Slider>("RootWidget_W1_roll");
+    auto rollSlider  = I->getWidgetByName<rgui::Slider>("RootWidget_W1_roll");
 
-    yawSlider->addCallback("test", yaw);
+    yawSlider->addCallback("test"  , yaw);
     pitchSlider->addCallback("test", pitch);
-    rollSlider->addCallback("test", roll);
+    rollSlider->addCallback("test" , roll);
 
-    auto camMatrixId   = S.getUniformLocation("CameraMatrix");
-    auto modelMatrixID = S.getUniformLocation("ModelMatrix");
+    GLuint camMatrixId   = S.getUniformLocation("inCameraMatrix");
+    GLuint modelMatrixID = S.getUniformLocation("inModelMatrix");
 
+    std::cout << "Cam id:" << camMatrixId << std::endl;
+    std::cout << "Mod id:" << modelMatrixID << std::endl;
             //glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
     while( !mQuit )
@@ -538,7 +543,7 @@ std::string  json = R"raw(
 
         // If you were doing your own 3d application, this is where you would draw your
         // own 3d rendering calls.
-        glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
         glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
         //=======================================
@@ -546,8 +551,8 @@ std::string  json = R"raw(
         //=======================================
         S.useShader();
 
-        S.sendMatrix(camMatrixId, C.getProjectionMatrix() * C.getViewMatrix() * Tr.getMatrix() );
-        S.sendMatrix(modelMatrixID, M4(1.0f));
+        S.sendMatrix(camMatrixId, C.getProjectionMatrix() * C.getViewMatrix()  );
+        S.sendMatrix(modelMatrixID, Tr.getMatrix());
 
         M.Render();
 
