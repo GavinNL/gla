@@ -24,12 +24,11 @@ typedef  glre::VertexArrayObject<
                                  glre::ArrayBuffer_V2      // UV
                                 > TriMesh_PNCU;
 
-// Line Object, with Position, Normal, Colour and UV values for each vertex
+// Line Object, with Position and Colour and for each vertex
 typedef  glre::VertexArrayObject<
                                  glre::ArrayBuffer_uV2,    // indices for triangles
                                  glre::ArrayBuffer_V3,     // position
-                                 glre::ArrayBuffer_V3,     // normal
                                  glre::ArrayBuffer_V4     // colour
-                                > Line_PNC ;
+                                > Line_PC ;
 
 #endif // GLRE_H

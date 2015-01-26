@@ -24,17 +24,28 @@ class Transformation
         void setScale(const V3 & scale){mScale = scale;}
 
         // rotational transformation
-        void pitch(float radians);
-        void roll(float radians);
-        void yaw(float radians);
+        void pitch(float delta_radians);
+        void roll(float  delta_radians);
+        void yaw(float   delta_radians);
+        void rotate( const V3 & deltaRollYawPitch );
 
+        // Set the absolute position of the pitch/roll/yaw
         void setPitch(float radians);
         void setRoll(float radians);
         void setYaw(float radians);
 
+
+
+        void setEuler( const V3 & RollYawPitch );
         void setEuler(float Pitch, float Roll, float Yaw);
 
-        glre::M4 getMatrix();
+        glre::M4 getMatrix(bool inverse=false);
+
+        const glre::Quat & getOrientation(){ return mOrientation; };
+        const glre::V3   & getPosition   (){ return mPosition   ; };
+        const glre::V3   & getScale      (){ return mScale; };
+
+
 
     public:
         glre::Quat  mOrientation;
@@ -42,6 +53,7 @@ class Transformation
         glre::V3    mScale;
 
         glre::V3    mEulerAngles; //pitch,roll,yaw
+
 };
 
 };

@@ -41,6 +41,9 @@ std::map<std::string,
 
 std::map<std::string,
         std::function<void(const SDL_MouseButtonEvent&)> >  MouseButtonEvents;
+
+std::map<std::string,
+        std::function<void(const SDL_Event&)> >  SDLEvents;
 // Handles the keyboard and mouse inputs for the GUI Interface.
 void handleInputs()
 {
@@ -49,6 +52,9 @@ void handleInputs()
     while( SDL_PollEvent( &e ) != 0 )
     {
         SDL_InputHandler::HandleInput(I, e);
+
+        for(auto a : SDLEvents) a.second( e);
+
         switch(e.type)
         {
 
@@ -426,6 +432,26 @@ std::string  json = R"raw(
     //
     //=============================================================================
     TriMesh_PNCU M;
+    Line_PC      Axis;
+
+    Axis.insertVertexAttribute<0>( V3(0.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( V4(1.0, 0.0, 0.0, 1.0) );
+    Axis.insertVertexAttribute<0>( V3(1.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( V4(1.0, 0.0, 0.0, 1.0) );
+
+    Axis.insertVertexAttribute<0>( V3(0.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( V4(0.0, 1.0, 0.0, 1.0) );
+    Axis.insertVertexAttribute<0>( V3(0.0, 1.0, 0.0) );     Axis.insertVertexAttribute<1>( V4(0.0, 1.0, 0.0, 1.0) );
+
+    Axis.insertVertexAttribute<0>( V3(0.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( V4(0.0, 0.0, 1.0, 1.0) );
+    Axis.insertVertexAttribute<0>( V3(0.0, 0.0, 1.0) );     Axis.insertVertexAttribute<1>( V4(0.0, 0.0, 1.0, 1.0) );
+
+    Axis.insertElement( uV2(0, 1) );
+    Axis.insertElement( uV2(2, 3) );
+    Axis.insertElement( uV2(4, 5) );
+
+    Shader LineShader;
+    LineShader.compileFromFile("shaders/Line_PC.v", "shaders/Line_PC.f");
+
+
+    Axis.sendToGPU();
 
     for(auto a : Ch.Vertex)
     {
@@ -442,51 +468,16 @@ std::string  json = R"raw(
         M.insertElement( a );
     }
 
-    //M.printTuple( M.ArrayObjects );
-
-
-
-
-    std::string V = R"raw(
-                  #version 330 core
-                  in vec3 vertexPosition_modelspace;
-                  in vec2 UV;
-                  in vec3 normal_modelspace;
-                  uniform mat4 CameraMatrix;
-                  uniform mat4 ModelMatrix;
-                  void main()
-                  {
-                     vec4 v = vec4(vertexPosition_modelspace,1);
-                     gl_Position = CameraMatrix * ModelMatrix * v;
-                  }
-                  )raw";
-
-
-    std::string F = R"raw(
-                     #version 330 core
-                     out vec4 color;
-
-                     void main(){
-                         color = vec4(1,0,1,1);
-                     }
-                    )raw";
-
-
 
     Shader S;
-    //S.compileShader(V, F);
     S.compileFromFile("shaders/Basic_PNCU.v", "shaders/Basic_PNCU.f");
-
     M.sendToGPU();
-    std::cout << "Mesh sent to gpu\n";
 
-    Camera C;
-    C.perspective(120.f, (float)WIDTH/(float)HEIGHT, 0.1f, 1000.0 );
-    C.set(
-            V3(-10, 0,-10), // Camera is at (4,3,3), in World Space
-            V3(0,0,0), // and looks at the origin
-            V3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
-          );
+
+
+    M4 Pv = glm::perspective(120.f, (float)WIDTH/(float)HEIGHT, 0.1f,1000.0f);
+    Transformation Tr, Cr;
+    V3 mSpeed;
 
     MouseButtonEvents["camera"] = [&] (const SDL_MouseButtonEvent & E) {
 
@@ -497,36 +488,59 @@ std::string  json = R"raw(
     MouseMotionEvents["camera"] = [&] (const SDL_MouseMotionEvent & E) {
 
         if( E.state & SDL_BUTTON_RMASK )
-            C.setAngles(    C.mPhi + (float)E.xrel*0.001,
-                           C.mTheta+ (float)E.yrel*0.001);
+        {
+            Cr.rotate(   V3( -(float)E.yrel*0.001,  (float)E.xrel*0.001, 0.0 ) );
+        }
 
     };
 
+    SDLEvents["Camera"] = [&] (const SDL_Event & E) {
+        switch(E.type)
+        {
+            case SDL_KEYUP:
+
+            if( E.key.keysym.sym == SDLK_s) mSpeed[2] =  0.00;
+            if( E.key.keysym.sym == SDLK_w) mSpeed[2] =  0.00;
+            if( E.key.keysym.sym == SDLK_d) mSpeed[0] =  0.00;
+            if( E.key.keysym.sym == SDLK_a) mSpeed[0] =  0.00;
+
+                break;
+            case SDL_KEYDOWN:
+                if( E.key.keysym.sym == SDLK_s) mSpeed[2] = -1.000;
+                if( E.key.keysym.sym == SDLK_w) mSpeed[2] =  1.000;
+                if( E.key.keysym.sym == SDLK_d) mSpeed[0] = -1.000;
+                if( E.key.keysym.sym == SDLK_a) mSpeed[0] =  1.000;
+
+                break;
+            default:
+            break;
+        }
 
 
-    Transformation Tr;
-    auto yaw = [&] (const rgui::Slider::Callback & C)
-    {
-       // std::cout << "Sliding\n";
-        Tr.setYaw( C.value / 100 * 2 * 3.14159);
     };
-    auto pitch = [&] (const rgui::Slider::Callback & C)
-    {
-       // std::cout << "Sliding\n";
-        Tr.setPitch( C.value / 100 * 2 * 3.14159);
-    };
-    auto roll = [&] (const rgui::Slider::Callback & C)
-    {
-       // std::cout << "Sliding\n";
-        Tr.setRoll( C.value / 100 * 2 * 3.14159);
-    };
-    auto yawSlider   = I->getWidgetByName<rgui::Slider>("RootWidget_W1_yaw");
-    auto pitchSlider = I->getWidgetByName<rgui::Slider>("RootWidget_W1_pitch");
-    auto rollSlider  = I->getWidgetByName<rgui::Slider>("RootWidget_W1_roll");
 
-    yawSlider->addCallback("test"  , yaw);
-    pitchSlider->addCallback("test", pitch);
-    rollSlider->addCallback("test" , roll);
+//    auto yaw = [&] (const rgui::Slider::Callback & C)
+//    {
+//       // std::cout << "Sliding\n";
+//        Tr.setYaw( C.value / 100 * 2 * 3.14159);
+//    };
+//    auto pitch = [&] (const rgui::Slider::Callback & C)
+//    {
+//       // std::cout << "Sliding\n";
+//        Tr.setPitch( C.value / 100 * 2 * 3.14159);
+//    };
+//    auto roll = [&] (const rgui::Slider::Callback & C)
+//    {
+//       // std::cout << "Sliding\n";
+//        Tr.setRoll( C.value / 100 * 2 * 3.14159);
+//    };
+//    auto yawSlider   = I->getWidgetByName<rgui::Slider>("RootWidget_W1_yaw");
+//    auto pitchSlider = I->getWidgetByName<rgui::Slider>("RootWidget_W1_pitch");
+//    auto rollSlider  = I->getWidgetByName<rgui::Slider>("RootWidget_W1_roll");
+
+//    yawSlider->addCallback(  "test", yaw);
+//    pitchSlider->addCallback("test", pitch);
+//    rollSlider->addCallback( "test", roll);
 
     GLuint camMatrixId   = S.getUniformLocation("inCameraMatrix");
     GLuint modelMatrixID = S.getUniformLocation("inModelMatrix");
@@ -534,6 +548,8 @@ std::string  json = R"raw(
     std::cout << "Cam id:" << camMatrixId << std::endl;
     std::cout << "Mod id:" << modelMatrixID << std::endl;
             //glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+
+    Cr.setPosition( V3(-0.5 , -0.5, -1.5 ) );
 
     while( !mQuit )
     {
@@ -551,10 +567,19 @@ std::string  json = R"raw(
         //=======================================
         S.useShader();
 
-        S.sendMatrix(camMatrixId, C.getProjectionMatrix() * C.getViewMatrix()  );
-        S.sendMatrix(modelMatrixID, Tr.getMatrix());
+        Quat tr = Cr.getOrientation();
+        Cr.translate( Quat(tr.w, -tr.x, -tr.y, -tr.z) * mSpeed * 0.01f );
 
+        auto CameraMatrix = Cr.getMatrix();//.inverse();
+
+        S.sendMatrix(camMatrixId, Pv * CameraMatrix  );
+        S.sendMatrix(modelMatrixID, M4(4.0));
         M.Render();
+
+        LineShader.useShader();
+        LineShader.sendMatrix(LineShader.getUniformLocation("inCameraMatrix"), Pv * CameraMatrix  );
+        LineShader.sendMatrix(LineShader.getUniformLocation("inModelMatrix") , M4(1.0));
+        Axis.Render(LINES);
 
         //=======================================
         glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
