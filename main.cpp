@@ -116,12 +116,12 @@ class Array3D
         return data[i];
     }
 
-    inline T & operator()( const uV3 & p)
+    inline T & operator()( const uvec3 & p)
     {
         return data[ X*Y*p[2] + X*p[1] + p[0] ];
     }
 
-    inline T & operator()( const iV3 & p)
+    inline T & operator()( const ivec3 & p)
     {
         return data[ X*Y*p[2] + X*p[1] + p[0] ];
     }
@@ -141,14 +141,14 @@ class Array3D
 
 struct VertexNormal
 {
-    V3 v;
-    V3 n;
+    vec3 v;
+    vec3 n;
     int index;
     short EdgeFlags;  // Which edge of the cube needs to have a quad created
 };
 
 // This is a table of vertex offset values relative to the lower/left/front vertex of a cube.
-const iV3 Offsets[8] = {{0,0,0},
+const ivec3 Offsets[8] = {{0,0,0},
                         {1,0,0},
                         {0,0,1},
                         {1,0,1},
@@ -177,7 +177,7 @@ public:
     // checks a particular cell to determine if a mesh vertex needs to be created
     // in there. A vertex will need to be created if any of the edges that
     // define the cube have differeing voxel solid values (ie, one inside and one is outside)
-    int surfaceVertexExists( const iV3 & p)
+    int surfaceVertexExists( const ivec3 & p)
     {
         Chunk & C = *this;
 
@@ -206,12 +206,12 @@ public:
     // gets the gradient at the voxel position.
     // uses central finite difference for interior cells
     // and one sided difference for edges.
-    V3 gradient( const iV3 & position)
+    vec3 gradient( const ivec3 & position)
     {
         Chunk & C = *this;
-        V3 grad;
+        vec3 grad;
 
-        const iV3 u[3] = { {1,0,0},{0,1,0},{0,0,1} };
+        const ivec3 u[3] = { {1,0,0},{0,1,0},{0,0,1} };
 
         for(int i=0;i<3;i++)
             if( position[i] >0  && position[i] < Size-1)
@@ -231,10 +231,10 @@ public:
 
     // Finds the optimal position of the vertex within the cell
     //   First approximation - Take the weighted average position of all the solid voxels
-    V3 FindOptimalPosition( const iV3 & index)
+    vec3 FindOptimalPosition( const ivec3 & index)
     {
         Chunk & C = *this;
-        V3 p;
+        vec3 p;
         float sum;
 
         for(int i=0;i<8;i++)
@@ -243,8 +243,8 @@ public:
              float w = (float)C(index+Offsets[i]);
              if(w < 128) continue;
 
-             iV3 Pi = index+Offsets[i];
-             p   += V3( (float)Pi[0], (float)Pi[1], (float)Pi[2])*w;
+             ivec3 Pi = index+Offsets[i];
+             p   += vec3( (float)Pi[0], (float)Pi[1], (float)Pi[2])*w;
              sum += w;
         }
         return p/sum;
@@ -262,14 +262,14 @@ public:
             for(int y=0;y<Size-1;y++)
                 for(int x=0;x<Size-1;x++)
                 {
-                    int EdgeFlag = surfaceVertexExists( iV3(x,y,z) );
+                    int EdgeFlag = surfaceVertexExists( ivec3(x,y,z) );
                     if( EdgeFlag==0 || EdgeFlag==255) continue;
 
                     // create a vertex at the center of the cell.
                     auto * V = new VertexNormal();
 
                     // This needs to be replaced with a better vertex positioning method
-                    V->v     = FindOptimalPosition( iV3(x,y,z) );
+                    V->v     = FindOptimalPosition( ivec3(x,y,z) );
                     //{ (float)x+0.5, (float)y+0.5, (float)z+0.5};
 
                     Vertex.push_back(V->v);
@@ -304,8 +304,8 @@ public:
                     {
                        // if( Vertices(x,y,z) && Vertices(x+1,y,z) && Vertices(x+1,y,z+1) && Vertices(x,y,z+1))
                         {
-                            Face.push_back( uV3(Vertices(x,y,z)->index, Vertices(x+1,y,z)->index, Vertices(x+1,y,z+1)->index) );
-                            Face.push_back( uV3(Vertices(x+1,y,z+1)->index, Vertices(x,y,z+1)->index, Vertices(x,y,z)->index) );
+                            Face.push_back( uvec3(Vertices(x,y,z)->index, Vertices(x+1,y,z)->index, Vertices(x+1,y,z+1)->index) );
+                            Face.push_back( uvec3(Vertices(x+1,y,z+1)->index, Vertices(x,y,z+1)->index, Vertices(x,y,z)->index) );
                         }
                         //    std::cout << "Edge 11 good\n";
                         //else
@@ -318,8 +318,8 @@ public:
                     {
                         //if( Vertices(x,y,z) && Vertices(x+1,y,z) && Vertices(x+1,y+1,z) && Vertices(x,y+1,z))
                         {
-                            Face.push_back( uV3(Vertices(x,y,z)->index, Vertices(x+1,y,z)->index,     Vertices(x+1,y+1,z)->index) );
-                            Face.push_back( uV3(Vertices(x+1,y+1,z)->index, Vertices(x,y+1,z)->index, Vertices(x,y,z)->index) );
+                            Face.push_back( uvec3(Vertices(x,y,z)->index, Vertices(x+1,y,z)->index,     Vertices(x+1,y+1,z)->index) );
+                            Face.push_back( uvec3(Vertices(x+1,y+1,z)->index, Vertices(x,y+1,z)->index, Vertices(x,y,z)->index) );
                         }
                         //    std::cout << "Edge 6 good\n";
                        // else
@@ -331,8 +331,8 @@ public:
                     {
                         //if( Vertices(x,y,z) && Vertices(x,y,z+1) && Vertices(x,y+1,z+1) && Vertices(x,y,z+1))
                         {
-                            Face.push_back( uV3(Vertices(x,y,z)->index, Vertices(x,y,z+1)->index, Vertices(x,y+1,z+1)->index) );
-                            Face.push_back( uV3(Vertices(x,y+1,z+1)->index, Vertices(x,y+1,z)->index, Vertices(x,y,z)->index) );
+                            Face.push_back( uvec3(Vertices(x,y,z)->index, Vertices(x,y,z+1)->index, Vertices(x,y+1,z+1)->index) );
+                            Face.push_back( uvec3(Vertices(x,y+1,z+1)->index, Vertices(x,y+1,z)->index, Vertices(x,y,z)->index) );
                         }
                         //else
                         //    std::cout << "Edge 7 error\n";
@@ -340,8 +340,8 @@ public:
                 }
     }
 
-    std::vector< V3 >  Vertex;
-    std::vector< uV3>  Face;
+    std::vector< vec3 >  Vertex;
+    std::vector< uvec3>  Face;
 
     Array3D<VertexNormal*> Vertices;
     int Size;
@@ -365,7 +365,7 @@ int main(int argc, char **argv)
 
                 if(1)   // Hemisphere
                 {
-                    V3 p = V3((float)16, 0 ,(float)16) - V3( (float)x, (float)y, (float)z);
+                    vec3 p = vec3((float)16, 0 ,(float)16) - vec3( (float)x, (float)y, (float)z);
                     p *= p;
                     Ch(x,y,z) = (p[0]+p[1]+p[2]) < 16*16 ? 255 : 0;
 
@@ -423,7 +423,7 @@ std::string  json = R"raw(
 
 
 //================================================================================
-
+    loadModel("test");
     I->getRootWidget()->loadFromJSONString(json);
     //=============================================================================
 
@@ -434,31 +434,31 @@ std::string  json = R"raw(
     TriMesh_PNCU M;
     Line_PC      Axis;
 
-    Axis.insertVertexAttribute<0>( V3(0.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( V4(1.0, 0.0, 0.0, 1.0) );
-    Axis.insertVertexAttribute<0>( V3(1.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( V4(1.0, 0.0, 0.0, 1.0) );
+    Axis.insertVertexAttribute<0>( vec3(0.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( col4(1.0, 0.0, 0.0, 1.0) );
+    Axis.insertVertexAttribute<0>( vec3(1.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( col4(1.0, 0.0, 0.0, 1.0) );
 
-    Axis.insertVertexAttribute<0>( V3(0.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( V4(0.0, 1.0, 0.0, 1.0) );
-    Axis.insertVertexAttribute<0>( V3(0.0, 1.0, 0.0) );     Axis.insertVertexAttribute<1>( V4(0.0, 1.0, 0.0, 1.0) );
+    Axis.insertVertexAttribute<0>( vec3(0.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( col4(0.0, 1.0, 0.0, 1.0) );
+    Axis.insertVertexAttribute<0>( vec3(0.0, 1.0, 0.0) );     Axis.insertVertexAttribute<1>( col4(0.0, 1.0, 0.0, 1.0) );
 
-    Axis.insertVertexAttribute<0>( V3(0.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( V4(0.0, 0.0, 1.0, 1.0) );
-    Axis.insertVertexAttribute<0>( V3(0.0, 0.0, 1.0) );     Axis.insertVertexAttribute<1>( V4(0.0, 0.0, 1.0, 1.0) );
+    Axis.insertVertexAttribute<0>( vec3(0.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( col4(0.0, 0.0, 1.0, 1.0) );
+    Axis.insertVertexAttribute<0>( vec3(0.0, 0.0, 1.0) );     Axis.insertVertexAttribute<1>( col4(0.0, 0.0, 1.0, 1.0) );
 
-    Axis.insertElement( uV2(0, 1) );
-    Axis.insertElement( uV2(2, 3) );
-    Axis.insertElement( uV2(4, 5) );
+    Axis.insertElement( uvec2(0, 1) );
+    Axis.insertElement( uvec2(2, 3) );
+    Axis.insertElement( uvec2(4, 5) );
 
-    Shader LineShader;
-    LineShader.compileFromFile("shaders/Line_PC.v", "shaders/Line_PC.f");
+    ShaderProgram LineShader( VertexShader("shaders/Line_PC.v"), FragmentShader("shaders/Line_PC.f") );
+    ShaderProgram S( VertexShader("shaders/Basic_PNCU.v"), FragmentShader("shaders/Basic_PNCU.f"));
 
 
     Axis.sendToGPU();
 
     for(auto a : Ch.Vertex)
     {
-        M.insertVertexAttribute<0>( a-V3(16,16,16)  );
-        M.insertVertexAttribute<1>( V3(0.0,1.0,0.0) );
-        M.insertVertexAttribute<2>( V4(1.0,0.0,0.0,1.0) );
-        M.insertVertexAttribute<3>( V2(0,0)         );
+        M.insertVertexAttribute<0>( a-vec3(16,16,16)  );
+        M.insertVertexAttribute<1>( vec3(0.0,1.0,0.0) );
+        M.insertVertexAttribute<2>( col4(1.0,0.0,0.0,1.0) );
+        M.insertVertexAttribute<3>( vec2(0,0)         );
     }
 
     //std::cout << "Number of vertices: " << M.getPosBuffer().size() << std::endl;
@@ -469,34 +469,26 @@ std::string  json = R"raw(
     }
 
 
-    Shader S;
-    S.compileFromFile("shaders/Basic_PNCU.v", "shaders/Basic_PNCU.f");
     M.sendToGPU();
 
 
 
-    M4 Pv = glm::perspective(120.f, (float)WIDTH/(float)HEIGHT, 0.1f,1000.0f);
+    mat4 Pv = glm::perspective(120.f, (float)WIDTH/(float)HEIGHT, 0.1f,1000.0f);
     Transformation Tr, Cr;
-    V3 mSpeed;
+    vec3 mSpeed;
 
-    MouseButtonEvents["camera"] = [&] (const SDL_MouseButtonEvent & E) {
 
-        SDL_ShowCursor(    E.state == SDL_RELEASED );
-        SDL_SetRelativeMouseMode( E.state == SDL_PRESSED ? SDL_TRUE : SDL_FALSE );
-    };
-
-    MouseMotionEvents["camera"] = [&] (const SDL_MouseMotionEvent & E) {
-
-        if( E.state & SDL_BUTTON_RMASK )
-        {
-            Cr.rotate(   V3( -(float)E.yrel*0.001,  (float)E.xrel*0.001, 0.0 ) );
-        }
-
-    };
 
     SDLEvents["Camera"] = [&] (const SDL_Event & E) {
         switch(E.type)
         {
+            case SDL_MOUSEBUTTONDOWN:
+                if( E.button.button == SDL_BUTTON_RIGHT) SDL_ShowCursor(0);
+                break;
+            case SDL_MOUSEBUTTONUP:
+                SDL_SetRelativeMouseMode( SDL_FALSE  );
+                if( E.button.button == SDL_BUTTON_RIGHT) SDL_ShowCursor(1);
+                break;
             case SDL_KEYUP:
 
             if( E.key.keysym.sym == SDLK_s) mSpeed[2] =  0.00;
@@ -512,35 +504,20 @@ std::string  json = R"raw(
                 if( E.key.keysym.sym == SDLK_a) mSpeed[0] =  1.000;
 
                 break;
+            case SDL_MOUSEMOTION:
+                if( E.motion.state & SDL_BUTTON_RMASK )
+                {
+                    SDL_SetRelativeMouseMode( SDL_TRUE  );
+                    Cr.rotate(   vec3( -(float)E.motion.yrel*0.001,  (float)E.motion.xrel*0.001, 0.0 ) );
+                }
             default:
+
             break;
         }
 
 
     };
 
-//    auto yaw = [&] (const rgui::Slider::Callback & C)
-//    {
-//       // std::cout << "Sliding\n";
-//        Tr.setYaw( C.value / 100 * 2 * 3.14159);
-//    };
-//    auto pitch = [&] (const rgui::Slider::Callback & C)
-//    {
-//       // std::cout << "Sliding\n";
-//        Tr.setPitch( C.value / 100 * 2 * 3.14159);
-//    };
-//    auto roll = [&] (const rgui::Slider::Callback & C)
-//    {
-//       // std::cout << "Sliding\n";
-//        Tr.setRoll( C.value / 100 * 2 * 3.14159);
-//    };
-//    auto yawSlider   = I->getWidgetByName<rgui::Slider>("RootWidget_W1_yaw");
-//    auto pitchSlider = I->getWidgetByName<rgui::Slider>("RootWidget_W1_pitch");
-//    auto rollSlider  = I->getWidgetByName<rgui::Slider>("RootWidget_W1_roll");
-
-//    yawSlider->addCallback(  "test", yaw);
-//    pitchSlider->addCallback("test", pitch);
-//    rollSlider->addCallback( "test", roll);
 
     GLuint camMatrixId   = S.getUniformLocation("inCameraMatrix");
     GLuint modelMatrixID = S.getUniformLocation("inModelMatrix");
@@ -549,7 +526,7 @@ std::string  json = R"raw(
     std::cout << "Mod id:" << modelMatrixID << std::endl;
             //glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-    Cr.setPosition( V3(-0.5 , -0.5, -1.5 ) );
+    Cr.setPosition( vec3(-0.5 , -0.5, -1.5 ) );
 
     while( !mQuit )
     {
@@ -567,18 +544,18 @@ std::string  json = R"raw(
         //=======================================
         S.useShader();
 
-        Quat tr = Cr.getOrientation();
-        Cr.translate( Quat(tr.w, -tr.x, -tr.y, -tr.z) * mSpeed * 0.01f );
+        quat tr = Cr.getOrientation();
+        Cr.translate( quat(tr.w, -tr.x, -tr.y, -tr.z) * mSpeed * 0.01f );
 
-        auto CameraMatrix = Cr.getMatrix();//.inverse();
+        auto CameraMatrix = Cr.getMatrix();
 
-        S.sendMatrix(camMatrixId, Pv * CameraMatrix  );
-        S.sendMatrix(modelMatrixID, M4(4.0));
+        S.sendUniform_mat4(camMatrixId, Pv * CameraMatrix  );
+        S.sendUniform_mat4(modelMatrixID, mat4(1.0));
         M.Render();
 
         LineShader.useShader();
-        LineShader.sendMatrix(LineShader.getUniformLocation("inCameraMatrix"), Pv * CameraMatrix  );
-        LineShader.sendMatrix(LineShader.getUniformLocation("inModelMatrix") , M4(1.0));
+        LineShader.sendUniform_mat4(LineShader.getUniformLocation("inCameraMatrix"), Pv * CameraMatrix  );
+        LineShader.sendUniform_mat4(LineShader.getUniformLocation("inModelMatrix") , glm::scale( mat4(1.0), vec3(5.0,5.0,5.0)) );
         Axis.Render(LINES);
 
         //=======================================

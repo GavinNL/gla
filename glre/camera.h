@@ -18,7 +18,7 @@ class Camera
             mProj = glm::perspective(FOV, AspectRatio, zMin,zMax);
         };
 
-        inline void set(const V3 & Pos, const V3 & look, const V3 & up)
+        inline void set(const vec3 & Pos, const vec3 & look, const vec3 & up)
         {
             mPosition = Pos;
             mLook = look;
@@ -27,13 +27,13 @@ class Camera
         };
 
 
-        inline void lookAt( const V3 & look )
+        inline void lookAt( const vec3 & look )
         {
             mLook = look;
             updateMatrix();
         }
 
-        inline void setPosition( const V3 & pos )
+        inline void setPosition( const vec3 & pos )
         {
             mPosition = pos;
             updateMatrix();
@@ -77,17 +77,17 @@ class Camera
             updateOrbitMatrix();
         }
 
-        M4 & getProjectionMatrix() { return mProj; };
-        M4 & getViewMatrix() {       return mView; };
+        mat4 & getProjectionMatrix() { return mProj; };
+        mat4 & getViewMatrix() {       return mView; };
 
-        M4 mProj;
-        M4 mView;
+        mat4 mProj;
+        mat4 mView;
 
         // for free look
-        Quat mOrientation;
-        V3 mPosition;
-        V3 mLook;
-        V3 mUp;
+        quat mOrientation;
+        vec3 mPosition;
+        vec3 mLook;
+        vec3 mUp;
 
 
         // For orbiting

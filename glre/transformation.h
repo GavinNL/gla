@@ -15,19 +15,21 @@ class Transformation
     public:
         Transformation();
 
-
         // positional transformations
-        void translate(const V3 & T)  {mPosition += T;};
-        void setPosition(const V3 & P){mPosition  = P;};
+        inline void translate(const vec3 & T)  {mPosition += T;};
+        inline void setPosition(const vec3 & P){mPosition  = P;};
 
         // scaling transformations
-        void setScale(const V3 & scale){mScale = scale;}
+        inline void setScale(const vec3 & scale){mScale = scale;}
 
         // rotational transformation
+        void inline rotate(const vec3 & axis, float AngleDegrees) { mOrientation = glm::rotate( mOrientation, AngleDegrees, axis ); };
+
+
         void pitch(float delta_radians);
         void roll(float  delta_radians);
         void yaw(float   delta_radians);
-        void rotate( const V3 & deltaRollYawPitch );
+        void rotate( const vec3 & deltaRollYawPitch );
 
         // Set the absolute position of the pitch/roll/yaw
         void setPitch(float radians);
@@ -36,23 +38,23 @@ class Transformation
 
 
 
-        void setEuler( const V3 & RollYawPitch );
+        void setEuler( const vec3 & RollYawPitch );
         void setEuler(float Pitch, float Roll, float Yaw);
 
-        glre::M4 getMatrix(bool inverse=false);
+        glre::mat4 getMatrix(bool inverse=false);
 
-        const glre::Quat & getOrientation(){ return mOrientation; };
-        const glre::V3   & getPosition   (){ return mPosition   ; };
-        const glre::V3   & getScale      (){ return mScale; };
+        const glre::quat & getOrientation()  { return mOrientation; };
+        const glre::vec3   & getPosition   (){ return mPosition   ; };
+        const glre::vec3   & getScale      (){ return mScale; };
 
 
 
     public:
-        glre::Quat  mOrientation;
-        glre::V3    mPosition;
-        glre::V3    mScale;
+        glre::quat    mOrientation;
+        glre::vec3    mPosition;
+        glre::vec3    mScale;
 
-        glre::V3    mEulerAngles; //pitch,roll,yaw
+        glre::vec3    mEulerAngles; //pitch,roll,yaw
 
 };
 

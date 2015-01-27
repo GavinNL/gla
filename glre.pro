@@ -5,23 +5,24 @@ CONFIG -= qt
 
 LIBS += -lGLEW -lGL -lGLU -lSDL2
 
-HEADERS +=  glre/mesh.h \
-            glre/shader.h \
+HEADERS +=  glre/shader.h \
             glre/global.h \
             glre/camera.h \
     glre/transformation.h \
-    glre/line.h \
     glre/arraybuffer.h \
     glre/vertexarrayobject.h \
-    glre/glre.h
+    glre/glre.h \
+    glre/texture.h \
+    glre/stb/stb_image.h \
+    glre/solids.h
 
 
-SOURCES += src/mesh.cpp \
-	   main.cpp \
+SOURCES +=  main.cpp \
     src/shader.cpp \
     src/camera.cpp \
     src/transformation.cpp \
-    src/line.cpp
+    src/texture.cpp \
+    src/solids.cpp
 
 
 INCLUDEPATH += ./ 
