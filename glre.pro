@@ -22,7 +22,8 @@ SOURCES +=  main.cpp \
     src/shader.cpp \
     src/transformation.cpp \
     src/texture.cpp \
-    src/solids.cpp
+    src/solids.cpp \
+    test.cpp
 
 
 INCLUDEPATH += ./ 

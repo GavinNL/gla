@@ -47,7 +47,7 @@ class ArrayBuffer
 
             auto err = glGetError();
 
-            if(err == GL_OUT_OF_MEMORY)
+            if(err != 0)
             {
                 throw glre::GPU_OUT_OF_MEMORY();
 
@@ -56,7 +56,6 @@ class ArrayBuffer
                 mGPUByteSize   = cpuByteSize();
             }
 
-            std::cout << "Array Sent to gpu. ByteSize: " << cpuBufferSize() << std::endl;
         };
 
         /**

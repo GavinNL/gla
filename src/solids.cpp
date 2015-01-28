@@ -12,8 +12,7 @@ glre::TriMesh_PNCU glre::loadModel(const std::string & path)
     glre::TriMesh_PNCU ReturnMesh;
 
     if (pScene)
-        {
-        glre::TriMesh_PNCU ReturnMesh;
+     {
             std::cout << "-Number of Meshs: "     << pScene->mNumMeshes << std::endl;
             std::cout << "-Number of Materials: " << pScene->mNumMaterials << std::endl;
 
@@ -30,7 +29,7 @@ glre::TriMesh_PNCU glre::loadModel(const std::string & path)
                     const aiVector3D* pPos      = &(paiMesh->mVertices[j]);
                     const aiVector3D* pNormal   = &(paiMesh->mNormals[j]);
                     const aiVector3D* pTexCoord = paiMesh->HasTextureCoords(0) ? &(paiMesh->mTextureCoords[0][j]) : &Zero3D;
-
+                    std::cout << pTexCoord->x << "," << pTexCoord->y << std::endl;
                     ReturnMesh.insertVertexAttribute<0>(   vec3(      pPos->x,      pPos->y,    pPos->z )     );
                     ReturnMesh.insertVertexAttribute<1>(   vec3(   pNormal->x,   pNormal->y, pNormal->z )     );
                     ReturnMesh.insertVertexAttribute<2>(   vec4(      1.0    ,          1.0,        1.0,1.0 )     );
@@ -119,3 +118,26 @@ glre::TriMesh_PNCU glre::createPrism(float width, float height, float depth)
 //    M.insertElement( uvec3(0,2,3) );
 
 }
+
+
+glre::Line_PC glre::createAxes()
+{
+    Line_PC      Axis;
+
+    Axis.insertVertexAttribute<0>( vec3(0.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( col4(1.0, 0.0, 0.0, 1.0) );
+    Axis.insertVertexAttribute<0>( vec3(1.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( col4(1.0, 0.0, 0.0, 1.0) );
+
+    Axis.insertVertexAttribute<0>( vec3(0.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( col4(0.0, 1.0, 0.0, 1.0) );
+    Axis.insertVertexAttribute<0>( vec3(0.0, 1.0, 0.0) );     Axis.insertVertexAttribute<1>( col4(0.0, 1.0, 0.0, 1.0) );
+
+    Axis.insertVertexAttribute<0>( vec3(0.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( col4(0.0, 0.0, 1.0, 1.0) );
+    Axis.insertVertexAttribute<0>( vec3(0.0, 0.0, 1.0) );     Axis.insertVertexAttribute<1>( col4(0.0, 0.0, 1.0, 1.0) );
+
+    Axis.insertElement( uvec2(0, 1) );
+    Axis.insertElement( uvec2(2, 3) );
+    Axis.insertElement( uvec2(4, 5) );
+
+    return Axis;
+}
+
+

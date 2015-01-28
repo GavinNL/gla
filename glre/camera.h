@@ -41,6 +41,11 @@ class Camera : public Transformation
             this->Transformation::translate( quat( mOrientation.w, -mOrientation.x, -mOrientation.y, -mOrientation.z) * displacement );
         }
 
+        inline vec3 getDirection()
+        {
+            return quat( mOrientation.w, -mOrientation.x, -mOrientation.y, -mOrientation.z) * vec3(0.0,0.0,1.0);
+        }
+
         mat4 & getProjectionMatrix() { return mProj; };
 
 

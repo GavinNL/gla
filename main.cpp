@@ -26,7 +26,6 @@ using namespace glre;
 #define HEIGHT 768
 
 #define APPLICATION_TITLE "This is a test"
-bool mQuit = false;
 
 // Creates a SDL window and openGL rendering context so we can do some rendring
 SDL_Window* setupSDL();
@@ -34,36 +33,9 @@ SDL_Window* setupSDL();
 
 rgui::Root      *R;
 rgui::pInterface I;
+std::map<std::string, std::function<void(const SDL_Event&)> >  SDLEvents;
 
 
-std::map<std::string,
-        std::function<void(const SDL_MouseMotionEvent&)> >  MouseMotionEvents;
-
-std::map<std::string,
-        std::function<void(const SDL_MouseButtonEvent&)> >  MouseButtonEvents;
-
-std::map<std::string,
-        std::function<void(const SDL_Event&)> >  SDLEvents;
-// Handles the keyboard and mouse inputs for the GUI Interface.
-void handleInputs()
-{
-    SDL_Event e;
-
-    while( SDL_PollEvent( &e ) != 0 )
-    {
-        SDL_InputHandler::HandleInput(I, e);
-
-        for(auto a : SDLEvents) a.second( e);
-
-            switch(e.type)
-            {
-
-            case SDL_KEYUP:
-                if( e.key.keysym.sym == SDLK_ESCAPE) mQuit=true;
-                break;
-            }
-    }
-}
 
 #define STB_PERLIN_IMPLEMENTATION
 #include <glre/stb/stb_perlin.h>
@@ -123,13 +95,13 @@ struct VertexNormal
 
 // This is a table of vertex offset values relative to the lower/left/front vertex of a cube.
 const ivec3 Offsets[8] = {{0,0,0},
-                        {1,0,0},
-                        {0,0,1},
-                        {1,0,1},
-                        {0,1,0},
-                        {1,1,0},
-                        {0,1,1},
-                        {1,1,1} };
+                         {1,0,0},
+                         {0,0,1},
+                         {1,0,1},
+                         {0,1,0},
+                         {1,1,0},
+                         {0,1,1},
+                         {1,1,1} };
 
 // This is a table of vertices that define an edge of a cube. There are 12 edges.
 // For example, EdgeList[0] = {0,1}, which means, vertex 0 and vertex 1 (in the above Offsets table)
@@ -281,9 +253,6 @@ public:
                             Face.push_back( uvec3(Vertices(x,y,z)->index, Vertices(x+1,y,z)->index, Vertices(x+1,y,z+1)->index) );
                             Face.push_back( uvec3(Vertices(x+1,y,z+1)->index, Vertices(x,y,z+1)->index, Vertices(x,y,z)->index) );
                         }
-                        //    std::cout << "Edge 11 good\n";
-                        //else
-                        //    std::cout << "Edge 11 error\n";
 
                     }
 
@@ -295,9 +264,6 @@ public:
                             Face.push_back( uvec3(Vertices(x,y,z)->index, Vertices(x+1,y,z)->index,     Vertices(x+1,y+1,z)->index) );
                             Face.push_back( uvec3(Vertices(x+1,y+1,z)->index, Vertices(x,y+1,z)->index, Vertices(x,y,z)->index) );
                         }
-                        //    std::cout << "Edge 6 good\n";
-                       // else
-                        //    std::cout << "Edge 6 error\n";
                     }
 
                     // check edge 7
@@ -308,8 +274,7 @@ public:
                             Face.push_back( uvec3(Vertices(x,y,z)->index, Vertices(x,y,z+1)->index, Vertices(x,y+1,z+1)->index) );
                             Face.push_back( uvec3(Vertices(x,y+1,z+1)->index, Vertices(x,y+1,z)->index, Vertices(x,y,z)->index) );
                         }
-                        //else
-                        //    std::cout << "Edge 7 error\n";
+
                     }
                 }
     }
@@ -326,6 +291,15 @@ public:
 
 int main(int argc, char **argv)
 {
+    auto mSDLWindowHandle = setupSDL();
+
+
+
+
+    glre::Camera Cam;
+    glre::vec3   gCameraAcceleration;
+    bool         mQuit = false;
+
 
 
 
@@ -358,13 +332,14 @@ int main(int argc, char **argv)
     Ch.ExtractSurface();
 
 
-    auto mSDLWindowHandle = setupSDL();
+
 
     //=============================================================================
     // Set up rgui and create the widgets
     //=============================================================================
     R = rgui::Root::getInstance();
     R->init();
+
 
     I = R->createInterface(WIDTH, HEIGHT, "MainInterface");
     I->loadSkin("default_skin.zip");
@@ -377,19 +352,7 @@ std::string  json = R"raw(
         widget_type : "window",
         layout_style : "vertical_layout",
         pos : [0,0],
-        size: [300,300],
-
-        pitch : {
-            widget_type : "slider"
-        },
-
-        roll : {
-            widget_type : "slider"
-        },
-
-        yaw : {
-            widget_type : "slider"
-        }
+        size: [300,300]
     }
 }
 
@@ -400,28 +363,27 @@ std::string  json = R"raw(
     Texture Tex;
     Tex.loadFromPath("marble.jpg");
     Tex.sendToGPU();
+
+
+
+    TriMesh_PNCU Dragon = glre::loadModel("dragon.blend");
+    std::cout << "Dragon model loadeed\n";
+    Dragon.sendToGPU();
+
     I->getRootWidget()->loadFromJSONString(json);
+    I->getRootWidget();
+
     //=============================================================================
 
 
     //=============================================================================
     //
     //=============================================================================
-    TriMesh_PNCU M;
-    Line_PC      Axis;
+    TriMesh_PNCU MeshChunk;
+    Line_PC      Axis = glre::createAxes();
 
-    Axis.insertVertexAttribute<0>( vec3(0.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( col4(1.0, 0.0, 0.0, 1.0) );
-    Axis.insertVertexAttribute<0>( vec3(1.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( col4(1.0, 0.0, 0.0, 1.0) );
 
-    Axis.insertVertexAttribute<0>( vec3(0.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( col4(0.0, 1.0, 0.0, 1.0) );
-    Axis.insertVertexAttribute<0>( vec3(0.0, 1.0, 0.0) );     Axis.insertVertexAttribute<1>( col4(0.0, 1.0, 0.0, 1.0) );
 
-    Axis.insertVertexAttribute<0>( vec3(0.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( col4(0.0, 0.0, 1.0, 1.0) );
-    Axis.insertVertexAttribute<0>( vec3(0.0, 0.0, 1.0) );     Axis.insertVertexAttribute<1>( col4(0.0, 0.0, 1.0, 1.0) );
-
-    Axis.insertElement( uvec2(0, 1) );
-    Axis.insertElement( uvec2(2, 3) );
-    Axis.insertElement( uvec2(4, 5) );
 
     ShaderProgram LineShader( VertexShader("shaders/Line_PC.v"), FragmentShader("shaders/Line_PC.f") );
     ShaderProgram S( VertexShader("shaders/Basic_PNCU.v"), FragmentShader("shaders/Basic_PNCU.f"));
@@ -431,31 +393,32 @@ std::string  json = R"raw(
 
     for(auto a : Ch.Vertex)
     {
-        M.insertVertexAttribute<0>( a-vec3(16,16,16)  );
-        M.insertVertexAttribute<1>( vec3(0.0,1.0,0.0) );
-        M.insertVertexAttribute<2>( col4(1.0,0.0,0.0,1.0) );
-        M.insertVertexAttribute<3>( vec2(0,0)         );
+        MeshChunk.insertVertexAttribute<0>( a-vec3(16,16,16)  );
+        MeshChunk.insertVertexAttribute<1>( vec3(0.0,1.0,0.0) );
+        MeshChunk.insertVertexAttribute<2>( col4(1.0,0.0,0.0,1.0) );
+        MeshChunk.insertVertexAttribute<3>( vec2(0,0)         );
     }
 
     //std::cout << "Number of vertices: " << M.getPosBuffer().size() << std::endl;
 
     for(auto a : Ch.Face)
     {
-        M.insertElement( a );
+        MeshChunk.insertElement( a );
     }
 
 
-    M.sendToGPU();
-
+    MeshChunk.sendToGPU();
 
 
     mat4 Pv = glm::perspective(120.f, (float)WIDTH/(float)HEIGHT, 0.1f,1000.0f);
     Transformation Tr, Cr;
     vec3 mSpeed;
 
-    Camera Cam;
 
 
+    //================================================================================================================
+    // Camera Movements
+    //================================================================================================================
     SDLEvents["Camera"] = [&] (const SDL_Event & E) {
         switch(E.type)
         {
@@ -468,17 +431,17 @@ std::string  json = R"raw(
                 break;
             case SDL_KEYUP:
 
-            if( E.key.keysym.sym == SDLK_s) mSpeed[2] =  0.00;
-            if( E.key.keysym.sym == SDLK_w) mSpeed[2] =  0.00;
-            if( E.key.keysym.sym == SDLK_d) mSpeed[0] =  0.00;
-            if( E.key.keysym.sym == SDLK_a) mSpeed[0] =  0.00;
+            if( E.key.keysym.sym == SDLK_s) gCameraAcceleration[2] =  0.00;
+            if( E.key.keysym.sym == SDLK_w) gCameraAcceleration[2] =  0.00;
+            if( E.key.keysym.sym == SDLK_d) gCameraAcceleration[0] =  0.00;
+            if( E.key.keysym.sym == SDLK_a) gCameraAcceleration[0] =  0.00;
 
                 break;
             case SDL_KEYDOWN:
-                if( E.key.keysym.sym == SDLK_s) mSpeed[2] = -1.000;
-                if( E.key.keysym.sym == SDLK_w) mSpeed[2] =  1.000;
-                if( E.key.keysym.sym == SDLK_d) mSpeed[0] = -1.000;
-                if( E.key.keysym.sym == SDLK_a) mSpeed[0] =  1.000;
+                if( E.key.keysym.sym == SDLK_s) gCameraAcceleration[2] = -1.000;
+                if( E.key.keysym.sym == SDLK_w) gCameraAcceleration[2] =  1.000;
+                if( E.key.keysym.sym == SDLK_d) gCameraAcceleration[0] = -1.000;
+                if( E.key.keysym.sym == SDLK_a) gCameraAcceleration[0] =  1.000;
 
                 break;
             case SDL_MOUSEMOTION:
@@ -491,26 +454,43 @@ std::string  json = R"raw(
 
             break;
         }
-
-
     };
+    //================================================================================================================
 
+    //================================================================================================================
+    // Quit
+    //================================================================================================================
+    SDLEvents["Exit"] = [&] (const SDL_Event & E) {
+        switch(E.type)
+        {
+            case SDL_KEYUP:
+                if( E.key.keysym.sym == SDLK_ESCAPE) mQuit=true;
+                break;
+            default:
+
+            break;
+        }
+    };
+    //================================================================================================================
+
+    //================================================================================================================
+    // GUI
+    //================================================================================================================
+    SDLEvents["GUI"] = [&] (const SDL_Event & E) {
+        //rgui::SDL_InputHandler::HandleInput(I,E);
+    };
+    //================================================================================================================
 
     GLuint camMatrixId   = S.getUniformLocation("inCameraMatrix");
     GLuint modelMatrixID = S.getUniformLocation("inModelMatrix");
 
-    std::cout << "Cam id:" << camMatrixId << std::endl;
-    std::cout << "Mod id:" << modelMatrixID << std::endl;
-            //glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-    Cr.setPosition( vec3(-0.5 , -0.5, -1.5 ) );
-    Cam.setPosition( vec3( 3 , 1.0, 3) );
-    //Cam.setOrientation( quat(  0.5*0.5*sqrt(2.0), 0.0, -sqrt(2.0)*0.5*0.5,  0.0) );
 
     while( !mQuit )
     {
         // Do all the input handling for the interface
-        handleInputs();
+        SDL_Event e;
+        while( SDL_PollEvent( &e ) != 0 ) for(auto a : SDLEvents) a.second( e);
 
 
 
@@ -525,20 +505,30 @@ std::string  json = R"raw(
         //=======================================
         S.useShader();
 
-        Cam.moveTowardOrientation( mSpeed * 0.01f);
-        // quat tr = Cr.getOrientation();
-        // Cr.translate( quat(tr.w, -tr.x, -tr.y, -tr.z) * mSpeed * 0.01f );
+        //===================================================
+        // Move the camera
+        //===================================================
+        quat q = Cam.getOrientation();
+        q.x *= -1.0; q.y *= -1.0; q.z *= -1.0;
+
+        Cam.translate(  q * gCameraAcceleration * (-0.01f));
+        //mSpeed += q*gCameraAcceleration*t;
+
+        //===================================================
+
 
         auto CameraMatrix = Cam.getMatrix();
 
         S.sendUniform_mat4(camMatrixId, Pv * CameraMatrix  );
         S.sendUniform_mat4(modelMatrixID, mat4(1.0));
-        M.Render();
+        MeshChunk.Render();
+        Dragon.Render();
+        std::cout << "rendering dragon\n";
 
-        LineShader.useShader();
-        LineShader.sendUniform_mat4(LineShader.getUniformLocation("inCameraMatrix"), Pv * CameraMatrix  );
-        LineShader.sendUniform_mat4(LineShader.getUniformLocation("inModelMatrix") , glm::scale( mat4(1.0), vec3(5.0,5.0,5.0)) );
-        Axis.Render(LINES);
+        // LineShader.useShader();
+        // LineShader.sendUniform_mat4(LineShader.getUniformLocation("inCameraMatrix"), Pv * CameraMatrix  );
+        // LineShader.sendUniform_mat4(LineShader.getUniformLocation("inModelMatrix") , glm::scale( mat4(1.0), vec3(5.0,5.0,5.0)) );
+        // Axis.Render(LINES);
 
         //=======================================
         glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );

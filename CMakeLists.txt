@@ -41,7 +41,8 @@ ELSE(MAKE_SHARED)
 ENDIF(MAKE_SHARED)
 
 
-set(LIBS ${PROJECT_NAME} z assimp rgui ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES} ${SDL2_LIBRARY}  )
+set(LIBS      ${PROJECT_NAME} z assimp rgui ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES} ${SDL2_LIBRARY}  )
+set(LIBS_TEST      ${PROJECT_NAME} z assimp  ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES} ${SDL2_LIBRARY}  )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${MYLIB_VERSION_STRING}
                                            SOVERSION ${MYLIB_VERSION_MAJOR})
@@ -62,6 +63,8 @@ install(TARGETS glre
 add_executable(main main.cpp)
 target_link_libraries (main ${LIBS})
 
+add_executable(nogui test.cpp)
+target_link_libraries (nogui ${LIBS_TEST})
 
 ADD_DEFINITIONS (
     -std=c++11 # Or

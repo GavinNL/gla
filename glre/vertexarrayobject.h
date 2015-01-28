@@ -35,12 +35,14 @@ namespace glre
                             break;
                     }
 
+                    //std::cout << "  Rendering: " << mIndex_T.gpuBufferSize() * N << std::endl;
                     glDrawElementsBaseVertex(PrimitaveType,
-                                              mIndex_T.gpuBufferSize() * N,
+                                              mIndex_T.gpuBufferSize()*N,
                                               GL_UNSIGNED_INT,
                                               0,
                                               0);
-                 //   std::cout << "array drawn\n";
+
+                    //std::cout << "array drawn\n";
                 //}
 
                 // Make sure the VAO is not changed from the outside
@@ -49,7 +51,10 @@ namespace glre
 
             bool sendToGPU()
             {
-                if( m_VAO ) clearGPU();
+                if( m_VAO )
+                {
+                    clearGPU();
+                }
 
                 glGenVertexArrays(1, &m_VAO);
                 glBindVertexArray(    m_VAO);
@@ -93,7 +98,7 @@ namespace glre
               auto & buff              = std::get< std::tuple_size<Tuple>::value-Pos >(t);
               int index                = std::tuple_size<Tuple>::value-Pos;
               int ElementsPerAttribute = ( (int)sizeof(buff[0]) / (int)sizeof(buff[0][0]));
-              std::cout << "Vertex Array index: " << index << "   Elements per attribute: " << ElementsPerAttribute << std::endl;
+
               buff.sendToGPU();
               glEnableVertexAttribArray(index);
               glVertexAttribPointer(index, ElementsPerAttribute, GL_FLOAT, GL_FALSE, 0, 0);
@@ -108,8 +113,8 @@ namespace glre
                 int index                = std::tuple_size<Tuple>::value-1;
                 int ElementsPerAttribute = ( (int)sizeof(buff[0]) / (int)sizeof(buff[0][0]));
 
-                std::cout << "Vertex Array index: " << index << "   Elements per attribute: " << ElementsPerAttribute << std::endl;
                 buff.sendToGPU();
+
                 glEnableVertexAttribArray(index);
                 glVertexAttribPointer(index, ElementsPerAttribute, GL_FLOAT, GL_FALSE, 0, 0);
 
