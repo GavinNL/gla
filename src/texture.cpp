@@ -79,9 +79,14 @@ void glre::Texture::loadFromPath( const std::string & path)
     //==========================================================
     unsigned char * img = glre_load(path.c_str(), &x, &y, &comp, 4);
 
-    _handleRawPixels(img, static_cast<unsigned int>( x ), static_cast<unsigned int>( y ) );
+    if( img )
+    {
+         _handleRawPixels(img, static_cast<unsigned int>( x ), static_cast<unsigned int>( y ) );
 
-    free(img);
+         free(img);
+    } else {
+        std::cout << "Error loading texture: " << path << std::endl;
+    }
 
 }
 

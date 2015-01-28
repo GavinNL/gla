@@ -27,6 +27,8 @@ namespace glre
     typedef glm::vec4    col4;
     typedef glm::vec3    col3;
 
+
+
     typedef ArrayBuffer<vec2, GL_ARRAY_BUFFER>         ArrayBuffer_vec2;
     typedef ArrayBuffer<vec3, GL_ARRAY_BUFFER>         ArrayBuffer_vec3;
     typedef ArrayBuffer<vec4, GL_ARRAY_BUFFER>         ArrayBuffer_vec4;

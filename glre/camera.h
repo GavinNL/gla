@@ -2,100 +2,66 @@
 #define CAMERA_H
 
 #include <glre/global.h>
+#include <glre/transformation.h>
 
 namespace glre {
 
-class Camera
+class Camera : public Transformation
 {
     public:
 
 
-        Camera();
+        Camera()
+        {
+
+        }
 
 
         inline void perspective(float FOV, float AspectRatio, float zMin, float zMax)
         {
-            mProj = glm::perspective(FOV, AspectRatio, zMin,zMax);
+             mAspectRatio = AspectRatio;
+             mFOV  = FOV;
+             mZMin  = zMin;
+             mZMax = zMax;
+             mProj = glm::perspective(FOV, AspectRatio, zMin,zMax);
         };
-
-        inline void set(const vec3 & Pos, const vec3 & look, const vec3 & up)
-        {
-            mPosition = Pos;
-            mLook = look;
-            mUp = up;
-            updateMatrix();
-        };
-
-
-        inline void lookAt( const vec3 & look )
-        {
-            mLook = look;
-            updateMatrix();
-        }
 
         inline void setPosition( const vec3 & pos )
         {
-            mPosition = pos;
-            updateMatrix();
+            this->Transformation::setPosition( -pos );
         }
 
-        void updateMatrix()
+        inline void translate( const vec3 & pos )
         {
-            mView = glm::lookAt( mPosition, mLook, mUp);
-
+            this->Transformation::translate( -pos );
         }
 
-        void updateOrbitMatrix()
+        inline void moveTowardOrientation( const vec3 & displacement )
         {
-            mPosition[0] = mRadius*sin(mTheta)*cos(mPhi);
-            mPosition[2] = mRadius*sin(mTheta)*sin(mPhi);
-            mPosition[1] = mRadius*cos(mTheta);
-            mPosition += mLook;
-            updateMatrix();
-        }
-
-        void setAngles(float phi, float theta)
-        {
-            mPhi = phi;
-            mTheta = theta;
-            updateOrbitMatrix();
-        }
-
-        void setRadius(float R)
-        {
-            mRadius = R;
-            updateOrbitMatrix();
-        }
-        void setPhi(float R)
-        {
-            mPhi = R;
-            updateOrbitMatrix();
-        }
-        void setTheta(float R)
-        {
-            mTheta = R;
-            updateOrbitMatrix();
+            this->Transformation::translate( quat( mOrientation.w, -mOrientation.x, -mOrientation.y, -mOrientation.z) * displacement );
         }
 
         mat4 & getProjectionMatrix() { return mProj; };
-        mat4 & getViewMatrix() {       return mView; };
-
-        mat4 mProj;
-        mat4 mView;
-
-        // for free look
-        quat mOrientation;
-        vec3 mPosition;
-        vec3 mLook;
-        vec3 mUp;
 
 
-        // For orbiting
-        float mTheta;
-        float mPhi;
-        float mRadius;
+        float getFOV() {return mFOV;}
+        float getAspectRatio() { return mAspectRatio; };
+        float getZMin() { return mZMin;}
+        float getZMax() { return mZMax;}
+
+        void setFOV(float fov) { perspective(fov, mAspectRatio, mZMin, mZMax); }
+        void setAspectRatio(float aspectratio) { perspective(mFOV, aspectratio, mZMin, mZMax); }
+        void setZMax(float zmax) { perspective(mFOV, mAspectRatio, mZMin, zmax); }
+        void setZMin(float zmin) { perspective(mFOV, mAspectRatio, zmin, mZMax); }
 
 
+    private:
+            mat4  mProj;
+
+            float mFOV;
+            float mAspectRatio;
+            float mZMin;
+            float mZMax;
 
 };
 

@@ -23,6 +23,7 @@ class Transformation
         inline void setScale(const vec3 & scale){mScale = scale;}
 
         // rotational transformation
+        inline void setOrientation(const quat & q) { mOrientation = q; }
         void inline rotate(const vec3 & axis, float AngleDegrees) { mOrientation = glm::rotate( mOrientation, AngleDegrees, axis ); };
 
 
@@ -43,7 +44,7 @@ class Transformation
 
         glre::mat4 getMatrix(bool inverse=false);
 
-        const glre::quat & getOrientation()  { return mOrientation; };
+        const glre::quat   & getOrientation(){ return mOrientation; };
         const glre::vec3   & getPosition   (){ return mPosition   ; };
         const glre::vec3   & getScale      (){ return mScale; };
 

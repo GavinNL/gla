@@ -55,39 +55,13 @@ void handleInputs()
 
         for(auto a : SDLEvents) a.second( e);
 
-        switch(e.type)
-        {
-
-
-        // Text input for when we are typing into text boxes. This is different from Keypresses
-        case SDL_TEXTINPUT:
-
-            break;
-
-            // Key press and release. Keycode is the same as the SDL scancode, so you can do a direct static_cast from one to the other
-            // If you are not using SDL, then you will have to manually convert the keycodes
-        case SDL_KEYDOWN:
-
-            break;
-        case SDL_KEYUP:
-
-            if( e.key.keysym.sym == SDLK_ESCAPE)
+            switch(e.type)
             {
-                mQuit=true;
-            }
-            break;
 
-            // Mouse motion and button presses.
-        case SDL_MOUSEMOTION:
-            for(auto a : MouseMotionEvents) a.second( e.motion);
-            break;
-        case SDL_MOUSEBUTTONDOWN:
-            for(auto a : MouseButtonEvents) a.second( e.button);
-            break;
-        case SDL_MOUSEBUTTONUP:
-            for(auto a : MouseButtonEvents) a.second( e.button);
-            break;
-        }
+            case SDL_KEYUP:
+                if( e.key.keysym.sym == SDLK_ESCAPE) mQuit=true;
+                break;
+            }
     }
 }
 
@@ -423,7 +397,9 @@ std::string  json = R"raw(
 
 
 //================================================================================
-    loadModel("test");
+    Texture Tex;
+    Tex.loadFromPath("marble.jpg");
+    Tex.sendToGPU();
     I->getRootWidget()->loadFromJSONString(json);
     //=============================================================================
 
@@ -477,6 +453,7 @@ std::string  json = R"raw(
     Transformation Tr, Cr;
     vec3 mSpeed;
 
+    Camera Cam;
 
 
     SDLEvents["Camera"] = [&] (const SDL_Event & E) {
@@ -508,7 +485,7 @@ std::string  json = R"raw(
                 if( E.motion.state & SDL_BUTTON_RMASK )
                 {
                     SDL_SetRelativeMouseMode( SDL_TRUE  );
-                    Cr.rotate(   vec3( -(float)E.motion.yrel*0.001,  (float)E.motion.xrel*0.001, 0.0 ) );
+                    Cam.rotate(   vec3( -(float)E.motion.yrel*0.001,  (float)E.motion.xrel*0.001, 0.0 ) );
                 }
             default:
 
@@ -527,12 +504,16 @@ std::string  json = R"raw(
             //glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
     Cr.setPosition( vec3(-0.5 , -0.5, -1.5 ) );
+    Cam.setPosition( vec3( 3 , 1.0, 3) );
+    //Cam.setOrientation( quat(  0.5*0.5*sqrt(2.0), 0.0, -sqrt(2.0)*0.5*0.5,  0.0) );
 
     while( !mQuit )
     {
         // Do all the input handling for the interface
         handleInputs();
-        //Tr.yaw( yawSlider->getValue() / 100.0f );
+
+
+
 
         // If you were doing your own 3d application, this is where you would draw your
         // own 3d rendering calls.
@@ -544,10 +525,11 @@ std::string  json = R"raw(
         //=======================================
         S.useShader();
 
-        quat tr = Cr.getOrientation();
-        Cr.translate( quat(tr.w, -tr.x, -tr.y, -tr.z) * mSpeed * 0.01f );
+        Cam.moveTowardOrientation( mSpeed * 0.01f);
+        // quat tr = Cr.getOrientation();
+        // Cr.translate( quat(tr.w, -tr.x, -tr.y, -tr.z) * mSpeed * 0.01f );
 
-        auto CameraMatrix = Cr.getMatrix();
+        auto CameraMatrix = Cam.getMatrix();
 
         S.sendUniform_mat4(camMatrixId, Pv * CameraMatrix  );
         S.sendUniform_mat4(modelMatrixID, mat4(1.0));

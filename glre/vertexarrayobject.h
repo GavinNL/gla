@@ -19,17 +19,8 @@ namespace glre
 
             void Render(Primitave PrimitaveType = TRIANGLES)
             {
-                glBindVertexArray(m_VAO);
-               // std::cout << "array bound\n";
+                    glBindVertexArray(m_VAO);
 
-            //    for (unsigned int i = 0 ; i < m_Entries.size() ; i++) {
-            //        const unsigned int MaterialIndex = m_Entries[i].MaterialIndex;
-
-            //        assert(MaterialIndex < m_Textures.size());
-
-            //        if (m_Textures[MaterialIndex]) {
-            //            m_Textures[MaterialIndex]->Bind(GL_TEXTURE0);
-            //        }
                     int N=3;  // number of vertices int he primitave
                     switch(PrimitaveType)
                     {
@@ -45,7 +36,7 @@ namespace glre
                     }
 
                     glDrawElementsBaseVertex(PrimitaveType,
-                                              mIndex_T.size() * N,
+                                              mIndex_T.gpuBufferSize() * N,
                                               GL_UNSIGNED_INT,
                                               0,
                                               0);

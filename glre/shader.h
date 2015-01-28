@@ -2,7 +2,7 @@
 #define SHADER_H
 
 #include <glre/global.h>
-
+#include <iostream>
 namespace glre
 {
 

@@ -14,12 +14,12 @@ HEADERS +=  glre/shader.h \
     glre/glre.h \
     glre/texture.h \
     glre/stb/stb_image.h \
-    glre/solids.h
+    glre/solids.h \
+    glre/exceptions.h
 
 
 SOURCES +=  main.cpp \
     src/shader.cpp \
-    src/camera.cpp \
     src/transformation.cpp \
     src/texture.cpp \
     src/solids.cpp

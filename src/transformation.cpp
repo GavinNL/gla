@@ -6,8 +6,17 @@ glre::Transformation::Transformation() : mScale(1.0,1.0,1.0)
 
 void glre::Transformation::yaw(float radians)
 {
+    mOrientation = quat( cos(radians*0.5), 0, sin(radians*0.5),0) * mOrientation;
+}
 
-    mOrientation = quat(cos(radians*0.5), 0, sin(radians*0.5),0) * mOrientation;
+void glre::Transformation::pitch(float radians)
+{
+    mOrientation = quat( cos(radians*0.5), sin(radians*0.5), 0, 0 ) * mOrientation;
+}
+
+void glre::Transformation::roll(float radians)
+{
+    mOrientation = quat(cos(radians*0.5), 0, 0, sin(radians*0.5)) * mOrientation;
 }
 
 void glre::Transformation::setRoll(float radians)

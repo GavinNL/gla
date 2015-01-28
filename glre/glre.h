@@ -5,7 +5,7 @@
 #include <glre/shader.h>
 #include <glre/transformation.h>
 #include <glre/vertexarrayobject.h>
-
+#include <glre/texture.h>
 
 namespace glre {
 
