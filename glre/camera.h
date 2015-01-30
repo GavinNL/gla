@@ -13,17 +13,16 @@ class Camera : public Transformation
 
         Camera()
         {
-
         }
 
 
         inline void perspective(float FOV, float AspectRatio, float zMin, float zMax)
         {
              mAspectRatio = AspectRatio;
-             mFOV  = FOV;
+             mFOV   = FOV;
              mZMin  = zMin;
-             mZMax = zMax;
-             mProj = glm::perspective(FOV, AspectRatio, zMin,zMax);
+             mZMax  = zMax;
+             mProj  = glm::perspective(FOV, AspectRatio, zMin,zMax);
         };
 
         inline void setPosition( const vec3 & pos )
@@ -33,7 +32,7 @@ class Camera : public Transformation
 
         inline void translate( const vec3 & pos )
         {
-            this->Transformation::translate( -pos );
+            this->Transformation::translate( pos );
         }
 
         inline void moveTowardOrientation( const vec3 & displacement )

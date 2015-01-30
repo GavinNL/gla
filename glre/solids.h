@@ -16,7 +16,7 @@ namespace glre
 //
 //TriMesh_PNCU loadModel(const std::string & path);
 //
-//Line_PC createAxes();
+Line_PC createAxes();
 
 }
 

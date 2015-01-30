@@ -354,6 +354,7 @@ int main(int argc, char **argv)
 
 
     TriMesh_PNCU Surface;
+    Line_PC      Axis = createAxes();
     ShaderProgram LineShader( VertexShader("shaders/Line_PC.v"), FragmentShader("shaders/Line_PC.f") );
     ShaderProgram S( VertexShader("shaders/Basic_PNCU.v"), FragmentShader("shaders/Basic_PNCU.f"));
 
@@ -375,9 +376,10 @@ int main(int argc, char **argv)
 
 
     Surface.sendToGPU();
+    Axis.sendToGPU();
 
 
-
+    Cam.setPosition( vec3(0.5 ,1.0,0.5) );
 
 
 //    //================================================================================================================
@@ -448,12 +450,15 @@ int main(int argc, char **argv)
     GLuint camMatrixId   = S.getUniformLocation("inCameraMatrix");
     GLuint modelMatrixID = S.getUniformLocation("inModelMatrix");
 
+    std::cout << "inCameraMatrix: " << camMatrixId << std::endl;
+    std::cout << "inModelMatrix: " << modelMatrixID << std::endl;
+
     Timer_T<float> tim;
     float dt = 0;
 
     vec3 mSpeed;
 
-    Cam.perspective(90.0f, (float)WIDTH/(float)HEIGHT, 0.2f, 1000.0f);
+    Cam.perspective(45.0f, (float)WIDTH/(float)HEIGHT, 0.2f, 1000.0f);
     mat4 Pv = Cam.getProjectionMatrix();
 
     while( !mQuit )
@@ -473,28 +478,26 @@ int main(int argc, char **argv)
         //===================================================
         // Move the camera
         //===================================================
-        quat q = Cam.getOrientation();
-        q.x *= -1.0; q.y *= -1.0; q.z *= -1.0;
+        quat q = Cam.reverse();
+        vec3 acc = (q * gCameraAcceleration);//Cam.getDirection(gCameraAcceleration);
 
-        vec3 acc = Cam.getDirection(gCameraAcceleration);
-
-        Cam.translate(  (mSpeed + (dt*0.5f)*acc)*dt  );
-        mSpeed += gCameraAcceleration*dt;
+        Cam.translate(  (mSpeed + (dt*0.5f)*acc)*dt*80.f  );
+        mSpeed += ( acc*dt  - glm::length(mSpeed)*mSpeed );
 
         //===================================================
 
 
         auto CameraMatrix = Cam.getMatrix();
 
-        S.sendUniform_mat4(camMatrixId, Pv * CameraMatrix  );
+        S.sendUniform_mat4(camMatrixId  , Pv * CameraMatrix  );
         S.sendUniform_mat4(modelMatrixID, mat4(1.0));
         Surface.Render();
 
 
-        // LineShader.useShader();
-        // LineShader.sendUniform_mat4(LineShader.getUniformLocation("inCameraMatrix"), Pv * CameraMatrix  );
-        // LineShader.sendUniform_mat4(LineShader.getUniformLocation("inModelMatrix") , glm::scale( mat4(1.0), vec3(5.0,5.0,5.0)) );
-        // Axis.Render(LINES);
+        LineShader.useShader();
+        LineShader.sendUniform_mat4(LineShader.getUniformLocation("inCameraMatrix"), Pv * CameraMatrix  );
+        LineShader.sendUniform_mat4(LineShader.getUniformLocation("inModelMatrix") , glm::scale( mat4(1.0), vec3(5.0,5.0,5.0)) );
+        Axis.Render(LINES);
 
         //=======================================
         glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );

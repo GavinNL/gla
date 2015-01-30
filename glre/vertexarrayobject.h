@@ -25,7 +25,7 @@ namespace glre
             void Render(Primitave PrimitaveType = TRIANGLES)
             {
                     glBindVertexArray(m_VAO);
-                    std::cout << "Vertex Array Render: " << glGetError() << std::endl;
+                    //std::cout << "Vertex Array Render: " << m_VAO << std::endl;
                     int NumberOfVertices=3;  // number of vertices int he primitave
                     switch(PrimitaveType)
                     {
@@ -40,14 +40,13 @@ namespace glre
                             break;
                     }
 
-                    std::cout << "glDrawElementsBaseVertex(" << PrimitaveType << ","
-                                             << mIndexBuffer.gpuBufferSize() * NumberOfVertices << ","
-                                             << GL_UNSIGNED_INT << ","
-                                             << 0 << ","
-                                             << 0 << ");" << std::endl;
-
-                    glDrawElementsBaseVertex(PrimitaveType, 99,
-                                             //mIndexBuffer.gpuBufferSize() * NumberOfVertices,
+                    //std::cout << "glDrawElementsBaseVertex(" << PrimitaveType << ","
+                    //                         << mIndexBuffer.gpuBufferSize() * NumberOfVertices << ","
+                    //                         << GL_UNSIGNED_INT << ","
+                    //                         << 0 << ","
+                    //                         << 0 << ");" << std::endl;
+                    glDrawElementsBaseVertex(PrimitaveType,
+                                             mIndexBuffer.gpuBufferSize() * NumberOfVertices,
                                              GL_UNSIGNED_INT,
                                              0,
                                              0);
@@ -56,7 +55,7 @@ namespace glre
                 //}
 
                 // Make sure the VAO is not changed from the outside
-                //glBindVertexArray(0);
+                glBindVertexArray(0);
             }
 
             inline void insertVertex(const VertexType & T)
@@ -84,8 +83,6 @@ namespace glre
                 EnableVertexAttribArray<N, Rest...>( 0, 0 );
                 mIndexBuffer.sendToGPU();
 
-
-
                 glBindVertexArray( 0 );
             }
 
@@ -110,8 +107,8 @@ namespace glre
 
               glEnableVertexAttribArray( index );
               std::cout << "glEnableVertexAttribArray( " << index  << ");\n";
-              glVertexAttribPointer(index, ElementsPerAttribute[First], ElementType[First], GL_FALSE, 0, (void*)offset);
-              std::cout << "glVertexAttribPointer(" << index << "," << ElementsPerAttribute[First] << "," << ElementType[First] << "," << GL_FALSE << "," <<  0 << ","  << (void*)offset << ");\n";
+              glVertexAttribPointer(index, ElementsPerAttribute[First], ElementType[First], GL_FALSE, sizeof(VertexType), (void*)offset);
+              std::cout << "glVertexAttribPointer(" << index << "," << ElementsPerAttribute[First] << "," << ElementType[First] << "," << GL_FALSE << "," <<  0 << ","  << offset << ");\n";
 
 
 
@@ -127,8 +124,8 @@ namespace glre
 
               glEnableVertexAttribArray( index );
               std::cout << "glEnableVertexAttribArray( " << index  << ");\n";
-              glVertexAttribPointer(index, ElementsPerAttribute[First], ElementType[First], GL_FALSE, 0, (void*)offset);
-              std::cout << "glVertexAttribPointer(" << index << "," << ElementsPerAttribute[First] << "," << ElementType[First] << "," << GL_FALSE << "," <<  0 << ","  << (void*)offset << ");\n";
+              glVertexAttribPointer(index, ElementsPerAttribute[First], ElementType[First], GL_FALSE, sizeof(VertexType), (void*)offset);
+              std::cout << "glVertexAttribPointer(" << index << "," << ElementsPerAttribute[First] << "," << ElementType[First] << "," << GL_FALSE << "," <<  0 << ","  << offset << ");\n";
               EnableVertexAttribArray<Second, AllTheRest...>( index+1, offset+ElementStride[First] );
             }
 

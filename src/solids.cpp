@@ -120,24 +120,22 @@
 //}
 
 
-//glre::Line_PC glre::createAxes()
-//{
-//    Line_PC      Axis;
+glre::Line_PC glre::createAxes()
+{
+    Line_PC      Axis;
 
-//    Axis.insertVertexAttribute<0>( vec3(0.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( col4(1.0, 0.0, 0.0, 1.0) );
-//    Axis.insertVertexAttribute<0>( vec3(1.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( col4(1.0, 0.0, 0.0, 1.0) );
+   Axis.insertVertex( { vec3(0.0, 0.0, 0.0) , col4(1.0, 0.0, 0.0, 1.0) } );
+   Axis.insertVertex( { vec3(1.0, 0.0, 0.0) , col4(1.0, 0.0, 0.0, 1.0) } );
+   Axis.insertVertex( { vec3(0.0, 0.0, 0.0) , col4(0.0, 1.0, 0.0, 1.0) } );
+   Axis.insertVertex( { vec3(0.0, 1.0, 0.0) , col4(0.0, 1.0, 0.0, 1.0) } );
+   Axis.insertVertex( { vec3(0.0, 0.0, 0.0) , col4(0.0, 0.0, 1.0, 1.0) } );
+   Axis.insertVertex( { vec3(0.0, 0.0, 1.0) , col4(0.0, 0.0, 1.0, 1.0) } );
 
-//    Axis.insertVertexAttribute<0>( vec3(0.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( col4(0.0, 1.0, 0.0, 1.0) );
-//    Axis.insertVertexAttribute<0>( vec3(0.0, 1.0, 0.0) );     Axis.insertVertexAttribute<1>( col4(0.0, 1.0, 0.0, 1.0) );
+    Axis.insertElement( uvec2(0, 1) );
+    Axis.insertElement( uvec2(2, 3) );
+    Axis.insertElement( uvec2(4, 5) );
 
-//    Axis.insertVertexAttribute<0>( vec3(0.0, 0.0, 0.0) );     Axis.insertVertexAttribute<1>( col4(0.0, 0.0, 1.0, 1.0) );
-//    Axis.insertVertexAttribute<0>( vec3(0.0, 0.0, 1.0) );     Axis.insertVertexAttribute<1>( col4(0.0, 0.0, 1.0, 1.0) );
-
-//    Axis.insertElement( uvec2(0, 1) );
-//    Axis.insertElement( uvec2(2, 3) );
-//    Axis.insertElement( uvec2(4, 5) );
-
-//    return Axis;
-//}
+    return Axis;
+}
 
 
