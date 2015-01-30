@@ -1,5 +1,6 @@
 #include "glre/texture.h"
 #include <string.h>
+#include <iostream>
 
 glre::Texture::Texture() :mTextureID(0), mWidth(0), mHeight(0), mData(0)
 {

@@ -291,9 +291,10 @@ public:
 
 int main(int argc, char **argv)
 {
+
+
+
     auto mSDLWindowHandle = setupSDL();
-
-
 
 
     glre::Camera Cam;
@@ -301,33 +302,23 @@ int main(int argc, char **argv)
     bool         mQuit = false;
 
 
-
-
     int N = 32;
     Chunk Ch(N);
     float W = (float)N;
-    for(int z=0; z<N; z++)
-        for(int y=0; y<N; y++)
-            for(int x=0; x<N; x++)
-            {
+    for(int z=0; z<N; z++) for(int y=0; y<N; y++) for(int x=0; x<N; x++)
+    {
+        if(1)   // Hemisphere
+        {
+            vec3 p = vec3((float)16, 0 ,(float)16) - vec3( (float)x, (float)y, (float)z);
+            p *= p;
+            Ch(x,y,z) = (p[0]+p[1]+p[2]) < 16*16 ? 255 : 0;
 
-                if(1)   // Hemisphere
-                {
-                    vec3 p = vec3((float)16, 0 ,(float)16) - vec3( (float)x, (float)y, (float)z);
-                    p *= p;
-                    Ch(x,y,z) = (p[0]+p[1]+p[2]) < 16*16 ? 255 : 0;
-
-                }
-                else   // perlin noise
-                {
-                    Ch(x,y,z) = 128 + (unsigned char)(128.0 * stb_perlin_noise3( (float)(x/W) * 2.0, (float)(y/W)* 2.0, (float)(z/W) * 2.0) );
-                }
-                //Ch(x,y,z) = z < 10 ?  255 : 0;
-                //if ((abs(x-16) < 3) && (abs(y-16)<3) ) Ch(x,y,z) = 255;
-                //Ch(i,j,k) = i*i+j*j+k*k < 24*24 ? 0 : 255;
-
-                //std::cout << (int)Ch(i,j,k) << std::endl;
-            }
+        }
+        else   // perlin noise
+        {
+            Ch(x,y,z) = 128 + (unsigned char)(128.0 * stb_perlin_noise3( (float)(x/W) * 2.0, (float)(y/W)* 2.0, (float)(z/W) * 2.0) );
+        }
+    }
    //Ch(1,1,1) = 127;
     Ch.ExtractSurface();
 
@@ -344,81 +335,54 @@ int main(int argc, char **argv)
     I = R->createInterface(WIDTH, HEIGHT, "MainInterface");
     I->loadSkin("default_skin.zip");
 
-
-//================================================================================
-std::string  json = R"raw(
-{
-    W1 : {
-        widget_type : "window",
-        layout_style : "vertical_layout",
-        pos : [0,0],
-        size: [300,300]
+    std::string  json = R"raw(
+    {
+        W1 : {
+            widget_type : "window",
+            layout_style : "vertical_layout",
+            pos : [0,0],
+            size: [300,300]
+        }
     }
-}
-
-)raw";
-
-
-//================================================================================
-    Texture Tex;
-    Tex.loadFromPath("marble.jpg");
-    Tex.sendToGPU();
-
-
-
-    TriMesh_PNCU Dragon = glre::loadModel("dragon.blend");
-    std::cout << "Dragon model loadeed\n";
-    Dragon.sendToGPU();
-
+    )raw";
     I->getRootWidget()->loadFromJSONString(json);
     I->getRootWidget();
 
-    //=============================================================================
-
-
-    //=============================================================================
-    //
-    //=============================================================================
-    TriMesh_PNCU MeshChunk;
-    Line_PC      Axis = glre::createAxes();
+//================================================================================
 
 
 
 
+    TriMesh_PNCU Surface;
     ShaderProgram LineShader( VertexShader("shaders/Line_PC.v"), FragmentShader("shaders/Line_PC.f") );
     ShaderProgram S( VertexShader("shaders/Basic_PNCU.v"), FragmentShader("shaders/Basic_PNCU.f"));
 
 
-    Axis.sendToGPU();
+//    Axis.sendToGPU();
 
     for(auto a : Ch.Vertex)
     {
-        MeshChunk.insertVertexAttribute<0>( a-vec3(16,16,16)  );
-        MeshChunk.insertVertexAttribute<1>( vec3(0.0,1.0,0.0) );
-        MeshChunk.insertVertexAttribute<2>( col4(1.0,0.0,0.0,1.0) );
-        MeshChunk.insertVertexAttribute<3>( vec2(0,0)         );
+        Surface.insertVertex( { a-vec3(16,16,16)     ,
+                                vec3(0.0,1.0,0.0)    ,
+                                col4(1.0,0.0,0.0,1.0),
+                                vec2(0,0)            } );
     }
 
-    //std::cout << "Number of vertices: " << M.getPosBuffer().size() << std::endl;
+//    //std::cout << "Number of vertices: " << M.getPosBuffer().size() << std::endl;
 
-    for(auto a : Ch.Face)
-    {
-        MeshChunk.insertElement( a );
-    }
-
-
-    MeshChunk.sendToGPU();
-
-
-    mat4 Pv = glm::perspective(120.f, (float)WIDTH/(float)HEIGHT, 0.1f,1000.0f);
-    Transformation Tr, Cr;
-    vec3 mSpeed;
+    for(auto a : Ch.Face) Surface.insertElement( a );
 
 
 
-    //================================================================================================================
-    // Camera Movements
-    //================================================================================================================
+    Surface.sendToGPU();
+
+
+
+
+
+//    //================================================================================================================
+//    // Camera Movements
+//    //================================================================================================================
     SDLEvents["Camera"] = [&] (const SDL_Event & E) {
         switch(E.type)
         {
@@ -455,11 +419,11 @@ std::string  json = R"raw(
             break;
         }
     };
-    //================================================================================================================
+//    //================================================================================================================
 
-    //================================================================================================================
-    // Quit
-    //================================================================================================================
+//    //================================================================================================================
+//    // Quit
+//    //================================================================================================================
     SDLEvents["Exit"] = [&] (const SDL_Event & E) {
         switch(E.type)
         {
@@ -471,20 +435,26 @@ std::string  json = R"raw(
             break;
         }
     };
-    //================================================================================================================
+//    //================================================================================================================
 
-    //================================================================================================================
-    // GUI
-    //================================================================================================================
+//    //================================================================================================================
+//    // GUI
+//    //================================================================================================================
     SDLEvents["GUI"] = [&] (const SDL_Event & E) {
-        //rgui::SDL_InputHandler::HandleInput(I,E);
+        rgui::SDL_InputHandler::HandleInput(I,E);
     };
-    //================================================================================================================
+//    //================================================================================================================
 
     GLuint camMatrixId   = S.getUniformLocation("inCameraMatrix");
     GLuint modelMatrixID = S.getUniformLocation("inModelMatrix");
 
+    Timer_T<float> tim;
+    float dt = 0;
 
+    vec3 mSpeed;
+
+    Cam.perspective(90.0f, (float)WIDTH/(float)HEIGHT, 0.2f, 1000.0f);
+    mat4 Pv = Cam.getProjectionMatrix();
 
     while( !mQuit )
     {
@@ -492,14 +462,9 @@ std::string  json = R"raw(
         SDL_Event e;
         while( SDL_PollEvent( &e ) != 0 ) for(auto a : SDLEvents) a.second( e);
 
-
-
-
-        // If you were doing your own 3d application, this is where you would draw your
-        // own 3d rendering calls.
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
         glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+
         //=======================================
         // draw stuff here.
         //=======================================
@@ -511,8 +476,10 @@ std::string  json = R"raw(
         quat q = Cam.getOrientation();
         q.x *= -1.0; q.y *= -1.0; q.z *= -1.0;
 
-        Cam.translate(  q * gCameraAcceleration * (-0.01f));
-        //mSpeed += q*gCameraAcceleration*t;
+        vec3 acc = Cam.getDirection(gCameraAcceleration);
+
+        Cam.translate(  (mSpeed + (dt*0.5f)*acc)*dt  );
+        mSpeed += gCameraAcceleration*dt;
 
         //===================================================
 
@@ -521,9 +488,8 @@ std::string  json = R"raw(
 
         S.sendUniform_mat4(camMatrixId, Pv * CameraMatrix  );
         S.sendUniform_mat4(modelMatrixID, mat4(1.0));
-        MeshChunk.Render();
-        Dragon.Render();
-        std::cout << "rendering dragon\n";
+        Surface.Render();
+
 
         // LineShader.useShader();
         // LineShader.sendUniform_mat4(LineShader.getUniformLocation("inCameraMatrix"), Pv * CameraMatrix  );
@@ -535,6 +501,10 @@ std::string  json = R"raw(
         I->draw();
         // Draw the interface.
         SDL_GL_SwapWindow (mSDLWindowHandle);
+
+
+        dt = tim.getElapsedTime();
+        tim.reset();
     }
 
 

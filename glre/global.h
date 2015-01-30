@@ -8,7 +8,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glre/arraybuffer.h>
+
 
 #include <string>
 
@@ -28,18 +28,32 @@ namespace glre
     typedef glm::vec3    col3;
 
 
+    struct Vertex_PNCU
+    {
+        vec3 p; // position
+        vec3 n; // normal
+        col4 c; // colour
+        vec2 u; // uv coords
+    };
 
-    typedef ArrayBuffer<vec2, GL_ARRAY_BUFFER>         ArrayBuffer_vec2;
-    typedef ArrayBuffer<vec3, GL_ARRAY_BUFFER>         ArrayBuffer_vec3;
-    typedef ArrayBuffer<vec4, GL_ARRAY_BUFFER>         ArrayBuffer_vec4;
-    typedef ArrayBuffer<uvec3,GL_ELEMENT_ARRAY_BUFFER> ArrayBuffer_uvec3;
-    typedef ArrayBuffer<uvec2,GL_ELEMENT_ARRAY_BUFFER> ArrayBuffer_uvec2;
+    struct Vertex_PC
+    {
+        vec3 p; // position
+        col4 c; // colour
+    };
 
-    typedef ArrayBuffer_vec4 ArrayBuffer_col3f;
+//    typedef ArrayBuffer<Vertex_PNCU, GL_ARRAY_BUFFER>  ArrayBuffer_PNCU;
+//    typedef ArrayBuffer<vec2, GL_ARRAY_BUFFER>         ArrayBuffer_vec2;
+//    typedef ArrayBuffer<vec3, GL_ARRAY_BUFFER>         ArrayBuffer_vec3;
+//    typedef ArrayBuffer<vec4, GL_ARRAY_BUFFER>         ArrayBuffer_vec4;
+//    typedef ArrayBuffer<uvec3,GL_ELEMENT_ARRAY_BUFFER> ArrayBuffer_uvec3;
+//    typedef ArrayBuffer<uvec2,GL_ELEMENT_ARRAY_BUFFER> ArrayBuffer_uvec2;
+
+
     typedef enum
     {
-        LINES = GL_LINES,
-        QUADS = GL_QUADS,
+        LINES     = GL_LINES,
+        QUADS     = GL_QUADS,
         TRIANGLES = GL_TRIANGLES
     } Primitave;
 
