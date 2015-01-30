@@ -5,21 +5,26 @@ CONFIG -= qt
 
 LIBS += -lGLEW -lGL -lGLU -lSDL2
 
-HEADERS +=  glre/mesh.h \
-            glre/shader.h \
+HEADERS +=  glre/shader.h \
             glre/global.h \
             glre/camera.h \
     glre/transformation.h \
-    glre/line.h \
-    glre/arraybuffer.h
+    glre/arraybuffer.h \
+    glre/vertexarrayobject.h \
+    glre/glre.h \
+    glre/texture.h \
+    glre/stb/stb_image.h \
+    glre/solids.h \
+    glre/exceptions.h \
+    glre/timer.h
 
 
-SOURCES += src/mesh.cpp \
-	   main.cpp \
+SOURCES +=  main.cpp \
     src/shader.cpp \
-    src/camera.cpp \
     src/transformation.cpp \
-    src/line.cpp
+    src/texture.cpp \
+    src/solids.cpp \
+    test.cpp
 
 
 INCLUDEPATH += ./ 
@@ -28,5 +33,9 @@ QMAKE_CXXFLAGS += -std=c++11 -w -O3
 
 OTHER_FILES += \ 
     CMakeLists.txt \
+    shaders/Basic_PNCU.v \
+    shaders/Basic_PNCU.f \
+    shaders/Line_PC.v \
+    shaders/Line_PC.f
 
 
