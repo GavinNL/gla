@@ -1,58 +1,64 @@
 #include "glre/solids.h"
 
-//glre::TriMesh_PNCU glre::loadModel(const std::string & path)
-//{
-//    Assimp::Importer Importer;
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
-//    const aiScene * pScene = Importer.ReadFile(path.c_str(),
-//                                               aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
 
-//    const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
-//    std::cout << "Loading mesh: " << path << std::endl;
-//    glre::TriMesh_PNCU ReturnMesh;
+glre::TriMesh_PNCU glre::loadModel(const std::string & path)
+{
+    Assimp::Importer Importer;
 
-//    if (pScene)
-//     {
-//            std::cout << "-Number of Meshs: "     << pScene->mNumMeshes << std::endl;
-//            std::cout << "-Number of Materials: " << pScene->mNumMaterials << std::endl;
+    const aiScene * pScene = Importer.ReadFile(path.c_str(),
+                                               aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
 
-//            for (unsigned int i = 0 ; i < pScene->mNumMeshes ; i++)
-//            {
-//                const aiMesh* paiMesh = pScene->mMeshes[i];
+    const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
+    std::cout << "Loading mesh: " << path << std::endl;
+    glre::TriMesh_PNCU ReturnMesh;
+    int count = 0;
+    if (pScene)
+     {
+            std::cout << "-Number of Meshs: "     << pScene->mNumMeshes << std::endl;
+            std::cout << "-Number of Materials: " << pScene->mNumMaterials << std::endl;
 
-//                std::cout << "--Mesh " << i << std::endl;
-//                std::cout << "--- Num Vertices  " << paiMesh->mNumVertices << std::endl;
-//                std::cout << "--- Num Triangles " << paiMesh->mNumFaces    << std::endl;
+            for (unsigned int i = 0 ; i < pScene->mNumMeshes ; i++)
+            {
+                const aiMesh* paiMesh = pScene->mMeshes[i];
 
-//                for (unsigned int j = 0 ; j < paiMesh->mNumVertices ; j++)
-//                {
-//                    const aiVector3D* pPos      = &(paiMesh->mVertices[j]);
-//                    const aiVector3D* pNormal   = &(paiMesh->mNormals[j]);
-//                    const aiVector3D* pTexCoord = paiMesh->HasTextureCoords(0) ? &(paiMesh->mTextureCoords[0][j]) : &Zero3D;
-//                    std::cout << pTexCoord->x << "," << pTexCoord->y << std::endl;
-//                    ReturnMesh.insertVertexAttribute<0>(   vec3(      pPos->x,      pPos->y,    pPos->z )     );
-//                    ReturnMesh.insertVertexAttribute<1>(   vec3(   pNormal->x,   pNormal->y, pNormal->z )     );
-//                    ReturnMesh.insertVertexAttribute<2>(   vec4(      1.0    ,          1.0,        1.0,1.0 )     );
-//                    ReturnMesh.insertVertexAttribute<3>(   vec2( pTexCoord->x, pTexCoord->y             )     );
-//                }
+                std::cout << "--Mesh " << i << std::endl;
+                std::cout << "--- Num Vertices  " << paiMesh->mNumVertices << std::endl;
+                std::cout << "--- Num Triangles " << paiMesh->mNumFaces    << std::endl;
 
-//                for (unsigned int j = 0 ; j < paiMesh->mNumFaces ; j++)
-//                {
-//                    const aiFace& Face = paiMesh->mFaces[j];
+                for (unsigned int j = 0 ; j < paiMesh->mNumVertices ; j++)
+                {
+                    const aiVector3D* pPos      = &(paiMesh->mVertices[j]);
+                    const aiVector3D* pNormal   = &(paiMesh->mNormals[j]);
+                    const aiVector3D* pTexCoord = paiMesh->HasTextureCoords(0) ? &(paiMesh->mTextureCoords[0][j]) : &Zero3D;
 
-//                    assert(Face.mNumIndices == 3);
-//                    ReturnMesh.insertElement(  uvec3( Face.mIndices[0], Face.mIndices[1], Face.mIndices[2] ) );
-//                }
+                    ReturnMesh.insertVertex(  { vec3(      pPos->x,      pPos->y,    pPos->z     ),
+                                                vec3(   pNormal->x,   pNormal->y, pNormal->z     ),
+                                                vec4(      1.0    ,          1.0,        1.0,1.0 ),
+                                                vec2( pTexCoord->x, pTexCoord->y                 ) } );
+                }
 
-//            }
-//            return ReturnMesh;
-//        }
-//        else {
-//            printf("Error parsing '%s': '%s'\n", path.c_str(), Importer.GetErrorString());
-//            return ReturnMesh;
-//        }
+                for (unsigned int j = 0 ; j < paiMesh->mNumFaces ; j++)
+                {
+                    const aiFace& Face = paiMesh->mFaces[j];
 
-//}
+                    assert(Face.mNumIndices == 3);
+                    ReturnMesh.insertElement(  uvec3( Face.mIndices[0]+count, Face.mIndices[1]+count, Face.mIndices[2]+count ) );
+                }
+                count+=paiMesh->mNumVertices;
+
+            }
+            return ReturnMesh;
+        }
+        else {
+            printf("Error parsing '%s': '%s'\n", path.c_str(), Importer.GetErrorString());
+            return ReturnMesh;
+        }
+
+}
 
 //glre::TriMesh_PNCU glre::createPrism(float width, float height, float depth)
 //{

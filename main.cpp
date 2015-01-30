@@ -296,6 +296,8 @@ int main(int argc, char **argv)
 
     auto mSDLWindowHandle = setupSDL();
 
+    Line_PC      Axis = createAxes();
+    Axis.sendToGPU();
 
     glre::Camera Cam;
     glre::vec3   gCameraAcceleration;
@@ -354,7 +356,8 @@ int main(int argc, char **argv)
 
 
     TriMesh_PNCU Surface;
-    Line_PC      Axis = createAxes();
+    TriMesh_PNCU Dragon = loadModel("test.blend");
+    Dragon.sendToGPU();
     ShaderProgram LineShader( VertexShader("shaders/Line_PC.v"), FragmentShader("shaders/Line_PC.f") );
     ShaderProgram S( VertexShader("shaders/Basic_PNCU.v"), FragmentShader("shaders/Basic_PNCU.f"));
 
@@ -369,14 +372,12 @@ int main(int argc, char **argv)
                                 vec2(0,0)            } );
     }
 
-//    //std::cout << "Number of vertices: " << M.getPosBuffer().size() << std::endl;
-
     for(auto a : Ch.Face) Surface.insertElement( a );
 
 
 
     Surface.sendToGPU();
-    Axis.sendToGPU();
+
 
 
     Cam.setPosition( vec3(0.5 ,1.0,0.5) );
@@ -493,6 +494,7 @@ int main(int argc, char **argv)
         S.sendUniform_mat4(modelMatrixID, mat4(1.0));
         Surface.Render();
 
+        Dragon.Render();
 
         LineShader.useShader();
         LineShader.sendUniform_mat4(LineShader.getUniformLocation("inCameraMatrix"), Pv * CameraMatrix  );

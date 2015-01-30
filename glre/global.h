@@ -10,8 +10,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 
-#include <string>
-
 namespace glre
 {
     typedef glm::vec2   vec2;
@@ -27,7 +25,6 @@ namespace glre
     typedef glm::vec4    col4;
     typedef glm::vec3    col3;
 
-
     struct Vertex_PNCU
     {
         vec3 p; // position
@@ -42,20 +39,23 @@ namespace glre
         col4 c; // colour
     };
 
-//    typedef ArrayBuffer<Vertex_PNCU, GL_ARRAY_BUFFER>  ArrayBuffer_PNCU;
-//    typedef ArrayBuffer<vec2, GL_ARRAY_BUFFER>         ArrayBuffer_vec2;
-//    typedef ArrayBuffer<vec3, GL_ARRAY_BUFFER>         ArrayBuffer_vec3;
-//    typedef ArrayBuffer<vec4, GL_ARRAY_BUFFER>         ArrayBuffer_vec4;
-//    typedef ArrayBuffer<uvec3,GL_ELEMENT_ARRAY_BUFFER> ArrayBuffer_uvec3;
-//    typedef ArrayBuffer<uvec2,GL_ELEMENT_ARRAY_BUFFER> ArrayBuffer_uvec2;
-
-
     typedef enum
     {
         LINES     = GL_LINES,
         QUADS     = GL_QUADS,
         TRIANGLES = GL_TRIANGLES
     } Primitave;
+}
+
+#include <glre/transformation.h>
+#include <glre/vertexarrayobject.h>
+
+
+namespace glre
+{
+
+    typedef glre::VertexArrayObject< glre::Vertex_PNCU, glre::uvec3, F3, F3,F4, F2> TriMesh_PNCU;
+    typedef glre::VertexArrayObject< glre::Vertex_PC,   glre::uvec2, F3, F4 >       Line_PC;
 
 }
 

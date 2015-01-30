@@ -1,5 +1,5 @@
-#ifndef EXCEPTIONS_H
-#define EXCEPTIONS_H
+#ifndef GLRE_EXCEPTIONS_H
+#define GLRE_EXCEPTIONS_H
 
 #include <exception>
 
