@@ -5,85 +5,91 @@
 #include <vector>
 #include <tuple>
 #include <array>
+#include <glre/arraybuffer.h>
 
 namespace glre
 {
 
-    template <class IndexBuffer, class ...Args>
+    typedef enum
+    {
+        F1,F2,F3,F4,  I1, I2, I3, I4,  U1, U2, U3, U4
+    } TypeSizesIndex;
+
+
+    template <class VertexType, class ElementType, int N, int... Rest>
     class VertexArrayObject
     {
         public:
             VertexArrayObject() : m_VAO(0) {};
 
-            //bool LoadMesh(const std::string& Filename);
-
             void Render(Primitave PrimitaveType = TRIANGLES)
             {
                     glBindVertexArray(m_VAO);
-
-                    int N=3;  // number of vertices int he primitave
+                    //std::cout << "Vertex Array Render: " << m_VAO << std::endl;
+                    int NumberOfVertices=3;  // number of vertices int he primitave
                     switch(PrimitaveType)
                     {
                         case TRIANGLES:
-                            N = 3;
+                            NumberOfVertices = 3;
                             break;
                         case LINES:
-                            N = 2;
+                            NumberOfVertices = 2;
                             break;
                         case QUADS:
-                            N = 4;
+                            NumberOfVertices = 4;
                             break;
                     }
 
-                    //std::cout << "  Rendering: " << mIndex_T.gpuBufferSize() * N << std::endl;
+                    //std::cout << "glDrawElementsBaseVertex(" << PrimitaveType << ","
+                    //                         << mIndexBuffer.gpuBufferSize() * NumberOfVertices << ","
+                    //                         << GL_UNSIGNED_INT << ","
+                    //                         << 0 << ","
+                    //                         << 0 << ");" << std::endl;
                     glDrawElementsBaseVertex(PrimitaveType,
-                                              mIndex_T.gpuBufferSize()*N,
-                                              GL_UNSIGNED_INT,
-                                              0,
-                                              0);
+                                             mIndexBuffer.gpuBufferSize() * NumberOfVertices,
+                                             GL_UNSIGNED_INT,
+                                             0,
+                                             0);
 
-                    //std::cout << "array drawn\n";
+                   // std::cout << "array drawn\n";
                 //}
 
                 // Make sure the VAO is not changed from the outside
                 glBindVertexArray(0);
             }
 
+            inline void insertVertex(const VertexType & T)
+            {
+                mVertexBuffer.insert(T);
+            }
+
+            inline void insertElement(const ElementType & T)
+            {
+                mIndexBuffer.insert(T);
+            }
+
             bool sendToGPU()
             {
                 if( m_VAO )
                 {
-                    clearGPU();
+                    std::cout << "Sending Vertex Array to GPU. Current Handle: " << m_VAO << std::endl;
+                    //clearGPU();
                 }
 
                 glGenVertexArrays(1, &m_VAO);
                 glBindVertexArray(    m_VAO);
 
-                sendBuffersToGPU( ArrayObjects );
+                mVertexBuffer.sendToGPU();
+                EnableVertexAttribArray<N, Rest...>( 0, 0 );
+                mIndexBuffer.sendToGPU();
 
-                //===================================================================================================
-                mIndex_T.sendToGPU();
-                //===================================================================================================
-
+                glBindVertexArray( 0 );
             }
 
             void clearGPU()
             {
-                clearBuffersFromGPU( ArrayObjects );
+               // clearBuffersFromGPU( ArrayObjects );
             };
-
-
-            template<class T>
-            void insertElement(const T & obj)
-            {
-                mIndex_T.insert( obj );
-            }
-
-            template<std::size_t ArrayIndex, class T>
-            void insertVertexAttribute(const T & obj)
-            {
-                std::get<ArrayIndex>(ArrayObjects).insert( obj );
-            }
 
 
             //===========================================================
@@ -91,40 +97,39 @@ namespace glre
             //===========================================================
              template<std::size_t> struct int_{};
 
-            template <class Tuple, size_t Pos>
-            void sendBuffersToGPU( Tuple& t, int_<Pos> )
+            template <int First>
+            void EnableVertexAttribArray( int index, long offset )
             {
 
-              auto & buff              = std::get< std::tuple_size<Tuple>::value-Pos >(t);
-              int index                = std::tuple_size<Tuple>::value-Pos;
-              int ElementsPerAttribute = ( (int)sizeof(buff[0]) / (int)sizeof(buff[0][0]));
+              const uint ElementsPerAttribute[] = {1,2,3,4, 1,2,3,4, 1,2,3,4};
+              const uint ElementType[]          = {GL_FLOAT,GL_FLOAT,GL_FLOAT,GL_FLOAT, GL_INT,GL_INT,GL_INT,GL_INT, GL_UNSIGNED_INT, GL_UNSIGNED_INT,GL_UNSIGNED_INT,GL_UNSIGNED_INT};
+              const uint ElementStride[]        = {4,8,12,16,4,8,12,16,4,8,12,16};
 
-              buff.sendToGPU();
-              glEnableVertexAttribArray(index);
-              glVertexAttribPointer(index, ElementsPerAttribute, GL_FLOAT, GL_FALSE, 0, 0);
+              glEnableVertexAttribArray( index );
+              std::cout << "glEnableVertexAttribArray( " << index  << ");\n";
+              glVertexAttribPointer(index, ElementsPerAttribute[First], ElementType[First], GL_FALSE, sizeof(VertexType), (void*)offset);
+              std::cout << "glVertexAttribPointer(" << index << "," << ElementsPerAttribute[First] << "," << ElementType[First] << "," << GL_FALSE << "," <<  0 << ","  << offset << ");\n";
 
-              sendBuffersToGPU( t, int_<Pos-1>());
-            }
 
-            template <class Tuple>
-            void sendBuffersToGPU( Tuple& t, int_<1> )
-            {
-                auto & buff              = std::get< std::tuple_size<Tuple>::value-1 >(t);
-                int index                = std::tuple_size<Tuple>::value-1;
-                int ElementsPerAttribute = ( (int)sizeof(buff[0]) / (int)sizeof(buff[0][0]));
-
-                buff.sendToGPU();
-
-                glEnableVertexAttribArray(index);
-                glVertexAttribPointer(index, ElementsPerAttribute, GL_FLOAT, GL_FALSE, 0, 0);
 
             }
 
-            template <class... Args1>
-            void sendBuffersToGPU( std::tuple<Args1...>& t)
+            template <int First, int Second, int... AllTheRest>
+            void EnableVertexAttribArray( int index, long offset )
             {
-              sendBuffersToGPU( t, int_<sizeof...(Args1)>());
+
+              const uint ElementsPerAttribute[] = {1,2,3,4,1,2,3,4,1,2,3,4};
+              const uint ElementType[]          = {GL_FLOAT,GL_FLOAT,GL_FLOAT,GL_FLOAT, GL_INT,GL_INT,GL_INT,GL_INT, GL_UNSIGNED_INT, GL_UNSIGNED_INT,GL_UNSIGNED_INT,GL_UNSIGNED_INT};
+              const uint ElementStride[]        = {4,8,12,16,4,8,12,16,4,8,12,16};
+
+              glEnableVertexAttribArray( index );
+              std::cout << "glEnableVertexAttribArray( " << index  << ");\n";
+              glVertexAttribPointer(index, ElementsPerAttribute[First], ElementType[First], GL_FALSE, sizeof(VertexType), (void*)offset);
+              std::cout << "glVertexAttribPointer(" << index << "," << ElementsPerAttribute[First] << "," << ElementType[First] << "," << GL_FALSE << "," <<  0 << ","  << offset << ");\n";
+              EnableVertexAttribArray<Second, AllTheRest...>( index+1, offset+ElementStride[First] );
             }
+
+
             //===========================================================
 
             //===========================================================
@@ -133,49 +138,13 @@ namespace glre
             //===========================================================
 
 
-            template <class Tuple, size_t Pos>
-            void clearBuffersFromGPU( Tuple& t, int_<Pos> )
-            {
-
-              auto & buff              = std::get< std::tuple_size<Tuple>::value-Pos >(t);
-              buff.clearGPU();
-              clearBuffersFromGPU( t, int_<Pos-1>());
-            }
-
-            template <class Tuple>
-            void clearBuffersFromGPU( Tuple& t, int_<1> )
-            {
-                auto & buff              = std::get< std::tuple_size<Tuple>::value-1 >(t);
-                buff.clearGPU();
-            }
-
-            template <class... Args1>
-            void clearBuffersFromGPU( std::tuple<Args1...>& t)
-            {
-              clearBuffersFromGPU( t, int_<sizeof...(Args1)>());
-            }
-            //===========================================================
-
 
         public:
-    //        bool InitFromScene(const aiScene* pScene, const std::string& Filename);
-
-    //        void InitMesh(const aiMesh* paiMesh,
-    //                    std::vector& Positions,
-    //                    std::vector& Normals,
-    //                    std::vector& TexCoords,
-    //                    std::vector& Indices);
-
-            //bool InitMaterials(const aiScene* pScene, const std::string& Filename);
-            void Clear(){};
-
-
-            #define INVALID_MATERIAL 0xFFFFFFFF
 
             GLuint m_VAO;
 
-            IndexBuffer      mIndex_T;
-            std::tuple<Args...> ArrayObjects;
+            ArrayBuffer<ElementType,GL_ELEMENT_ARRAY_BUFFER> mIndexBuffer;
+            ArrayBuffer<VertexType ,GL_ARRAY_BUFFER>         mVertexBuffer;
 
 
     };

@@ -43,7 +43,7 @@ class ShaderUnit
 
             const char * code = shader_code.c_str();
 
-            std::cout << shader_code << std::endl;
+            //std::cout << shader_code << std::endl;
 
             glShaderSource(V, 1, &code, NULL);
             glCompileShader(V);

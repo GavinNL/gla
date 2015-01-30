@@ -48,7 +48,7 @@ class Transformation
         const glre::vec3   & getPosition   (){ return mPosition   ; };
         const glre::vec3   & getScale      (){ return mScale; };
 
-
+        quat reverse() const {  return quat(mOrientation.w, -mOrientation.x, -mOrientation.y, -mOrientation.z); };
 
     public:
         glre::quat    mOrientation;

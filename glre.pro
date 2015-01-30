@@ -15,7 +15,8 @@ HEADERS +=  glre/shader.h \
     glre/texture.h \
     glre/stb/stb_image.h \
     glre/solids.h \
-    glre/exceptions.h
+    glre/exceptions.h \
+    glre/timer.h
 
 
 SOURCES +=  main.cpp \

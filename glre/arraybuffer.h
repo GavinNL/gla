@@ -55,6 +55,7 @@ class ArrayBuffer
                 mGPUBufferSize = cpuBufferSize();
                 mGPUByteSize   = cpuByteSize();
             }
+            std::cout << "Array Buffer sent to GPU. ID: " << mGLID << "\n ";
 
         };
 
