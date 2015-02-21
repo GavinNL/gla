@@ -6,6 +6,8 @@
 namespace glre
 {
 
+class Texture;
+
 template<uint SHADER_TYPE>
 class ShaderUnit
 {
@@ -100,13 +102,26 @@ class ShaderProgram
         ~ShaderProgram();
 
 
-        inline GLuint getUniformLocation(const GLchar *name) { return glGetUniformLocation(mProgram, name); }
+        inline GLuint getUniformLocation(const GLchar *name)
+        {
+            auto x = glGetUniformLocation(mProgram, name);
+            std::cout << "Uniform locatio,  " << name << ": " <<  x << std::endl;
+            return x;
+        }
 
         GLuint linkProgram(const VertexShader & VS, const FragmentShader & FS);
 
         inline void useShader() { glUseProgram(mProgram);}
 
         // Sending data to the shader
+
+        inline void sendUniform_Sampler2D(GLint location, GLint TextureNumber=0)
+        {
+            glUniform1i(location, TextureNumber);
+        }
+
+        inline void sendUniform_Sampler2D(const Texture & tex, GLint TextureNumber=0);
+
         inline void sendUniform_mat4(GLuint location, const mat4 & M, uint count=1 )
         {
             glUniformMatrix4fv(location, count, GL_FALSE, &M[0][0] );

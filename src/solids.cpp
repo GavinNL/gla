@@ -5,7 +5,7 @@
 #include <assimp/postprocess.h>
 
 
-glre::TriMesh_PNCU glre::loadModel(const std::string & path)
+glre::TriMesh_PNCU glre::loadModel(const std::string & path, bool sendToGPU)
 {
     Assimp::Importer Importer;
 
@@ -18,21 +18,24 @@ glre::TriMesh_PNCU glre::loadModel(const std::string & path)
     int count = 0;
     if (pScene)
      {
-            std::cout << "-Number of Meshs: "     << pScene->mNumMeshes << std::endl;
-            std::cout << "-Number of Materials: " << pScene->mNumMaterials << std::endl;
+            // std::cout << "-Number of Meshs: "     << pScene->mNumMeshes << std::endl;
+            // std::cout << "-Number of Materials: " << pScene->mNumMaterials << std::endl;
 
             for (unsigned int i = 0 ; i < pScene->mNumMeshes ; i++)
             {
                 const aiMesh* paiMesh = pScene->mMeshes[i];
 
-                std::cout << "--Mesh " << i << std::endl;
-                std::cout << "--- Num Vertices  " << paiMesh->mNumVertices << std::endl;
-                std::cout << "--- Num Triangles " << paiMesh->mNumFaces    << std::endl;
+                if(!paiMesh) continue;
+
+                //std::cout << "--Mesh " << i << std::endl;
+                //std::cout << "--- Num Vertices  " << paiMesh->mNumVertices << std::endl;
+                //std::cout << "--- Num Triangles " << paiMesh->mNumFaces    << std::endl;
 
                 for (unsigned int j = 0 ; j < paiMesh->mNumVertices ; j++)
                 {
+
                     const aiVector3D* pPos      = &(paiMesh->mVertices[j]);
-                    const aiVector3D* pNormal   = &(paiMesh->mNormals[j]);
+                    const aiVector3D* pNormal   = paiMesh->HasNormals() ? &(paiMesh->mNormals[j]) : &Zero3D;
                     const aiVector3D* pTexCoord = paiMesh->HasTextureCoords(0) ? &(paiMesh->mTextureCoords[0][j]) : &Zero3D;
 
                     ReturnMesh.insertVertex(  { vec3(      pPos->x,      pPos->y,    pPos->z     ),
@@ -41,16 +44,18 @@ glre::TriMesh_PNCU glre::loadModel(const std::string & path)
                                                 vec2( pTexCoord->x, pTexCoord->y                 ) } );
                 }
 
+                //std::cout << "--Mesh " << i << " completed " << std::endl;
                 for (unsigned int j = 0 ; j < paiMesh->mNumFaces ; j++)
                 {
                     const aiFace& Face = paiMesh->mFaces[j];
-
-                    assert(Face.mNumIndices == 3);
+                    //std::cout << Face.mNumIndices << std::endl;
+                    if(Face.mNumIndices != 3) continue;
                     ReturnMesh.insertElement(  uvec3( Face.mIndices[0]+count, Face.mIndices[1]+count, Face.mIndices[2]+count ) );
                 }
                 count+=paiMesh->mNumVertices;
 
             }
+            if(sendToGPU) ReturnMesh.sendToGPU();
             return ReturnMesh;
         }
         else {
@@ -126,7 +131,7 @@ glre::TriMesh_PNCU glre::loadModel(const std::string & path)
 //}
 
 
-glre::Line_PC glre::createAxes()
+glre::Line_PC glre::createAxes(bool sendToGPU)
 {
     Line_PC      Axis;
 
@@ -141,6 +146,7 @@ glre::Line_PC glre::createAxes()
     Axis.insertElement( uvec2(2, 3) );
     Axis.insertElement( uvec2(4, 5) );
 
+    if(sendToGPU) Axis.sendToGPU();
     return Axis;
 }
 

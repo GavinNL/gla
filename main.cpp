@@ -36,259 +36,6 @@ rgui::pInterface I;
 std::map<std::string, std::function<void(const SDL_Event&)> >  SDLEvents;
 
 
-
-#define STB_PERLIN_IMPLEMENTATION
-#include <glre/stb/stb_perlin.h>
-
-
-
-template <class T>
-class Array3D
-{
-    public:
-    Array3D(unsigned int size)
-    {
-        data = new T[size*size*size];
-        X = Y = Z = size;
-    }
-    ~Array3D()
-    {
-        delete [] data;
-        data = 0;
-    }
-
-    inline T & operator()( const unsigned int i)
-    {
-        return data[i];
-    }
-
-    inline T & operator()( const uvec3 & p)
-    {
-        return data[ X*Y*p[2] + X*p[1] + p[0] ];
-    }
-
-    inline T & operator()( const ivec3 & p)
-    {
-        return data[ X*Y*p[2] + X*p[1] + p[0] ];
-    }
-
-    inline T & operator()( int x, int y, int z)
-    {
-        return data[ X*(Y*z + y) + x];
-    }
-
-    T * data;
-    unsigned int X;
-    unsigned int Y;
-    unsigned int Z;
-};
-
-//=============================
-
-struct VertexNormal
-{
-    vec3 v;
-    vec3 n;
-    int index;
-    short EdgeFlags;  // Which edge of the cube needs to have a quad created
-};
-
-// This is a table of vertex offset values relative to the lower/left/front vertex of a cube.
-const ivec3 Offsets[8] = {{0,0,0},
-                         {1,0,0},
-                         {0,0,1},
-                         {1,0,1},
-                         {0,1,0},
-                         {1,1,0},
-                         {0,1,1},
-                         {1,1,1} };
-
-// This is a table of vertices that define an edge of a cube. There are 12 edges.
-// For example, EdgeList[0] = {0,1}, which means, vertex 0 and vertex 1 (in the above Offsets table)
-// define an edge.
-const int EdgeList[12][2] = { {0,1}, {1,3}, {0,2}, {2,3}, {4,5}, {5,7}, {6,7}, {4,6}, {0,4}, {1,5}, {3,7}, {2,6} };
-
-
-class Chunk : public Array3D<unsigned char>
-{
-
-public:
-    Chunk(unsigned int size) : Array3D<unsigned char>(size), Vertices(size)
-    {
-        for(int i=0;i<(size*size*size);i++) Vertices.data[i] = 0;
-
-        Size = size;
-    }
-
-    // checks a particular cell to determine if a mesh vertex needs to be created
-    // in there. A vertex will need to be created if any of the edges that
-    // define the cube have differeing voxel solid values (ie, one inside and one is outside)
-    int surfaceVertexExists( const ivec3 & p)
-    {
-        Chunk & C = *this;
-
-        bool inside = false;
-
-        short EdgeFlags = 0;
-        // loop through all the edges
-        for(int i=0;i<12;i++)
-        {
-            const unsigned int e1 = EdgeList[i][0];
-            const unsigned int e2 = EdgeList[i][1];
-
-            // will be 1 if items are different
-            short flag = ( C( p + Offsets[e1]) < 128) ^ (C( p + Offsets[e2]) < 128 ) ? 1 : 0;
-            //std::cout << flag << std::endl;
-            EdgeFlags |= flag<<i;
-
-            //inside |= ( C( p + Offsets[e1]) < (signed char)0) ^ (C( p + Offsets[e2]) < (signed char)0);
-        }
-
-        //if(EdgeFlags)
-        //std::cout << std::bitset<16>(EdgeFlags) << std::endl;
-        return EdgeFlags;
-    }
-
-    // gets the gradient at the voxel position.
-    // uses central finite difference for interior cells
-    // and one sided difference for edges.
-    vec3 gradient( const ivec3 & position)
-    {
-        Chunk & C = *this;
-        vec3 grad;
-
-        const ivec3 u[3] = { {1,0,0},{0,1,0},{0,0,1} };
-
-        for(int i=0;i<3;i++)
-            if( position[i] >0  && position[i] < Size-1)
-            {
-                grad[i] = 0.5*C(position+u[i])  - 0.5*C(position-u[i]);
-            }
-            else if( position[0] == 0)
-            {
-                grad[0] = -0.666*C(position) + 2.0*C(position+u[i]) - 0.5*C(position+2*u[i]);
-            }
-            else {
-                grad[0] =  0.666*C(position) - 2.0*C(position-u[i]) + 0.5*C(position-2*u[i]);
-            }
-
-        return grad;
-    }
-
-    // Finds the optimal position of the vertex within the cell
-    //   First approximation - Take the weighted average position of all the solid voxels
-    vec3 FindOptimalPosition( const ivec3 & index)
-    {
-        Chunk & C = *this;
-        vec3 p;
-        float sum;
-
-        for(int i=0;i<8;i++)
-        {
-
-             float w = (float)C(index+Offsets[i]);
-             if(w < 128) continue;
-
-             ivec3 Pi = index+Offsets[i];
-             p   += vec3( (float)Pi[0], (float)Pi[1], (float)Pi[2])*w;
-             sum += w;
-        }
-        return p/sum;
-    }
-
-
-
-    void ExtractSurface()
-    {
-        // loop through all cells and determine which cells will have a vertex in it
-        int vertexCount = 0;
-        Vertex.clear();
-        Face.clear();
-        for(int z=0;z<Size-1;z++)
-            for(int y=0;y<Size-1;y++)
-                for(int x=0;x<Size-1;x++)
-                {
-                    int EdgeFlag = surfaceVertexExists( ivec3(x,y,z) );
-                    if( EdgeFlag==0 || EdgeFlag==255) continue;
-
-                    // create a vertex at the center of the cell.
-                    auto * V = new VertexNormal();
-
-                    // This needs to be replaced with a better vertex positioning method
-                    V->v     = FindOptimalPosition( ivec3(x,y,z) );
-                    //{ (float)x+0.5, (float)y+0.5, (float)z+0.5};
-
-                    Vertex.push_back(V->v);
-
-                    V->index        = vertexCount++;
-
-                    V->EdgeFlags    = EdgeFlag;
-                    Vertices(x,y,z) = V;
-
-                }
-
-
-
-        // loop through all edges that have a sign change and construct a quad from the
-        // 4 adjacent cells
-        // This triple loop needs to be replaced with a way to only traverse the cubes that have
-        // vertices in them.
-
-        for(int z=0;z<Size-1;z++)
-            for(int y=0;y<Size-1;y++)
-                for(int x=0;x<Size-1;x++)
-                {
-                    VertexNormal * V = Vertices(x,y,z);
-
-                    // if there is no vertex skip this cell
-                    if( !V ) continue;
-
-                    short EdgeFlag = V->EdgeFlags;
-
-                    // check edge 11
-                    if( EdgeFlag & (1 << 10) && x<Size-2 && z<Size-2)
-                    {
-                       // if( Vertices(x,y,z) && Vertices(x+1,y,z) && Vertices(x+1,y,z+1) && Vertices(x,y,z+1))
-                        {
-                            Face.push_back( uvec3(Vertices(x,y,z)->index, Vertices(x+1,y,z)->index, Vertices(x+1,y,z+1)->index) );
-                            Face.push_back( uvec3(Vertices(x+1,y,z+1)->index, Vertices(x,y,z+1)->index, Vertices(x,y,z)->index) );
-                        }
-
-                    }
-
-                    // check edge 6
-                    if( EdgeFlag & (1 << 5)  && x<Size-2 && y<Size-2 )
-                    {
-                        //if( Vertices(x,y,z) && Vertices(x+1,y,z) && Vertices(x+1,y+1,z) && Vertices(x,y+1,z))
-                        {
-                            Face.push_back( uvec3(Vertices(x,y,z)->index, Vertices(x+1,y,z)->index,     Vertices(x+1,y+1,z)->index) );
-                            Face.push_back( uvec3(Vertices(x+1,y+1,z)->index, Vertices(x,y+1,z)->index, Vertices(x,y,z)->index) );
-                        }
-                    }
-
-                    // check edge 7
-                    if( EdgeFlag & (1 << 6)  && z<Size-2 && y<Size-2 )
-                    {
-                        //if( Vertices(x,y,z) && Vertices(x,y,z+1) && Vertices(x,y+1,z+1) && Vertices(x,y,z+1))
-                        {
-                            Face.push_back( uvec3(Vertices(x,y,z)->index, Vertices(x,y,z+1)->index, Vertices(x,y+1,z+1)->index) );
-                            Face.push_back( uvec3(Vertices(x,y+1,z+1)->index, Vertices(x,y+1,z)->index, Vertices(x,y,z)->index) );
-                        }
-
-                    }
-                }
-    }
-
-    std::vector< vec3 >  Vertex;
-    std::vector< uvec3>  Face;
-
-    Array3D<VertexNormal*> Vertices;
-    int Size;
-};
-
-//=============================
-
-
 int main(int argc, char **argv)
 {
 
@@ -296,35 +43,11 @@ int main(int argc, char **argv)
 
     auto mSDLWindowHandle = setupSDL();
 
-    Line_PC      Axis = createAxes();
-    Axis.sendToGPU();
+
 
     glre::Camera Cam;
     glre::vec3   gCameraAcceleration;
     bool         mQuit = false;
-
-
-    int N = 32;
-    Chunk Ch(N);
-    float W = (float)N;
-    for(int z=0; z<N; z++) for(int y=0; y<N; y++) for(int x=0; x<N; x++)
-    {
-        if(1)   // Hemisphere
-        {
-            vec3 p = vec3((float)16, 0 ,(float)16) - vec3( (float)x, (float)y, (float)z);
-            p *= p;
-            Ch(x,y,z) = (p[0]+p[1]+p[2]) < 16*16 ? 255 : 0;
-
-        }
-        else   // perlin noise
-        {
-            Ch(x,y,z) = 128 + (unsigned char)(128.0 * stb_perlin_noise3( (float)(x/W) * 2.0, (float)(y/W)* 2.0, (float)(z/W) * 2.0) );
-        }
-    }
-   //Ch(1,1,1) = 127;
-    Ch.ExtractSurface();
-
-
 
 
     //=============================================================================
@@ -335,12 +58,12 @@ int main(int argc, char **argv)
 
 
     I = R->createInterface(WIDTH, HEIGHT, "MainInterface");
-    I->loadSkin("default_skin.zip");
+    I->loadSkin( "resources/default_skin.zip");
 
     std::string  json = R"raw(
     {
         W1 : {
-            widget_type : "window",
+            widget_type  : "window",
             layout_style : "vertical_layout",
             pos : [0,0],
             size: [300,300]
@@ -350,42 +73,26 @@ int main(int argc, char **argv)
     I->getRootWidget()->loadFromJSONString(json);
     I->getRootWidget();
 
-//================================================================================
+    //================================================================================
 
 
 
 
-    TriMesh_PNCU Surface;
-    TriMesh_PNCU Dragon = loadModel("test.blend");
-    Dragon.sendToGPU();
-    ShaderProgram LineShader( VertexShader("shaders/Line_PC.v"), FragmentShader("shaders/Line_PC.f") );
-    ShaderProgram S( VertexShader("shaders/Basic_PNCU.v"), FragmentShader("shaders/Basic_PNCU.f"));
+    Texture Tex("resources/dragontexture.png", true);
 
 
-//    Axis.sendToGPU();
+    Line_PC      Axis   = createAxes(true);
+    TriMesh_PNCU Dragon = loadModel("./resources/dragon.obj", true);
 
-    for(auto a : Ch.Vertex)
-    {
-        Surface.insertVertex( { a-vec3(16,16,16)     ,
-                                vec3(0.0,1.0,0.0)    ,
-                                col4(1.0,0.0,0.0,1.0),
-                                vec2(0,0)            } );
-    }
-
-    for(auto a : Ch.Face) Surface.insertElement( a );
-
-
-
-    Surface.sendToGPU();
-
+    ShaderProgram LineShader( VertexShader("shaders/Line_PC.v")   , FragmentShader("shaders/Line_PC.f")   );
+    ShaderProgram S(          VertexShader("shaders/Basic_PNCU.v"), FragmentShader("shaders/Basic_PNCU.f"));
 
 
     Cam.setPosition( vec3(0.5 ,1.0,0.5) );
 
-
-//    //================================================================================================================
-//    // Camera Movements
-//    //================================================================================================================
+    //================================================================================================================
+    // Camera Movements
+    //================================================================================================================
     SDLEvents["Camera"] = [&] (const SDL_Event & E) {
         switch(E.type)
         {
@@ -405,11 +112,14 @@ int main(int argc, char **argv)
 
                 break;
             case SDL_KEYDOWN:
-                if( E.key.keysym.sym == SDLK_s) gCameraAcceleration[2] = -1.000;
-                if( E.key.keysym.sym == SDLK_w) gCameraAcceleration[2] =  1.000;
-                if( E.key.keysym.sym == SDLK_d) gCameraAcceleration[0] = -1.000;
-                if( E.key.keysym.sym == SDLK_a) gCameraAcceleration[0] =  1.000;
-
+                {
+                    float f = 80.0f;
+                    if( E.key.keysym.mod & KMOD_LSHIFT ) f = 1000.0;
+                    if( E.key.keysym.sym == SDLK_s) gCameraAcceleration[2] = -f;
+                    if( E.key.keysym.sym == SDLK_w) gCameraAcceleration[2] =  f;
+                    if( E.key.keysym.sym == SDLK_d) gCameraAcceleration[0] = -f;
+                    if( E.key.keysym.sym == SDLK_a) gCameraAcceleration[0] =  f;
+                }
                 break;
             case SDL_MOUSEMOTION:
                 if( E.motion.state & SDL_BUTTON_RMASK )
@@ -422,11 +132,11 @@ int main(int argc, char **argv)
             break;
         }
     };
-//    //================================================================================================================
+    //================================================================================================================
 
-//    //================================================================================================================
-//    // Quit
-//    //================================================================================================================
+    //================================================================================================================
+    // Quit
+    //================================================================================================================
     SDLEvents["Exit"] = [&] (const SDL_Event & E) {
         switch(E.type)
         {
@@ -438,11 +148,11 @@ int main(int argc, char **argv)
             break;
         }
     };
-//    //================================================================================================================
+    //================================================================================================================
 
-//    //================================================================================================================
-//    // GUI
-//    //================================================================================================================
+    //================================================================================================================
+    // GUI
+    //================================================================================================================
     SDLEvents["GUI"] = [&] (const SDL_Event & E) {
         rgui::SDL_InputHandler::HandleInput(I,E);
     };
@@ -450,6 +160,11 @@ int main(int argc, char **argv)
 
     GLuint camMatrixId   = S.getUniformLocation("inCameraMatrix");
     GLuint modelMatrixID = S.getUniformLocation("inModelMatrix");
+    GLuint uSampler0ID   = S.getUniformLocation("uSampler");
+
+    GLuint LineShaderCamMatrixId   = LineShader.getUniformLocation("inCameraMatrix");
+    GLuint LineShaderModelMatrixID = LineShader.getUniformLocation("inModelMatrix");
+
 
     std::cout << "inCameraMatrix: " << camMatrixId << std::endl;
     std::cout << "inModelMatrix: " << modelMatrixID << std::endl;
@@ -462,18 +177,22 @@ int main(int argc, char **argv)
     Cam.perspective(45.0f, (float)WIDTH/(float)HEIGHT, 0.2f, 1000.0f);
     mat4 Pv = Cam.getProjectionMatrix();
 
+
     while( !mQuit )
     {
         // Do all the input handling for the interface
         SDL_Event e;
         while( SDL_PollEvent( &e ) != 0 ) for(auto a : SDLEvents) a.second( e);
 
-        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-        glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
 
-        //=======================================
+        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+        //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+
+        //===================================================
         // draw stuff here.
-        //=======================================
+        //===================================================
         S.useShader();
 
         //===================================================
@@ -489,16 +208,16 @@ int main(int argc, char **argv)
 
 
         auto CameraMatrix = Cam.getMatrix();
-
+        Tex.setActiveTexture(0);
         S.sendUniform_mat4(camMatrixId  , Pv * CameraMatrix  );
-        S.sendUniform_mat4(modelMatrixID, mat4(1.0));
-        Surface.Render();
+        S.sendUniform_mat4(modelMatrixID, mat4(0.01));
+        S.sendUniform_Sampler2D(uSampler0ID, 0);
 
         Dragon.Render();
 
         LineShader.useShader();
-        LineShader.sendUniform_mat4(LineShader.getUniformLocation("inCameraMatrix"), Pv * CameraMatrix  );
-        LineShader.sendUniform_mat4(LineShader.getUniformLocation("inModelMatrix") , glm::scale( mat4(1.0), vec3(5.0,5.0,5.0)) );
+        LineShader.sendUniform_mat4(LineShaderCamMatrixId,   Pv * CameraMatrix  );
+        LineShader.sendUniform_mat4(LineShaderModelMatrixID, glm::scale( mat4(1.0), vec3(5.0,5.0,5.0)) );
         Axis.Render(LINES);
 
         //=======================================

@@ -6,6 +6,7 @@
 #include <tuple>
 #include <array>
 #include <glre/arraybuffer.h>
+#include <memory>
 
 namespace glre
 {
@@ -22,10 +23,15 @@ namespace glre
         public:
             VertexArrayObject() : m_VAO(0) {};
 
+            inline GLint getID() const
+            {
+                return m_VAO;
+            }
+
             void Render(Primitave PrimitaveType = TRIANGLES)
             {
                     glBindVertexArray(m_VAO);
-                    //std::cout << "Vertex Array Render: " << m_VAO << std::endl;
+
                     int NumberOfVertices=3;  // number of vertices int he primitave
                     switch(PrimitaveType)
                     {
@@ -40,19 +46,12 @@ namespace glre
                             break;
                     }
 
-                    //std::cout << "glDrawElementsBaseVertex(" << PrimitaveType << ","
-                    //                         << mIndexBuffer.gpuBufferSize() * NumberOfVertices << ","
-                    //                         << GL_UNSIGNED_INT << ","
-                    //                         << 0 << ","
-                    //                         << 0 << ");" << std::endl;
+
                     glDrawElementsBaseVertex(PrimitaveType,
                                              mIndexBuffer.gpuBufferSize() * NumberOfVertices,
                                              GL_UNSIGNED_INT,
                                              0,
                                              0);
-
-                   // std::cout << "array drawn\n";
-                //}
 
                 // Make sure the VAO is not changed from the outside
                 glBindVertexArray(0);
@@ -83,14 +82,26 @@ namespace glre
                 EnableVertexAttribArray<N, Rest...>( 0, 0 );
                 mIndexBuffer.sendToGPU();
 
+                std::cout << "Vertex Array Object sent to gpu.  Current Handle: " << m_VAO << std::endl;
+                std::cout << "   -Vertices: "  << mVertexBuffer.cpuBufferSize() << std::endl;
+                std::cout << "   -Triangles: " << mIndexBuffer.cpuBufferSize() << std::endl;
                 glBindVertexArray( 0 );
             }
 
             void clearGPU()
             {
                // clearBuffersFromGPU( ArrayObjects );
+                mIndexBuffer.clearGPU();
+                mVertexBuffer.clearGPU();
+                glDeleteVertexArrays(1, &m_VAO);
             };
 
+            void clearCPU()
+            {
+               // clearBuffersFromGPU( ArrayObjects );
+                mIndexBuffer.clearCPU();
+                mVertexBuffer.clearCPU();
+            };
 
             //===========================================================
             // An attempt to loop through all Buffers in the tuple
@@ -106,12 +117,7 @@ namespace glre
               const uint ElementStride[]        = {4,8,12,16,4,8,12,16,4,8,12,16};
 
               glEnableVertexAttribArray( index );
-              std::cout << "glEnableVertexAttribArray( " << index  << ");\n";
               glVertexAttribPointer(index, ElementsPerAttribute[First], ElementType[First], GL_FALSE, sizeof(VertexType), (void*)offset);
-              std::cout << "glVertexAttribPointer(" << index << "," << ElementsPerAttribute[First] << "," << ElementType[First] << "," << GL_FALSE << "," <<  0 << ","  << offset << ");\n";
-
-
-
             }
 
             template <int First, int Second, int... AllTheRest>
@@ -123,9 +129,8 @@ namespace glre
               const uint ElementStride[]        = {4,8,12,16,4,8,12,16,4,8,12,16};
 
               glEnableVertexAttribArray( index );
-              std::cout << "glEnableVertexAttribArray( " << index  << ");\n";
               glVertexAttribPointer(index, ElementsPerAttribute[First], ElementType[First], GL_FALSE, sizeof(VertexType), (void*)offset);
-              std::cout << "glVertexAttribPointer(" << index << "," << ElementsPerAttribute[First] << "," << ElementType[First] << "," << GL_FALSE << "," <<  0 << ","  << offset << ");\n";
+
               EnableVertexAttribArray<Second, AllTheRest...>( index+1, offset+ElementStride[First] );
             }
 

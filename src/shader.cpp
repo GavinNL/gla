@@ -1,4 +1,5 @@
 #include <glre/shader.h>
+#include <glre/texture.h>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -47,5 +48,10 @@ GLuint ShaderProgram::linkProgram(const VertexShader & VS, const FragmentShader 
     return shader;
 }
 
+
+//inline void ShaderProgram::sendUniform_Sampler2D(const Texture & tex, GLint TextureNumber)
+//{
+//    glUniform1i( tex.getID() , TextureNumber);
+//}
 
 }

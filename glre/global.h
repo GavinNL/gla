@@ -5,8 +5,11 @@
 #include <GL/glext.h>
 #include <GL/gl.h>
 
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
+#define GLM_FORCE_RADIANS
 #include <glm/gtc/quaternion.hpp>
+#define GLM_FORCE_RADIANS
 #include <glm/gtc/matrix_transform.hpp>
 
 

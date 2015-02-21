@@ -1,11 +1,21 @@
 #include "glre/texture.h"
 #include <string.h>
 #include <iostream>
+#include <glre/stb/stb_image.h>
+
 
 glre::Texture::Texture() :mTextureID(0), mWidth(0), mHeight(0), mData(0)
 {
 
 }
+
+glre::Texture::Texture(const std::string & path, bool SendToGPU) :mTextureID(0), mWidth(0), mHeight(0), mData(0)
+{
+    loadFromPath(path);
+    if(SendToGPU)
+        sendToGPU();
+}
+
 
 
 glre::Texture::~Texture()
@@ -25,12 +35,15 @@ void glre::Texture::sendToGPU()
         // Copy the Texture to the GPU
         //==========================================================
         glGenTextures(1, &mTextureID);
+
+
         glBindTexture(GL_TEXTURE_2D, mTextureID);
 
-        glTexImage2D( GL_TEXTURE_2D, 0 , GL_RGBA, mWidth, mHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE,  (void*)mData );
+        glTexImage2D( GL_TEXTURE_2D, 0 , GL_RGBA, mWidth, mHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE,  (void*)mData );
 
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        setFilter(NEAREST, NEAREST);
+
+        std::cout << "Texture Sent to GPU: " << mTextureID << std::endl;
         //==========================================================
 
 }
@@ -67,7 +80,6 @@ void glre::Texture::loadFromMemory( unsigned char * Buffer, int buffersize)
         std::cout << "fromMemory error: " << x << "," << y << "\n";
     }
 
-   // throw Exception("Texture::fromMemory() - Unknown Image format.");
 }
 
 
@@ -108,5 +120,6 @@ void glre::Texture::_handleRawPixels(unsigned char * buffer, uint width, uint he
     for(int i=0;i<mWidth*mHeight;i++) std::swap(mData[i].r, mData[i].b);
 
 }
+
 #define GLRE_IMAGE_IMPLEMENTATION
 #include <glre/stb/stb_image.h>

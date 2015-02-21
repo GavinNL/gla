@@ -9,7 +9,7 @@ set(MYLIB_VERSION_PATCH 1)
 set(MYLIB_VERSION_STRING ${MYLIB_VERSION_MAJOR}.${MYLIB_VERSION_MINOR}.${MYLIB_VERSION_PATCH})
 
 
-SET( MAKE_SHARED   FALSE CACHE BOOL "Make a shared library instead of a static.")
+SET( MAKE_SHARED   FALSE CACHE BOOL "Make a shared libary instead of a static.")
 
 
 
@@ -41,8 +41,8 @@ ELSE(MAKE_SHARED)
 ENDIF(MAKE_SHARED)
 
 
-set(LIBS      ${PROJECT_NAME} z assimp rgui ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES} ${SDL2_LIBRARY}  )
-set(LIBS_TEST      ${PROJECT_NAME} z assimp  ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES} ${SDL2_LIBRARY}  )
+set(LIBS           ${PROJECT_NAME} assimp z rgui ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES} ${SDL2_LIBRARY}  )
+set(LIBS_TEST      ${PROJECT_NAME} z assimp      ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES} ${SDL2_LIBRARY}  )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${MYLIB_VERSION_STRING}
                                            SOVERSION ${MYLIB_VERSION_MAJOR})
@@ -58,13 +58,11 @@ install(TARGETS glre
 #file(COPY resources/testskin.zip   DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 #file(COPY resources/example.xml    DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
-
-
 add_executable(main main.cpp)
 target_link_libraries (main ${LIBS})
 
-add_executable(nogui test.cpp)
-target_link_libraries (nogui ${LIBS_TEST})
+#add_executable(nogui test.cpp)
+#target_link_libraries (nogui ${LIBS_TEST})
 
 ADD_DEFINITIONS (
     -std=c++11 # Or

@@ -24,7 +24,7 @@ class Transformation
 
         // rotational transformation
         inline void setOrientation(const quat & q) { mOrientation = q; }
-        void inline rotate(const vec3 & axis, float AngleDegrees) { mOrientation = glm::rotate( mOrientation, AngleDegrees, axis ); };
+        void inline rotate(const vec3 & axis, float AngleRadians) { mOrientation = glm::rotate( mOrientation, AngleRadians, axis ); };
 
 
         void pitch(float delta_radians);

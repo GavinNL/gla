@@ -113,6 +113,7 @@ class ArrayBuffer
         {
             if(mGLID) glDeleteBuffers(1, &mGLID);
             mGLID = 0;
+            mGPUBufferSize = mGPUByteSize = 0;
         }
 
         /**
