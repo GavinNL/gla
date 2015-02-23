@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(glre)
 aux_source_directory(./src  SRC_LIST)
+aux_source_directory(./src/utils  SRC_LIST)
 aux_source_directory(./glre INC_LIST)
 
 set(MYLIB_VERSION_MAJOR 0)
@@ -32,6 +33,19 @@ include_directories(${GLU_INCLUDE_DIRS})
 set(LIBS ${LIBS} ${GLU_LIBRARIES})
 
 
+#============================
+find_package(PkgConfig REQUIRED)
+
+pkg_search_module(GLFW REQUIRED glfw3)
+
+include_directories( ${GLFW_INCLUDE_DIRS} )
+SET( TEST   ${GLFW_INCLUDE_DIRS})
+
+#target_link_libraries(simple ${GLFW_LIBRARIES})
+
+#target_link_libraries(simple ${GLFW_STATIC_LIBRARIES})
+#============================
+
 FIND_PACKAGE(OpenGL REQUIRED)
 
 IF(MAKE_SHARED)
@@ -41,8 +55,8 @@ ELSE(MAKE_SHARED)
 ENDIF(MAKE_SHARED)
 
 
-set(LIBS           ${PROJECT_NAME} assimp z rgui ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES} ${SDL2_LIBRARY}  )
-set(LIBS_TEST      ${PROJECT_NAME} z assimp      ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES} ${SDL2_LIBRARY}  )
+set(LIBS           ${PROJECT_NAME} assimp z rgui ${GLFW_STATIC_LIBRARIES} ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES} ${SDL2_LIBRARY}  )
+set(LIBS_TEST      ${PROJECT_NAME} z assimp      ${GLFW_STATIC_LIBRARIES} ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES} ${SDL2_LIBRARY}  )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${MYLIB_VERSION_STRING}
                                            SOVERSION ${MYLIB_VERSION_MAJOR})
@@ -60,6 +74,9 @@ install(TARGETS glre
 
 add_executable(main main.cpp)
 target_link_libraries (main ${LIBS})
+
+add_executable(test test.cpp)
+target_link_libraries (test ${LIBS})
 
 #add_executable(nogui test.cpp)
 #target_link_libraries (nogui ${LIBS_TEST})

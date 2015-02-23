@@ -44,9 +44,18 @@ namespace glre
 
     typedef enum
     {
-        LINES     = GL_LINES,
-        QUADS     = GL_QUADS,
-        TRIANGLES = GL_TRIANGLES
+        LINES                   = GL_LINES,
+        LINE_LOOP               = GL_LINE_LOOP,
+        POINT_BIT               = GL_POINT_BIT,
+        CLIENT_VERTEX_ARRAY_BIT = GL_CLIENT_VERTEX_ARRAY_BIT,
+        LINE_STRIP              = GL_LINE_STRIP,
+        LINE_BIT                = GL_LINE_BIT,
+        TRIANGLES               = GL_TRIANGLES,
+        TRIANGLE_STRIP          = GL_TRIANGLE_STRIP,
+        TRIANGLE_FAN            = GL_TRIANGLE_FAN,
+        QUADS                   = GL_QUADS,
+        QUAD_STRIP              = GL_QUAD_STRIP
+
     } Primitave;
 }
 
@@ -57,8 +66,8 @@ namespace glre
 namespace glre
 {
 
-    typedef glre::VertexArrayObject< glre::Vertex_PNCU, glre::uvec3, F3, F3,F4, F2> TriMesh_PNCU;
-    typedef glre::VertexArrayObject< glre::Vertex_PC,   glre::uvec2, F3, F4 >       Line_PC;
+    typedef glre::VertexArrayObject< glre::Vertex_PNCU, glre::uvec3, TRIANGLES, 3, F3, F3,F4, F2> TriMesh_PNCU;
+    typedef glre::VertexArrayObject< glre::Vertex_PC,   glre::uvec2, LINES,     2, F3, F4 >       Line_PC;
 
 }
 

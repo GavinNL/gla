@@ -28,7 +28,7 @@ using namespace glre;
 #define APPLICATION_TITLE "This is a test"
 
 // Creates a SDL window and openGL rendering context so we can do some rendring
-SDL_Window* setupSDL();
+SDL_Window* setupSDL(uint width, uint height);
 
 
 rgui::Root      *R;
@@ -38,17 +38,19 @@ std::map<std::string, std::function<void(const SDL_Event&)> >  SDLEvents;
 
 int main(int argc, char **argv)
 {
+    //=============================================================================
+    // Load a JSON file
+    //=============================================================================
+    rgui::json::Value JSON;
+    JSON.fromFile("resources/ExtraInfo.json");
 
+    //=============================================================================
 
-
-    auto mSDLWindowHandle = setupSDL();
-
-
+    auto mSDLWindowHandle = setupSDL( (uint)JSON["main"]["width"].as<float>(), (uint)JSON["main"]["height"].as<float>() );
 
     glre::Camera Cam;
     glre::vec3   gCameraAcceleration;
     bool         mQuit = false;
-
 
     //=============================================================================
     // Set up rgui and create the widgets
@@ -57,32 +59,36 @@ int main(int argc, char **argv)
     R->init();
 
 
-    I = R->createInterface(WIDTH, HEIGHT, "MainInterface");
-    I->loadSkin( "resources/default_skin.zip");
+    I = R->createInterface( (uint)JSON["main"]["width"].as<float>(), (uint)JSON["main"]["height"].as<float>(), "MainInterface");
 
-    std::string  json = R"raw(
+    I->loadSkin( JSON["main"]["skin"].as<std::string>() );
+
+
+    std::cout << JSON["main"]["GUI"].type() << std::endl;
+    for(auto m : JSON["main"]["GUI"].getValueMap() )
     {
-        W1 : {
-            widget_type  : "window",
-            layout_style : "vertical_layout",
-            pos : [0,0],
-            size: [300,300]
-        }
+        std::cout << m.first << std::endl;
     }
-    )raw";
-    I->getRootWidget()->loadFromJSONString(json);
-    I->getRootWidget();
+
+    //auto M = I->getRootWidget()->loadFromJSON( JSON["main"]["GUI"] );
+
+    std::cout << "GUI loaded\n";
+    //M["W2"].lock()->setRawRect(0,0,1.0,1.0,5,64.0,64.0);
 
     //================================================================================
 
 
 
 
+    //================================================================================
+
+
     Texture Tex("resources/dragontexture.png", true);
 
 
     Line_PC      Axis   = createAxes(true);
-    TriMesh_PNCU Dragon = loadModel("./resources/dragon.obj", true);
+    TriMesh_PNCU Dragon = loadModel( JSON["main"]["mode"].as<std::string>() , true);
+
 
     ShaderProgram LineShader( VertexShader("shaders/Line_PC.v")   , FragmentShader("shaders/Line_PC.f")   );
     ShaderProgram S(          VertexShader("shaders/Basic_PNCU.v"), FragmentShader("shaders/Basic_PNCU.f"));
@@ -134,6 +140,7 @@ int main(int argc, char **argv)
     };
     //================================================================================================================
 
+
     //================================================================================================================
     // Quit
     //================================================================================================================
@@ -158,23 +165,22 @@ int main(int argc, char **argv)
     };
 //    //================================================================================================================
 
-    GLuint camMatrixId   = S.getUniformLocation("inCameraMatrix");
-    GLuint modelMatrixID = S.getUniformLocation("inModelMatrix");
-    GLuint uSampler0ID   = S.getUniformLocation("uSampler");
+    GLuint camMatrixId             = S.getUniformLocation("inCameraMatrix");
+    GLuint modelMatrixID           = S.getUniformLocation("inModelMatrix");
+    GLuint uSampler0ID             = S.getUniformLocation("uSampler");
 
     GLuint LineShaderCamMatrixId   = LineShader.getUniformLocation("inCameraMatrix");
     GLuint LineShaderModelMatrixID = LineShader.getUniformLocation("inModelMatrix");
-
-
-    std::cout << "inCameraMatrix: " << camMatrixId << std::endl;
-    std::cout << "inModelMatrix: " << modelMatrixID << std::endl;
 
     Timer_T<float> tim;
     float dt = 0;
 
     vec3 mSpeed;
 
-    Cam.perspective(45.0f, (float)WIDTH/(float)HEIGHT, 0.2f, 1000.0f);
+    float AR  = JSON["main"]["width"].as<float>() / JSON["main"]["height"].as<float>();
+    float FOV = JSON["main"]["fov"].as<float>();
+
+    Cam.perspective(FOV, AR, 0.2f, 1000.0f);
     mat4 Pv = Cam.getProjectionMatrix();
 
 
@@ -306,7 +312,7 @@ int main(int argc, char **argv)
 
 // Creates a SDL window and openGL rendering context so we can do some rendring.
 // Your application can use other rendering contexts. I prefer SDL.
-SDL_Window* setupSDL()
+SDL_Window* setupSDL(uint width , uint height)
 {
     //====================================================================
     //Use OpenGL 3.2 core
@@ -329,7 +335,7 @@ SDL_Window* setupSDL()
     auto mSDLWindowHandle = SDL_CreateWindow( APPLICATION_TITLE,
                                               SDL_WINDOWPOS_UNDEFINED,
                                               SDL_WINDOWPOS_UNDEFINED,
-                                              WIDTH, HEIGHT,
+                                              width, height,
                                               SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN  );
 
     SDL_GLContext mSDLContext = SDL_GL_CreateContext( mSDLWindowHandle );

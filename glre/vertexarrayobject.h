@@ -17,7 +17,7 @@ namespace glre
     } TypeSizesIndex;
 
 
-    template <class VertexType, class ElementType, int N, int... Rest>
+    template <class VertexType, class ElementType, Primitave DefaultRenderPrimitave, int NumberOfVertices, TypeSizesIndex N, TypeSizesIndex... Rest>
     class VertexArrayObject
     {
         public:
@@ -28,26 +28,11 @@ namespace glre
                 return m_VAO;
             }
 
-            void Render(Primitave PrimitaveType = TRIANGLES)
+            void Render(Primitave PrimitaveType = DefaultRenderPrimitave)
             {
                     glBindVertexArray(m_VAO);
 
-                    int NumberOfVertices=3;  // number of vertices int he primitave
-                    switch(PrimitaveType)
-                    {
-                        case TRIANGLES:
-                            NumberOfVertices = 3;
-                            break;
-                        case LINES:
-                            NumberOfVertices = 2;
-                            break;
-                        case QUADS:
-                            NumberOfVertices = 4;
-                            break;
-                    }
-
-
-                    glDrawElementsBaseVertex(PrimitaveType,
+                    glDrawElementsBaseVertex(DefaultRenderPrimitave,
                                              mIndexBuffer.gpuBufferSize() * NumberOfVertices,
                                              GL_UNSIGNED_INT,
                                              0,
@@ -79,7 +64,7 @@ namespace glre
                 glBindVertexArray(    m_VAO);
 
                 mVertexBuffer.sendToGPU();
-                EnableVertexAttribArray<N, Rest...>( 0, 0 );
+                _EnableVertexAttribArray<N, Rest...>( 0, 0 );
                 mIndexBuffer.sendToGPU();
 
                 std::cout << "Vertex Array Object sent to gpu.  Current Handle: " << m_VAO << std::endl;
@@ -106,10 +91,10 @@ namespace glre
             //===========================================================
             // An attempt to loop through all Buffers in the tuple
             //===========================================================
-             template<std::size_t> struct int_{};
+    private:
 
             template <int First>
-            void EnableVertexAttribArray( int index, long offset )
+            void _EnableVertexAttribArray( int index, long offset )
             {
 
               const uint ElementsPerAttribute[] = {1,2,3,4, 1,2,3,4, 1,2,3,4};
@@ -121,7 +106,7 @@ namespace glre
             }
 
             template <int First, int Second, int... AllTheRest>
-            void EnableVertexAttribArray( int index, long offset )
+            void _EnableVertexAttribArray( int index, long offset )
             {
 
               const uint ElementsPerAttribute[] = {1,2,3,4,1,2,3,4,1,2,3,4};
@@ -131,17 +116,10 @@ namespace glre
               glEnableVertexAttribArray( index );
               glVertexAttribPointer(index, ElementsPerAttribute[First], ElementType[First], GL_FALSE, sizeof(VertexType), (void*)offset);
 
-              EnableVertexAttribArray<Second, AllTheRest...>( index+1, offset+ElementStride[First] );
+              _EnableVertexAttribArray<Second, AllTheRest...>( index+1, offset+ElementStride[First] );
             }
 
-
             //===========================================================
-
-            //===========================================================
-            // An attempt to loop through all Buffers in the tuple
-            // And clear it from GPU memory
-            //===========================================================
-
 
 
         public:

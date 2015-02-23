@@ -16,7 +16,9 @@ HEADERS +=  glre/shader.h \
     glre/stb/stb_image.h \
     glre/solids.h \
     glre/exceptions.h \
-    glre/timer.h
+    glre/timer.h \
+    glre/utils/window.h \
+    glre/utils/event.h
 
 
 SOURCES +=  main.cpp \
@@ -24,7 +26,9 @@ SOURCES +=  main.cpp \
     src/transformation.cpp \
     src/texture.cpp \
     src/solids.cpp \
-    test.cpp
+    test.cpp \
+    src/utils/window.cpp \
+    glre/src/events.cpp
 
 
 INCLUDEPATH += ./ 
@@ -36,6 +40,8 @@ OTHER_FILES += \
     shaders/Basic_PNCU.v \
     shaders/Basic_PNCU.f \
     shaders/Line_PC.v \
-    shaders/Line_PC.f
+    shaders/Line_PC.f \
+    resources/ExtraInfo.json \
+    resources/marble.jpg
 
 
