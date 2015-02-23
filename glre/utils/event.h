@@ -21,12 +21,14 @@ typedef enum
     WINDOW,
     MOUSECURSOR,
     MOUSEBUTTON,
-    KEY
+    KEY,
+    FILEDROP
 } EventType;
 
 struct TextEvent
 {
-
+    unsigned int codepoint;
+    int mods;
 };
 
 struct WindowEvent
@@ -45,6 +47,8 @@ struct MouseButtonEvent
     int button;
     int action;
     int mods;
+    double x;
+    double y;
 };
 
 struct KeyEvent
@@ -53,6 +57,11 @@ struct KeyEvent
     int scancode;
     int action;
     int mods;
+};
+
+struct FileDropEvent{
+    int   count;
+    const char **files;
 };
 
 struct Event
@@ -65,6 +74,7 @@ struct Event
         TextEvent        Text;
         MouseCursorEvent MouseCursor;
         MouseButtonEvent MouseButton;
+        FileDropEvent    FileDrop;
     };
 };
 
@@ -72,3 +82,6 @@ struct Event
 } //glre
 
 #endif // EVENTS_H
+
+
+

@@ -15,6 +15,14 @@ class  Window;
 class Window
 {
     public:
+
+        typedef enum
+        {
+            CURSOR_NORMAL        = GLFW_CURSOR_NORMAL,
+            CURSOR_HIDDEN        = GLFW_CURSOR_HIDDEN,
+            CURSOR_DISABLED      = GLFW_CURSOR_DISABLED
+        } CursorMode;
+
         ~Window();
 
         void Hide();
@@ -24,6 +32,9 @@ class Window
         void Restore();
 
         void Destroy();
+
+
+        void SetCursorMode(CursorMode mode);
 
         void MakeCurrent();
         void SwapBuffers();
@@ -43,6 +54,8 @@ class Window
         static void _WindowMinimizedCallback(GLFWwindow* window, int iconified);
         static void _WindowCloseCallback(GLFWwindow* window);
         static void _WindowFocusCallback(GLFWwindow* window, int focus);
+        static void _WindowFileDropCallback(GLFWwindow* window, int count, const char** paths);
+        static void _WindowTextCallback(GLFWwindow* window, unsigned int codepoint, int mods);
 
     private:
         Window();

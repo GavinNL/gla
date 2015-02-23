@@ -59,20 +59,15 @@ int main(int argc, char **argv)
     R->init();
 
 
-    I = R->createInterface( (uint)JSON["main"]["width"].as<float>(), (uint)JSON["main"]["height"].as<float>(), "MainInterface");
-
-    I->loadSkin( JSON["main"]["skin"].as<std::string>() );
-
+    I = R->createInterface( (uint)JSON["main"]["width"].as<float>(),
+                            (uint)JSON["main"]["height"].as<float>(),
+                            "MainInterface",
+                            JSON["main"]["skin"].as<std::string>() );
 
     std::cout << JSON["main"]["GUI"].type() << std::endl;
-    for(auto m : JSON["main"]["GUI"].getValueMap() )
-    {
-        std::cout << m.first << std::endl;
-    }
 
-    //auto M = I->getRootWidget()->loadFromJSON( JSON["main"]["GUI"] );
+    auto M = I->getRootWidget()->loadFromJSON( JSON["main"]["GUI"] );
 
-    std::cout << "GUI loaded\n";
     //M["W2"].lock()->setRawRect(0,0,1.0,1.0,5,64.0,64.0);
 
     //================================================================================
@@ -87,7 +82,7 @@ int main(int argc, char **argv)
 
 
     Line_PC      Axis   = createAxes(true);
-    TriMesh_PNCU Dragon = loadModel( JSON["main"]["mode"].as<std::string>() , true);
+    TriMesh_PNCU Dragon = loadModel( JSON["main"]["model"].as<std::string>() , true);
 
 
     ShaderProgram LineShader( VertexShader("shaders/Line_PC.v")   , FragmentShader("shaders/Line_PC.f")   );
@@ -182,13 +177,14 @@ int main(int argc, char **argv)
 
     Cam.perspective(FOV, AR, 0.2f, 1000.0f);
     mat4 Pv = Cam.getProjectionMatrix();
-
+    //std::cout << "starting main loop\n";
 
     while( !mQuit )
     {
         // Do all the input handling for the interface
         SDL_Event e;
         while( SDL_PollEvent( &e ) != 0 ) for(auto a : SDLEvents) a.second( e);
+        //std::cout << "rendering\n";
 
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
@@ -224,7 +220,7 @@ int main(int argc, char **argv)
         LineShader.useShader();
         LineShader.sendUniform_mat4(LineShaderCamMatrixId,   Pv * CameraMatrix  );
         LineShader.sendUniform_mat4(LineShaderModelMatrixID, glm::scale( mat4(1.0), vec3(5.0,5.0,5.0)) );
-        Axis.Render(LINES);
+        Axis.Render();
 
         //=======================================
         glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );

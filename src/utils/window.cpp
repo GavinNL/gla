@@ -51,12 +51,22 @@ void Window::Destroy()
 }
 
 
-inline void Window::MakeCurrent()
+//=====
+void Window::SetCursorMode(CursorMode mode)
+{
+    glfwSetInputMode(mWindow, GLFW_CURSOR, mode);
+    //glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+}
+
+
+//=====
+
+void Window::MakeCurrent()
 {
     glfwMakeContextCurrent(mWindow);
 }
 
-inline void Window::SwapBuffers()
+void Window::SwapBuffers()
 {
     glfwSwapBuffers(mWindow);
 }
@@ -91,7 +101,8 @@ std::shared_ptr<Window> Window::create(unsigned int width, unsigned int height, 
     glfwSetWindowCloseCallback  ( W->mWindow, Window::_WindowCloseCallback);
     glfwSetWindowFocusCallback  ( W->mWindow, Window::_WindowFocusCallback);
     glfwSetWindowIconifyCallback( W->mWindow, Window::_WindowMinimizedCallback);
-
+    glfwSetDropCallback         ( W->mWindow, Window::_WindowFileDropCallback);
+    glfwSetCharModsCallback     ( W->mWindow, Window::_WindowTextCallback);
     Window::WindowMap[W->mWindow] = W;
     return W;
 }
@@ -153,6 +164,7 @@ void Window::_MouseButtonCallback(GLFWwindow* window, int button, int action, in
     E.MouseButton.button = button;
     E.MouseButton.action = action;
     E.MouseButton.mods   = mods;
+    glfwGetCursorPos(window, &E.MouseButton.x, &E.MouseButton.y);
 
     auto W = Window::WindowMap[window].lock();
     if(W)
@@ -207,6 +219,44 @@ void Window::_WindowFocusCallback(GLFWwindow *window, int focus)
     Event E;
     E.type   = WINDOW;
     E.Window.action = focus ? glre::utils::FOCUS_GAINED : glre::utils::FOCUS_LOST;
+
+    auto W = Window::WindowMap[window].lock();
+    if(W)
+    {
+        for(auto a : W->EventsMap)
+        {
+            a.second(E);
+        }
+    } else {
+        Window::WindowMap.erase(window);
+    }
+}
+
+void Window::_WindowFileDropCallback(GLFWwindow *window, int count, const char **paths)
+{
+    Event E;
+    E.type   = FILEDROP;
+    E.FileDrop.count = count;
+    E.FileDrop.files = paths;
+
+    auto W = Window::WindowMap[window].lock();
+    if(W)
+    {
+        for(auto a : W->EventsMap)
+        {
+            a.second(E);
+        }
+    } else {
+        Window::WindowMap.erase(window);
+    }
+}
+
+void Window::_WindowTextCallback(GLFWwindow *window, unsigned int codepoint, int mods)
+{
+    Event E;
+    E.type   = FILEDROP;
+    E.Text.codepoint = codepoint;
+    E.Text.mods      = mods;
 
     auto W = Window::WindowMap[window].lock();
     if(W)

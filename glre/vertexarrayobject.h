@@ -75,15 +75,14 @@ namespace glre
 
             void clearGPU()
             {
-               // clearBuffersFromGPU( ArrayObjects );
                 mIndexBuffer.clearGPU();
                 mVertexBuffer.clearGPU();
                 glDeleteVertexArrays(1, &m_VAO);
+                m_VAO = 0;
             };
 
             void clearCPU()
             {
-               // clearBuffersFromGPU( ArrayObjects );
                 mIndexBuffer.clearCPU();
                 mVertexBuffer.clearCPU();
             };
