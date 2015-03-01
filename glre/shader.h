@@ -30,6 +30,7 @@ class ShaderUnit
 
             std::string V((std::istreambuf_iterator<char>(v)),
                              std::istreambuf_iterator<char>());
+
             std::cout << "========================================" << std::endl;
             std::cout << " Compiling: " << shader_path << std::endl;
 
@@ -44,8 +45,6 @@ class ShaderUnit
             GLuint V = glCreateShader( SHADER_TYPE );
 
             const char * code = shader_code.c_str();
-
-            //std::cout << shader_code << std::endl;
 
             glShaderSource(V, 1, &code, NULL);
             glCompileShader(V);
@@ -105,7 +104,7 @@ class ShaderProgram
         inline GLuint getUniformLocation(const GLchar *name)
         {
             auto x = glGetUniformLocation(mProgram, name);
-            std::cout << "Uniform locatio,  " << name << ": " <<  x << std::endl;
+            std::cout << "Uniform locatiom:,  " << name << ": " <<  x << std::endl;
             return x;
         }
 

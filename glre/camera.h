@@ -35,6 +35,15 @@ class Camera : public Transformation
             this->Transformation::translate( pos );
         }
 
+        void calculate(float dt)
+        {
+            quat q    = reverse();
+            vec3 a = (q * mAcceleration);
+            vec3 dx  = mSpeed*dt + 0.5f*(dt*dt)*a;
+            mSpeed  += ( a * dt  - glm::length(mSpeed) * mSpeed * dt );
+            translate(  dx  );
+        }
+
         inline void moveTowardOrientation( const vec3 & displacement )
         {
             this->Transformation::translate( quat( mOrientation.w, -mOrientation.x, -mOrientation.y, -mOrientation.z) * displacement );
@@ -58,6 +67,9 @@ class Camera : public Transformation
         void setZMax(float zmax) { perspective(mFOV, mAspectRatio, mZMin, zmax); }
         void setZMin(float zmin) { perspective(mFOV, mAspectRatio, zmin, mZMax); }
 
+
+        vec3 mSpeed;
+        vec3 mAcceleration;
 
     private:
             mat4  mProj;

@@ -5,7 +5,7 @@
 #include <assimp/postprocess.h>
 
 
-glre::TriMesh_PNCU glre::loadModel(const std::string & path, bool sendToGPU)
+glre::iTriMesh_PNCU glre::loadModel(const std::string & path, bool sendToGPU)
 {
     Assimp::Importer Importer;
 
@@ -14,7 +14,7 @@ glre::TriMesh_PNCU glre::loadModel(const std::string & path, bool sendToGPU)
 
     const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
     std::cout << "Loading mesh: " << path << std::endl;
-    glre::TriMesh_PNCU ReturnMesh;
+    glre::iTriMesh_PNCU ReturnMesh;
     int count = 0;
     if (pScene)
      {
@@ -55,7 +55,7 @@ glre::TriMesh_PNCU glre::loadModel(const std::string & path, bool sendToGPU)
                 count+=paiMesh->mNumVertices;
 
             }
-            if(sendToGPU) ReturnMesh.sendToGPU();
+
             return ReturnMesh;
         }
         else {
@@ -135,19 +135,56 @@ glre::Line_PC glre::createAxes(bool sendToGPU)
 {
     Line_PC      Axis;
 
-   Axis.insertVertex( { vec3(0.0, 0.0, 0.0) , col4(1.0, 0.0, 0.0, 1.0) } );
-   Axis.insertVertex( { vec3(1.0, 0.0, 0.0) , col4(1.0, 0.0, 0.0, 1.0) } );
-   Axis.insertVertex( { vec3(0.0, 0.0, 0.0) , col4(0.0, 1.0, 0.0, 1.0) } );
-   Axis.insertVertex( { vec3(0.0, 1.0, 0.0) , col4(0.0, 1.0, 0.0, 1.0) } );
-   Axis.insertVertex( { vec3(0.0, 0.0, 0.0) , col4(0.0, 0.0, 1.0, 1.0) } );
-   Axis.insertVertex( { vec3(0.0, 0.0, 1.0) , col4(0.0, 0.0, 1.0, 1.0) } );
+    Axis.insertVertex( { vec3(0.0, 0.0, 0.0) , col4(1.0, 0.0, 0.0, 1.0) } );
+    Axis.insertVertex( { vec3(1.0, 0.0, 0.0) , col4(1.0, 0.0, 0.0, 1.0) } );
 
-    Axis.insertElement( uvec2(0, 1) );
-    Axis.insertElement( uvec2(2, 3) );
-    Axis.insertElement( uvec2(4, 5) );
+    Axis.insertVertex( { vec3(0.0, 0.0, 0.0) , col4(0.0, 1.0, 0.0, 1.0) } );
+    Axis.insertVertex( { vec3(0.0, 1.0, 0.0) , col4(0.0, 1.0, 0.0, 1.0) } );
 
-    if(sendToGPU) Axis.sendToGPU();
+    Axis.insertVertex( { vec3(0.0, 0.0, 0.0) , col4(0.0, 0.0, 1.0, 1.0) } );
+    Axis.insertVertex( { vec3(0.0, 0.0, 1.0) , col4(0.0, 0.0, 1.0, 1.0) } );
+
+
+    //if(sendToGPU) Axis.sendToGPU();
+
     return Axis;
 }
 
+
+glre::TriStripMesh_PNCU glre::createPlane(int x_segments, int z_segments, bool sendToGPU)
+{
+    TriStripMesh_PNCU      Mesh;
+
+    float X = (float)x_segments;
+    float Z = (float)z_segments;
+
+    float z = 0.0;
+    while(z < Z)
+    {
+        for(float x = 0; x <= X; x += 1.0f)
+        {
+            Mesh.insertVertex( {  vec3(x  , 0.0, z)      , vec3(0.0, 1.0, 0.0),  col4(1.0,1.0,1.0,1.0),  vec2(x,z)      } );
+            Mesh.insertVertex( {  vec3(x  , 0.0, z+1.0f) , vec3(0.0, 1.0, 0.0),  col4(1.0,1.0,1.0,1.0),  vec2(x,z+1.0)  } );
+        }
+
+        Mesh.insertVertex( {  vec3(X  , 0.0, z+1.0f) , vec3(0.0, 1.0, 0.0),  col4(1.0,1.0,1.0,1.0),  vec2(X,z+1.0)  } );
+        z += 1.0;
+        //if(z > Z ) break;
+
+
+        for( float x = X; x > 0; x -= 1.0f )
+        {
+            Mesh.insertVertex( {  vec3(x  , 0.0, z)      , vec3(0.0, 1.0, 0.0),  col4(1.0,1.0,1.0,1.0),  vec2(x,z)      } );
+            Mesh.insertVertex( {  vec3(x  , 0.0, z+1.0f) , vec3(0.0, 1.0, 0.0),  col4(1.0,1.0,1.0,1.0),  vec2(x,z+1.0)  } );
+        }
+    }
+
+    for(int i=0;i<Mesh.mVertexBuffer.cpuBufferSize();i++  )
+    {
+        Mesh.mVertexBuffer[i].p -= vec3( X/2.0, 0.0, Z/2.0);
+    }
+    //if(sendToGPU) Mesh.sendToGPU();
+
+    return Mesh;
+}
 

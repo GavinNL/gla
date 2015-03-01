@@ -1,6 +1,8 @@
 #ifndef GLRE_UTILS_WINDOW_H
 #define GLRE_UTILS_WINDOW_H
 
+#define GLFW_INCLUDE_GL_3
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <map>
 #include <memory>
@@ -16,13 +18,6 @@ class Window
 {
     public:
 
-        typedef enum
-        {
-            CURSOR_NORMAL        = GLFW_CURSOR_NORMAL,
-            CURSOR_HIDDEN        = GLFW_CURSOR_HIDDEN,
-            CURSOR_DISABLED      = GLFW_CURSOR_DISABLED
-        } CursorMode;
-
         ~Window();
 
         void Hide();
@@ -34,11 +29,14 @@ class Window
         void Destroy();
 
 
-        void SetCursorMode(CursorMode mode);
+        void SetCursorMode(MOUSE::CursorMode mode);
 
         void MakeCurrent();
         void SwapBuffers();
         bool WantsToClose();
+
+
+        bool isMouseButtonPressed(utils::MOUSE::MouseButton b);
 
         std::map<std::string, std::function<void(const Event&)> > EventsMap;
 
@@ -64,6 +62,9 @@ class Window
 
 
         static std::map<GLFWwindow*, std::weak_ptr<Window> > WindowMap;
+
+        double _xMouse;
+        double _yMouse;
 
 };
 

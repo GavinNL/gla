@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 #include <GL/glext.h>
 #include <GL/gl.h>
-
+#include <GLFW/glfw3.h>
 #include <iostream>
 
 #include <glre/exceptions.h>
@@ -36,7 +36,7 @@ class ArrayBuffer
 
             glGenBuffers(1, &mGLID);
 
-            if(!mGLID) throw glre::GPU_OUT_OF_MEMORY();
+            //if(!mGLID) throw glre::GPU_OUT_OF_MEMORY();
 
             glBindBuffer(GL_ARRAY_TARGET, mGLID);
 
@@ -49,7 +49,7 @@ class ArrayBuffer
 
             if(err != 0)
             {
-                throw glre::GPU_OUT_OF_MEMORY();
+                throw glre::GLRE_EXCEPTION("Error sending ArrayBuffer to the GPU. Did you create an OpenGL rendering context fist?");
 
             } else {
                 mGPUBufferSize = cpuBufferSize();
@@ -58,6 +58,7 @@ class ArrayBuffer
             std::cout << "Array Buffer sent to GPU. ID: " << mGLID << "\n ";
 
         };
+
 
         /**
          *  Gets the number of items in the array buffer.
@@ -145,7 +146,7 @@ class ArrayBuffer
          *  Gets the OpenGL id for the buffer.
          *
          */
-        inline GLuint getGLHandle() { return mGLID; };
+        inline GLuint getID() { return mGLID; };
 
         /**
          *  Gets the reference to the CPU buffer.

@@ -1,8 +1,28 @@
 #ifndef GLRE_UTILS_EVENT_H
 #define GLRE_UTILS_EVENT_H
 
+#include <GLFW/glfw3.h>
+
 namespace glre {
 namespace utils {
+
+
+struct MOUSE
+{
+    typedef enum
+    {
+        LEFT_MOUSE_BUTTON    = GLFW_MOUSE_BUTTON_LEFT,
+        MIDDLE_MOUSE_BUTTON  = GLFW_MOUSE_BUTTON_MIDDLE,
+        RIGHT_MOUSE_BUTTON   = GLFW_MOUSE_BUTTON_RIGHT
+    } MouseButton;
+
+    typedef enum
+    {
+        CURSOR_NORMAL        = GLFW_CURSOR_NORMAL,
+        CURSOR_HIDDEN        = GLFW_CURSOR_HIDDEN,
+        CURSOR_DISABLED      = GLFW_CURSOR_DISABLED
+    } CursorMode;
+};
 
 
 typedef enum
@@ -38,8 +58,11 @@ struct WindowEvent
 
 struct MouseCursorEvent
 {
+    MOUSE::MouseButton button;
     double x;
     double y;
+    double dx;
+    double dy;
 };
 
 struct MouseButtonEvent

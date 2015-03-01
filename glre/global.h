@@ -28,12 +28,43 @@ namespace glre
     typedef glm::vec4    col4;
     typedef glm::vec3    col3;
 
+    class GPUTexture;
+    class Texture;
+
+    template <typename T>
+    struct TBox
+    {
+        T x;
+        T y;
+        T z;
+        T w;
+        T h;
+        T d;
+
+    };
+
+    template<typename T>
+    struct TRect
+    {
+        T x;
+        T y;
+        T w;
+        T h;
+    };
+
     struct Vertex_PNCU
     {
         vec3 p; // position
         vec3 n; // normal
         col4 c; // colour
         vec2 u; // uv coords
+    };
+
+    struct Vertex_PNU
+    {
+        vec3 p;  // position
+        vec3 n;  // normal
+        vec3 u;  // UV
     };
 
     struct Vertex_PC
@@ -44,6 +75,7 @@ namespace glre
 
     typedef enum
     {
+        UNKNOWN_PRIMITAVE       = -1,
         LINES                   = GL_LINES,
         LINE_LOOP               = GL_LINE_LOOP,
         POINT_BIT               = GL_POINT_BIT,
@@ -66,8 +98,26 @@ namespace glre
 namespace glre
 {
 
-    typedef glre::VertexArrayObject< glre::Vertex_PNCU, glre::uvec3, TRIANGLES, 3, F3, F3,F4, F2> TriMesh_PNCU;
-    typedef glre::VertexArrayObject< glre::Vertex_PC,   glre::uvec2, LINES,     2, F3, F4 >       Line_PC;
+    // Indexed Meshs
+    //                                       VertexType         IndexType   ElementType      VertexAttributeTypes
+    typedef glre::IndexedVertexArrayObject< glre::Vertex_PNCU, glre::uvec3, TRIANGLES,       F3, F3, F4, F2     > iTriMesh_PNCU;
+
+    // non-indexed meshes.
+    //                                       VertexType,    ElementType    VertexAttributeTypes
+    typedef glre::VertexArrayObject< glre::Vertex_PC,         LINES,         F3, F4 >                  Line_PC;
+    typedef glre::VertexArrayObject< glre::Vertex_PNCU,   TRIANGLE_STRIP,    F3, F3, F4, F2     >      TriStripMesh_PNCU;
+    //typedef glre::IndexedVertexArrayObject< glre::Vertex_PC,   glre::uvec2, LINES,     2, F3, F4 >       Line_PC;
+
+    typedef TBox<float>  fBox;
+    typedef TBox<int>    iBox;
+    typedef TBox<uint>   uBox;
+
+    typedef TRect<float> fRect;
+    typedef TRect<int>   iRect;
+    typedef TRect<uint>  uRect;
+
+    /* Implementation in texture.cpp */
+    Texture LoadTexture(const std::string & path);
 
 }
 

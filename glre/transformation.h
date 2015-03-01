@@ -16,15 +16,15 @@ class Transformation
         Transformation();
 
         // positional transformations
-        inline void translate(const vec3 & T)  {mPosition += T;};
-        inline void setPosition(const vec3 & P){mPosition  = P;};
+        inline virtual void translate(const vec3 & T)  {mPosition += T;};
+        inline virtual void setPosition(const vec3 & P){mPosition  = P;};
 
         // scaling transformations
-        inline void setScale(const vec3 & scale){mScale = scale;}
+        inline virtual void setScale(const vec3 & scale){mScale = scale;}
 
         // rotational transformation
-        inline void setOrientation(const quat & q) { mOrientation = q; }
-        void inline rotate(const vec3 & axis, float AngleRadians) { mOrientation = glm::rotate( mOrientation, AngleRadians, axis ); };
+        inline virtual void setOrientation(const quat & q) { mOrientation = q; }
+        inline virtual void rotate(const vec3 & axis, float AngleRadians) { mOrientation = glm::rotate( mOrientation, AngleRadians, axis ); };
 
 
         void pitch(float delta_radians);

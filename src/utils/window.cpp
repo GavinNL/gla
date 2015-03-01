@@ -52,7 +52,7 @@ void Window::Destroy()
 
 
 //=====
-void Window::SetCursorMode(CursorMode mode)
+void Window::SetCursorMode(MOUSE::CursorMode mode)
 {
     glfwSetInputMode(mWindow, GLFW_CURSOR, mode);
     //glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
@@ -64,6 +64,7 @@ void Window::SetCursorMode(CursorMode mode)
 void Window::MakeCurrent()
 {
     glfwMakeContextCurrent(mWindow);
+
 }
 
 void Window::SwapBuffers()
@@ -76,6 +77,11 @@ bool Window::WantsToClose()
     return glfwWindowShouldClose(mWindow);
 }
 
+bool Window::isMouseButtonPressed(MOUSE::MouseButton b)
+{
+    return glfwGetMouseButton(mWindow, b );
+}
+
 void Window::PollEvents()
 {
     glfwPollEvents();
@@ -83,14 +89,36 @@ void Window::PollEvents()
 
 std::shared_ptr<Window> Window::create(unsigned int width, unsigned int height, const char * title)
 {
-    static bool IsInit = glfwInit();
+//    static bool IsInit = false;
+
+//    if(!IsInit)
+//    {
+//        glfwInit();
+//        IsInit = true;
+//        glfwI
+//        glewExperimental = GL_TRUE;
+//        GLenum err = glewInit();
+//    }
+
     glfwSetErrorCallback( Window::_ErrorCallback );
 
+    // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     auto W = std::shared_ptr<glre::utils::Window>( new Window() );
 
     W->mWindow = glfwCreateWindow(width, height, title, NULL, NULL);
 
+    if (!W->mWindow)
+    {
+      fprintf (stderr, "ERROR: could not open window with GLFW3\n");
+      glfwTerminate();
+      return 0;
+    }
+
+    std::cout << "Major: " << glfwGetWindowAttrib(W->mWindow,GLFW_CONTEXT_VERSION_MAJOR) << std::endl;
+    std::cout << "Minor: " << glfwGetWindowAttrib(W->mWindow,GLFW_CONTEXT_VERSION_MINOR) << std::endl;
     W->MakeCurrent();
 
     glfwSwapInterval(1);
@@ -104,13 +132,16 @@ std::shared_ptr<Window> Window::create(unsigned int width, unsigned int height, 
     glfwSetDropCallback         ( W->mWindow, Window::_WindowFileDropCallback);
     glfwSetCharModsCallback     ( W->mWindow, Window::_WindowTextCallback);
     Window::WindowMap[W->mWindow] = W;
+
+    glewExperimental = GL_TRUE;
+    glewInit();
     return W;
 }
 
 
 void Window::_ErrorCallback(int error, const char* description)
 {
-    fputs(description, stderr);
+    std::cout << "Error: " << description << std::endl;
 }
 
 void Window::_KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -133,9 +164,6 @@ void Window::_KeyCallback(GLFWwindow* window, int key, int scancode, int action,
         Window::WindowMap.erase(window);
     }
 
-
-   // if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-   //     glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
 void Window::_MousePosCallback(GLFWwindow* window, double xpos, double ypos)
@@ -148,20 +176,28 @@ void Window::_MousePosCallback(GLFWwindow* window, double xpos, double ypos)
     auto W = Window::WindowMap[window].lock();
     if(W)
     {
+        E.MouseCursor.dx = xpos - W->_xMouse;
+        E.MouseCursor.dy = ypos - W->_yMouse;
+
         for(auto a : W->EventsMap)
         {
             a.second(E);
         }
+
+        W->_xMouse = xpos;
+        W->_yMouse = ypos;
+
     } else {
         Window::WindowMap.erase(window);
     }
+
 }
 
 void Window::_MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
     Event E;
     E.type   = MOUSEBUTTON;
-    E.MouseButton.button = button;
+    E.MouseButton.button = static_cast<MOUSE::MouseButton>(button);
     E.MouseButton.action = action;
     E.MouseButton.mods   = mods;
     glfwGetCursorPos(window, &E.MouseButton.x, &E.MouseButton.y);
@@ -254,7 +290,7 @@ void Window::_WindowFileDropCallback(GLFWwindow *window, int count, const char *
 void Window::_WindowTextCallback(GLFWwindow *window, unsigned int codepoint, int mods)
 {
     Event E;
-    E.type   = FILEDROP;
+    E.type           = TEXT;
     E.Text.codepoint = codepoint;
     E.Text.mods      = mods;
 
