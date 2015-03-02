@@ -32,8 +32,8 @@ class TransformSequence
         glre::vec3           getScale(float t);
         glre::quat           getRotation(float t);
 
-        Transformation getTransformation(float t);
-        mat4           getMatrix(float t);
+        Transformation       getTransformation(float t);
+        mat4                 getTransformationMatrix(float t);
 
         // Makes all position/scaling/rotation keyframes equal in size and
         // have constant step size. This will increase the size dramatically

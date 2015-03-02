@@ -14,9 +14,10 @@ using namespace glre;
 
 int main ()
 {
-
+    rgui::Timer T1;
     Skeleton Sk;
     Sk.load("resources/boblampclean.md5mesh");
+    std::cout << "Mesh loading time: " << T1.getElapsedTime() << std::endl;
     return 0;
 
     rgui::json::Value JSON;

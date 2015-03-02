@@ -9,6 +9,7 @@ TransformSequence::TransformSequence(TransformSequence &&other)
     mPKeys = std::move(other.mPKeys);
     mRKeys = std::move(other.mRKeys);
     mSKeys = std::move(other.mSKeys);
+
 }
 
 TransformSequence::TransformSequence(TransformSequence &other)
@@ -23,6 +24,7 @@ TransformSequence& TransformSequence::operator=(TransformSequence &&other)
     mPKeys = std::move(other.mPKeys);
     mRKeys = std::move(other.mRKeys);
     mSKeys = std::move(other.mSKeys);
+
     return *this;
 }
 
@@ -88,7 +90,12 @@ glre::quat TransformSequence::getRotation(float t)
     glre::quat p2 = it->mValue;
            s = ( t - s ) / DT;
 
-    return glm::slerp(p,p2,s);
+           return glm::slerp(p,p2,s);
+}
+
+mat4 TransformSequence::getTransformationMatrix(float t)
+{
+    return glm::mat4_cast( getRotation(t) ) * glm::translate( glm::scale( mat4(1.0), getScale(t)), getPosition(t) );
 }
 
 }

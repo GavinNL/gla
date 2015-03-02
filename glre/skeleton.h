@@ -24,12 +24,12 @@ public:
             public:
                 Node()
                 {
-                    std::cout << "Node constructed\n";
+                    //std::cout << "Node constructed\n";
                 };
 
                 ~Node()
                 {
-                    std::cout << "Node destroyed\n";
+                    //std::cout << "Node destroyed\n";
                 }
 
                 Node(const Node & other)
@@ -37,10 +37,19 @@ public:
                     mName            = other.mName;
                     mTransformMatrix = other.mTransformMatrix;
                     mChildren        = other.mChildren;
+                    mNumChildren     = other.mNumChildren;
                     for(int i=0;i<other.mChildren.size();i++)
                     {
                         mChildren.push_back( new Node( *other.mChildren[i] ) );
                     }
+                }
+
+                Node( Node && other)
+                {
+                    mName            = other.mName;
+                    mTransformMatrix = other.mTransformMatrix;
+                    mChildren        = std::move(other.mChildren);
+                    mNumChildren     = other.mNumChildren;
                 }
 
                 Node & operator = (const Node & other)
@@ -98,16 +107,17 @@ private:
 
         const aiNodeAnim* _FindAnimationNode(const aiAnimation* pAnimation, const std::string & NodeName)
         {
-            std::cout << "_FindAnimations: " << NodeName << "   #Channels: " << pAnimation->mNumChannels << std::endl;
+            //std::cout << "_FindAnimations: " << NodeName << "   #Channels: " << pAnimation->mNumChannels << std::endl;
 
+            //std::cout << "Num channels: " << pAnimation->mNumChannels << std::endl;
             for (uint i = 0 ; i < pAnimation->mNumChannels ; i++)
             {
                 const aiNodeAnim* pNodeAnim           = pAnimation->mChannels[i];
-                std::cout << std::string(pNodeAnim->mNodeName.data) << " ==? " << NodeName << std::endl;
+                //std::cout << std::string(pNodeAnim->mNodeName.data) << " ==? " << NodeName << std::endl;
 
-                std::cout << " Duration     : " << pAnimation->mDuration << std::endl;
-                std::cout << " TicksPerSec  : " << pAnimation->mTicksPerSecond<< std::endl;
-                _PrintAnimationInfo(pNodeAnim);
+                //std::cout << " Duration     : " << pAnimation->mDuration << std::endl;
+                //std::cout << " TicksPerSec  : " << pAnimation->mTicksPerSecond<< std::endl;
+                //_PrintAnimationInfo(pNodeAnim);
                 auto T = _GetTransformationSequence(pNodeAnim);
 
                 if (std::string(pNodeAnim->mNodeName.data) == NodeName)

@@ -1,6 +1,7 @@
 #include "glre/skeleton.h"
 
 #include <algorithm>
+#include <stack>
 
 namespace glre {
 
@@ -30,28 +31,32 @@ void Skeleton::load(const std::string &path)
 
         _ConstructNodeTree( pScene->mRootNode, mRootNode);
 
+        std::stack<Node*> NodeStack;
+        NodeStack.push( &mRootNode );
         if( pScene->HasAnimations() )
         {
+            while( NodeStack.size() )
+            {
+                Node * N = NodeStack.top();
+                NodeStack.pop();
 
+                if( N->mChildren.size() )
+                {
+                    for(int i=0;i<N->mChildren.size();i++) NodeStack.push( N->mChildren[i] );
+                }
+
+                auto AnimationNode = _FindAnimationNode( pScene->mAnimations[0], N->mName);
+                if(AnimationNode)
+                {
+                    //std::cout << "Animation node found: " << N->mName << std::endl;
+                    N->mKeyFrames = _GetTransformationSequence(AnimationNode);
+                    //std::cout << "  " << N->mKeyFrames.mPKeys.size() << std::endl;
+                }
+
+
+            }
         }
-//        if( pScene->HasAnimations( ) )
-//        {
-
-//            auto RootNode    =             pScene    ->  mRootNode;
-//            std::string Name = std::string(RootNode  ->  mName.data);
-
-//            for(int i=0; i < pScene->mNumAnimations ; i++)
-//            {
-//                auto  AnimationNode = _FindAnimationNode( pScene->mAnimations[i], Name );
-//                if(AnimationNode)
-//                {
-//                    std::cout << "Loading Animation: (" << Name << ")" << std::endl;
-//                }
-//            }
-
-//            _PrintNodeHeirch(RootNode);
-
-//        }
+        std::cout << "End\n";
     }
 }
 
@@ -73,7 +78,7 @@ void Skeleton::_ConstructNodeTree(const aiNode *node, Skeleton::Node &rootnode)
         rootnode.mChildren[i] = new Node();
         _ConstructNodeTree( node->mChildren[i], *rootnode.mChildren[i] );
     }
-    std::cout << "----" << std::endl;
+   // std::cout << "----" << std::endl;
 }
 
 
