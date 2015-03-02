@@ -83,18 +83,20 @@ namespace glre {
                 mDim  = T.mDim;
                 T.mDim = {0,0};
                 T.mData = 0;
-                    std::cout << "Texture Move constructor\n";
+                std::cout << "Texture Move constructor\n";
+
             }
 
             Texture(Texture & T);
 
-            Texture && operator=(Texture && T)
+            Texture & operator=(Texture && T)
             {
                 mData = T.mData;
                 mDim  = T.mDim;
                 T.mDim = {0,0};
                 T.mData = 0;
-                    std::cout << "Texture Move Assignment\n";
+                std::cout << "Texture Move Assignment\n";
+                return *this;
             }
 
             /**

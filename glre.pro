@@ -18,7 +18,9 @@ HEADERS +=  glre/shader.h \
     glre/exceptions.h \
     glre/timer.h \
     glre/utils/window.h \
-    glre/utils/event.h
+    glre/utils/event.h \
+    glre/skeleton.h \
+    glre/transformsequence.h
 
 
 SOURCES +=  main.cpp \
@@ -28,7 +30,9 @@ SOURCES +=  main.cpp \
     src/solids.cpp \
     test.cpp \
     src/utils/window.cpp \
-    glre/src/events.cpp
+    glre/src/events.cpp \
+    src/skeleton.cpp \
+    src/transformsequence.cpp
 
 
 INCLUDEPATH += ./ 

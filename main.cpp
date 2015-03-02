@@ -8,12 +8,16 @@
 #include <locale>
 
 #include <rgui/rgui.h>
+#include <glre/skeleton.h>
 
 using namespace glre;
 
 int main ()
 {
 
+    Skeleton Sk;
+    Sk.load("resources/boblampclean.md5mesh");
+    return 0;
 
     rgui::json::Value JSON;
     JSON.fromFile("resources/ExtraInfo.json");
@@ -146,7 +150,7 @@ int main ()
   //=============================================================================
   // Load the models
   //=============================================================================
-  auto DragonGPU = loadModel( "resources/dragon.obj").CreateGPUObject();
+  auto DragonGPU = loadModel( "resources/boblampclean.md5mesh",true).CreateGPUObject();
   auto    Axis   = glre::createAxes().CreateGPUObject();
 
 
@@ -154,6 +158,7 @@ int main ()
   // Load the Textures
   //=============================================================================
   GPUTexture Tex  = glre::LoadTexture("resources/dragontexture.png").CreateGPUTexture();
+  //GPUTexture Tex  = glre::LoadTexture("resources/boblampclean.md5mesh").CreateGPUTexture();
   GPUTexture Tex2 = glre::LoadTexture("resources/marble.jpg"       ).CreateGPUTexture();
   GPUTexture Tex3 = glre::LoadTexture("resources/SpiderTex.jpg"    ).CreateGPUTexture();
 

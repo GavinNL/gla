@@ -4,8 +4,12 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include <iostream>
 
-glre::iTriMesh_PNCU glre::loadModel(const std::string & path, bool sendToGPU)
+
+
+
+glre::iTriMesh_PNCU glre::loadModel(const std::string & path, bool FlipYZ)
 {
     Assimp::Importer Importer;
 
@@ -16,8 +20,11 @@ glre::iTriMesh_PNCU glre::loadModel(const std::string & path, bool sendToGPU)
     std::cout << "Loading mesh: " << path << std::endl;
     glre::iTriMesh_PNCU ReturnMesh;
     int count = 0;
+
+
     if (pScene)
      {
+
             // std::cout << "-Number of Meshs: "     << pScene->mNumMeshes << std::endl;
             // std::cout << "-Number of Materials: " << pScene->mNumMaterials << std::endl;
 
@@ -31,6 +38,9 @@ glre::iTriMesh_PNCU glre::loadModel(const std::string & path, bool sendToGPU)
                 //std::cout << "--- Num Vertices  " << paiMesh->mNumVertices << std::endl;
                 //std::cout << "--- Num Triangles " << paiMesh->mNumFaces    << std::endl;
 
+
+
+
                 for (unsigned int j = 0 ; j < paiMesh->mNumVertices ; j++)
                 {
 
@@ -38,10 +48,19 @@ glre::iTriMesh_PNCU glre::loadModel(const std::string & path, bool sendToGPU)
                     const aiVector3D* pNormal   = paiMesh->HasNormals() ? &(paiMesh->mNormals[j]) : &Zero3D;
                     const aiVector3D* pTexCoord = paiMesh->HasTextureCoords(0) ? &(paiMesh->mTextureCoords[0][j]) : &Zero3D;
 
-                    ReturnMesh.insertVertex(  { vec3(      pPos->x,      pPos->y,    pPos->z     ),
-                                                vec3(   pNormal->x,   pNormal->y, pNormal->z     ),
-                                                vec4(      1.0    ,          1.0,        1.0,1.0 ),
-                                                vec2( pTexCoord->x, pTexCoord->y                 ) } );
+                    if(FlipYZ)
+                    {
+                        ReturnMesh.insertVertex(  { vec3(      pPos->x,      pPos->z,    pPos->y     ),
+                                                    vec3(   pNormal->x,   pNormal->z, pNormal->y     ),
+                                                    vec4(      1.0    ,          1.0,        1.0,1.0 ),
+                                                    vec2( pTexCoord->x, pTexCoord->y                 ) } );
+                    } else
+                    {
+                        ReturnMesh.insertVertex(  { vec3(      pPos->x,      pPos->y,    pPos->z     ),
+                                                    vec3(   pNormal->x,   pNormal->y, pNormal->z     ),
+                                                    vec4(      1.0    ,          1.0,        1.0,1.0 ),
+                                                    vec2( pTexCoord->x, pTexCoord->y                 ) } );
+                    }
                 }
 
                 //std::cout << "--Mesh " << i << " completed " << std::endl;

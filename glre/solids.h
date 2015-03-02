@@ -11,7 +11,7 @@ namespace glre
     //
     iTriMesh_PNCU loadModel(const std::string & path, bool sendToGPU=false);
     //
-    Line_PC createAxes(bool sendToGPU=false);
+    Line_PC createAxes(bool FlipYZ=false);
 
     TriStripMesh_PNCU createPlane(int x_segments, int z_segments, bool sendToGPU);
 
