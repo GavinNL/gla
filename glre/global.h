@@ -52,6 +52,16 @@ namespace glre
         T h;
     };
 
+    struct Vertex_PNCUBI
+    {
+        vec3 p; // position
+        vec3 n; // normal
+        col4 c; // colour
+        vec2 u; // uv coords
+        vec4 b; // bone weights
+        uint i; // bone index
+    };
+
     struct Vertex_PNCU
     {
         vec3 p; // position
@@ -100,7 +110,8 @@ namespace glre
 
     // Indexed Meshs
     //                                       VertexType         IndexType   ElementType      VertexAttributeTypes
-    typedef glre::IndexedVertexArrayObject< glre::Vertex_PNCU, glre::uvec3, TRIANGLES,       F3, F3, F4, F2     > iTriMesh_PNCU;
+    typedef glre::IndexedVertexArrayObject< glre::Vertex_PNCU,   glre::uvec3, TRIANGLES,       F3, F3, F4, F2        >   iTriMesh_PNCU;
+    typedef glre::IndexedVertexArrayObject< glre::Vertex_PNCUBI, glre::uvec3, TRIANGLES,       F3, F3, F4, F2,F4,U1    > iTriMesh_PNCUBI;
 
     // non-indexed meshes.
     //                                       VertexType,    ElementType    VertexAttributeTypes

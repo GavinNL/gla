@@ -20,7 +20,10 @@ HEADERS +=  glre/shader.h \
     glre/utils/window.h \
     glre/utils/event.h \
     glre/skeleton.h \
-    glre/transformsequence.h
+    glre/transformsequence.h \
+    glre/bone.h \
+    glre/modelloader.h \
+    glre/mesh.h
 
 
 SOURCES +=  main.cpp \
@@ -32,7 +35,10 @@ SOURCES +=  main.cpp \
     src/utils/window.cpp \
     glre/src/events.cpp \
     src/skeleton.cpp \
-    src/transformsequence.cpp
+    src/transformsequence.cpp \
+    src/bone.cpp \
+    src/modelloader.cpp \
+    src/mesh.cpp
 
 
 INCLUDEPATH += ./ 

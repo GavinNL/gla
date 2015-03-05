@@ -8,17 +8,21 @@
 #include <locale>
 
 #include <rgui/rgui.h>
-#include <glre/skeleton.h>
+
 
 using namespace glre;
 
 int main ()
 {
     rgui::Timer T1;
-    Skeleton Sk;
-    Sk.load("resources/boblampclean.md5mesh");
-    std::cout << "Mesh loading time: " << T1.getElapsedTime() << std::endl;
-    return 0;
+//    Skeleton Sk;
+//    Sk.load("resources/boblampclean.md5mesh");
+//    //Sk.load("resources/Cylinder.mesh.xml");
+//    std::cout << "Mesh loading time: " << T1.getElapsedTime() << std::endl;
+//    std::vector<glre::mat4> Matrices;
+
+
+//    return 0;
 
     rgui::json::Value JSON;
     JSON.fromFile("resources/ExtraInfo.json");

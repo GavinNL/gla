@@ -25,9 +25,6 @@ glre::iTriMesh_PNCU glre::loadModel(const std::string & path, bool FlipYZ)
     if (pScene)
      {
 
-            // std::cout << "-Number of Meshs: "     << pScene->mNumMeshes << std::endl;
-            // std::cout << "-Number of Materials: " << pScene->mNumMaterials << std::endl;
-
             for (unsigned int i = 0 ; i < pScene->mNumMeshes ; i++)
             {
                 const aiMesh* paiMesh = pScene->mMeshes[i];
@@ -37,9 +34,6 @@ glre::iTriMesh_PNCU glre::loadModel(const std::string & path, bool FlipYZ)
                 //std::cout << "--Mesh " << i << std::endl;
                 //std::cout << "--- Num Vertices  " << paiMesh->mNumVertices << std::endl;
                 //std::cout << "--- Num Triangles " << paiMesh->mNumFaces    << std::endl;
-
-
-
 
                 for (unsigned int j = 0 ; j < paiMesh->mNumVertices ; j++)
                 {
@@ -83,6 +77,7 @@ glre::iTriMesh_PNCU glre::loadModel(const std::string & path, bool FlipYZ)
         }
 
 }
+
 
 //glre::TriMesh_PNCU glre::createPrism(float width, float height, float depth)
 //{

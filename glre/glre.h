@@ -7,6 +7,8 @@
 #include <glre/timer.h>
 #include <glre/shader.h>
 #include <glre/solids.h>
+#include <glre/skeleton.h>
+#include <glre/modelloader.h>
 
 namespace glre {
 

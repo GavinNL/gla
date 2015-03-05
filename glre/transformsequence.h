@@ -22,7 +22,7 @@ class TransformSequence
     public:
 
         TransformSequence() {};
-        TransformSequence(TransformSequence &  other);                // copy constructor
+        TransformSequence(const TransformSequence &  other);                // copy constructor
         TransformSequence(TransformSequence && other);                // move constructor
 
         TransformSequence & operator=(TransformSequence && other);    // move Operator

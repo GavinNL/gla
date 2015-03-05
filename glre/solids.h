@@ -9,7 +9,8 @@ namespace glre
 
     //TriMesh_PNCU createPrism(float width, float height, float depth);
     //
-    iTriMesh_PNCU loadModel(const std::string & path, bool sendToGPU=false);
+    iTriMesh_PNCU     loadModel(const std::string & path, bool sendToGPU=false);
+    iTriMesh_PNCUBI   loadModelWithBones(const std::string & path);
     //
     Line_PC createAxes(bool FlipYZ=false);
 

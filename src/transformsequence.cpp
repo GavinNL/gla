@@ -12,7 +12,7 @@ TransformSequence::TransformSequence(TransformSequence &&other)
 
 }
 
-TransformSequence::TransformSequence(TransformSequence &other)
+TransformSequence::TransformSequence(const TransformSequence &other)
 {
     mPKeys = other.mPKeys;
     mRKeys = other.mRKeys;
@@ -38,6 +38,7 @@ TransformSequence &TransformSequence::operator=(TransformSequence &other)
 
 vec3 TransformSequence::getPosition(float t)
 {
+    if( mPKeys.size() ==0 ) return vec3(0,0,0);
 
     auto it = std::lower_bound(mPKeys.begin(), mPKeys.end(), t,
               [](vec3key const & x, float d)
@@ -59,6 +60,7 @@ vec3 TransformSequence::getPosition(float t)
 
 vec3 TransformSequence::getScale(float t)
 {
+    if( mSKeys.size() ==0 ) return vec3(1,1,1);
     auto it = std::lower_bound(mSKeys.begin(), mSKeys.end(), t,
               [](vec3key const & x, float d)
               { return x.mTime < d; });
@@ -77,6 +79,7 @@ vec3 TransformSequence::getScale(float t)
 
 glre::quat TransformSequence::getRotation(float t)
 {
+    if( mRKeys.size() ==0 ) return quat();
     auto it = std::lower_bound(mRKeys.begin(), mRKeys.end(), t,
               [](quatkey const & x, float d)
               { return x.mTime < d; });
