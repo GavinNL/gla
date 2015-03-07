@@ -155,7 +155,8 @@ int main ()
   //=============================================================================
   // Load the models
   //=============================================================================
-  auto DragonGPU = loadModel( "resources/boblampclean.md5mesh",true).CreateGPUObject();
+  //auto DragonGPU = loadModel( "resources/dragon.obj",true).CreateGPUObject();
+  auto DragonGPU = glre::ModelLoader::loadModel("resources/dragon.obj").createGPUObject();
   auto    Axis   = glre::createAxes().CreateGPUObject();
 
 
@@ -229,7 +230,6 @@ int main ()
        Cam.calculate(dt);
        //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
        auto CameraMatrix = Cam.getMatrix();
-
 
        Tex.setActiveTexture(0);
            S.useShader();

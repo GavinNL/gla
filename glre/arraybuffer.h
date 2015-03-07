@@ -10,6 +10,9 @@
 
 #include <glre/exceptions.h>
 
+namespace glre {
+
+
 template<class T, GLenum GL_ARRAY_TARGET>
 class ArrayBuffer
 {
@@ -23,6 +26,7 @@ class ArrayBuffer
         {
             clearGPU();
             clearCPU();
+            std::cout << "Array buffer deleted\n";
         }
 
         /**
@@ -161,5 +165,147 @@ class ArrayBuffer
         uint           mGPUBufferSize;
         uint           mGPUByteSize;
 };
+
+}
+
+
+
+//===================================================================================
+
+namespace glre {
+
+enum ARRAY_TYPE {
+    ARRAY_BUFFER                         = GL_ARRAY_BUFFER,
+    ELEMENT_ARRAY_BUFFER                 = GL_ELEMENT_ARRAY_BUFFER
+};
+
+
+class GPUArrayBuffer
+{
+    public:
+        void bind() { glBindBuffer(mArrayType, mGLID); } ;
+
+        inline GLuint getArrayType(){ return mArrayType;   };
+        inline GLuint getID()       { return mGLID;        };
+        inline uint   getByteSize() { return mSizeInBytes; };
+
+
+        GLuint         mGLID;             // The GL ID associated with it.
+        ARRAY_TYPE     mArrayType;        // The type of buffer, either GL_ARRAY_BUFFER or GL_ELEMENT_ARRAY_BUFFER
+        unsigned int   mSizeInBytes;      // Size in bytes of the buffer
+};
+
+class ArrayBuffer_b
+{
+    /* Creates a GPUArray as a specifc type, either ARRAY_BUFFER (used for vertex info), or ELEMENT_ARRAY_BUFFER (used for index info)
+     */
+    public:
+        GPUArrayBuffer createGPUObject( ARRAY_TYPE TY )
+        {
+            GPUArrayBuffer   B;
+
+            glGenBuffers(1,         &B.mGLID);
+            glBindBuffer(TY, B.mGLID);
+            glBufferData(TY,
+                         this->getByteSize(),
+                         this->getData(),
+                         GL_STATIC_DRAW);
+
+
+
+            auto err = glGetError();
+            if(err != 0)
+            {
+                throw glre::GLRE_EXCEPTION("Error sending ArrayBuffer to the GPU. Did you create an OpenGL rendering context fist?");
+
+            }
+
+            B.mSizeInBytes = this->getByteSize();
+            B.mArrayType   = TY;
+
+            std::cout << "================Buffer created=================\n";
+            std::cout << "ID        : " << B.mGLID <<  std::endl;;
+            std::cout << "arraytype : " << (B.mArrayType==GL_ARRAY_BUFFER ? std::string("ARRAY") : std::string("ELEMENT")) <<  std::endl;
+            std::cout << "bytesize  : " << B.mSizeInBytes <<  std::endl;
+            std::cout << "vertcount : " << this->getVertexCount() <<  std::endl;
+            std::cout << "val/ver   : " << this->getValuesPerVertex() <<  std::endl;
+            std::cout << "===============================================\n";
+            return B;
+        }
+
+        GLuint  getID() { return mGLID; }
+
+        virtual GLenum getIntegralType()    const = 0;
+        virtual void*  getData()            const = 0;
+        virtual uint   getByteSize()        const = 0;
+        virtual uint   getVertexCount()     const = 0;
+        virtual uint   getValuesPerVertex() const = 0;
+
+        bool sameTypeAs( const ArrayBuffer_b & b)
+        {
+            return( this->getIntegralType()==b.getIntegralType() && this->getValuesPerVertex()==b.getValuesPerVertex());
+        }
+
+    GLuint mGLID;
+    GLuint mArrayType;
+    uint   mBufferSize;
+
+};
+
+
+template <class T, GLenum INTEGRAL_TYPE>
+class ArrayBuffer_T : public ArrayBuffer_b
+{
+public:
+    virtual uint  getVertexCount() const { return (uint)mVector.size(); };
+    virtual void* getData()        const { return (void*)mVector.data(); };
+
+    virtual uint  getByteSize() const
+    {
+        return( (uint)(mVector.size() * sizeof(T)) );
+    };
+
+    inline virtual GLenum getIntegralType() const
+    {
+        return INTEGRAL_TYPE;
+    }
+
+    inline virtual uint getValuesPerVertex() const
+    {
+        switch(INTEGRAL_TYPE)
+        {
+            case GL_BYTE:
+            case GL_UNSIGNED_BYTE:
+                return sizeof(T);
+            case GL_SHORT:
+            case GL_2_BYTES:
+            case GL_UNSIGNED_SHORT:
+                return sizeof(T)/2;
+            case GL_3_BYTES:
+                return sizeof(T)/3;
+            case GL_INT:
+            case GL_UNSIGNED_INT:
+            case GL_FLOAT:
+            case GL_4_BYTES:
+                return sizeof(T)/4;
+        }
+    }
+
+    void insert(const T & v) { mVector.push_back(v);  };
+    void clear() { mVector.clear(); };
+    void addOffset(const T & offsetValue)
+    {
+        for(int i=0;i<mVector.size();i++) mVector[i] += offsetValue;
+    }
+
+    T & getVertex(int i) { return mVector[i]; };
+
+    private:
+        std::vector<T> mVector;
+
+};
+
+
+}
 
 #endif // ARRAYBUFFER_H

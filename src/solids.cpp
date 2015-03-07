@@ -7,8 +7,6 @@
 #include <iostream>
 
 
-
-
 glre::iTriMesh_PNCU glre::loadModel(const std::string & path, bool FlipYZ)
 {
     Assimp::Importer Importer;
@@ -79,70 +77,7 @@ glre::iTriMesh_PNCU glre::loadModel(const std::string & path, bool FlipYZ)
 }
 
 
-//glre::TriMesh_PNCU glre::createPrism(float width, float height, float depth)
-//{
-//    TriMesh_PNCU M;
 
-//    vec3 i(1.0,0.0,0.0);
-//    vec3 j(0.0,1.0,0.0);
-//    vec3 k(0.0,0.0,1.0);
-
-//    // Positions                                   Normals
-
-//    const vec3 v0 = 0.5f*( i-j+k );
-//    const vec3 v1 = 0.5f*( i-j-k );
-//    const vec3 v2 = 0.5f*(-i-j-k );
-//    const vec3 v3 = 0.5f*(-i-j-k );
-
-//    const vec3 v4 = 0.5f*( i+j+k );
-//    const vec3 v5 = 0.5f*( i+j-k );
-//    const vec3 v6 = 0.5f*(-i+j-k );
-//    const vec3 v7 = 0.5f*(-i+j-k );
-
-//    // Bottom face
-//    M.insertVertexAttribute<0>( v3  );  M.insertVertexAttribute<0>( -j );
-//    M.insertVertexAttribute<0>( v2  );  M.insertVertexAttribute<0>( -j );
-//    M.insertVertexAttribute<0>( v1  );  M.insertVertexAttribute<0>( -j );
-//    M.insertVertexAttribute<0>( v0  );  M.insertVertexAttribute<0>( -j );
-//    M.insertElement( uvec3(0,1,2) );
-//    M.insertElement( uvec3(0,2,3) );
-
-//    M.insertVertexAttribute<0>( v4  );  M.insertVertexAttribute<0>( j );
-//    M.insertVertexAttribute<0>( v5  );  M.insertVertexAttribute<0>( j );
-//    M.insertVertexAttribute<0>( v6  );  M.insertVertexAttribute<0>( j );
-//    M.insertVertexAttribute<0>( v7  );  M.insertVertexAttribute<0>( j );
-//    M.insertElement( uvec3(0,1,2) );
-//    M.insertElement( uvec3(0,2,3) );
-
-//    M.insertVertexAttribute<0>( v1  );  M.insertVertexAttribute<0>( i );
-//    M.insertVertexAttribute<0>( v5  );  M.insertVertexAttribute<0>( i );
-//    M.insertVertexAttribute<0>( v4  );  M.insertVertexAttribute<0>( i );
-//    M.insertVertexAttribute<0>( v0  );  M.insertVertexAttribute<0>( i );
-//    M.insertElement( uvec3(0,1,2) );
-//    M.insertElement( uvec3(0,2,3) );
-
-//    M.insertVertexAttribute<0>( v2  );  M.insertVertexAttribute<0>( -i );
-//    M.insertVertexAttribute<0>( v3  );  M.insertVertexAttribute<0>( -i );
-//    M.insertVertexAttribute<0>( v7  );  M.insertVertexAttribute<0>( -i );
-//    M.insertVertexAttribute<0>( v6  );  M.insertVertexAttribute<0>( -i );
-//    M.insertElement( uvec3(0,1,2) );
-//    M.insertElement( uvec3(0,2,3) );
-
-//    M.insertVertexAttribute<0>( v0  );  M.insertVertexAttribute<0>( k );
-//    M.insertVertexAttribute<0>( v4  );  M.insertVertexAttribute<0>( k );
-//    M.insertVertexAttribute<0>( v7  );  M.insertVertexAttribute<0>( k );
-//    M.insertVertexAttribute<0>( v3  );  M.insertVertexAttribute<0>( k );
-//    M.insertElement( uvec3(0,1,2) );
-//    M.insertElement( uvec3(0,2,3) );
-
-//    M.insertVertexAttribute<0>( v1  );  M.insertVertexAttribute<0>( k );
-//    M.insertVertexAttribute<0>( v2  );  M.insertVertexAttribute<0>( k );
-//    M.insertVertexAttribute<0>( v6  );  M.insertVertexAttribute<0>( k );
-//    M.insertVertexAttribute<0>( v5  );  M.insertVertexAttribute<0>( k );
-//    M.insertElement( uvec3(0,1,2) );
-//    M.insertElement( uvec3(0,2,3) );
-
-//}
 
 
 glre::Line_PC glre::createAxes(bool sendToGPU)

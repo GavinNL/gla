@@ -543,7 +543,7 @@ int main(void)
             std::cout << " Key pressed: " << E.Key.key << "," << E.Key.scancode << std::endl;
             if(E.Key.key == GLFW_KEY_ESCAPE)
             {
-                W->SetCursorMode( glre::utils::Window::CURSOR_NORMAL );
+                //W->SetCursorMode( glre::utils::Window::CURSOR_NORMAL );
             }
 
         }

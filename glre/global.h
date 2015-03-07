@@ -18,6 +18,7 @@ namespace glre
     typedef glm::vec2   vec2;
     typedef glm::vec3   vec3;
     typedef glm::vec4   vec4;
+    typedef glm::uvec4  uvec4;
     typedef glm::uvec3  uvec3;
     typedef glm::uvec2  uvec2;
     typedef glm::ivec3  ivec3;
@@ -107,6 +108,14 @@ namespace glre
 
 namespace glre
 {
+    // Array Buffers
+    typedef glre::ArrayBuffer_T<vec2, GL_FLOAT>  v2ArrayBuffer;
+    typedef glre::ArrayBuffer_T<vec3, GL_FLOAT>  v3ArrayBuffer;
+    typedef glre::ArrayBuffer_T<vec4, GL_FLOAT>  v4ArrayBuffer;
+
+    typedef glre::ArrayBuffer_T<uvec2, GL_UNSIGNED_INT>  u2ArrayBuffer;
+    typedef glre::ArrayBuffer_T<uvec3, GL_UNSIGNED_INT>  u3ArrayBuffer;
+    typedef glre::ArrayBuffer_T<uvec4, GL_UNSIGNED_INT>  u4ArrayBuffer;
 
     // Indexed Meshs
     //                                       VertexType         IndexType   ElementType      VertexAttributeTypes
@@ -130,6 +139,11 @@ namespace glre
     /* Implementation in texture.cpp */
     Texture LoadTexture(const std::string & path);
 
+
+
+    /* Shared Pointer stuff*/
+
+    typedef std::shared_ptr<ArrayBuffer_b> spArrayBuffer;
 }
 
 

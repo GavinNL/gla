@@ -1,4 +1,5 @@
 #include "glre/modelloader.h"
+#include <memory.h>
 #include <iostream>
 
 namespace glre {
@@ -17,74 +18,87 @@ ModelLoader::~ModelLoader()
 
 }
 
-void ModelLoader::loadModel(const std::string &path)
+glre::VertexArrayObject_N ModelLoader::loadModel(const std::string &path)
 {
     Assimp::Importer Importer;
 
     const aiScene * pScene = Importer.ReadFile(path.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs );
 
+    glre::VertexArrayObject_N Mesh;
+
     if(pScene)
     {
-        std::vector<iTriMesh_PNCU> mMeshes;
-
         for(int i=0;i<pScene->mNumMeshes;i++)
         {
-            mMeshes.push_back( _extractPNCU_Mesh(pScene->mMeshes[i]) );
-
-
-            if( pScene->mMeshes[i]->hasBones() )
-            {
-                _extractSkeleton( pScene->mMeshes[i]->mBones[i]-> )    ;
-            }
-
-            _extractSkeleton( pScene->mMesh[i] );
+            auto m = _extract_Mesh( pScene->mMeshes[i], false );
+            std::cout << "Mesh returned: " << m.numBuffers() << " buffers\n";
+            if( m.numBuffers() > 3)
+              return m;
         }
     }
+
+    return Mesh;
 }
 
-iTriMesh_PNCU ModelLoader::_extractPNCU_Mesh(aiMesh *InputMesh, bool FlipYZ)
+
+glre::VertexArrayObject_N ModelLoader::_extract_Mesh(aiMesh *InputMesh, bool FlipYZ)
 {
         const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
 
         std::cout << "Loading mesh: " << InputMesh->mName.C_Str() << std::endl;
 
-        glre::iTriMesh_PNCU ReturnMesh;
+        glre::VertexArrayObject_N ReturnMesh;
 
-        for( unsigned int j = 0 ; j < InputMesh->mNumVertices ; j++ )
+        if( InputMesh->HasPositions() )
         {
-
-            const aiVector3D* pPos      = &(InputMesh->mVertices[j]);
-            const aiVector3D* pNormal   = InputMesh->HasNormals()        ? &(InputMesh->mNormals[j])          : &Zero3D;
-            const aiVector3D* pTexCoord = InputMesh->HasTextureCoords(0) ? &(InputMesh->mTextureCoords[0][j]) : &Zero3D;
-
-            if(FlipYZ)
-            {
-                ReturnMesh.insertVertex(  { vec3(      pPos->x,      pPos->z,    pPos->y     ),
-                                            vec3(   pNormal->x,   pNormal->z, pNormal->y     ),
-                                            vec4(      1.0    ,          1.0,        1.0,1.0 ),
-                                            vec2( pTexCoord->x, pTexCoord->y                 ) } );
-            }
-            else
-            {
-                ReturnMesh.insertVertex(  { vec3(      pPos->x,      pPos->y,    pPos->z     ),
-                                            vec3(   pNormal->x,   pNormal->y, pNormal->z     ),
-                                            vec4(      1.0    ,          1.0,        1.0,1.0 ),
-                                            vec2( pTexCoord->x, pTexCoord->y                 ) } );
-            }
+            std::cout << "Has Positions: " << InputMesh->mNumVertices << std::endl;
+            auto B = std::make_shared<v3ArrayBuffer>();
+            for( unsigned int j = 0 ; j < InputMesh->mNumVertices ; j++ )  B->insert( vec3( InputMesh->mVertices[j].x, InputMesh->mVertices[j].y, InputMesh->mVertices[j].z  ) );
+            ReturnMesh.insertBuffer(B);
         }
 
-        for (unsigned int j = 0 ; j < InputMesh->mNumFaces ; j++)
+        if( InputMesh->HasNormals() )
         {
-            const aiFace& Face = InputMesh->mFaces[j];
+            std::cout << "Has Normals: " << InputMesh->mNumVertices << std::endl;
+            auto B = std::make_shared<v3ArrayBuffer>();
+            for( unsigned int j = 0 ; j < InputMesh->mNumVertices ; j++ )  B->insert( vec3( InputMesh->mNormals[j].x, InputMesh->mNormals[j].y, InputMesh->mNormals[j].z  ) );
+            ReturnMesh.insertBuffer(B);
+        }
 
-            if( Face.mNumIndices != 3 ) continue;
+        if(1)
+        {
+            std::cout << "Has colour: " << InputMesh->mNumVertices << std::endl;
+            auto B = std::make_shared<v4ArrayBuffer>();
+            for( unsigned int j = 0 ; j < InputMesh->mNumVertices ; j++ )  B->insert( vec4( 1.0,1.0,1.0,1.0 ) );
+            ReturnMesh.insertBuffer(B);
+        }
 
-            ReturnMesh.insertElement(  uvec3( Face.mIndices[0], Face.mIndices[1], Face.mIndices[2] ) );
+        if( InputMesh->HasTextureCoords(0) )
+        {
+            std::cout << "Has UV: " << InputMesh->mNumVertices << std::endl;
+            auto B = std::make_shared<v2ArrayBuffer>();
+            for( unsigned int j = 0 ; j < InputMesh->mNumVertices ; j++ )  B->insert( vec2( InputMesh->mTextureCoords[0][j].x, InputMesh->mTextureCoords[0][j].y ) );
+            ReturnMesh.insertBuffer(B);
+        }
+
+        //======================== Get the Face Indices ============================
+        if( InputMesh->HasFaces() )
+        {
+            auto B = std::make_shared<u3ArrayBuffer>( );
+
+            for (unsigned int j = 0 ; j < InputMesh->mNumFaces ; j++)
+            {
+                const aiFace& Face = InputMesh->mFaces[j];
+
+                if( Face.mNumIndices != 3 ) continue;
+
+                B->insert( uvec3( Face.mIndices[0], Face.mIndices[1], Face.mIndices[2] ) );
+            }
+
+            ReturnMesh.setIndexBuffer(B);
         }
 
         return std::move(ReturnMesh);
-
-
 
 }
 
