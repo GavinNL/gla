@@ -1,5 +1,5 @@
-#ifndef GLOBAL_H
-#define GLOBAL_H
+#ifndef GLRE_GLOBAL_H
+#define GLRE_GLOBAL_H
 
 #include <GL/glew.h>
 #include <GL/glext.h>
@@ -11,6 +11,8 @@
 #include <glm/gtc/quaternion.hpp>
 #define GLM_FORCE_RADIANS
 #include <glm/gtc/matrix_transform.hpp>
+
+#include <glre/enums.h>
 
 
 namespace glre
@@ -84,38 +86,22 @@ namespace glre
         col4 c; // colour
     };
 
-    typedef enum
-    {
-        UNKNOWN_PRIMITAVE       = -1,
-        LINES                   = GL_LINES,
-        LINE_LOOP               = GL_LINE_LOOP,
-        POINT_BIT               = GL_POINT_BIT,
-        CLIENT_VERTEX_ARRAY_BIT = GL_CLIENT_VERTEX_ARRAY_BIT,
-        LINE_STRIP              = GL_LINE_STRIP,
-        LINE_BIT                = GL_LINE_BIT,
-        TRIANGLES               = GL_TRIANGLES,
-        TRIANGLE_STRIP          = GL_TRIANGLE_STRIP,
-        TRIANGLE_FAN            = GL_TRIANGLE_FAN,
-        QUADS                   = GL_QUADS,
-        QUAD_STRIP              = GL_QUAD_STRIP
 
-    } Primitave;
 }
 
 #include <glre/transformation.h>
 #include <glre/vertexarrayobject.h>
 
-
 namespace glre
 {
     // Array Buffers
-    typedef glre::ArrayBuffer_T<vec2, GL_FLOAT>  v2ArrayBuffer;
-    typedef glre::ArrayBuffer_T<vec3, GL_FLOAT>  v3ArrayBuffer;
-    typedef glre::ArrayBuffer_T<vec4, GL_FLOAT>  v4ArrayBuffer;
+    typedef glre::ArrayBuffer_T<vec2, FLOAT>  v2ArrayBuffer;
+    typedef glre::ArrayBuffer_T<vec3, FLOAT>  v3ArrayBuffer;
+    typedef glre::ArrayBuffer_T<vec4, FLOAT>  v4ArrayBuffer;
 
-    typedef glre::ArrayBuffer_T<uvec2, GL_UNSIGNED_INT>  u2ArrayBuffer;
-    typedef glre::ArrayBuffer_T<uvec3, GL_UNSIGNED_INT>  u3ArrayBuffer;
-    typedef glre::ArrayBuffer_T<uvec4, GL_UNSIGNED_INT>  u4ArrayBuffer;
+    typedef glre::ArrayBuffer_T<uvec2, UNSIGNED_INT>  u2ArrayBuffer;
+    typedef glre::ArrayBuffer_T<uvec3, UNSIGNED_INT>  u3ArrayBuffer;
+    typedef glre::ArrayBuffer_T<uvec4, UNSIGNED_INT>  u4ArrayBuffer;
 
     // Indexed Meshs
     //                                       VertexType         IndexType   ElementType      VertexAttributeTypes

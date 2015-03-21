@@ -4,7 +4,6 @@
 
 #include <glre/glre.h>
 #include <glre/utils/window.h>
-#include <glre/utils/cameracontroller.h>
 #include <locale>
 
 #include <rgui/rgui.h>
@@ -14,7 +13,18 @@ using namespace glre;
 
 int main ()
 {
-    rgui::Timer T1;
+
+//    std::map<int, std::string> MM;
+//    MM[0] = "gavin";
+//    MM[1] = "Lobo";
+//    MM[2] = "bhupesh";
+//    MM[7] = "mistry";
+
+//    for(auto m : MM)
+//    {
+//        std::cout << m.first << std::endl;
+//    }
+//    return 0;
 //    Skeleton Sk;
 //    Sk.load("resources/boblampclean.md5mesh");
 //    //Sk.load("resources/Cylinder.mesh.xml");
@@ -50,6 +60,7 @@ int main ()
 
 
         auto M = I->getRootWidget()->loadFromJSON( JSON["main"]["GUI"] );
+
         for(auto m : M )
                 std::cout << m.second.lock()->getName() << std::endl;
 
@@ -156,17 +167,17 @@ int main ()
   // Load the models
   //=============================================================================
   //auto DragonGPU = loadModel( "resources/dragon.obj",true).CreateGPUObject();
-  auto DragonGPU = glre::ModelLoader::loadModel("resources/dragon.obj").createGPUObject();
-  auto    Axis   = glre::createAxes().CreateGPUObject();
+  auto DragonGPU = glre::ModelLoader::loadModel( JSON["main"]["model"].as<std::string>() ).toGPU();
+  auto    Axis   = glre::createAxes().toGPU();
 
 
   //=============================================================================
   // Load the Textures
   //=============================================================================
-  GPUTexture Tex  = glre::LoadTexture("resources/dragontexture.png").CreateGPUTexture();
-  //GPUTexture Tex  = glre::LoadTexture("resources/boblampclean.md5mesh").CreateGPUTexture();
-  GPUTexture Tex2 = glre::LoadTexture("resources/marble.jpg"       ).CreateGPUTexture();
-  GPUTexture Tex3 = glre::LoadTexture("resources/SpiderTex.jpg"    ).CreateGPUTexture();
+  GPUTexture Tex  = glre::LoadTexture("resources/dragontexture.png").toGPU();
+  //GPUTexture Tex  = glre::LoadTexture("resources/boblampclean.md5mesh").toGPU();
+  GPUTexture Tex2 = glre::LoadTexture("resources/marble.jpg"       ).toGPU();
+  GPUTexture Tex3 = glre::LoadTexture("resources/SpiderTex.jpg"    ).toGPU();
 
 
   //=============================================================================
@@ -181,9 +192,9 @@ int main ()
   //=============================================================================
   //  Set the callback methods for to see the texture in the GGUI
   //=============================================================================
-  std::dynamic_pointer_cast<rgui::ComboBox>(M["w2"].lock())->insertItem("Dragon")->addCallback( "texture", std::bind( DropDownCallback, std::placeholders::_1, Tex.getID(),   Tex.size()[0],  Tex.size()[1])  );
-  std::dynamic_pointer_cast<rgui::ComboBox>(M["w2"].lock())->insertItem("Marble")->addCallback( "texture", std::bind( DropDownCallback, std::placeholders::_1, Tex2.getID(), Tex2.size()[0], Tex2.size()[1])  );
-  std::dynamic_pointer_cast<rgui::ComboBox>(M["w2"].lock())->insertItem("Spider")->addCallback( "texture", std::bind( DropDownCallback, std::placeholders::_1, Tex3.getID(), Tex3.size()[0], Tex3.size()[1])  );
+  std::dynamic_pointer_cast<rgui::ComboBox>(M["w2"].lock())->insertItem("Dragon")->addCallback( "texture", std::bind( DropDownCallback, std::placeholders::_1, Tex.getID(),   Tex.size()[0],   Tex.size()[1])  );
+  std::dynamic_pointer_cast<rgui::ComboBox>(M["w2"].lock())->insertItem("Marble")->addCallback( "texture", std::bind( DropDownCallback, std::placeholders::_1, Tex2.getID(), Tex2.size()[0],  Tex2.size()[1])  );
+  std::dynamic_pointer_cast<rgui::ComboBox>(M["w2"].lock())->insertItem("Spider")->addCallback( "texture", std::bind( DropDownCallback, std::placeholders::_1, Tex3.getID(), Tex3.size()[0],  Tex3.size()[1])  );
   //=============================================================================
 
 

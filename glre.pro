@@ -8,37 +8,40 @@ LIBS += -lGLEW -lGL -lGLU -lSDL2
 HEADERS +=  glre/shader.h \
             glre/global.h \
             glre/camera.h \
-    glre/transformation.h \
-    glre/arraybuffer.h \
-    glre/vertexarrayobject.h \
-    glre/glre.h \
-    glre/texture.h \
-    glre/stb/stb_image.h \
-    glre/solids.h \
-    glre/exceptions.h \
-    glre/timer.h \
-    glre/utils/window.h \
-    glre/utils/event.h \
-    glre/skeleton.h \
-    glre/transformsequence.h \
-    glre/bone.h \
-    glre/modelloader.h \
-    glre/mesh.h
+            glre/transformation.h \
+            glre/arraybuffer.h \
+            glre/vertexarrayobject.h \
+            glre/glre.h \
+            glre/texture.h \
+            glre/stb/stb_image.h \
+            glre/solids.h \
+            glre/exceptions.h \
+            glre/timer.h \
+            glre/utils/window.h \
+            glre/utils/event.h \
+            glre/skeleton.h \
+            glre/transformsequence.h \
+            glre/bone.h \
+            glre/modelloader.h \
+            glre/mesh.h \
+            glre/enums.h \
+    glre/gputexturearray.h
 
 
 SOURCES +=  main.cpp \
-    src/shader.cpp \
-    src/transformation.cpp \
-    src/texture.cpp \
-    src/solids.cpp \
-    test.cpp \
-    src/utils/window.cpp \
-    glre/src/events.cpp \
-    src/skeleton.cpp \
-    src/transformsequence.cpp \
-    src/bone.cpp \
-    src/modelloader.cpp \
-    src/mesh.cpp
+            src/shader.cpp \
+            src/transformation.cpp \
+            src/texture.cpp \
+            src/solids.cpp \
+            test.cpp \
+            src/utils/window.cpp \
+            glre/src/events.cpp \
+            src/skeleton.cpp \
+            src/transformsequence.cpp \
+            src/bone.cpp \
+            src/modelloader.cpp \
+            src/mesh.cpp \
+    src/gputexturearray.cpp
 
 
 INCLUDEPATH += ./ 
@@ -53,5 +56,8 @@ OTHER_FILES += \
     shaders/Line_PC.f \
     resources/ExtraInfo.json \
     resources/marble.jpg
+
+DISTFILES += \
+    Doxygen.cfg
 
 

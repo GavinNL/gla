@@ -6,6 +6,13 @@
 
 namespace glre {
 
+    class Texture;
+
+
+    //===========================================================================
+    // GPUTexture
+    //   - A 2D texture stored on the GPU
+    //===========================================================================
     class GPUTexture
     {
         public:
@@ -19,9 +26,12 @@ namespace glre {
             } FilterType;
 
 
-            //===========================================================================
-            // GL Texture Parameters
-            //===========================================================================
+            GPUTexture() : mDim(0,0), mTextureID(0)
+            {
+
+            }
+
+
             /**
              *  Sets the Min and Mag filter for this texture
              *
@@ -35,8 +45,6 @@ namespace glre {
                 glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, Min);
                 glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, Mag);
             }
-
-
 
             inline void bind()
             {
@@ -57,12 +65,30 @@ namespace glre {
                 glBindTexture(GL_TEXTURE_2D, mTextureID);
             }
 
-            const uvec2 size() const { return mDim; }
+            /**
+             *  Clears the Texture from the GPU. This is not done automatically when the destructor is called.
+             *
+             */
+            void clear()
+            {
+                if(mTextureID) glDeleteTextures(1, &mTextureID);
+                mDim = {0,0};
+            }
 
-            GLuint getID() { return mTextureID;  }
+            /**
+             *  Copies the texture from the GPU into CPU memory.
+             *
+             */
+            Texture toCPU();
 
+            inline uvec2  size()  const { return mDim; }
+            inline GLuint getID() const { return mTextureID;  }
+
+       private:
             uvec2        mDim;
             GLuint       mTextureID;
+
+       friend class Texture;
     };
 
     class Texture
@@ -71,14 +97,14 @@ namespace glre {
         public:
 
 
-
-
             Texture();
+            Texture(uint w, uint h);
             Texture(const std::string & path);
 
 
-            Texture(Texture && T)
+            Texture(Texture && T) : mData(0)
             {
+                if(mData) clear();
                 mData = T.mData;
                 mDim  = T.mDim;
                 T.mDim = {0,0};
@@ -91,6 +117,8 @@ namespace glre {
 
             Texture & operator=(Texture && T)
             {
+                if(mData) clear();
+
                 mData = T.mData;
                 mDim  = T.mDim;
                 T.mDim = {0,0};
@@ -111,9 +139,10 @@ namespace glre {
             //===========================================================================
             // Loading functions
             //===========================================================================
+
             /**
-             *  Load an image from a raw buffer. The buffer is NOT raw pixels
-             *  it is the binary data of an actual encoded image such as jpg or png
+             * Load an image from a raw buffer. The buffer is NOT raw pixels
+             * it is the binary data of an actual encoded image such as jpg or png
              *
              * @param Buffer Pointer to the buffer
              * @param buffersize The number of bytes in the buffer
@@ -128,39 +157,18 @@ namespace glre {
             void loadFromPath( const std::string & path);
             //===========================================================================
 
-
-            GPUTexture CreateGPUTexture()
-            {
-                GPUTexture GPU;
-
-                glGenTextures(1, &GPU.mTextureID);
-
-                GPU.mDim = mDim;
-                glBindTexture(GL_TEXTURE_2D, GPU.mTextureID);
-
-                glTexImage2D( GL_TEXTURE_2D, 0 , GL_RGBA, mDim.x, mDim.y, 0, GL_BGRA, GL_UNSIGNED_BYTE,  (void*)mData );
-
-                GPU.setFilter(GPUTexture::NEAREST, GPUTexture::NEAREST);
-
-                return GPU;
-            }
-
             /**
-             * Copies a subimage from the CPU memory to the GPU memory
+             * Sends the texture to the GPU and returns a GPUTexture object. This does
+             * not clear the texture from CPU memory. Once the texture is sent to the
+             * gpu, you can clear the memory from the cpu if you do not need it again.
+             *
+             * @return A GPUTexture
              */
-            void updateGPU( const iRect & R = {0,0,-1,-1} );
+            GPUTexture toGPU();
 
 
             /**
-             * Copies a subimage from the CPU of one texture to the GPU of this texture.
-             */
-            void updateGPU(const Texture & Tex, const iRect & R = {0,0,-1,-1} );
-
-
-            /**
-             * Clears the image data from the CPU. This does not clear the
-             * texture data from the GPU. The OpenGL texture ID can still be used
-             * until clearGPU() is called.
+             * Clears the image data from the CPU.
              */
             void clear();
 
@@ -169,9 +177,11 @@ namespace glre {
              * Access pixel data on the CPU. This is unpredictable if you
              * have cleared the CPU data.
              */
-            glre::ucol4 & operator ()(int x, int y) { return mData[ y*mDim[0] + x ]; }
+            inline glre::ucol4 & operator ()(int x, int y) { return mData[ y*mDim[0] + x ]; }
 
-            const glre::uvec2 & size() const { return mDim; };
+
+
+            inline glre::uvec2 size() const { return mDim; };
 
 
             glre::ucol4* getRawData() const { return mData; };

@@ -77,26 +77,35 @@ glre::iTriMesh_PNCU glre::loadModel(const std::string & path, bool FlipYZ)
 }
 
 
-
-
-
-glre::Line_PC glre::createAxes(bool sendToGPU)
+glre::VertexArrayObject_N glre::createAxes()
 {
-    Line_PC      Axis;
+    VertexArrayObject_N Axis(LINES);
 
-    Axis.insertVertex( { vec3(0.0, 0.0, 0.0) , col4(1.0, 0.0, 0.0, 1.0) } );
-    Axis.insertVertex( { vec3(1.0, 0.0, 0.0) , col4(1.0, 0.0, 0.0, 1.0) } );
+    auto Positions = std::make_shared<v3ArrayBuffer>();
+    auto Colours   = std::make_shared<v4ArrayBuffer>();
 
-    Axis.insertVertex( { vec3(0.0, 0.0, 0.0) , col4(0.0, 1.0, 0.0, 1.0) } );
-    Axis.insertVertex( { vec3(0.0, 1.0, 0.0) , col4(0.0, 1.0, 0.0, 1.0) } );
+    // vertices
+    Positions->insert( vec3(0.0, 0.0, 0.0) );
+    Positions->insert( vec3(1.0, 0.0, 0.0) );
+    Positions->insert( vec3(0.0, 0.0, 0.0) );
+    Positions->insert( vec3(0.0, 1.0, 0.0) );
+    Positions->insert( vec3(0.0, 0.0, 0.0) );
+    Positions->insert( vec3(0.0, 0.0, 1.0) );
 
-    Axis.insertVertex( { vec3(0.0, 0.0, 0.0) , col4(0.0, 0.0, 1.0, 1.0) } );
-    Axis.insertVertex( { vec3(0.0, 0.0, 1.0) , col4(0.0, 0.0, 1.0, 1.0) } );
+
+    // Colours
+    Colours->insert( col4(1.0, 0.0, 0.0, 1.0) );
+    Colours->insert( col4(1.0, 0.0, 0.0, 1.0) );
+    Colours->insert( col4(0.0, 1.0, 0.0, 1.0) );
+    Colours->insert( col4(0.0, 1.0, 0.0, 1.0) );
+    Colours->insert( col4(0.0, 0.0, 1.0, 1.0) );
+    Colours->insert( col4(0.0, 0.0, 1.0, 1.0) );
 
 
-    //if(sendToGPU) Axis.sendToGPU();
+    Axis.insertBuffer(Positions);
+    Axis.insertBuffer(Colours);
 
-    return Axis;
+    return( std::move(Axis) );
 }
 
 

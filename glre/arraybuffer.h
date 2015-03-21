@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include <glre/exceptions.h>
+#include <glre/enums.h>
 
 namespace glre {
 
@@ -174,21 +175,16 @@ class ArrayBuffer
 
 namespace glre {
 
-enum ARRAY_TYPE {
-    ARRAY_BUFFER                         = GL_ARRAY_BUFFER,
-    ELEMENT_ARRAY_BUFFER                 = GL_ELEMENT_ARRAY_BUFFER
-};
+
 
 
 class GPUArrayBuffer
 {
     public:
-        void bind() { glBindBuffer(mArrayType, mGLID); } ;
-
+        inline void   bind() { glBindBuffer(mArrayType, mGLID); } ;
         inline GLuint getArrayType(){ return mArrayType;   };
         inline GLuint getID()       { return mGLID;        };
         inline uint   getByteSize() { return mSizeInBytes; };
-
 
         GLuint         mGLID;             // The GL ID associated with it.
         ARRAY_TYPE     mArrayType;        // The type of buffer, either GL_ARRAY_BUFFER or GL_ELEMENT_ARRAY_BUFFER
@@ -200,11 +196,12 @@ class ArrayBuffer_b
     /* Creates a GPUArray as a specifc type, either ARRAY_BUFFER (used for vertex info), or ELEMENT_ARRAY_BUFFER (used for index info)
      */
     public:
-        GPUArrayBuffer createGPUObject( ARRAY_TYPE TY )
+
+        GPUArrayBuffer toGPU( ARRAY_TYPE TY )
         {
             GPUArrayBuffer   B;
 
-            glGenBuffers(1,         &B.mGLID);
+            glGenBuffers(1, &B.mGLID);
             glBindBuffer(TY, B.mGLID);
             glBufferData(TY,
                          this->getByteSize(),
@@ -223,24 +220,32 @@ class ArrayBuffer_b
             B.mSizeInBytes = this->getByteSize();
             B.mArrayType   = TY;
 
+#ifdef GLRE_VERBOSE_BUFFERS
             std::cout << "================Buffer created=================\n";
-            std::cout << "ID        : " << B.mGLID <<  std::endl;;
+            std::cout << "ID        : " << B.mGLID <<  std::endl;
             std::cout << "arraytype : " << (B.mArrayType==GL_ARRAY_BUFFER ? std::string("ARRAY") : std::string("ELEMENT")) <<  std::endl;
             std::cout << "bytesize  : " << B.mSizeInBytes <<  std::endl;
             std::cout << "vertcount : " << this->getVertexCount() <<  std::endl;
             std::cout << "val/ver   : " << this->getValuesPerVertex() <<  std::endl;
-            std::cout << "===============================================\n";
+            std::cout << "====================S===========================\n";
+#endif
             return B;
         }
-
         GLuint  getID() { return mGLID; }
 
-        virtual GLenum getIntegralType()    const = 0;
-        virtual void*  getData()            const = 0;
-        virtual uint   getByteSize()        const = 0;
-        virtual uint   getVertexCount()     const = 0;
-        virtual uint   getValuesPerVertex() const = 0;
+        virtual FUNDAMENTAL_TYPE getIntegralType()    const = 0;
+        virtual void*            getData()            const = 0;
+        virtual uint             getByteSize()        const = 0;
+        virtual uint             getVertexCount()     const = 0;
+        virtual uint             getValuesPerVertex() const = 0;
 
+        /**
+         * Determines if two buffers are of the same type. Two buffers are of the same type if
+         * their fundamental type (float, byte, unsigned int, etc) are the same.
+         * And the number of values per vertex are the same (eg: they're both 2D vertices, or 3D vertices).
+         *
+         * @param b A const reference to another buffer.
+         */
         bool sameTypeAs( const ArrayBuffer_b & b)
         {
             return( this->getIntegralType()==b.getIntegralType() && this->getValuesPerVertex()==b.getValuesPerVertex());
@@ -253,23 +258,45 @@ class ArrayBuffer_b
 };
 
 
-template <class T, GLenum INTEGRAL_TYPE>
+template <class T, FUNDAMENTAL_TYPE INTEGRAL_TYPE>
 class ArrayBuffer_T : public ArrayBuffer_b
 {
 public:
+
+
+    /**
+     * Gets the number of vertices in the buffer.
+     */
     virtual uint  getVertexCount() const { return (uint)mVector.size(); };
+
+
+    /**
+     * Gets a pointer to the start of the raw vertex data.
+     */
     virtual void* getData()        const { return (void*)mVector.data(); };
 
+
+    /**
+     * Gets the number of bytes in the raw buffer. This is different
+     * from getVertexCount.
+     */
     virtual uint  getByteSize() const
     {
         return( (uint)(mVector.size() * sizeof(T)) );
     };
 
-    inline virtual GLenum getIntegralType() const
+    /**
+     * Gets the fundamental integral type of the buffer
+     */
+    inline virtual FUNDAMENTAL_TYPE getIntegralType() const
     {
         return INTEGRAL_TYPE;
     }
 
+    /**
+     * Gets the number of values per vertex. If representing a vertex in 3d spaces, this value
+     * will be 3.
+     */
     inline virtual uint getValuesPerVertex() const
     {
         switch(INTEGRAL_TYPE)
@@ -291,13 +318,33 @@ public:
         }
     }
 
+    /**
+     * Inserts a vertex into the buffer.
+     *
+     * @param v the vertex to insert.
+     */
     void insert(const T & v) { mVector.push_back(v);  };
+
+    /**
+     * Clears the buffer data
+     */
     void clear() { mVector.clear(); };
+
+    /**
+     * Adds an offset to all the vertices in the buffer.
+     *
+     * @param offsetValue The value to add to every vertex
+     */
     void addOffset(const T & offsetValue)
     {
         for(int i=0;i<mVector.size();i++) mVector[i] += offsetValue;
     }
 
+    /**
+     * Gets a reference to the vertex at a specific index.
+     *
+     * @param i the index value.
+     */
     T & getVertex(int i) { return mVector[i]; };
 
     private:

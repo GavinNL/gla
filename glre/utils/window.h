@@ -50,16 +50,15 @@ class Window
         static void _MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 
         static void _WindowMinimizedCallback(GLFWwindow* window, int iconified);
-        static void _WindowCloseCallback(GLFWwindow* window);
-        static void _WindowFocusCallback(GLFWwindow* window, int focus);
-        static void _WindowFileDropCallback(GLFWwindow* window, int count, const char** paths);
-        static void _WindowTextCallback(GLFWwindow* window, unsigned int codepoint, int mods);
+        static void _WindowCloseCallback    (GLFWwindow* window);
+        static void _WindowFocusCallback    (GLFWwindow* window, int focus);
+        static void _WindowFileDropCallback (GLFWwindow* window, int count, const char** paths);
+        static void _WindowTextCallback     (GLFWwindow* window, unsigned int codepoint, int mods);
 
     private:
         Window();
 
         GLFWwindow* mWindow;
-
 
         static std::map<GLFWwindow*, std::weak_ptr<Window> > WindowMap;
 

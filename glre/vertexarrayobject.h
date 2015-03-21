@@ -34,7 +34,12 @@ namespace glre
     {
         public:
 
-            inline virtual void Render(Primitave PrimitaveType)
+            /**
+             * Renders the ArrayObject as a partuclar type (triangle, quads ,etc)
+             *
+             * @param PrimitaveType The type of primitave to render as.
+             */
+            inline virtual void Render(PRIMITAVE PrimitaveType)
             {
                     //std::cout << "Render: " << _size << " : " << _VAO << std::endl;
                     glBindVertexArray( _VAO );
@@ -42,31 +47,50 @@ namespace glre
                     glBindVertexArray(0);
             }
 
+            /**
+             * Renders the ArrayObject as the default primitave type as defined when
+             * it was created on the CPU
+             *
+             */
             inline virtual void Render()
             {
                     Render( _PrimitaveType );
             }
 
+            /**
+             * Renders the ArrayObject but does not bind or unbind it. Make sure you know what you're doing
+             * if you plan on using this.
+             *
+             */
             inline virtual void RenderNoBind()
             {
                     _isIndexed ? glDrawElementsBaseVertex(_PrimitaveType, _size, GL_UNSIGNED_INT, 0,0) : glDrawArrays(_PrimitaveType, 0, _size);
             }
 
+            /**
+             * Binds the VertexArrayObject.
+             *
+             */
             inline void bind()
             {
                 glBindVertexArray( _VAO );
             }
 
+            /**
+             * Clears the VertexArrayObject from the GPU. If there are any buffers associated with it they will be
+             * cleared if they are not used by another VAO.
+             *
+             */
             inline void clear()
             {
                 if( _VAO ) glDeleteVertexArrays(1, &_VAO);
                 _VAO = 0;
             }
 
-            GLint getID() { return _VAO; }
+            inline GLint getID() { return _VAO; }
 
             GLuint    _VAO;
-            Primitave _PrimitaveType;
+            PRIMITAVE _PrimitaveType;
             int       _size;                    // Either the number of indices if the GPUArrayObject is indexed
                                                 // Or the number of vertices if the GPUArrayObject is not indexed.
             bool      _isIndexed;
@@ -77,7 +101,7 @@ namespace glre
      * A templated class for non-indexed meshs, (ie: mesh that do not need a separate index buffer)
      */
     template <class VertexType,                         // The type of vertex to use
-              Primitave DefaultRenderPrimitave,         // The default render primitative (LINES/TRIANGLES/QUADS)
+              PRIMITAVE DefaultRenderPrimitave,         // The default render primitative (LINES/TRIANGLES/QUADS)
               TypeSizesIndex N,                         // The first variable type in the Vertex (see declaration of TypeSizeIndex)
               TypeSizesIndex... Rest>                   // The rest of the variable types in the Vertex (see declaration of TypeSizeIndex)
     class VertexArrayObject
@@ -88,14 +112,6 @@ namespace glre
 
             };
 
-//            void Render(Primitave PrimitaveType = DefaultRenderPrimitave)
-//            {
-//                    glBindVertexArray(m_VAO);
-
-//                    glDrawArrays( PrimitaveType, 0, mVertexBuffer.gpuBufferSize() );
-
-//                    glBindVertexArray(0);
-//            }
 
             inline void insertVertex(const VertexType & T)
             {
@@ -104,7 +120,7 @@ namespace glre
 
 
             /* will create a NEW GPU object*/
-            GPUArrayObject CreateGPUObject()
+            GPUArrayObject toGPU()
             {
                 GPUArrayObject GPU;
 
@@ -180,7 +196,7 @@ namespace glre
 
     template <class VertexType,                         // The type of vertex to use
               class ElementType,                        // The vector type to use for the index buffer (uvec2/uvec3/uvec4 for lines/triangles/quads)
-              Primitave DefaultRenderPrimitave,         // The default render primitative (LINES/TRIANGLES/QUADS)
+              PRIMITAVE DefaultRenderPrimitave,         // The default render primitative (LINES/TRIANGLES/QUADS)
               TypeSizesIndex N,                         // The first variable type in the Vertex (see declaration of TypeSizeIndex)
               TypeSizesIndex... Rest>                   // The rest of the variable types in the Vertex (see declaration of TypeSizeIndex)
     class IndexedVertexArrayObject
@@ -204,13 +220,13 @@ namespace glre
                 mIndexBuffer.insert(T);
             }
 
-            GPUArrayObject CreateGPUObject()
+            GPUArrayObject toGPU()
             {
                 GPUArrayObject GPU;
 
                 std::cout << "Sending Model to GPU:\n";
-                std::cout << " #vertices: " << mVertexBuffer.cpuBufferSize() << std::endl;
-                std::cout << " #indices : " << mIndexBuffer.cpuBufferSize()  << std::endl;
+                std::cout << " #vertices: " << mVertexBuffer.cpuBufferSize()  << std::endl;
+                std::cout << " #indices : " <<  mIndexBuffer.cpuBufferSize()  << std::endl;
 
                 //===============================
                 glGenVertexArrays(1, &GPU._VAO);
@@ -295,9 +311,25 @@ namespace glre
     class VertexArrayObject_N
     {
         public:
-            GPUArrayObject createGPUObject()
+
+            VertexArrayObject_N(PRIMITAVE DefaultType = TRIANGLES)
+            {
+                mDefaultPrimitave = DefaultType;
+            }
+
+            GPUArrayObject toGPU()
             {
                 GPUArrayObject GPU;
+
+                if( mBuffers.size() == 0)
+                {
+                    throw glre::GLRE_EXCEPTION( "ERROR: Does not contain any buffers.");
+                }
+                for(int i=0; i < mBuffers.size() ; i++)
+                {
+                    if( mBuffers[0]->getVertexCount() != mBuffers[i]->getVertexCount() )
+                        throw glre::GLRE_EXCEPTION( "ERROR: All buffers in the VAO must be the same size before creating a GPUArrayObject");
+                }
 
                 //===============================
                 glGenVertexArrays(1, &GPU._VAO);
@@ -312,7 +344,7 @@ namespace glre
 
                 for(int i = 0; i < mBuffers.size();  i++)
                 {
-                    pGPUBuffers.push_back( mBuffers[i]->createGPUObject(ARRAY_BUFFER) );  // creates the GPU Array buffer and binds it
+                    pGPUBuffers.push_back( mBuffers[i]->toGPU(ARRAY_BUFFER) );  // creates the GPU Array buffer and binds it
 
                     _ActivateAttribute(i, mBuffers[i]->getValuesPerVertex(), mBuffers[i]->getIntegralType(), GL_FALSE);
                 }
@@ -322,35 +354,43 @@ namespace glre
                 GPU._isIndexed     = false;
                 if(mIndexBuffer.get())
                 {
-                    mIndexBuffer->createGPUObject( ELEMENT_ARRAY_BUFFER );
+                    mIndexBuffer->toGPU( ELEMENT_ARRAY_BUFFER );
                     GPU._isIndexed     = true;
                     GPU._size          = mIndexBuffer->getVertexCount() * mIndexBuffer->getValuesPerVertex();
                 } else {
                     GPU._isIndexed     = false;
-                    GPU._size          = 0;
+                    GPU._size          = mBuffers[0]->getVertexCount();
+                    GPU._PrimitaveType = mDefaultPrimitave;
                 }
 
                 glBindVertexArray(0);
+                if( mIndexBuffer)
+                {
+                    const PRIMITAVE P[5] = {UNKNOWN_PRIMITAVE,UNKNOWN_PRIMITAVE, LINES, TRIANGLES, QUADS};
+                    GPU._PrimitaveType = P[mIndexBuffer->getValuesPerVertex()];
+                }
+
+
                 std::cout << "============VOA Created============" << std::endl;
+                std::cout << "  ID       : " << GPU._VAO       << std::endl;
                 std::cout << "  size     : " << GPU._size      << std::endl;
                 std::cout << "  isindexed: " << GPU._isIndexed << std::endl;
-                if(mIndexBuffer->getValuesPerVertex() == 4)
+                switch(GPU._PrimitaveType )
                 {
-                    GPU._PrimitaveType = QUADS;
-                    std::cout << "elementtype: QUADS" << std::endl;
+                    case UNKNOWN_PRIMITAVE: std::cout << "elementtype: UNKNOWN" << std::endl; break;
+                    case LINES: std::cout << "elementtype: UNKNOWN" << std::endl; break;
+                    case TRIANGLES: std::cout << "elementtype: TRIANGLES" << std::endl; break;
+                    case QUADS: std::cout << "elementtype: QUADS" << std::endl; break;
                 }
-                else if(mIndexBuffer->getValuesPerVertex() == 3 )
-                {
-                    GPU._PrimitaveType = TRIANGLES;
-                    std::cout << "elementtype: TRIANGLES" << std::endl;
-                }
-                else if(mIndexBuffer->getValuesPerVertex() == 2)
-                {
-                    GPU._PrimitaveType = LINES;
-                    std::cout << "elementtype: LINES" << std::endl;
-                }
+
                 std::cout << "===================================" << std::endl;
 
+
+                /* NOTE
+                 *
+                 * We must check that all buffers have the same length, otherwise throw an exception.
+                 *
+                 * */
 
                 return GPU;
 
@@ -365,7 +405,7 @@ namespace glre
                 if(err != 0)
                 {
                     char str[100];
-                    sprintf(str, "Error activating index: %d.\nValesPerVertex: %d\n, IntegralType: %d\n, ShouldNormalize: %d\n", index, Num_Values_Per_Vertex, IntegralType, ShouldNormalize);
+                    sprintf(str, "Error activating index: %d.\nValesPerVertex: %d\n, IntegralType: %u\n, ShouldNormalize: %u\n", index, Num_Values_Per_Vertex, IntegralType, ShouldNormalize);
                     throw glre::GLRE_EXCEPTION( std::string(str) );
                 }
 
@@ -383,8 +423,21 @@ namespace glre
 
             std::shared_ptr<ArrayBuffer_b > & getBuffer(int i ) { return mBuffers[i];  }
             std::shared_ptr<ArrayBuffer_b > & getIndexBuffer()  { return mIndexBuffer; }
-
             unsigned int numBuffers() { return mBuffers.size(); }
+
+
+            template<class V, FUNDAMENTAL_TYPE F>
+            int createBuffer()
+            {
+                mBuffers.push_back(  std::make_shared<ArrayBuffer_T<V,F> >()  );
+                return( mBuffers.size() - 1 );
+            }
+
+            template<class V, FUNDAMENTAL_TYPE F>
+            void createIndexBuffer()
+            {
+                mIndexBuffer = std::make_shared<ArrayBuffer_T<V,F> >();
+            }
 
             void mergeWith( VertexArrayObject_N & other)
             {
@@ -394,7 +447,10 @@ namespace glre
                 }
                 if( mBuffers.size() != other.mBuffers.size() )
                 {
-                    throw glre::GLRE_EXCEPTION("VertexArrayObjects must have the same number of buffers to merge.");
+
+                    char str[100];
+                    sprintf(str, "VertexArrayObjects must have the same number of buffers to merge (%u,%u).\n", (uint)mBuffers.size(), (uint)other.mBuffers.size());
+                    throw glre::GLRE_EXCEPTION( std::string(str) );
                 }
 
                 for(int i=0; i < other.mBuffers.size(); i++)
@@ -411,7 +467,7 @@ namespace glre
                 {
                     if( mBuffers[i]->getIntegralType() == GL_FLOAT)
                     {
-                        #define VALUETYPE GL_FLOAT
+                        #define VALUETYPE FLOAT
                             if( mBuffers[i]->getValuesPerVertex()==4 )
                             {
                                 _joinBuffers<glre::vec4, VALUETYPE>( mBuffers[i], other.mBuffers[i], vec4(0.0,0.0,0.0,0.0));
@@ -432,7 +488,7 @@ namespace glre
                     }
                     else if( mBuffers[i]->getIntegralType() == GL_UNSIGNED_INT)
                     {
-                        #define VALUETYPE GL_UNSIGNED_INT
+                        #define VALUETYPE UNSIGNED_INT
                             if( mBuffers[i]->getValuesPerVertex()==4 )
                             {
                                 _joinBuffers<glre::uvec4, VALUETYPE>( mBuffers[i], other.mBuffers[i], uvec4(0,0,0,0));
@@ -452,24 +508,35 @@ namespace glre
                         #undef VALUETYPE
                     }
                 }
+                if( mIndexBuffer && other.mIndexBuffer)
+                {
+                    unsigned int off = mIndexBuffer->getVertexCount();
+                    _joinBuffers<glre::uvec3, UNSIGNED_INT>( mIndexBuffer, other.mIndexBuffer, uvec3(off,off,off) );
+                }
             }
 
-            template<class VertexType, GLenum INTEGRAL_TYPE>
+            template<class VertexType, FUNDAMENTAL_TYPE INTEGRAL_TYPE>
             void _joinBuffers( std::shared_ptr<ArrayBuffer_b > master, std::shared_ptr<ArrayBuffer_b > slave, const VertexType & OffsetValue)
             {
-                auto me    = std::dynamic_pointer_cast< glre::ArrayBuffer_T<VertexType, INTEGRAL_TYPE> >( master );
-                auto s     = std::dynamic_pointer_cast< glre::ArrayBuffer_T<VertexType, INTEGRAL_TYPE> >( slave );
+                auto me    = std::dynamic_pointer_cast< glre::ArrayBuffer_T< VertexType, INTEGRAL_TYPE > >( master );
+                auto s     = std::dynamic_pointer_cast< glre::ArrayBuffer_T< VertexType, INTEGRAL_TYPE > >( slave  );
 
-                for(int i=0;i<slave->getVertexCount();i++)
+                if(me && s)
                 {
-                    VertexType T = s->getVertex(i) + OffsetValue;
-                    me->insert( T );
+                    for(int i=0; i < slave->getVertexCount() ; i++)
+                    {
+                        VertexType T = s->getVertex(i) + OffsetValue;
+                        me->insert( T );
+                    }
+
+                    std::cout << "Buffers joined: new size: " << me->getVertexCount() << std::endl;
                 }
             }
 
         private:
             std::vector< std::shared_ptr<ArrayBuffer_b > >   mBuffers;
             std::shared_ptr<ArrayBuffer_b>                   mIndexBuffer;
+            PRIMITAVE                                        mDefaultPrimitave;
     };
 
 }
