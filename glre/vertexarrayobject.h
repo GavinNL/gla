@@ -352,7 +352,7 @@ namespace glre
                 //===============================
 
                 GPU._isIndexed     = false;
-                if(mIndexBuffer.get())
+                if( mIndexBuffer.get() )
                 {
                     mIndexBuffer->toGPU( ELEMENT_ARRAY_BUFFER );
                     GPU._isIndexed     = true;

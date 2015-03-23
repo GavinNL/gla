@@ -13,6 +13,7 @@ namespace glre
     iTriMesh_PNCUBI   loadModelWithBones(const std::string & path);
     //
     VertexArrayObject_N createAxes();
+    VertexArrayObject_N createBox( vec3 size);
 
     TriStripMesh_PNCU createPlane(int x_segments, int z_segments, bool sendToGPU);
 

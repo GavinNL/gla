@@ -28,8 +28,8 @@ class ShaderUnit
         {
             std::ifstream v(shader_path);
 
-            std::string V((std::istreambuf_iterator<char>(v)),
-                             std::istreambuf_iterator<char>());
+            std::string V( (std::istreambuf_iterator<char>(v)),
+                            std::istreambuf_iterator<char>() );
 
             std::cout << "========================================" << std::endl;
             std::cout << " Compiling: " << shader_path << std::endl;
@@ -46,7 +46,7 @@ class ShaderUnit
 
             const char * code = shader_code.c_str();
 
-            glShaderSource(V, 1, &code, NULL);
+            glShaderSource( V, 1, &code, NULL);
             glCompileShader(V);
 
             bool check = checkShader(V);
@@ -69,15 +69,11 @@ class ShaderUnit
                 GLint maxLength = 0;
                 glGetShaderiv(id, GL_INFO_LOG_LENGTH, &maxLength);
 
-                //The maxLength includes the NULL character
-                //std::vector<char> errorLog(maxLength);
                 char errorLog[maxLength];
                 glGetShaderInfoLog(id, maxLength, &maxLength, &errorLog[0]);
 
                 std::cout << errorLog << std::endl;
 
-                //Provide the infolog in whatever manor you deem best.
-                //Exit with failure.
                 glDeleteShader(id); //Don't leak the shader.
                 return false;
             } else {
@@ -100,11 +96,27 @@ class ShaderProgram
          ShaderProgram();
         ~ShaderProgram();
 
+        ShaderProgram(const ShaderProgram & other)
+        {
+            mProgram = other.mProgram;
+        }
+
+        ShaderProgram & operator=(const ShaderProgram & other)
+        {
+            mProgram = other.mProgram;
+            return(*this);
+        }
+
+
+        inline void DeleteShader()
+        {
+            glDeleteProgram(mProgram);
+        }
 
         inline GLuint getUniformLocation(const GLchar *name)
         {
             auto x = glGetUniformLocation(mProgram, name);
-            std::cout << "Uniform locatiom:,  " << name << ": " <<  x << std::endl;
+            std::cout << "Uniform locatiom("<<mProgram<<"):,  " << name << ": " <<  x << std::endl;
             return x;
         }
 

@@ -2,7 +2,7 @@
 #include "glre/utils/event.h"
 #include <iostream>
 
-namespace glre {
+namespace glre  {
 namespace utils {
 
 //int Something::s_nValue = 1;
@@ -57,8 +57,6 @@ void Window::SetCursorMode(MOUSE::CursorMode mode)
     glfwSetInputMode(mWindow, GLFW_CURSOR, mode);
     //glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 }
-
-
 //=====
 
 void Window::MakeCurrent()
@@ -89,16 +87,16 @@ void Window::PollEvents()
 
 std::shared_ptr<Window> Window::create(unsigned int width, unsigned int height, const char * title)
 {
-//    static bool IsInit = false;
+    static bool IsInit = false;
 
-//    if(!IsInit)
-//    {
-//        glfwInit();
-//        IsInit = true;
-//        glfwI
-//        glewExperimental = GL_TRUE;
-//        GLenum err = glewInit();
-//    }
+    if(!IsInit)
+    {
+        glfwInit();
+        IsInit = true;
+
+        glewExperimental = GL_TRUE;
+        GLenum err = glewInit();
+    }
 
     glfwSetErrorCallback( Window::_ErrorCallback );
 
@@ -117,8 +115,8 @@ std::shared_ptr<Window> Window::create(unsigned int width, unsigned int height, 
       return 0;
     }
 
-    std::cout << "Major: " << glfwGetWindowAttrib(W->mWindow,GLFW_CONTEXT_VERSION_MAJOR) << std::endl;
-    std::cout << "Minor: " << glfwGetWindowAttrib(W->mWindow,GLFW_CONTEXT_VERSION_MINOR) << std::endl;
+    std::cout << "Major: " << glfwGetWindowAttrib(W->mWindow, GLFW_CONTEXT_VERSION_MAJOR) << std::endl;
+    std::cout << "Minor: " << glfwGetWindowAttrib(W->mWindow, GLFW_CONTEXT_VERSION_MINOR) << std::endl;
     W->MakeCurrent();
 
     glfwSwapInterval(1);
@@ -131,6 +129,9 @@ std::shared_ptr<Window> Window::create(unsigned int width, unsigned int height, 
     glfwSetWindowIconifyCallback( W->mWindow, Window::_WindowMinimizedCallback);
     glfwSetDropCallback         ( W->mWindow, Window::_WindowFileDropCallback);
     glfwSetCharModsCallback     ( W->mWindow, Window::_WindowTextCallback);
+
+    glfwSetWindowUserPointer( W->mWindow, W.get() );
+
     Window::WindowMap[W->mWindow] = W;
 
     glewExperimental = GL_TRUE;
@@ -187,7 +188,9 @@ void Window::_MousePosCallback(GLFWwindow* window, double xpos, double ypos)
         W->_xMouse = xpos;
         W->_yMouse = ypos;
 
-    } else {
+    }
+    else
+    {
         Window::WindowMap.erase(window);
     }
 
@@ -196,13 +199,15 @@ void Window::_MousePosCallback(GLFWwindow* window, double xpos, double ypos)
 void Window::_MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
     Event E;
-    E.type   = MOUSEBUTTON;
+    E.type               = MOUSEBUTTON;
     E.MouseButton.button = static_cast<MOUSE::MouseButton>(button);
     E.MouseButton.action = action;
     E.MouseButton.mods   = mods;
+
     glfwGetCursorPos(window, &E.MouseButton.x, &E.MouseButton.y);
 
     auto W = Window::WindowMap[window].lock();
+
     if(W)
     {
         for(auto a : W->EventsMap)
@@ -304,6 +309,18 @@ void Window::_WindowTextCallback(GLFWwindow *window, unsigned int codepoint, int
     } else {
         Window::WindowMap.erase(window);
     }
+}
+
+uvec2 Window::size()
+{
+    uvec2 size;
+    glfwGetWindowSize(mWindow, (int*)(&size.x), (int*)&size.y);
+    return size;
+}
+
+void Window::setSize(const uvec2 &size)
+{
+    glfwSetWindowSize(mWindow, size.x, size.y);
 }
 
 }

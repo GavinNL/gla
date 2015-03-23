@@ -7,6 +7,7 @@
 #include <map>
 #include <memory>
 
+#include <glre/types.h>
 #include <glre/utils/event.h>
 
 namespace glre  {
@@ -35,7 +36,6 @@ class Window
         void SwapBuffers();
         bool WantsToClose();
 
-
         bool isMouseButtonPressed(utils::MOUSE::MouseButton b);
 
         std::map<std::string, std::function<void(const Event&)> > EventsMap;
@@ -43,6 +43,7 @@ class Window
         static void PollEvents();
         static std::shared_ptr<Window> create(unsigned int width, unsigned int height, const char * title);
 
+        //======================== CALLBACKS ==============================================================
         static void _ErrorCallback(int error, const char* description);
 
         static void _KeyCallback        (GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -54,8 +55,13 @@ class Window
         static void _WindowFocusCallback    (GLFWwindow* window, int focus);
         static void _WindowFileDropCallback (GLFWwindow* window, int count, const char** paths);
         static void _WindowTextCallback     (GLFWwindow* window, unsigned int codepoint, int mods);
+        //=================================================================================================
 
-    private:
+
+        uvec2 size();
+        void  setSize(const uvec2 & size);
+
+    protected:
         Window();
 
         GLFWwindow* mWindow;

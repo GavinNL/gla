@@ -24,8 +24,9 @@ HEADERS +=  glre/shader.h \
             glre/bone.h \
             glre/modelloader.h \
             glre/mesh.h \
-            glre/enums.h \
-    glre/gputexturearray.h
+            glre/types.h \
+            glre/gputexturearray.h \
+            glre/utils/app.h
 
 
 SOURCES +=  main.cpp \

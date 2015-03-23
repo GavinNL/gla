@@ -47,3 +47,11 @@ void main()
     oTexCoord0 = inUV;
     oColour    = inColour;
 }
+
+/*
+struct LightingInfo
+{
+    vec4 AmbientColour;
+    vec4
+}
+*/

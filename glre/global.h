@@ -11,25 +11,14 @@
 #include <glm/gtc/quaternion.hpp>
 #define GLM_FORCE_RADIANS
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/noise.hpp>
 
-#include <glre/enums.h>
+#include <glre/types.h>
 
 
 namespace glre
 {
-    typedef glm::vec2   vec2;
-    typedef glm::vec3   vec3;
-    typedef glm::vec4   vec4;
-    typedef glm::uvec4  uvec4;
-    typedef glm::uvec3  uvec3;
-    typedef glm::uvec2  uvec2;
-    typedef glm::ivec3  ivec3;
-    typedef glm::mat4   mat4;
-    typedef glm::quat   quat;
-    typedef glm::u8vec4 ucol4;
-    typedef glm::u8vec3 ucol3;
-    typedef glm::vec4    col4;
-    typedef glm::vec3    col3;
+
 
     class GPUTexture;
     class Texture;

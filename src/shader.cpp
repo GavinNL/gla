@@ -20,7 +20,7 @@ ShaderProgram::ShaderProgram() : mProgram(0)
 
 ShaderProgram::~ShaderProgram()
 {
-    glDeleteProgram(mProgram);
+    //glDeleteProgram(mProgram);
 }
 
 

@@ -9,7 +9,7 @@
 #include <iostream>
 
 #include <glre/exceptions.h>
-#include <glre/enums.h>
+#include <glre/types.h>
 
 namespace glre {
 

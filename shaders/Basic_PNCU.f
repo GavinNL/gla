@@ -21,12 +21,12 @@ void main()
 
         // Light emission properties
         // You probably want to put them as uniforms
-        vec3 LightColor = vec3(1,1,1);
+        vec3  LightColor = vec3(1,1,1);
         float LightPower = 10000.0f;
 
         // Material properties
-        vec3 MaterialDiffuseColor = texture2D( uSampler, oTexCoord0 ).rgb;
-        vec3 MaterialAmbientColor = vec3(0.0,0.1,0.1) * MaterialDiffuseColor.rgb;
+        vec3 MaterialDiffuseColor  = texture2D( uSampler, oTexCoord0 ).rgb;
+        vec3 MaterialAmbientColor  = vec3(0.0,0.1,0.1) * MaterialDiffuseColor.rgb;
         vec3 MaterialSpecularColor = vec3(1.0,0.3,0.3);
 
         // Distance to the light
@@ -61,7 +61,7 @@ void main()
         //colour = vec4(1.0,0.0,1.0,1.0);
         colour =
                 vec4(MaterialAmbientColor +
-                MaterialDiffuseColor * LightColor * LightPower * cosTheta / (distance*distance) +
+                MaterialDiffuseColor  * LightColor * LightPower * cosTheta / (distance*distance) +
                 MaterialSpecularColor * LightColor * LightPower * pow(cosAlpha,5) / (distance*distance),1.0);
 
 }
