@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(glre)
 aux_source_directory(./src  SRC_LIST)
 aux_source_directory(./src/utils  SRC_LIST)
+aux_source_directory(./src/engine  SRC_LIST)
 aux_source_directory(./glre INC_LIST)
 
 set(MYLIB_VERSION_MAJOR 0)

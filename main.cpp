@@ -24,12 +24,11 @@ class MyApp : public glre::utils::App
     {
         INFO.fromFile("resources/ExtraInfo.json");
 
-
         CreateWindow( (uint)INFO["main"]["width"].as<float>(),  (uint)INFO["main"]["height"].as<float>() , "GLRE Window" );
+
         setupGUI();
         setupOpenGL();
     }
-
 
     //===================================================================================================================
     // Setup Rgui and the callbacks.
@@ -39,7 +38,7 @@ class MyApp : public glre::utils::App
         auto R = rgui::Root::getInstance();
              R->init();
 
-        auto size = mWindow->size();
+        auto size     = mWindow->size();
         mGuiInterface = R->createInterface(  size.x, size.y,
                                              "MainInterface",
                                              INFO["main"]["skin"].as<std::string>() );
@@ -57,16 +56,18 @@ class MyApp : public glre::utils::App
                 case glre::utils::MOUSECURSOR:
                     mGuiInterface->injectMousePosition(rgui::LEFT_BUTTON, E.MouseCursor.x, E.MouseCursor.y);
                     break;
+
                 case glre::utils::TEXT:
                     mGuiInterface->injectCharacters( E.Text.codepoint );
                     break;
+
                 case glre::utils::KEY:
                     mGuiInterface->injectKey( rgui::FromGLFW[ E.Key.key ] , E.Key.action);
+                    break;
                 case glre::utils::MOUSEBUTTON:
-
                     const rgui::MouseButton MB[8] = {rgui::LEFT_BUTTON, rgui::RIGHT_BUTTON, rgui::MIDDLE_BUTTON,rgui::NONE,rgui::NONE,rgui::NONE,rgui::NONE, rgui::NONE};
-
                     mGuiInterface->injectMouseButton( MB[E.MouseButton.button], E.MouseButton.action, E.MouseButton.x, E.MouseButton.y);
+                    break;
                 break;
 
              }
@@ -134,7 +135,7 @@ class MyApp : public glre::utils::App
         BasicSahder.linkProgram( VertexShader("shaders/Basic_PNCU.v"), FragmentShader("shaders/Basic_PNCU.f") );
 
         // load the objects
-        Axis = glre::createAxes().toGPU();
+        Axis  = glre::createAxes().toGPU();
 
         // setup the camera
         mCamera.perspective(45, 640.0/480.0 ,0.2f, 1000.0f);
@@ -160,12 +161,10 @@ class MyApp : public glre::utils::App
         static GLuint LineShaderModelMatrixID = LineShader.getUniformLocation("inModelMatrix");
         //-----------------------------------------------------------------------------
 
-
         LineShader.useShader();
             LineShader.sendUniform_mat4(LineShaderCamMatrixId,   mCamera.getProjectionMatrix() * mCamera.getMatrix()  );
             LineShader.sendUniform_mat4(LineShaderModelMatrixID, glm::scale( mat4(1.0), vec3(5.0,5.0,5.0)) );
         Axis.Render();
-
 
         // Draw the RGUI interface
         glDisable(GL_CULL_FACE);
@@ -190,15 +189,16 @@ class MyApp : public glre::utils::App
         // OpenGL Objects
         //===================================================================================================================
         glre::GPUArrayObject Axis;
+        glre::GPUArrayBuffer Plane;
 };
 
 int main ()
 {
 
-    MyApp A;
-    A.start();
+     MyApp A;
+     A.start();
 
-    return 0;
+     return 0;
     rgui::json::Value JSON;
     JSON.fromFile("resources/ExtraInfo.json");
 
@@ -322,9 +322,9 @@ int main ()
 
 
 
-  auto DropDownCallback = [&] ( const rgui::Button::Callback & C, GLuint ID, uint w, uint h)
+  auto DropDownCallback = [&] ( const rgui::Button::Callback & C, GLuint ID, uvec2 dim)
   {
-        M["w3"].lock()->setRawRect( 0, 0, 1, 1, ID, w, h );
+        M["w3"].lock()->setRawRect( 0, 0, 1, 1, ID, dim.x, dim.y );
   };
 
 
@@ -367,10 +367,10 @@ int main ()
   //=============================================================================
   //  Set the callback methods for to see the texture in the GGUI
   //=============================================================================
-  std::dynamic_pointer_cast<rgui::ComboBox>(M["w2"].lock())->insertItem("Dragon")->addCallback( "texture", std::bind( DropDownCallback, std::placeholders::_1, Tex.getID(),   Tex.size()[0],   Tex.size()[1])  );
-  std::dynamic_pointer_cast<rgui::ComboBox>(M["w2"].lock())->insertItem("Marble")->addCallback( "texture", std::bind( DropDownCallback, std::placeholders::_1, Tex2.getID(), Tex2.size()[0],  Tex2.size()[1])  );
-  std::dynamic_pointer_cast<rgui::ComboBox>(M["w2"].lock())->insertItem("Spider")->addCallback( "texture", std::bind( DropDownCallback, std::placeholders::_1, Tex3.getID(), Tex3.size()[0],  Tex3.size()[1])  );
-  std::dynamic_pointer_cast<rgui::ComboBox>(M["w2"].lock())->insertItem("Noise")->addCallback(  "texture", std::bind( DropDownCallback, std::placeholders::_1, Tex4.getID(), Tex4.size()[0],  Tex4.size()[1])  );
+  std::dynamic_pointer_cast<rgui::ComboBox>(M["w2"].lock())->insertItem("Dragon")->addCallback( "texture", std::bind( DropDownCallback, std::placeholders::_1,  Tex.getID(),  Tex.size() ) );
+  std::dynamic_pointer_cast<rgui::ComboBox>(M["w2"].lock())->insertItem("Marble")->addCallback( "texture", std::bind( DropDownCallback, std::placeholders::_1, Tex2.getID(), Tex2.size() ) );
+  std::dynamic_pointer_cast<rgui::ComboBox>(M["w2"].lock())->insertItem("Spider")->addCallback( "texture", std::bind( DropDownCallback, std::placeholders::_1, Tex3.getID(), Tex3.size() ) );
+  std::dynamic_pointer_cast<rgui::ComboBox>(M["w2"].lock())->insertItem("Noise")->addCallback(  "texture", std::bind( DropDownCallback, std::placeholders::_1, Tex4.getID(), Tex4.size() ) );
   //=============================================================================
 
 

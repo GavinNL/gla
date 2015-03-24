@@ -24,6 +24,12 @@ class ShaderUnit
             compileFromFile(Path_Or_SourceCode);
         }
 
+        void destroy()
+        {
+            glDeleteShader( mShaderID );
+            mShaderID = 0;
+        }
+
         GLuint compileFromFile(  const std::string & shader_path)
         {
             std::ifstream v(shader_path);
@@ -55,8 +61,10 @@ class ShaderUnit
             {
                 std::cout << "Shader compiled sucessfully:" << V << std::endl;
             }
-            mShaderCode = shader_code;
+
             mShaderID   = V;
+
+            return V;
             //=====================================================
         }
 
@@ -82,7 +90,7 @@ class ShaderUnit
         }
 
         GLuint      mShaderID;
-        std::string mShaderCode;
+
 };
 
 typedef glre::ShaderUnit<GL_VERTEX_SHADER  > VertexShader;
@@ -95,6 +103,8 @@ class ShaderProgram
          ShaderProgram(const VertexShader & VS, const FragmentShader & FS);
          ShaderProgram();
         ~ShaderProgram();
+
+         void destroy();
 
         ShaderProgram(const ShaderProgram & other)
         {

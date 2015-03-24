@@ -12,6 +12,7 @@ namespace glre
 ShaderProgram::ShaderProgram(const VertexShader & VS, const FragmentShader & FS) : mProgram(0)
 {
     linkProgram(VS, FS);
+
 }
 
 ShaderProgram::ShaderProgram() : mProgram(0)
@@ -21,6 +22,12 @@ ShaderProgram::ShaderProgram() : mProgram(0)
 ShaderProgram::~ShaderProgram()
 {
     //glDeleteProgram(mProgram);
+    #warning "TODO: Figure out what to do about unloading shaders."
+}
+
+void ShaderProgram::destroy()
+{
+    glDeleteProgram(mProgram);
 }
 
 
