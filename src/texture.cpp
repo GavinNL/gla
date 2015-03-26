@@ -17,7 +17,6 @@ glre::Texture glre::GPUTexture::toCPU()
 
     return std::move(T);
 }
-
 //=================================================================================================================
 
 
@@ -40,7 +39,7 @@ glre::Texture::Texture(uint width, uint height) : mData(0)
 {
     mDim.x = width;
     mDim.y = height;
-    mData = new glre::ucol4[ mDim[0]*mDim[1] ];
+    mData  = new glre::ucol4[ mDim[0] * mDim[1] ];
 }
 
 glre::Texture::~Texture()
@@ -59,7 +58,6 @@ glre::GPUTexture glre::Texture::toGPU()
     {
         throw glre::GLRE_EXCEPTION("Error generating Texture on the GPU");
     }
-    //printf(" size: %d %d.    ID: %d\n", mDim.x, mDim.y, GPU.mTextureID);
 
     GPU.mDim = mDim;
 
@@ -100,7 +98,8 @@ void glre::Texture::loadFromMemory( unsigned char * Buffer, int buffersize)
 void glre::Texture::loadFromPath( const std::string & path)
 {
 
-    int x,y,comp;
+    int x, y, comp;
+
     //==========================================================
     // Load the Texture from an image file.
     //==========================================================

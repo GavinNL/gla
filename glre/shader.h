@@ -19,7 +19,11 @@ class ShaderUnit
 
         ShaderUnit(const std::string & Path_Or_SourceCode, bool isSourceCode=false)
         {
-            if(isSourceCode) compileFromString(Path_Or_SourceCode);
+            if(isSourceCode)
+            {
+                compileFromString(Path_Or_SourceCode);
+                return;
+            }
 
             compileFromFile(Path_Or_SourceCode);
         }
@@ -140,8 +144,6 @@ class ShaderProgram
         {
             glUniform1i(location, TextureNumber);
         }
-
-        inline void sendUniform_Sampler2D(const Texture & tex, GLint TextureNumber=0);
 
         inline void sendUniform_mat4(GLuint location, const mat4 & M, uint count=1 )
         {

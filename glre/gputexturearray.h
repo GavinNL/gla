@@ -14,16 +14,31 @@ class Texture;
 class GPUTextureArray
 {
 
+public:
     GPUTextureArray();
     GPUTextureArray(uint width, uint height, uint depth);
     GPUTextureArray(uvec3 size);
     ~GPUTextureArray();
 
-    void create(uvec2 size, unsigned int depth, int MipMapCount);
+    /**
+     * @brief create Creates the texture array on the GPU
+     * @param size the width and height dimensions of the textures
+     * @param depth the number of textures to allocate space for
+     * @param MipMapCount the mipmap level, default is 1
+     */
+    void create(uvec2 size, unsigned int depth, int MipMapCount=1);
+
+    /**
+     * @brief SetLayer - Copies a CPU texture into a particular depth in the Texture Array
+     * @param T - CPU texture to copy. This must be the same dimensions as the TextureArray
+     * @param Layer - the layer number to copy the texture into
+     * @param pOffset - an offset parameter.
+     */
+    void SetLayer( const Texture & T, uint Layer, const uvec2 & pOffset=uvec2(0,0) );
+
 
     inline void bind() { glBindTexture(GL_TEXTURE_2D_ARRAY, mID); }
 
-    void SetLayer( const Texture & T, uint Layer, const uvec2 & pOffset=uvec2(0,0) );
 
     void clear()
     {
@@ -41,6 +56,31 @@ class GPUTextureArray
 
     inline GLuint getID() const { return mID;   };
     inline uvec3  size()  const { return mSize; };
+
+    //=============================================================
+
+    /**
+     * @brief get_MAX_ARRAY_TEXTURE_LAYERS
+     * @return the maximum number of layers the texture array supports
+     */
+    static GLuint get_MAX_ARRAY_TEXTURE_LAYERS()
+    {
+        GLint max_layers;
+        glGetIntegerv (GL_MAX_ARRAY_TEXTURE_LAYERS, &max_layers);
+        return max_layers;
+    }
+
+    /**
+     * @brief get_MAX_TEXTURE_SIZE
+     * @return the maximum dimension of the textures.
+     */
+    static GLuint get_MAX_TEXTURE_SIZE()
+    {
+        GLint max;
+        glGetIntegerv (GL_MAX_TEXTURE_SIZE, &max);
+        return max;
+    }
+
 
     private:
         GLuint  mID;

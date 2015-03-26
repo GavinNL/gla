@@ -106,8 +106,6 @@ glre::VertexArrayObject_N ModelLoader::_extract_Mesh(aiMesh *InputMesh, bool Fli
             ReturnMesh.insertBuffer(B);
         }
 
-
-
         //======================== Get the Face Indices ============================
         if( InputMesh->HasFaces() )
         {

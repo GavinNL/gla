@@ -16,6 +16,8 @@ namespace glre {
     class GPUTexture
     {
         public:
+
+
             typedef enum {
                 NEAREST                = GL_NEAREST,
                 LINEAR                 = GL_LINEAR,
@@ -30,7 +32,6 @@ namespace glre {
             {
 
             }
-
 
             /**
              *  Sets the Min and Mag filter for this texture
@@ -76,13 +77,25 @@ namespace glre {
             }
 
             /**
-             *  Copies the texture from the GPU into CPU memory.
-             *
+             * @brief toCPU
+             * @return Returns a CPU copy of the texture
              */
             Texture toCPU();
 
             inline uvec2  size()  const { return mDim; }
             inline GLuint getID() const { return mTextureID;  }
+
+            //=============================================================
+            /**
+             * @brief get_MAX_TEXTURE_SIZE
+             * @return the maximum dimension of the textures.
+             */
+            static GLuint get_MAX_TEXTURE_SIZE()
+            {
+                GLint  max;
+                glGetIntegerv (GL_MAX_TEXTURE_SIZE, &max);
+                return max;
+            }
 
        private:
             uvec2        mDim;
@@ -96,11 +109,9 @@ namespace glre {
 
         public:
 
-
             Texture();
             Texture(uint w, uint h);
             Texture(const std::string & path);
-
 
             Texture(Texture && T) : mData(0)
             {
@@ -185,6 +196,7 @@ namespace glre {
 
 
             glre::ucol4* getRawData() const { return mData; };
+
         private:
             void _handleRawPixels(unsigned char * buffer, uint width, uint height);
 

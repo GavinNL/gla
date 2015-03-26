@@ -50,7 +50,8 @@ SOURCES +=  main.cpp \
             src/utils/window.cpp \
     src/engine/scene.cpp \
     src/engine/node.cpp \
-    src/engine/material.cpp
+    src/engine/material.cpp \
+    TextureArray.cpp
 
 
 INCLUDEPATH += ./ 
@@ -66,6 +67,8 @@ OTHER_FILES += \
     resources/ExtraInfo.json
 
 DISTFILES += \
-    Doxygen.cfg
+    Doxygen.cfg \
+    shaders/PNU_TextureArray.f \
+    shaders/PNU_TextureArray.v
 
 

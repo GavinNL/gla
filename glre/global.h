@@ -119,6 +119,38 @@ namespace glre
     /* Shared Pointer stuff*/
 
     typedef std::shared_ptr<ArrayBuffer_b> spArrayBuffer;
+
+    inline void GetGLError()
+    {
+        auto err = glGetError();
+        switch(err)
+        {
+            case GL_INVALID_OPERATION:
+                throw glre::GLRE_EXCEPTION("ERROR: GL_INVALID_OPERATION\n");
+                break;
+            case GL_INVALID_ENUM:
+                throw glre::GLRE_EXCEPTION("ERROR: GL_INVALID_ENUM\n");
+                break;
+            case GL_INVALID_VALUE:
+                throw glre::GLRE_EXCEPTION("ERROR: GL_INVALID_VALUE\n");
+                break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION:
+                throw glre::GLRE_EXCEPTION("ERROR: GL_INVALID_FRAMEBUFFER_OPERATION\n");
+                break;
+            case GL_OUT_OF_MEMORY:
+                throw glre::GLRE_EXCEPTION("ERROR: GL_OUT_OF_MEMORY\n");
+                break;
+            case GL_STACK_UNDERFLOW:
+                throw glre::GLRE_EXCEPTION("ERROR: GL_INVALID_FRAMEBUFFER_OPERATION\n");
+                break;
+            case GL_STACK_OVERFLOW:
+                throw glre::GLRE_EXCEPTION("ERROR: GL_INVALID_FRAMEBUFFER_OPERATION\n");
+                break;
+
+            default:
+                break;
+        }
+    }
 }
 
 

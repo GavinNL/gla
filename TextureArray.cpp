@@ -24,7 +24,7 @@ class MyApp : public glre::utils::App
     {
         INFO.fromFile("resources/ExtraInfo.json");
 
-        CreateWindow( (uint)INFO["main"]["width"].as<float>(),  (uint)INFO["main"]["height"].as<float>() , "GLRE Window" );
+        CreateWindow( (uint)INFO["main"]["width"].as<float>(),  (uint)INFO["main"]["height"].as<float>() , "Texture Array" );
 
         setupGUI();
         setupOpenGL();
@@ -132,10 +132,10 @@ class MyApp : public glre::utils::App
 
         // Load the shaders
         LineShader.linkProgram(  VertexShader("shaders/Line_PC.v")   , FragmentShader("shaders/Line_PC.f")    );
-        BasicSahder.linkProgram( VertexShader("shaders/Basic_PNCU.v"), FragmentShader("shaders/Basic_PNCU.f") );
 
         // load the objects
         Axis  = glre::createAxes().toGPU();
+        Box   = glre::createBox( vec3(5.0,5.0,5.0) ).toGPU();
 
         // setup the camera
         mCamera.perspective(45, 640.0/480.0 ,0.2f, 1000.0f);
@@ -143,6 +143,12 @@ class MyApp : public glre::utils::App
         mCamera.setPosition( vec3(5.0,1.0,5.0) );
         mCamera.yaw( -45.0f* 3.14159/180.0f );
 
+
+        TextureArrayShader.linkProgram( VertexShader("shaders/PNU_TextureArray.v"), FragmentShader("shaders/PNU_TextureArray.f") );
+
+        TArray.create( uvec2(512,512), 2,1);
+        TArray.SetLayer( Texture("resources/greyrock.png") , 0);
+        TArray.SetLayer( Texture("resources/rocks.jpg")    , 1);
     }
 
     //===================================================================================================================
@@ -161,13 +167,27 @@ class MyApp : public glre::utils::App
         // Create static variables of some of the uniform locations.
         // This shouldn't be done in practice, it's just convenient for now.
         //-----------------------------------------------------------------------------
+        static GLuint TA_ShaderCamMatrixId   = TextureArrayShader.getUniformLocation("inCameraMatrix");
+        static GLuint TA_ShaderModelMatrixID = TextureArrayShader.getUniformLocation("inModelMatrix");
+        static GLuint TA_ShaderTextureArray  = TextureArrayShader.getUniformLocation("uTextureArray");
+
         static GLuint LineShaderCamMatrixId   = LineShader.getUniformLocation("inCameraMatrix");
         static GLuint LineShaderModelMatrixID = LineShader.getUniformLocation("inModelMatrix");
         //-----------------------------------------------------------------------------
 
+
+        TArray.setActiveTexture(0);
+        TextureArrayShader.useShader();
+            TextureArrayShader.sendUniform_mat4(TA_ShaderCamMatrixId,   mCamera.getProjectionMatrix() * mCamera.getMatrix()  );
+            TextureArrayShader.sendUniform_mat4(TA_ShaderModelMatrixID, glm::scale( mat4(1.0), vec3(1.0,1.0,1.0)) );
+            TextureArrayShader.sendUniform_Sampler2D(TA_ShaderTextureArray, 0);
+        Box.Render();
+
         LineShader.useShader();
-            LineShader.sendUniform_mat4(LineShaderCamMatrixId,   mCamera.getProjectionMatrix() * mCamera.getMatrix()  );
+            LineShader.sendUniform_mat4(LineShaderCamMatrixId,   mCamera.getProjectionMatrix() * mCamera.getMatrix()   );
             LineShader.sendUniform_mat4(LineShaderModelMatrixID, glm::scale( mat4(1.0), vec3(5.0,5.0,5.0)) );
+        Axis.Render();
+
         Axis.Render();
 
         // Draw the RGUI interface
@@ -178,22 +198,27 @@ class MyApp : public glre::utils::App
     };
 
     private:
-        rgui::json::Value INFO;
-        rgui::pInterface  mGuiInterface;
+        rgui::json::Value       INFO;
+        rgui::pInterface        mGuiInterface;
 
-        glre::Camera      mCamera;
+        glre::Camera            mCamera;
+
+        //===================================================================================================================
+        // Textures
+        //===================================================================================================================
+        glre::GPUTextureArray  TArray;
 
         //===================================================================================================================
         // Shaders
         //===================================================================================================================
-        glre::ShaderProgram LineShader;
-        glre::ShaderProgram BasicSahder;
+        glre::ShaderProgram   LineShader;
+        glre::ShaderProgram   TextureArrayShader;
 
         //===================================================================================================================
         // OpenGL Objects
         //===================================================================================================================
-        glre::GPUArrayObject Axis;
-        glre::GPUArrayBuffer Plane;
+        glre::GPUArrayObject  Axis;
+        glre::GPUArrayObject  Box;
 };
 
 int main ()
@@ -210,7 +235,7 @@ int main ()
     int height = (uint)JSON["main"]["height"].as<float>();
 
 
-    if (!glfwInit () )
+    if (!glfwInit() )
     {
         fprintf (stderr, "ERROR: could not start GLFW3\n");
         return 1;

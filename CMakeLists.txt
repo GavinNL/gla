@@ -76,6 +76,9 @@ install(TARGETS glre
 add_executable(main main.cpp)
 target_link_libraries (main ${LIBS})
 
+add_executable(TextureArray TextureArray.cpp)
+target_link_libraries (TextureArray ${LIBS})
+
 add_executable(test test.cpp)
 target_link_libraries (test ${LIBS})
 
