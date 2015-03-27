@@ -10,6 +10,7 @@ void main()
 {
     vec2 r = outTexCoord0-vec2(0.5,0.5);
     float t = abs(cos( length(r) * 3.14159 * 2.0 ));
+    t = abs( length(r) );
 
     OutColour = (1.0-t)*texture( uTextureArray, vec3(outTexCoord0, 0 ) ) +
                 t*texture( uTextureArray, vec3(outTexCoord0, 1 ) );

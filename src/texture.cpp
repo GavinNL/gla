@@ -24,23 +24,34 @@ glre::Texture glre::GPUTexture::toCPU()
 //=================================================================================================================
 // Texture
 //=================================================================================================================
-glre::Texture::Texture() : mData(0)
+glre::Texture::Texture() : mData(0), r(this,0), g(this,1), b(this,2), a(this,3)
 {
 
 }
 
-glre::Texture::Texture(const std::string & path) :  mData(0)
+glre::Texture::Texture(const std::string & path) :  mData(0), r(this,0), g(this,1), b(this,2), a(this,3)
 {
     loadFromPath(path);
 }
 
 
-glre::Texture::Texture(uint width, uint height) : mData(0)
+glre::Texture::Texture(uint width, uint height) : mData(0), r(this,0), g(this,1), b(this,2), a(this,3)
 {
     mDim.x = width;
     mDim.y = height;
     mData  = new glre::ucol4[ mDim[0] * mDim[1] ];
 }
+
+glre::Texture::Texture(Texture & T) :  mData(0), r(this,0), g(this,1), b(this,2), a(this,3)
+{
+
+    mDim  = T.mDim;
+
+    mData = new glre::ucol4[mDim[0]*mDim[1]];
+    memcpy( mData, (void*)T.mData, mDim[0]*mDim[1]);
+    std::cout << "Texture copy constructor\n";
+}
+
 
 glre::Texture::~Texture()
 {
@@ -65,7 +76,7 @@ glre::GPUTexture glre::Texture::toGPU()
 
     glTexImage2D( GL_TEXTURE_2D, 0 , GL_RGBA, mDim.x, mDim.y, 0, GL_RGBA, GL_UNSIGNED_BYTE,  (void*)mData );
 
-    GPU.setFilter(GPUTexture::NEAREST, GPUTexture::NEAREST);
+    GPU.setFilter(GPUTexture::LINEAR, GPUTexture::LINEAR);
 
     return GPU;
 }
@@ -132,15 +143,6 @@ void glre::Texture::_handleRawPixels(unsigned char * buffer, uint width, uint he
 
 }
 
-glre::Texture::Texture(Texture & T)
-{
-
-    mDim  = T.mDim;
-
-    mData = new glre::ucol4[mDim[0]*mDim[1]];
-    memcpy( mData, (void*)T.mData, mDim[0]*mDim[1]);
-    std::cout << "Texture copy constructor\n";
-}
 
 
 

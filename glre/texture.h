@@ -8,6 +8,23 @@ namespace glre {
 
     class Texture;
 
+    class ChannelReference
+    {
+    public:
+        ChannelReference(Texture* pTexture, int pIndex)
+        {
+            mTexture = pTexture;
+            mIndex   = pIndex;
+        };
+
+        inline unsigned char & operator()(int i, int j);
+
+        inline ChannelReference& operator=(ChannelReference & c);
+
+        private:
+            Texture *   mTexture;
+            int         mIndex;
+    };
 
     //===========================================================================
     // GPUTexture
@@ -104,6 +121,7 @@ namespace glre {
        friend class Texture;
     };
 
+
     class Texture
     {
 
@@ -112,10 +130,12 @@ namespace glre {
             Texture();
             Texture(uint w, uint h);
             Texture(const std::string & path);
+            Texture(Texture & T);
 
-            Texture(Texture && T) : mData(0)
+            Texture(Texture && T) : mData(0), r(this,0), g(this,1), b(this,2), a(this,3)
             {
                 if(mData) clear();
+
                 mData = T.mData;
                 mDim  = T.mDim;
                 T.mDim = {0,0};
@@ -124,7 +144,6 @@ namespace glre {
 
             }
 
-            Texture(Texture & T);
 
             Texture & operator=(Texture && T)
             {
@@ -197,6 +216,11 @@ namespace glre {
 
             glre::ucol4* getRawData() const { return mData; };
 
+
+            ChannelReference r;
+            ChannelReference g;
+            ChannelReference b;
+            ChannelReference a;
         private:
             void _handleRawPixels(unsigned char * buffer, uint width, uint height);
 
@@ -207,6 +231,21 @@ namespace glre {
 
 
     };
+
+
+    inline unsigned char & ChannelReference::operator()(int i, int j)
+    {
+        return (*mTexture)(i,j)[mIndex];
+    };
+
+    inline ChannelReference& ChannelReference::operator=(ChannelReference & c)
+    {
+        std::cout << "Copying channel\n";
+        uvec2 s = mTexture->size();
+        for(int x=0; x < s.x; x++)
+            for(int y=0; y < s.y; y++)
+                (*mTexture)(x,y)[mIndex] = c( (int)x, (int)y);
+    }
 
 }
 #endif // TEXTURE_H

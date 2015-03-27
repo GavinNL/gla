@@ -147,8 +147,16 @@ class MyApp : public glre::utils::App
         TextureArrayShader.linkProgram( VertexShader("shaders/PNU_TextureArray.v"), FragmentShader("shaders/PNU_TextureArray.f") );
 
         TArray.create( uvec2(512,512), 2,1);
-        TArray.SetLayer( Texture("resources/greyrock.png") , 0);
-        TArray.SetLayer( Texture("resources/rocks.jpg")    , 1);
+
+        Texture T1("resources/greyrock.png");
+        Texture T2("resources/rocks.jpg");
+
+        T1.r = T2.b;
+        T1.g = T2.g;
+        T1.b = T2.r;
+
+        TArray.SetLayer( T1 , 0);
+        TArray.SetLayer( T1 , 1);
     }
 
     //===================================================================================================================
