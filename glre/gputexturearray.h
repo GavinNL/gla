@@ -54,6 +54,12 @@ public:
         glBindTexture(GL_TEXTURE_2D_ARRAY, mID);
     }
 
+    inline void bindToUnit(unsigned int unit=0)
+    {
+        glActiveTexture(GL_TEXTURE0 + unit);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, mID);
+    }
+
     inline GLuint getID() const { return mID;   };
     inline uvec3  size()  const { return mSize; };
 

@@ -69,6 +69,8 @@ OTHER_FILES += \
 DISTFILES += \
     Doxygen.cfg \
     shaders/PNU_TextureArray.f \
-    shaders/PNU_TextureArray.v
+    shaders/PNU_TextureArray.v \
+    shaders/PNU_TriPlanar.f \
+    shaders/PNU_TriPlanar.v
 
 
