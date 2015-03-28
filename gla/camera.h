@@ -20,10 +20,10 @@ class Camera : public Transformation
         inline void perspective(float FOV, float AspectRatio, float zMin, float zMax)
         {
              mAspectRatio = AspectRatio;
-             mFOV   = FOV;
-             mZMin  = zMin;
-             mZMax  = zMax;
-             mProj  = glm::perspective(FOV, AspectRatio, zMin,zMax);
+             mFOV         = FOV;
+             mZMin        = zMin;
+             mZMax        = zMax;
+             mProj        = glm::perspective(FOV, AspectRatio, zMin,zMax);
         };
 
         inline void setPosition( const vec3 & pos )
@@ -40,19 +40,19 @@ class Camera : public Transformation
         {
             quat q     = reverse();
             vec3 a     = (q * mAcceleration);
-            //std::cout << mOrientation[0] << "," << mOrientation[1] << "," << mOrientation[2] << "," << mOrientation[3] << ","  << std::endl;
-            vec3 dx    = mSpeed*dt + 0.5f*(dt*dt)*a;
+
+            vec3 dx    = mSpeed*dt + 0.5f * (dt*dt)*a;
 
             float drag = glm::dot(mSpeed, mSpeed);
 
-            mSpeed  += a * dt;
+            if( glm::length(mSpeed) < 5.0f);
+                mSpeed  += a * dt;
 
             if( drag > 0)
             {
                 mSpeed  -=  drag * mSpeed * dt;
             }
-           // std::cout << mSpeed[0] << "," << mSpeed[1] << "," << mSpeed[2] << std::endl;
-            //std::cout << "   " << dx[0] << "," << dx[1] << "," << dx[2] << std::endl;
+
             translate(  dx  );
         }
 

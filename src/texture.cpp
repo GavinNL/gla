@@ -122,6 +122,42 @@ Texture LoadTexture(const std::string &path)
 }
 
 
+void Texture::resize( const uvec2 & newSize)
+{
+    Texture T( newSize.x, newSize.y);
+    auto d = T.size();
+
+    for(int i=0; i < d.x; i++)
+        for(int j=0; j < d.y; j++)
+        {
+            // scale the x and y dimeninos to be between 0 and 1
+            float x = (float)i / (float)d.x;
+            float y = (float)j / (float)d.y;
+
+            // Find the index on the main texture
+            int X = static_cast<int>(x * mDim.x);
+            int Y = static_cast<int>(y * mDim.y);
+
+            // sample the 4 locations
+            vec4 f00 = vec4( (*this)(X,Y)    );
+            vec4 f01 = vec4( (*this)(X,Y+1)  );
+            vec4 f10 = vec4( (*this)(X+1,Y)  );
+            vec4 f11 = vec4( (*this)(X+1,Y+1));
+
+            float s = x * static_cast<float>(mDim.x);
+            float t = y * static_cast<float>(mDim.y);
+
+            // get the fractional part
+            s = s-floor(s);
+            t = t-floor(t);
+
+            T(i,j) = ucol4(f00*(1-s)*(1-t) + f10*s*(1-t) + f01*(1-s)*t + f11*s*t);
+
+        }
+
+        *this = std::move(T);
+}
+
 
  Texture        Texture::operator+(  Texture & c)
 {
@@ -536,7 +572,41 @@ ChannelReference&       ChannelReference::operator=( std::function<        float
 /*==============================================================================
 Texture Channel Definitions
 ==============================================================================*/
+void TextureChannel::resize( const uvec2 & newSize)
+{
+    TextureChannel T( newSize.x, newSize.y);
+    auto d = T.size();
 
+    for(int i=0; i < d.x; i++)
+        for(int j=0; j < d.y; j++)
+        {
+            // scale the x and y dimeninos to be between 0 and 1
+            float x = (float)i / (float)d.x;
+            float y = (float)j / (float)d.y;
+
+            // Find the index on the main texture
+            int X = static_cast<int>(x * mDim.x);
+            int Y = static_cast<int>(y * mDim.y);
+
+            // sample the 4 locations
+            float f00 = static_cast<float>( (*this)(X,Y)    );
+            float f01 = static_cast<float>( (*this)(X,Y+1)  );
+            float f10 = static_cast<float>( (*this)(X+1,Y)  );
+            float f11 = static_cast<float>( (*this)(X+1,Y+1));
+
+            float s = x * static_cast<float>(mDim.x);
+            float t = y * static_cast<float>(mDim.y);
+
+            // get the fractional part
+            s = s-floor(s);
+            t = t-floor(t);
+
+            T(i,j) = static_cast<unsigned char>(f00*(1-s)*(1-t) + f10*s*(1-t) + f01*(1-s)*t + f11*s*t);
+
+        }
+
+        *this = std::move(T);
+}
 
 TextureChannel&       TextureChannel::operator=( std::function<        float(const  vec2 &)> F)
 {

@@ -230,6 +230,8 @@ namespace gla {
         inline uvec2 size() { return mDim; };
 
 
+        void resize( const uvec2 & newSize);
+
         // Operators
         TextureChannel operator+(TextureChannel & R);
         TextureChannel operator-(TextureChannel & R);
@@ -398,6 +400,9 @@ namespace gla {
              * Clears the image data from the CPU.
              */
             void clear();
+
+
+            void resize( const uvec2 & newSize);
 
             /**
              * @brief get Returns the value of the pixel (x,y)

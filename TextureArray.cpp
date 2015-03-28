@@ -145,30 +145,36 @@ class MyApp : public gla::utils::App
 
         TextureArrayShader.linkProgram( VertexShader("shaders/PNU_TextureArray.v"), FragmentShader("shaders/PNU_TextureArray.f") );
 
-        TArray.create( uvec2(512,512), 2, 1 );
+        TArray.create( uvec2(256,256), 2, 1 );
 
         Texture T1("resources/greyrock.png");
         Texture T2("resources/rocks.jpg");
 
-        T1   = 0;
-        T1.r = 0;
-        T1.a = 255;
 
-        T1.g = [] (const vec2 & r)
-        {
-            float t = glm::length(r - vec2(0.5)) * 3.14529f;
-            return(  fabs( cos(t) )  );
-        };
+        T1.resize( uvec2(32,32) );
+        T1.resize( uvec2(256,256) );
+        T2.resize( uvec2(256,256) );
+        //
+        // std::cout << T1.size().x << std::endl;
+        // T1   = 0;
+        // T1.r = 0;
+        // T1.a = 255;
+        //
+        // T1.g = [] (const vec2 & r)
+        // {
+        //     float t = glm::length(r - vec2(0.5)) * 3.14529f;
+        //     return(  fabs( cos(t) )  );
+        // };
 
-        T1  = [] (const vec2 & r)
-            {
-                   float red   =  cos(glm::length( r-vec2(0.5f))*3.14159 );
-                   float green =  sin(glm::length( r-vec2(0.5f))*3.14159 );
-                   return( vec4(red,green,1.0,1.0)) ;
-            };
+        //T1  = [] (const vec2 & r)
+        //    {
+        //           float red   =  cos(glm::length( r-vec2(0.5f))*3.14159 );
+        //           float green =  sin(glm::length( r-vec2(0.5f))*3.14159 );
+        //           return( vec4(red,green,1.0,1.0)) ;
+        //    };
 
         TArray.SetLayer( T1 , 0);
-        TArray.SetLayer( T1 , 1);
+        TArray.SetLayer( T2 , 1);
     }
 
     //===================================================================================================================

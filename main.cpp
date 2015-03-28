@@ -141,7 +141,7 @@ class MyApp : public gla::utils::App
         mCamera.perspective(45, 640.0/480.0 ,0.2f, 1000.0f);
 
         mCamera.setPosition( vec3(5.0,1.0,5.0) );
-        mCamera.yaw( -45.0f* 3.14159/180.0f );
+        mCamera.yaw( -45.0f* 3.14159 / 180.0f );
 
     }
 
