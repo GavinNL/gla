@@ -1,10 +1,10 @@
-#include "glre/texture.h"
+#include "gla/texture.h"
 #include <string.h>
 #include <iostream>
-#include <glre/stb/stb_image.h>
+#include <gla/stb/stb_image.h>
 
 
-namespace glre {
+namespace gla {
 
 #define CLAMP(a,A,B) std::min( B, std::max(a,A) )
 
@@ -38,7 +38,7 @@ GPUTexture Texture::toGPU()
 
     if( !GPU.mTextureID )
     {
-        throw glre::GLRE_EXCEPTION("Error generating Texture on the GPU");
+        throw gla::GLRE_EXCEPTION("Error generating Texture on the GPU");
     }
 
     GPU.mDim = mDim;
@@ -105,7 +105,7 @@ void Texture::_handleRawPixels(unsigned char * buffer, uint width, uint height)
 
     mDim = {width, height};
 
-    mData = new glre::ucol4[width*height];
+    mData = new gla::ucol4[width*height];
     memcpy( mData, (void*)buffer, width*height*4);
 
     //for(int i=0;i<width*height;i++) std::swap(mData[i].r, mData[i].b);
@@ -646,4 +646,4 @@ void TextureChannel::operator+=(unsigned char r)
 
 
 #define GLRE_IMAGE_IMPLEMENTATION
-#include <glre/stb/stb_image.h>
+#include <gla/stb/stb_image.h>

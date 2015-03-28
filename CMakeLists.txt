@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
-project(glre)
+project(gla)
 aux_source_directory(./src  SRC_LIST)
 aux_source_directory(./src/utils  SRC_LIST)
 aux_source_directory(./src/engine  SRC_LIST)
-aux_source_directory(./glre INC_LIST)
+aux_source_directory(./gla INC_LIST)
 
 set(MYLIB_VERSION_MAJOR 0)
 set(MYLIB_VERSION_MINOR 1)
@@ -62,9 +62,9 @@ set(LIBS_TEST      ${PROJECT_NAME} z assimp      ${GLFW_STATIC_LIBRARIES} ${OPEN
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${MYLIB_VERSION_STRING}
                                            SOVERSION ${MYLIB_VERSION_MAJOR})
 
-INSTALL( DIRECTORY glre DESTINATION include )
+INSTALL( DIRECTORY gla DESTINATION include )
 
-install(TARGETS glre
+install(TARGETS gla
      RUNTIME DESTINATION bin
      LIBRARY DESTINATION lib
      ARCHIVE DESTINATION lib

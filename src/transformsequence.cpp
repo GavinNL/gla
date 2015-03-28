@@ -1,7 +1,7 @@
-#include "glre/transformsequence.h"
+#include "gla/transformsequence.h"
 
 #include <algorithm>
-namespace glre
+namespace gla
 {
 
 TransformSequence::TransformSequence(TransformSequence &&other)
@@ -77,20 +77,20 @@ vec3 TransformSequence::getScale(float t)
     return p;
 }
 
-glre::quat TransformSequence::getRotation(float t)
+gla::quat TransformSequence::getRotation(float t)
 {
     if( mRKeys.size() ==0 ) return quat();
     auto it = std::lower_bound(mRKeys.begin(), mRKeys.end(), t,
               [](quatkey const & x, float d)
               { return x.mTime < d; });
 
-    glre::quat p = it->mValue;
+    gla::quat p = it->mValue;
     if(it == mRKeys.end()) return p;
 
     float  s = it->mTime;
     float DT = (it++)->mTime - it->mTime;
 
-    glre::quat p2 = it->mValue;
+    gla::quat p2 = it->mValue;
            s = ( t - s ) / DT;
 
            return glm::slerp(p,p2,s);

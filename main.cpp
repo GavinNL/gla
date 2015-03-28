@@ -2,18 +2,18 @@
 #include <GLFW/glfw3.h> // GLFW helper library
 #include <stdio.h>
 
-#include <glre/glre.h>
-#include <glre/utils/window.h>
-#include <glre/utils/app.h>
+#include <gla/gla.h>
+#include <gla/utils/window.h>
+#include <gla/utils/app.h>
 #include <locale>
 
 #include <rgui/rgui.h>
 
 
-using namespace glre;
+using namespace gla;
 
 
-class MyApp : public glre::utils::App
+class MyApp : public gla::utils::App
 {
     public:
 
@@ -49,22 +49,22 @@ class MyApp : public glre::utils::App
         //--------------------------------------------------------------------------------------------------------------
         // Set the callback for RGUI.
         //--------------------------------------------------------------------------------------------------------------
-        mWindow->EventsMap["GUI"] = [&] (const glre::utils::Event & E)
+        mWindow->EventsMap["GUI"] = [&] (const gla::utils::Event & E)
         {
             switch(E.type)
             {
-                case glre::utils::MOUSECURSOR:
+                case gla::utils::MOUSECURSOR:
                     mGuiInterface->injectMousePosition(rgui::LEFT_BUTTON, E.MouseCursor.x, E.MouseCursor.y);
                     break;
 
-                case glre::utils::TEXT:
+                case gla::utils::TEXT:
                     mGuiInterface->injectCharacters( E.Text.codepoint );
                     break;
 
-                case glre::utils::KEY:
+                case gla::utils::KEY:
                     mGuiInterface->injectKey( rgui::FromGLFW[ E.Key.key ] , E.Key.action);
                     break;
-                case glre::utils::MOUSEBUTTON:
+                case gla::utils::MOUSEBUTTON:
                     const rgui::MouseButton MB[8] = {rgui::LEFT_BUTTON, rgui::RIGHT_BUTTON, rgui::MIDDLE_BUTTON,rgui::NONE,rgui::NONE,rgui::NONE,rgui::NONE, rgui::NONE};
                     mGuiInterface->injectMouseButton( MB[E.MouseButton.button], E.MouseButton.action, E.MouseButton.x, E.MouseButton.y);
                     break;
@@ -76,12 +76,12 @@ class MyApp : public glre::utils::App
         //--------------------------------------------------------------------------------------------------------------
         // Set the callback to control the camera
         //--------------------------------------------------------------------------------------------------------------
-        mWindow->EventsMap["CAM"] = [&] (const glre::utils::Event & E)
+        mWindow->EventsMap["CAM"] = [&] (const gla::utils::Event & E)
         {
             float speed = 10.0f;
             switch(E.type)
             {
-                case glre::utils::KEY:
+                case gla::utils::KEY:
                     if(E.Key.mods == GLFW_MOD_SHIFT) speed = 160.f;
                     switch( E.Key.key )
                     {
@@ -99,19 +99,19 @@ class MyApp : public glre::utils::App
                             break;
                     }
 
-                case glre::utils::MOUSECURSOR:
-                    if( mWindow->isMouseButtonPressed(glre::utils::MOUSE::RIGHT_MOUSE_BUTTON))
+                case gla::utils::MOUSECURSOR:
+                    if( mWindow->isMouseButtonPressed(gla::utils::MOUSE::RIGHT_MOUSE_BUTTON))
                         mCamera.rotate(   vec3( -(float)E.MouseCursor.dy*0.001,  (float)E.MouseCursor.dx*0.001, 0.0 ) );
                     break;
 
-                case glre::utils::MOUSEBUTTON:
+                case gla::utils::MOUSEBUTTON:
                     switch( E.MouseButton.button )
                     {
                         case GLFW_MOUSE_BUTTON_RIGHT:
                             if( E.MouseButton.action == GLFW_PRESS)
-                                mWindow->SetCursorMode( glre::utils::MOUSE::CURSOR_DISABLED);
+                                mWindow->SetCursorMode( gla::utils::MOUSE::CURSOR_DISABLED);
                             else
-                                mWindow->SetCursorMode(  glre::utils::MOUSE::CURSOR_NORMAL );
+                                mWindow->SetCursorMode(  gla::utils::MOUSE::CURSOR_NORMAL );
                             break;
 
                     }
@@ -135,7 +135,7 @@ class MyApp : public glre::utils::App
         BasicSahder.linkProgram( VertexShader("shaders/Basic_PNCU.v"), FragmentShader("shaders/Basic_PNCU.f") );
 
         // load the objects
-        Axis  = glre::createAxes().toGPU();
+        Axis  = gla::createAxes().toGPU();
 
         // setup the camera
         mCamera.perspective(45, 640.0/480.0 ,0.2f, 1000.0f);
@@ -181,19 +181,19 @@ class MyApp : public glre::utils::App
         rgui::json::Value INFO;
         rgui::pInterface  mGuiInterface;
 
-        glre::Camera      mCamera;
+        gla::Camera      mCamera;
 
         //===================================================================================================================
         // Shaders
         //===================================================================================================================
-        glre::ShaderProgram LineShader;
-        glre::ShaderProgram BasicSahder;
+        gla::ShaderProgram LineShader;
+        gla::ShaderProgram BasicSahder;
 
         //===================================================================================================================
         // OpenGL Objects
         //===================================================================================================================
-        glre::GPUArrayObject Axis;
-        glre::GPUArrayBuffer Plane;
+        gla::GPUArrayObject Axis;
+        gla::GPUArrayBuffer Plane;
 };
 
 int main ()
@@ -217,7 +217,7 @@ int main ()
     }
 
 
-  auto w1 = glre::utils::Window::create(width,height, "Test window");
+  auto w1 = gla::utils::Window::create(width,height, "Test window");
 
 
         auto R = rgui::Root::getInstance();
@@ -236,19 +236,19 @@ int main ()
 
 
 
-        w1->EventsMap["GUI"] = [&] (const glre::utils::Event & E) {
+        w1->EventsMap["GUI"] = [&] (const gla::utils::Event & E) {
 
                         switch(E.type)
                         {
-                            case glre::utils::MOUSECURSOR:
+                            case gla::utils::MOUSECURSOR:
                                 I->injectMousePosition(rgui::LEFT_BUTTON, E.MouseCursor.x, E.MouseCursor.y);
                                 break;
-                            case glre::utils::TEXT:
+                            case gla::utils::TEXT:
                                 I->injectCharacters( E.Text.codepoint );
                                 break;
-                            case glre::utils::KEY:
+                            case gla::utils::KEY:
                                 I->injectKey( rgui::FromGLFW[ E.Key.key ] , E.Key.action);
-                            case glre::utils::MOUSEBUTTON:
+                            case gla::utils::MOUSEBUTTON:
 
                                 const rgui::MouseButton MB[8] = {rgui::LEFT_BUTTON, rgui::RIGHT_BUTTON, rgui::MIDDLE_BUTTON,rgui::NONE,rgui::NONE,rgui::NONE,rgui::NONE, rgui::NONE};
 
@@ -259,15 +259,15 @@ int main ()
 
         };
 
-        glre::Camera Cam;
+        gla::Camera Cam;
         Cam.perspective(45, 640.0/480.0 ,0.2f, 1000.0f);
 
 
-        w1->EventsMap["CAM"] = [&] (const glre::utils::Event & E) {
+        w1->EventsMap["CAM"] = [&] (const gla::utils::Event & E) {
 
                         switch(E.type)
                         {
-                            case glre::utils::KEY:
+                            case gla::utils::KEY:
                                 switch( E.Key.key )
                                 {
                                     case GLFW_KEY_W:
@@ -284,15 +284,15 @@ int main ()
                                         break;
                                 }
 
-                            case glre::utils::MOUSECURSOR:
-                                if( w1->isMouseButtonPressed(glre::utils::MOUSE::RIGHT_MOUSE_BUTTON))
+                            case gla::utils::MOUSECURSOR:
+                                if( w1->isMouseButtonPressed(gla::utils::MOUSE::RIGHT_MOUSE_BUTTON))
                                 {
                                     Cam.rotate(   vec3( -(float)E.MouseCursor.dy*0.001,  (float)E.MouseCursor.dx*0.001, 0.0 ) );
                                 }
 
                                 break;
 
-                            case glre::utils::MOUSEBUTTON:
+                            case gla::utils::MOUSEBUTTON:
 
                                 switch( E.MouseButton.button )
                                 {
@@ -300,11 +300,11 @@ int main ()
 
                                         if( E.MouseButton.action == GLFW_PRESS)
                                         {
-                                            w1->SetCursorMode( glre::utils::MOUSE::CURSOR_DISABLED);
+                                            w1->SetCursorMode( gla::utils::MOUSE::CURSOR_DISABLED);
                                         }
                                         else
                                         {
-                                            w1->SetCursorMode(  glre::utils::MOUSE::CURSOR_NORMAL );
+                                            w1->SetCursorMode(  gla::utils::MOUSE::CURSOR_NORMAL );
                                         }
                                         break;
 
@@ -337,17 +337,17 @@ int main ()
   //=============================================================================
   //auto DragonGPU = loadModel( "resources/dragon.obj",true).CreateGPUObject();
   //auto DragonGPU = glre::ModelLoader::loadModel( JSON["main"]["model"].as<std::string>() ).toGPU();
-  auto DragonGPU = glre::createBox( vec3(2.0,2.0,8.0) ).toGPU();
-  auto    Axis   = glre::createAxes().toGPU();
+  auto DragonGPU = gla::createBox( vec3(2.0,2.0,8.0) ).toGPU();
+  auto    Axis   = gla::createAxes().toGPU();
 
 
   //=============================================================================
   // Load the Textures
   //=============================================================================
-  GPUTexture Tex  = glre::LoadTexture("resources/dragontexture.png").toGPU();
+  GPUTexture Tex  = gla::LoadTexture("resources/dragontexture.png").toGPU();
   //GPUTexture Tex  = glre::LoadTexture("resources/boblampclean.md5mesh").toGPU();
-  GPUTexture Tex2 = glre::LoadTexture("resources/marble.jpg"       ).toGPU();
-  GPUTexture Tex3 = glre::LoadTexture("resources/SpiderTex.jpg"    ).toGPU();
+  GPUTexture Tex2 = gla::LoadTexture("resources/marble.jpg"       ).toGPU();
+  GPUTexture Tex3 = gla::LoadTexture("resources/SpiderTex.jpg"    ).toGPU();
 
   Texture T(1024,1024);
   for( uint i = 0; i < 1024; i++)
@@ -362,8 +362,8 @@ int main ()
   //=============================================================================
   // Load the Shaders
   //=============================================================================
-  glre::ShaderProgram LineShader( VertexShader("shaders/Line_PC.v")   , FragmentShader("shaders/Line_PC.f")   );
-  glre::ShaderProgram S(          VertexShader("shaders/Basic_PNCU.v"), FragmentShader("shaders/Basic_PNCU.f"));
+  gla::ShaderProgram LineShader( VertexShader("shaders/Line_PC.v")   , FragmentShader("shaders/Line_PC.f")   );
+  gla::ShaderProgram S(          VertexShader("shaders/Basic_PNCU.v"), FragmentShader("shaders/Basic_PNCU.f"));
   //=============================================================================
 
 
@@ -387,7 +387,7 @@ int main ()
   GLuint lightPositionID         = S.getUniformLocation("uLightPosition");
   GLuint uSampler0ID             = S.getUniformLocation("uSampler");
 
-  glre::mat4 Pv = Cam.getProjectionMatrix();
+  gla::mat4 Pv = Cam.getProjectionMatrix();
 
   // tell GL to only draw onto a pixel if the shape is closer to the viewer
 
@@ -434,7 +434,7 @@ int main ()
        glDisable(GL_CULL_FACE);
        I->draw();
 
-       glre::utils::Window::PollEvents();
+       gla::utils::Window::PollEvents();
        w1->SwapBuffers();
 
        dt = tim.getElapsedTime();

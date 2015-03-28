@@ -1,6 +1,6 @@
-#include "glre/engine/material.h"
+#include "gla/engine/material.h"
 
-namespace glre {
+namespace gla {
 namespace engine {
 
 

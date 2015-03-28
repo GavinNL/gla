@@ -1,7 +1,7 @@
-#include "glre/gputexturearray.h"
-#include "glre/texture.h"
+#include "gla/gputexturearray.h"
+#include "gla/texture.h"
 
-namespace glre {
+namespace gla {
 
 
 
@@ -29,7 +29,7 @@ void GPUTextureArray::create( uvec2 size, unsigned int depth, int MipMapCount )
 
     if( !mID )
     {
-        throw glre::GLRE_EXCEPTION("ERROR: error generating textures for TextureArray2D");
+        throw gla::GLRE_EXCEPTION("ERROR: error generating textures for TextureArray2D");
     }
 
     bind();
@@ -54,12 +54,12 @@ void GPUTextureArray::SetLayer(const Texture & T, uint Layer, const uvec2 & pOff
 
     if( Layer >= mSize.z)
     {
-        throw glre::GLRE_EXCEPTION("ERROR: Layer number is larger than the allocated size of the TextureArray.");
+        throw gla::GLRE_EXCEPTION("ERROR: Layer number is larger than the allocated size of the TextureArray.");
     }
 
     if( T.size().x + pOffset.x > mSize.x || T.size().y + pOffset.y > mSize.y )
     {
-        throw glre::GLRE_EXCEPTION("ERROR: The texture dimensions do not match");
+        throw gla::GLRE_EXCEPTION("ERROR: The texture dimensions do not match");
     }
 
     glTexSubImage3D(  GL_TEXTURE_2D_ARRAY,

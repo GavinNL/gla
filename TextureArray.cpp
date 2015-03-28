@@ -2,18 +2,18 @@
 #include <GLFW/glfw3.h> // GLFW helper library
 #include <stdio.h>
 
-#include <glre/glre.h>
-#include <glre/utils/window.h>
-#include <glre/utils/app.h>
+#include <gla/gla.h>
+#include <gla/utils/window.h>
+#include <gla/utils/app.h>
 #include <locale>
 
 #include <rgui/rgui.h>
 
 
-using namespace glre;
+using namespace gla;
 
 
-class MyApp : public glre::utils::App
+class MyApp : public gla::utils::App
 {
     public:
 
@@ -49,22 +49,22 @@ class MyApp : public glre::utils::App
         //--------------------------------------------------------------------------------------------------------------
         // Set the callback for RGUI.
         //--------------------------------------------------------------------------------------------------------------
-        mWindow->EventsMap["GUI"] = [&] (const glre::utils::Event & E)
+        mWindow->EventsMap["GUI"] = [&] (const gla::utils::Event & E)
         {
             switch(E.type)
             {
-                case glre::utils::MOUSECURSOR:
+                case gla::utils::MOUSECURSOR:
                     mGuiInterface->injectMousePosition(rgui::LEFT_BUTTON, E.MouseCursor.x, E.MouseCursor.y);
                     break;
 
-                case glre::utils::TEXT:
+                case gla::utils::TEXT:
                     mGuiInterface->injectCharacters( E.Text.codepoint );
                     break;
 
-                case glre::utils::KEY:
+                case gla::utils::KEY:
                     mGuiInterface->injectKey( rgui::FromGLFW[ E.Key.key ] , E.Key.action);
                     break;
-                case glre::utils::MOUSEBUTTON:
+                case gla::utils::MOUSEBUTTON:
                     const rgui::MouseButton MB[8] = {rgui::LEFT_BUTTON, rgui::RIGHT_BUTTON, rgui::MIDDLE_BUTTON,rgui::NONE,rgui::NONE,rgui::NONE,rgui::NONE, rgui::NONE};
                     mGuiInterface->injectMouseButton( MB[E.MouseButton.button], E.MouseButton.action, E.MouseButton.x, E.MouseButton.y);
                     break;
@@ -76,12 +76,12 @@ class MyApp : public glre::utils::App
         //--------------------------------------------------------------------------------------------------------------
         // Set the callback to control the camera
         //--------------------------------------------------------------------------------------------------------------
-        mWindow->EventsMap["CAM"] = [&] (const glre::utils::Event & E)
+        mWindow->EventsMap["CAM"] = [&] (const gla::utils::Event & E)
         {
             float speed = 10.0f;
             switch(E.type)
             {
-                case glre::utils::KEY:
+                case gla::utils::KEY:
                     if(E.Key.mods == GLFW_MOD_SHIFT) speed = 160.f;
                     switch( E.Key.key )
                     {
@@ -99,19 +99,19 @@ class MyApp : public glre::utils::App
                             break;
                     }
 
-                case glre::utils::MOUSECURSOR:
-                    if( mWindow->isMouseButtonPressed(glre::utils::MOUSE::RIGHT_MOUSE_BUTTON))
+                case gla::utils::MOUSECURSOR:
+                    if( mWindow->isMouseButtonPressed(gla::utils::MOUSE::RIGHT_MOUSE_BUTTON))
                         mCamera.rotate(   vec3( -(float)E.MouseCursor.dy*0.001,  (float)E.MouseCursor.dx*0.001, 0.0 ) );
                     break;
 
-                case glre::utils::MOUSEBUTTON:
+                case gla::utils::MOUSEBUTTON:
                     switch( E.MouseButton.button )
                     {
                         case GLFW_MOUSE_BUTTON_RIGHT:
                             if( E.MouseButton.action == GLFW_PRESS)
-                                mWindow->SetCursorMode( glre::utils::MOUSE::CURSOR_DISABLED);
+                                mWindow->SetCursorMode( gla::utils::MOUSE::CURSOR_DISABLED);
                             else
-                                mWindow->SetCursorMode(  glre::utils::MOUSE::CURSOR_NORMAL );
+                                mWindow->SetCursorMode(  gla::utils::MOUSE::CURSOR_NORMAL );
                             break;
 
                     }
@@ -134,8 +134,8 @@ class MyApp : public glre::utils::App
         LineShader.linkProgram(  VertexShader("shaders/Line_PC.v")   , FragmentShader("shaders/Line_PC.f")    );
 
         // load the objects
-        Axis  = glre::createAxes().toGPU();
-        Box   = glre::createBox( vec3(5.0,5.0,5.0) ).toGPU();
+        Axis  = gla::createAxes().toGPU();
+        Box   = gla::createBox( vec3(5.0,5.0,5.0) ).toGPU();
 
         // setup the camera
         mCamera.perspective(45, 640.0/480.0 ,0.2f, 1000.0f);
@@ -225,24 +225,24 @@ class MyApp : public glre::utils::App
         rgui::json::Value       INFO;
         rgui::pInterface        mGuiInterface;
 
-        glre::Camera            mCamera;
+        gla::Camera            mCamera;
 
         //===================================================================================================================
         // Textures
         //===================================================================================================================
-        glre::GPUTextureArray  TArray;
+        gla::GPUTextureArray  TArray;
 
         //===================================================================================================================
         // Shaders
         //===================================================================================================================
-        glre::ShaderProgram   LineShader;
-        glre::ShaderProgram   TextureArrayShader;
+        gla::ShaderProgram   LineShader;
+        gla::ShaderProgram   TextureArrayShader;
 
         //===================================================================================================================
         // OpenGL Objects
         //===================================================================================================================
-        glre::GPUArrayObject  Axis;
-        glre::GPUArrayObject  Box;
+        gla::GPUArrayObject  Axis;
+        gla::GPUArrayObject  Box;
 };
 
 int main ()

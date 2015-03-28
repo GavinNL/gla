@@ -1,5 +1,5 @@
-#include "glre/solids.h"
-#include "glre/vertexarrayobject.h"
+#include "gla/solids.h"
+#include "gla/vertexarrayobject.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -7,7 +7,7 @@
 #include <iostream>
 
 
-glre::iTriMesh_PNCU glre::loadModel(const std::string & path, bool FlipYZ)
+gla::iTriMesh_PNCU gla::loadModel(const std::string & path, bool FlipYZ)
 {
     Assimp::Importer Importer;
 
@@ -16,7 +16,7 @@ glre::iTriMesh_PNCU glre::loadModel(const std::string & path, bool FlipYZ)
 
     const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
     std::cout << "Loading mesh: " << path << std::endl;
-    glre::iTriMesh_PNCU ReturnMesh;
+    gla::iTriMesh_PNCU ReturnMesh;
     int count = 0;
 
 
@@ -76,7 +76,7 @@ glre::iTriMesh_PNCU glre::loadModel(const std::string & path, bool FlipYZ)
 
 }
 
-glre::VertexArrayObject_N glre::createBox( vec3 s )
+gla::VertexArrayObject_N gla::createBox( vec3 s )
 {
     VertexArrayObject_N Box(TRIANGLES);
 
@@ -142,7 +142,7 @@ glre::VertexArrayObject_N glre::createBox( vec3 s )
 
 }
 
-glre::VertexArrayObject_N glre::createAxes()
+gla::VertexArrayObject_N gla::createAxes()
 {
     VertexArrayObject_N Axis(LINES);
 
@@ -174,7 +174,7 @@ glre::VertexArrayObject_N glre::createAxes()
 }
 
 
-glre::TriStripMesh_PNCU glre::createPlane(int x_segments, int z_segments, bool sendToGPU)
+gla::TriStripMesh_PNCU gla::createPlane(int x_segments, int z_segments, bool sendToGPU)
 {
     TriStripMesh_PNCU      Mesh;
 

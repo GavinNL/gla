@@ -1,6 +1,6 @@
-#include "glre/bone.h"
+#include "gla/bone.h"
 
-namespace glre {
+namespace gla {
 
 Bone::Bone()
 {

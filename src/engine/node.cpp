@@ -1,6 +1,6 @@
-#include "glre/engine/node.h"
+#include "gla/engine/node.h"
 
-namespace glre {
+namespace gla {
 namespace engine {
 
 

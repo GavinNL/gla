@@ -1,12 +1,12 @@
-#include <glre/shader.h>
-#include <glre/texture.h>
+#include <gla/shader.h>
+#include <gla/texture.h>
 #include <iostream>
 #include <vector>
 #include <string>
 #include <fstream>
 #include <streambuf>
 
-namespace glre
+namespace gla
 {
 
 ShaderProgram::ShaderProgram(const VertexShader & VS, const FragmentShader & FS) : mProgram(0)

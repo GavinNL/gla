@@ -1,8 +1,8 @@
-#include "glre/utils/window.h"
-#include "glre/utils/event.h"
+#include "gla/utils/window.h"
+#include "gla/utils/event.h"
 #include <iostream>
 
-namespace glre  {
+namespace gla  {
 namespace utils {
 
 //int Something::s_nValue = 1;
@@ -104,7 +104,7 @@ std::shared_ptr<Window> Window::create(unsigned int width, unsigned int height, 
     // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    auto W = std::shared_ptr<glre::utils::Window>( new Window() );
+    auto W = std::shared_ptr<gla::utils::Window>( new Window() );
 
     W->mWindow = glfwCreateWindow(width, height, title, NULL, NULL);
 
@@ -223,7 +223,7 @@ void Window::_WindowMinimizedCallback(GLFWwindow *window, int iconified)
 {
     Event E;
     E.type   = WINDOW;
-    E.Window.action = iconified ? glre::utils::MINIMIZED : glre::utils::RESTORED;
+    E.Window.action = iconified ? gla::utils::MINIMIZED : gla::utils::RESTORED;
 
     auto W = Window::WindowMap[window].lock();
     if(W)
@@ -241,7 +241,7 @@ void Window::_WindowCloseCallback(GLFWwindow *window)
 {
     Event E;
     E.type   = WINDOW;
-    E.Window.action = glre::utils::CLOSED;
+    E.Window.action = gla::utils::CLOSED;
 
     auto W = Window::WindowMap[window].lock();
     if(W)
@@ -259,7 +259,7 @@ void Window::_WindowFocusCallback(GLFWwindow *window, int focus)
 {
     Event E;
     E.type   = WINDOW;
-    E.Window.action = focus ? glre::utils::FOCUS_GAINED : glre::utils::FOCUS_LOST;
+    E.Window.action = focus ? gla::utils::FOCUS_GAINED : gla::utils::FOCUS_LOST;
 
     auto W = Window::WindowMap[window].lock();
     if(W)

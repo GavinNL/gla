@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <rgui/rgui.h>
-#include <glre/utils/window.h>
+#include <gla/utils/window.h>
 #include <GLFW/glfw3.h>
 
 rgui::Keycode FromGLFW[348] = {
@@ -523,22 +523,22 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 int main(void)
 {
 
-    auto W  = glre::utils::Window::create(640,480, "window 1");
+    auto W  = gla::utils::Window::create(640,480, "window 1");
 
-    W->EventsMap["Exit"] = [&] (const glre::utils::Event & E)
+    W->EventsMap["Exit"] = [&] (const gla::utils::Event & E)
     {
-        if( E.type == glre::utils::FILEDROP)
+        if( E.type == gla::utils::FILEDROP)
         {
             for(int i=0;i<E.FileDrop.count;i++)
             {
                 std::cout << E.FileDrop.files[i] << std::endl;
             }
         }
-        else if (E.type == glre::utils::TEXT)
+        else if (E.type == gla::utils::TEXT)
         {
             std::cout << E.Text.codepoint << std::endl;
         }
-        else if( E.type == glre::utils::KEY)
+        else if( E.type == gla::utils::KEY)
         {
             std::cout << " Key pressed: " << E.Key.key << "," << E.Key.scancode << std::endl;
             if(E.Key.key == GLFW_KEY_ESCAPE)
@@ -547,19 +547,19 @@ int main(void)
             }
 
         }
-        else if( E.type == glre::utils::MOUSECURSOR)
+        else if( E.type == gla::utils::MOUSECURSOR)
         {
             std::cout << " Mouse Moved : " << E.MouseCursor.x << "," << E.MouseCursor.y << std::endl;
         }
-        else if( E.type == glre::utils::WINDOW)
+        else if( E.type == gla::utils::WINDOW)
         {
-            if( E.Window.action == glre::utils::FOCUS_GAINED)
+            if( E.Window.action == gla::utils::FOCUS_GAINED)
                 std::cout << " Window gained focus: " << std::endl;
-            if( E.Window.action == glre::utils::FOCUS_LOST)
+            if( E.Window.action == gla::utils::FOCUS_LOST)
                 std::cout << " Window lost focus: " << std::endl;
-            if( E.Window.action == glre::utils::MINIMIZED)
+            if( E.Window.action == gla::utils::MINIMIZED)
                 std::cout << " Window minimized: " << std::endl;
-            if( E.Window.action == glre::utils::RESTORED)
+            if( E.Window.action == gla::utils::RESTORED)
                 std::cout << " Window restored: " << std::endl;
         }
     };
@@ -595,7 +595,7 @@ int main(void)
         glEnd();
 
         W->SwapBuffers();
-        glre::utils::Window::PollEvents();
+        gla::utils::Window::PollEvents();
     }
     W.reset();
 

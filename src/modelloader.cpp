@@ -1,8 +1,8 @@
-#include "glre/modelloader.h"
+#include "gla/modelloader.h"
 #include <memory.h>
 #include <iostream>
 
-namespace glre {
+namespace gla {
 
 
 
@@ -16,13 +16,13 @@ ModelLoader::~ModelLoader()
 
 }
 
-glre::VertexArrayObject_N ModelLoader::loadModel(const std::string &path)
+gla::VertexArrayObject_N ModelLoader::loadModel(const std::string &path)
 {
     Assimp::Importer Importer;
 
     const aiScene * pScene = Importer.ReadFile(path.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs );
 
-    glre::VertexArrayObject_N Mesh;
+    gla::VertexArrayObject_N Mesh;
 
     if(pScene)
     {
@@ -58,13 +58,13 @@ glre::VertexArrayObject_N ModelLoader::loadModel(const std::string &path)
 }
 
 
-glre::VertexArrayObject_N ModelLoader::_extract_Mesh(aiMesh *InputMesh, bool FlipYZ)
+gla::VertexArrayObject_N ModelLoader::_extract_Mesh(aiMesh *InputMesh, bool FlipYZ)
 {
         const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
 
         std::cout << "Loading mesh: " << InputMesh->mName.C_Str() << std::endl;
 
-        glre::VertexArrayObject_N ReturnMesh;
+        gla::VertexArrayObject_N ReturnMesh;
 
         if( InputMesh->HasPositions() )
         {

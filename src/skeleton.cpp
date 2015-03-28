@@ -1,15 +1,15 @@
-#include "glre/skeleton.h"
+#include "gla/skeleton.h"
 
 #include <algorithm>
 #include <stack>
 #include <map>
 #include <set>
 
-#include <glre/transformsequence.h>
+#include <gla/transformsequence.h>
 
-namespace glre {
+namespace gla {
 
-void printMatrix(const glre::mat4 & M)
+void printMatrix(const gla::mat4 & M)
 {
     for(int i=0;i<4;i++)
     {
@@ -83,7 +83,7 @@ void Skeleton::load(const std::string &path)
     }
 }
 
-int Skeleton::GetBoneTransformationMatrices(glre::mat4 *MatrixArray, int size, float time, const std::string & AnimationName)
+int Skeleton::GetBoneTransformationMatrices(gla::mat4 *MatrixArray, int size, float time, const std::string & AnimationName)
 {
     std::vector<TransformSequence> & Anim = mBoneAnimation[AnimationName];
 
@@ -100,7 +100,7 @@ void Skeleton::_ConstructBoneTree(const aiNode *node, Bone &rootnode, const aiMe
     rootnode.mChildren.resize( node->mNumChildren );
 
     aiMatrix4x4 T = node->mTransformation;
-    rootnode.mTransformMatrix = glre::mat4(  T.a1, T.a2, T.a3, T.a4,
+    rootnode.mTransformMatrix = gla::mat4(  T.a1, T.a2, T.a3, T.a4,
                                              T.b1, T.b2, T.b3, T.b4,
                                              T.c1, T.c2, T.c3, T.c4,
                                              T.d1, T.d2, T.d3, T.d4 );
@@ -168,7 +168,7 @@ TransformSequence Skeleton::_GetTransformationSequence(const aiNodeAnim *node)
     {
         vec3key P;
         P.mTime = node->mPositionKeys[i].mTime;
-        P.mValue = glre::vec3( node->mPositionKeys[i].mValue.x, node->mPositionKeys[i].mValue.y, node->mPositionKeys[i].mValue.z);
+        P.mValue = gla::vec3( node->mPositionKeys[i].mValue.x, node->mPositionKeys[i].mValue.y, node->mPositionKeys[i].mValue.z);
 
         T.mPKeys.push_back( P );
     }
@@ -178,7 +178,7 @@ TransformSequence Skeleton::_GetTransformationSequence(const aiNodeAnim *node)
     {
         vec3key S;
         S.mTime = node->mScalingKeys[i].mTime;
-        S.mValue = glre::vec3( node->mScalingKeys[i].mValue.x, node->mScalingKeys[i].mValue.y, node->mScalingKeys[i].mValue.z);
+        S.mValue = gla::vec3( node->mScalingKeys[i].mValue.x, node->mScalingKeys[i].mValue.y, node->mScalingKeys[i].mValue.z);
 
         T.mSKeys.push_back( S );
     }
@@ -187,7 +187,7 @@ TransformSequence Skeleton::_GetTransformationSequence(const aiNodeAnim *node)
     {
         quatkey Q;
         Q.mTime = node->mRotationKeys[i].mTime;
-        Q.mValue = glre::quat( node->mRotationKeys[i].mValue.w, node->mRotationKeys[i].mValue.x, node->mRotationKeys[i].mValue.y, node->mRotationKeys[i].mValue.z);
+        Q.mValue = gla::quat( node->mRotationKeys[i].mValue.w, node->mRotationKeys[i].mValue.x, node->mRotationKeys[i].mValue.y, node->mRotationKeys[i].mValue.z);
 
         T.mRKeys.push_back( Q );
     }

@@ -1,6 +1,6 @@
-#include "glre/engine/scene.h"
+#include "gla/engine/scene.h"
 
-namespace glre {
+namespace gla {
 namespace engine {
 
 

@@ -1,6 +1,6 @@
-#include "glre/mesh.h"
+#include "gla/mesh.h"
 
-namespace glre {
+namespace gla {
 
 
 Mesh::Mesh()
