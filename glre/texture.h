@@ -3,27 +3,57 @@
 
 #include <glre/global.h>
 #include <iostream>
+#include <string.h>
+#include <functional>
 
 namespace glre {
 
     class Texture;
+    class TextureChannel;
+
 
     class ChannelReference
     {
-    public:
-        ChannelReference(Texture* pTexture, int pIndex)
-        {
-            mTexture = pTexture;
-            mIndex   = pIndex;
-        };
+        public:
+            ChannelReference(Texture* pTexture, int pIndex)
+            {
+                mTexture = pTexture;
+                mIndex   = pIndex;
+            };
 
-        inline unsigned char & operator()(int i, int j);
+            inline uvec2 size() const;
 
-        inline ChannelReference& operator=(ChannelReference & c);
+            inline unsigned char & operator()(int i, int j);
 
-        private:
-            Texture *   mTexture;
-            int         mIndex;
+            TextureChannel    operator+( ChannelReference & c);
+            TextureChannel    operator-( ChannelReference & c);
+            void              operator+=( ChannelReference & c);
+            void              operator-=( ChannelReference & c);
+
+            void              operator+=( unsigned char c);
+            void              operator-=( unsigned char c);
+            TextureChannel    operator+(  unsigned char c);
+            TextureChannel    operator-(  unsigned char c);
+
+            ChannelReference& operator=(        unsigned char c);
+            ChannelReference& operator=(        ChannelReference & c);
+            ChannelReference& operator=(  const TextureChannel   & c);
+
+
+            /**
+             * @brief operator = sets the value of the channel using a lambda expression
+             * @param F a function or lambda that takes in a const uvec2 and returns a float
+             *
+             * You can set the colour values of a texture channel using a labmda function. The
+             * lambda function must take in a const & uvec2 and and return a float
+             * between 0 and 1
+             */
+            ChannelReference&       operator=( std::function<float(const vec2 &)> F);
+
+
+            private:
+                Texture *   mTexture;
+                int         mIndex;
     };
 
     //===========================================================================
@@ -122,38 +152,202 @@ namespace glre {
     };
 
 
+    //=========================================================================
+    // Texture Channel Class.
+    //=========================================================================
+
+    /**
+     * @brief The TextureChannel class.
+     *
+     * The TextureChannel class is used to reference individual channels
+     * of the texture. The user should not need to create an instance of this class.
+     */
+    class TextureChannel
+    {
+
+    public:
+        TextureChannel() : mData(0)
+        {
+
+        }
+
+        ~TextureChannel()
+        {
+            clear();
+        }
+
+        TextureChannel(uint w, uint h) : mData(0)
+        {
+            mDim.x = w;
+            mDim.y = h;
+            mData  = new unsigned char[ mDim[0] * mDim[1] ];
+        }
+
+        TextureChannel(TextureChannel & T) :  mData(0)
+        {
+
+            mDim  = T.mDim;
+
+            mData = new unsigned char[mDim[0]*mDim[1]];
+            memcpy( mData, (void*)T.mData, mDim[0]*mDim[1]);
+        }
+
+        TextureChannel(TextureChannel && T) : mData(0)
+        {
+            if(mData) clear();
+
+            mData = T.mData;
+            mDim  = T.mDim;
+            T.mDim = {0,0};
+            T.mData = 0;
+
+        }
+
+        TextureChannel & operator=(TextureChannel && T)
+        {
+            if(mData) clear();
+
+            mData = T.mData;
+            mDim  = T.mDim;
+            T.mDim = {0,0};
+            T.mData = 0;
+
+            return *this;
+        }
+
+        void clear()
+        {
+            if(mData) delete [] mData;
+
+            mData = 0;
+            mDim = {0,0};
+
+        }
+
+        inline unsigned char & operator ()(int x, int y) { return mData[ y*mDim[ 0 ] + x ]; }
+        inline unsigned char   get(int x, int y) const   { return mData[ y*mDim[ 0 ] + x ]; }
+
+        inline uvec2 size() { return mDim; };
+
+
+        // Operators
+        TextureChannel operator+(TextureChannel & R);
+        TextureChannel operator-(TextureChannel & R);
+        TextureChannel operator-(unsigned char r);
+        TextureChannel operator+(unsigned char r);
+
+        //
+        void operator+=(TextureChannel & R);
+        void operator-=(TextureChannel & R);
+        void operator-=(   unsigned char r);
+        void operator+=(   unsigned char r);
+
+
+        /**
+         * @brief operator = sets the value of the channel using a lambda expression
+         * @param F a function or lambda that takes in a const & vec2 and returns a float
+         *
+         * You can set the colour values of a texture channel using a labmda function. The
+         * lambda function must take in a const & vec2 and and return a float
+         * between 0 and 1. The input vec2 will have component values ranging from 0.1
+         */
+        TextureChannel&       operator=( std::function<        float(const  vec2 &)> F);
+
+        private:
+            unsigned char * mData;
+            uvec2           mDim;
+    };
+    //=========================================================================
+
+
+    /*! @brief Texture class for holding image information in rgba format.
+     *
+     * The Texture class holds image information on the CPU. It also contains
+     * methods and functions to manipulate the pixel information.
+     *
+     * Example #1:
+     *
+     *   \code{.cpp}
+     *      Texture T(256,256);          // Create a blank texture 256x256
+     *      T.a = T.r + T.b;             // Set the alpha channel to be the sum of the red and blue channels
+     *
+     *      GPUTexture TexGpu = T.toGPU();    // send the texture to the GPU so that it can be used in openGL calls.
+     *    \endcode
+     *
+     * Example #2:
+     *
+     *   \code{.cpp}
+     *      Texture T(256,256);          // Create a blank texture 256x256
+     *
+     *      // set the red channel of the texture using a lambda function
+     *      // The lambda function needs to return a float ranging between 0 and 1 and input a const vec2&
+     *      T.r = [] (const vec2 & r) { return( cos(glm::length( r-vec2(0.5f))*3.14159); };
+     *
+     *
+     *      // Set teh pixel values of the texture using a lambda function
+     *      // The lambda function needs to return a vec4 with values ranging between 0 and 1
+     *      T   = [] (const vec2 & r)
+     *          {
+     *                 float red   =  cos(glm::length( r-vec2(0.5f))*3.14159 );
+     *                 float green =  sin(glm::length( r-vec2(0.5f))*3.14159 );
+     *                 return( vec4(red,green,1.0,1.0)) ;
+     *          };
+     *
+     *      GPUTexture TexGpu = T.toGPU();    // send the texture to the GPU so that it can be used in openGL calls.
+     *    \endcode
+     */
     class Texture
     {
 
         public:
 
-            Texture();
-            Texture(uint w, uint h);
-            Texture(const std::string & path);
-            Texture(Texture & T);
+            Texture() : mData(0), r(this,0), g(this,1), b(this,2), a(this,3)
+            {
+
+            }
+
+            Texture(uint w, uint h) : mData(0), r(this,0), g(this,1), b(this,2), a(this,3)
+            {
+                mDim.x = w;
+                mDim.y = h;
+                mData  = new glre::ucol4[ mDim[0] * mDim[1] ];
+            }
+
+            Texture(const std::string & path) :  mData(0), r(this,0), g(this,1), b(this,2), a(this,3)
+            {
+                loadFromPath(path);
+            }
+
+            Texture(Texture & T) :  mData(0), r(this,0), g(this,1), b(this,2), a(this,3)
+            {
+
+                mDim  = T.mDim;
+
+                mData = new glre::ucol4[mDim[0]*mDim[1]];
+                memcpy( mData, (void*)T.mData, mDim[0]*mDim[1] * 4);
+
+            }
 
             Texture(Texture && T) : mData(0), r(this,0), g(this,1), b(this,2), a(this,3)
             {
                 if(mData) clear();
 
-                mData = T.mData;
-                mDim  = T.mDim;
-                T.mDim = {0,0};
+                mData   = T.mData;
+                mDim    = T.mDim;
+                T.mDim  = { 0, 0 };
                 T.mData = 0;
-                std::cout << "Texture Move constructor\n";
 
             }
-
 
             Texture & operator=(Texture && T)
             {
                 if(mData) clear();
 
-                mData = T.mData;
-                mDim  = T.mDim;
-                T.mDim = {0,0};
+                mData   = T.mData;
+                mDim    = T.mDim;
+                T.mDim  = {0,0};
                 T.mData = 0;
-                std::cout << "Texture Move Assignment\n";
+
                 return *this;
             }
 
@@ -161,7 +355,10 @@ namespace glre {
              * Frees all memory associated with this texture including GPU
              * data. The OpenGL Texture id will be freed.
              */
-            ~Texture();
+            ~Texture()
+            {
+                clear();
+            }
 
 
 
@@ -202,6 +399,25 @@ namespace glre {
              */
             void clear();
 
+            /**
+             * @brief get Returns the value of the pixel (x,y)
+             * @param x
+             * @param y
+             * @return a copy of the pixel at location (x,y)
+             */
+            inline glre::ucol4  get(int x, int y) const { return mData[ y*mDim[0] + x ]; }
+
+            /**
+             * @brief size Gets the dimensions of the texture
+             * @return
+             */
+            inline glre::uvec2  size() const { return mDim; };
+
+            /**
+             * @brief getRawData gets a pointer to the raw pixel data so that it can be sent to OpenGL
+             * @return a pointer to the starting byte;
+             */
+            inline glre::ucol4* getRawData() const { return mData; };
 
             /**
              * Access pixel data on the CPU. This is unpredictable if you
@@ -209,18 +425,36 @@ namespace glre {
              */
             inline glre::ucol4 & operator ()(int x, int y) { return mData[ y*mDim[0] + x ]; }
 
+            //=====================================
+            // Operators
+            //=====================================
+            Texture        operator+(  Texture & c);
+            Texture        operator-(  Texture & c);
+            void           operator+=( Texture & c);
+            void           operator-=( Texture & c);
 
+            Texture        operator+ (  ChannelReference & c );
+            Texture        operator- (  ChannelReference & c );
+            void           operator+=(  ChannelReference & c );
+            void           operator-=(  ChannelReference & c );
 
-            inline glre::uvec2 size() const { return mDim; };
+            void           operator+=( unsigned char c );
+            void           operator-=( unsigned char c );
+            Texture        operator+(  unsigned char c );
+            Texture        operator-(  unsigned char c );
 
+            Texture&       operator=(        unsigned char c);
+            Texture&       operator=(        ChannelReference & c);
+            Texture&       operator=(  const TextureChannel   & c);
 
-            glre::ucol4* getRawData() const { return mData; };
-
+            Texture&       operator=( std::function<vec4 (const vec2 &)> F);
+            Texture&       operator=( std::function<float(const vec2 &)> F);
 
             ChannelReference r;
             ChannelReference g;
             ChannelReference b;
             ChannelReference a;
+
         private:
             void _handleRawPixels(unsigned char * buffer, uint width, uint height);
 
@@ -229,8 +463,8 @@ namespace glre {
             uvec2        mDim;
 
 
-
     };
+
 
 
     inline unsigned char & ChannelReference::operator()(int i, int j)
@@ -238,14 +472,15 @@ namespace glre {
         return (*mTexture)(i,j)[mIndex];
     };
 
-    inline ChannelReference& ChannelReference::operator=(ChannelReference & c)
+
+
+
+    inline uvec2 ChannelReference::size() const
     {
-        std::cout << "Copying channel\n";
-        uvec2 s = mTexture->size();
-        for(int x=0; x < s.x; x++)
-            for(int y=0; y < s.y; y++)
-                (*mTexture)(x,y)[mIndex] = c( (int)x, (int)y);
-    }
+        return mTexture->size();
+    };
+
 
 }
 #endif // TEXTURE_H
+

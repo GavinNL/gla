@@ -4,10 +4,14 @@
 #include <glre/stb/stb_image.h>
 
 
+namespace glre {
+
+#define CLAMP(a,A,B) std::min( B, std::max(a,A) )
+
 //=================================================================================================================
 // GPUTexture
 //=================================================================================================================
-glre::Texture glre::GPUTexture::toCPU()
+Texture GPUTexture::toCPU()
 {
     bind();
 
@@ -24,41 +28,8 @@ glre::Texture glre::GPUTexture::toCPU()
 //=================================================================================================================
 // Texture
 //=================================================================================================================
-glre::Texture::Texture() : mData(0), r(this,0), g(this,1), b(this,2), a(this,3)
-{
 
-}
-
-glre::Texture::Texture(const std::string & path) :  mData(0), r(this,0), g(this,1), b(this,2), a(this,3)
-{
-    loadFromPath(path);
-}
-
-
-glre::Texture::Texture(uint width, uint height) : mData(0), r(this,0), g(this,1), b(this,2), a(this,3)
-{
-    mDim.x = width;
-    mDim.y = height;
-    mData  = new glre::ucol4[ mDim[0] * mDim[1] ];
-}
-
-glre::Texture::Texture(Texture & T) :  mData(0), r(this,0), g(this,1), b(this,2), a(this,3)
-{
-
-    mDim  = T.mDim;
-
-    mData = new glre::ucol4[mDim[0]*mDim[1]];
-    memcpy( mData, (void*)T.mData, mDim[0]*mDim[1]);
-    std::cout << "Texture copy constructor\n";
-}
-
-
-glre::Texture::~Texture()
-{
-    clear();
-}
-
-glre::GPUTexture glre::Texture::toGPU()
+GPUTexture Texture::toGPU()
 {
 
     GPUTexture GPU;
@@ -76,20 +47,20 @@ glre::GPUTexture glre::Texture::toGPU()
 
     glTexImage2D( GL_TEXTURE_2D, 0 , GL_RGBA, mDim.x, mDim.y, 0, GL_RGBA, GL_UNSIGNED_BYTE,  (void*)mData );
 
-    GPU.setFilter(GPUTexture::LINEAR, GPUTexture::LINEAR);
+    GPU.setFilter( GPUTexture::LINEAR, GPUTexture::LINEAR );
 
     return GPU;
 }
 
 
-void glre::Texture::clear()
+void Texture::clear()
 {
     if( mData ) delete [] mData;
     mData = 0;
 }
 
 
-void glre::Texture::loadFromMemory( unsigned char * Buffer, int buffersize)
+void Texture::loadFromMemory( unsigned char * Buffer, int buffersize)
 {
     int x, y, comp;
     glre_uc           * img = glre_load_from_memory( (glre_uc*) Buffer, buffersize, &x, &y, &comp, 4);
@@ -106,7 +77,7 @@ void glre::Texture::loadFromMemory( unsigned char * Buffer, int buffersize)
 }
 
 
-void glre::Texture::loadFromPath( const std::string & path)
+void Texture::loadFromPath( const std::string & path)
 {
 
     int x, y, comp;
@@ -128,9 +99,7 @@ void glre::Texture::loadFromPath( const std::string & path)
 }
 
 
-
-
-void glre::Texture::_handleRawPixels(unsigned char * buffer, uint width, uint height)
+void Texture::_handleRawPixels(unsigned char * buffer, uint width, uint height)
 {
     clear();
 
@@ -144,14 +113,535 @@ void glre::Texture::_handleRawPixels(unsigned char * buffer, uint width, uint he
 }
 
 
-
-
-glre::Texture glre::LoadTexture(const std::string &path)
+Texture LoadTexture(const std::string &path)
 {
     Texture T;
     T.loadFromPath(path);
     return std::move(T);
     //return T;
+}
+
+
+
+ Texture        Texture::operator+(  Texture & c)
+{
+    uvec2 siz = glm::min( size(), c.size() );
+    Texture T(siz.x,siz.y);
+
+    for(int x=0;x<siz.x;x++)
+        for(int y=0; y<siz.y; y++)
+        {
+            T(x,y) = (*this)(x,y) + c(x,y);
+        }
+
+    return( std::move(T) );
+
+};
+
+ Texture        Texture::operator-(  Texture & c)
+{
+    uvec2 siz = glm::min( size(), c.size() );
+    Texture T(siz.x,siz.y);
+
+    for(int x=0; x < siz.x; x++)
+        for(int y=0; y < siz.y; y++)
+        {
+            T(x,y) = (*this)(x,y) - c(x,y);
+        }
+
+    return( std::move(T) );
+};
+
+ void           Texture::operator+=( Texture & c)
+{
+    uvec2 siz = glm::min( size(), c.size() );
+    Texture T(siz.x,siz.y);
+
+    for(int x=0; x < siz.x; x++)
+        for(int y=0; y < siz.y; y++)
+        {
+            (*this)(x,y) += c(x,y);
+        }
+
+};
+
+ void           Texture::operator-=( Texture & c)
+{
+    uvec2 siz = glm::min( size(), c.size() );
+    Texture T(siz.x,siz.y);
+
+    for(int x=0; x < siz.x; x++)
+        for(int y=0; y < siz.y; y++)
+        {
+            (*this)(x,y) -= c(x,y);
+        }
+};
+
+
+ Texture        Texture::operator+(  ChannelReference & c)
+{
+    uvec2 siz = glm::min( size(), c.size() );
+    Texture T(siz.x,siz.y);
+
+    for(int x=0;x<siz.x;x++)
+        for(int y=0; y<siz.y; y++)
+        {
+            T(x,y) = (*this)(x,y) + c(x,y);
+        }
+
+    return( std::move(T) );
+
+};
+
+ Texture        Texture::operator-(  ChannelReference & c)
+{
+    uvec2 siz = glm::min( size(), c.size() );
+    Texture T(siz.x,siz.y);
+
+    for(int x=0; x < siz.x; x++)
+        for(int y=0; y < siz.y; y++)
+        {
+            T(x,y) = (*this)(x,y) - c(x,y);
+        }
+
+    return( std::move(T) );
+};
+
+ void           Texture::operator+=( ChannelReference & c)
+{
+    uvec2 siz = glm::min( size(), c.size() );
+    Texture T(siz.x,siz.y);
+
+    for(int x=0; x < siz.x; x++)
+        for(int y=0; y < siz.y; y++)
+        {
+            (*this)(x,y) += c(x,y);
+        }
+
+};
+
+ void           Texture::operator-=( ChannelReference & c)
+{
+    uvec2 siz = glm::min( size(), c.size() );
+    Texture T(siz.x,siz.y);
+
+    for(int x=0; x < siz.x; x++)
+        for(int y=0; y < siz.y; y++)
+        {
+            (*this)(x,y) -= c(x,y);
+        }
+};
+
+
+ Texture        Texture::operator+(  unsigned char c)
+{
+    uvec2 siz = size();
+    Texture T(siz.x,siz.y);
+
+    for(int x=0;x<siz.x;x++)
+        for(int y=0; y<siz.y; y++)
+        {
+            T(x,y) = (*this)(x,y) + ucol4(c);
+        }
+
+    return( std::move(T) );
+
+};
+
+ Texture        Texture::operator-(  unsigned char c)
+{
+    uvec2 siz = size();
+    Texture T(siz.x,siz.y);
+
+    for(int x=0; x < siz.x; x++)
+        for(int y=0; y < siz.y; y++)
+        {
+            T(x,y) = (*this)(x,y) - ucol4(c);
+        }
+
+    return( std::move(T) );
+};
+
+ void           Texture::operator+=( unsigned char c)
+{
+    uvec2 siz = size();
+
+    for(int x=0; x < siz.x; x++)
+        for(int y=0; y < siz.y; y++)
+        {
+            (*this)(x,y) += ucol4( c );
+        }
+
+};
+
+ void           Texture::operator-=( unsigned char c)
+{
+    uvec2 siz = size();
+
+    for(int x=0; x < siz.x; x++)
+        for(int y=0; y < siz.y; y++)
+        {
+            (*this)(x,y) -= ucol4(c);
+        }
+};
+
+ Texture& Texture::operator=(        unsigned char c)
+{
+    uvec2 siz = size();
+
+    for(int x=0; x < siz.x; x++)
+        for(int y=0; y < siz.y; y++)
+        {
+            (*this)(x,y) = ucol4(c);
+        }
+
+    return *this;
+}
+
+ Texture& Texture::operator=(        ChannelReference & c)
+{
+    uvec2 siz = size();
+
+    for(int x=0; x < siz.x; x++)
+        for(int y=0; y < siz.y; y++)
+        {
+            auto col = c(x,y);
+            (*this)(x,y) = ucol4(col);
+        }
+
+    return *this;
+}
+
+ Texture& Texture::operator=(  const TextureChannel   & c)
+{
+    uvec2 siz = size();
+
+    for(int x=0; x < siz.x; x++)
+        for(int y=0; y < siz.y; y++)
+        {
+            auto col = c.get(x,y);
+            (*this)(x,y) = ucol4( col);
+        }
+
+    return *this;
+
+}
+
+
+Texture& Texture::operator=( std::function<vec4(const vec2 &)> F)
+{
+     uvec2 s = size();
+
+     for(uint x=0; x < s.x; x += 1)
+     {
+         for(uint y=0; y < s.y; y += 1)
+         {
+             (*this)( (int)x, (int)y ) = ucol4( F( vec2(x,y) / vec2(s) )*255.0f);
+         }
+     }
+};
+
+Texture& Texture::operator=( std::function<float(const vec2 &)> F)
+{
+     uvec2 s = size();
+
+     for(uint x=0; x < s.x; x += 1)
+     {
+         for(uint y=0; y < s.y; y += 1)
+         {
+             (*this)( (int)x, (int)y ) = ucol4( F( vec2(x,y) / vec2(s) )*255.0f );
+         }
+     }
+};
+
+
+
+
+ /*======================================================================================
+ Definitions for ChannelReferences
+ =======================================================================================*/
+
+ ChannelReference& ChannelReference::operator=(ChannelReference & c)
+ {
+
+     uvec2 s = mTexture->size();
+     for(int x=0; x < s.x; x++)
+         for(int y=0; y < s.y; y++)
+         {
+             (*mTexture)(x,y)[mIndex] = c( (int)x, (int)y);
+         }
+
+     return *this;
+ }
+
+ TextureChannel ChannelReference::operator+( ChannelReference & c)
+ {
+     uvec2 s = mTexture->size();
+
+     TextureChannel C( s.x, s.y );
+
+     for(int x=0; x < s.x; x++)  for(int y=0; y < s.y; y++)
+     {
+             int l = static_cast<int>( (*mTexture)(x,y)[mIndex] ) + static_cast<int>( c(x,y) );
+             C(x,y) = CLAMP(l, 0,255);
+     }
+
+     return( std::move(C) );
+ }
+
+ TextureChannel ChannelReference::operator-( ChannelReference & c)
+ {
+     uvec2 s = mTexture->size();
+
+     TextureChannel C( s.x, s.y );
+
+     for(int x=0; x < s.x; x++)  for(int y=0; y < s.y; y++)
+     {
+             int l = static_cast<int>( (*mTexture)(x,y)[mIndex] ) - static_cast<int>( c(x,y) );
+             C(x,y) = CLAMP(l, 0,255);
+     }
+
+     return( std::move(C) );
+ }
+
+
+ void ChannelReference::operator+=( ChannelReference & c)
+ {
+     uvec2 s = mTexture->size();
+
+     TextureChannel C( s.x, s.y );
+
+     for(int x=0; x < s.x; x++)  for(int y=0; y < s.y; y++)
+     {
+             int l = static_cast<int>( (*mTexture)(x,y)[mIndex] ) + static_cast<int>( c(x,y) );
+             C(x,y) = CLAMP(l, 0,255);
+     }
+
+ }
+
+ void ChannelReference::operator-=( ChannelReference & c)
+ {
+     uvec2 s = mTexture->size();
+
+     for(int x=0; x < s.x; x++)  for(int y=0; y < s.y; y++)
+     {
+         int l = static_cast<int>( (*mTexture)(x,y)[mIndex] ) - static_cast<int>( c(x,y) );
+         (*mTexture)(x,y)[mIndex] = CLAMP(l, 0,255);
+     }
+
+ }
+
+ void ChannelReference::operator+=( unsigned char  c )
+ {
+     uvec2 s = mTexture->size();
+
+     TextureChannel C( s.x, s.y );
+
+     for(int x=0; x < s.x; x++)  for(int y=0; y < s.y; y++)
+     {
+         int l = static_cast<int>( (*mTexture)(x,y)[mIndex] ) + static_cast<int>( c);
+         C(x,y) = CLAMP(l, 0,255);
+     }
+
+ }
+
+ void ChannelReference::operator-=( unsigned char  c )
+ {
+     uvec2 s = mTexture->size();
+
+     for(int x=0; x < s.x; x++)  for(int y=0; y < s.y; y++)
+     {
+         int l = static_cast<int>( (*mTexture)(x,y)[mIndex] ) - static_cast<int>( c );
+         (*mTexture)(x,y)[mIndex] = CLAMP(l, 0,255);
+     }
+
+ }
+
+
+ TextureChannel ChannelReference::operator+( unsigned char  c )
+ {
+     uvec2 s = mTexture->size();
+
+
+     TextureChannel C( s.x, s.y );
+
+     for(int x=0; x < s.x; x++)  for(int y=0; y < s.y; y++)
+     {
+         int l = static_cast<int>( (*mTexture)(x,y)[mIndex] ) + static_cast<int>( c );
+         C(x,y) = CLAMP(l, 0,255);
+     }
+
+     return( std::move(C) );
+ }
+
+ TextureChannel ChannelReference::operator-( unsigned char  c)
+ {
+     uvec2 s = mTexture->size();
+
+
+     TextureChannel C( s.x, s.y );
+
+     for(int x=0; x < s.x; x++)  for(int y=0; y < s.y; y++)
+     {
+         int l = static_cast<int>( (*mTexture)(x,y)[mIndex] ) - static_cast<int>( c );
+         C(x,y) = CLAMP(l, 0,255);
+     }
+
+     return( std::move(C) );
+ }
+
+
+ChannelReference& ChannelReference::operator=(const TextureChannel & c)
+{
+    uvec2 s = mTexture->size();
+
+    for(int x=0; x < s.x; x++)
+        for(int y=0; y < s.y; y++)
+            (*mTexture)(x,y)[mIndex] = c.get( x, y);
+
+    return *this;
+}
+
+ChannelReference& ChannelReference::operator=(unsigned char c)
+{
+
+    uvec2 s = mTexture->size();
+
+    for(int x=0; x < s.x; x++)
+        for(int y=0; y < s.y; y++)
+            (*mTexture)(x,y)[mIndex] = c;
+
+    return *this;
+}
+
+
+
+ChannelReference&       ChannelReference::operator=( std::function<        float(const  vec2 &)> F)
+{
+
+     uvec2 s = size();
+
+     for(uint x=0; x < s.x; x += 1)
+     {
+         for(uint y=0; y < s.y; y += 1)
+         {
+             (*mTexture)( (int)x, (int)y )[mIndex] = static_cast<unsigned char>( F( vec2(x,y) / vec2(s) )*255.0f );
+         }
+     }
+
+     return *this;
+};
+
+
+/*==============================================================================
+Texture Channel Definitions
+==============================================================================*/
+
+
+TextureChannel&       TextureChannel::operator=( std::function<        float(const  vec2 &)> F)
+{
+
+     uvec2 s = size();
+
+     for(uint x=0; x < s.x; x += 1)
+     {
+         for(uint y=0; y < s.y; y += 1)
+         {
+             (*this)( (int)x, (int)y ) = static_cast<unsigned char>( F( vec2(x,y) / vec2(s) )*255.0f );
+         }
+     }
+
+     return *this;
+};
+
+
+TextureChannel TextureChannel::operator+(TextureChannel & R)
+{
+    TextureChannel D( mDim.x, mDim.y );
+    for(int i=0;i<mDim.x*mDim.y;i++)
+        D.mData[i] = R.mData[i] + mData[i];
+
+    return( std::move(D) );
+}
+
+TextureChannel TextureChannel::operator-(TextureChannel & R)
+{
+    TextureChannel D( mDim.x, mDim.y );
+    for(int i=0;i<mDim.x*mDim.y;i++)
+        D.mData[i] = R.mData[i] - mData[i];
+
+    return( std::move(D) );
+}
+
+TextureChannel TextureChannel::operator-(unsigned char r)
+{
+    TextureChannel D( mDim.x, mDim.y );
+    for(int i=0;i<mDim.x*mDim.y;i++)
+        D.mData[i] = mData[i] - r;
+
+    return( std::move(D) );
+}
+
+TextureChannel TextureChannel::operator+(unsigned char r)
+{
+    TextureChannel D( mDim.x, mDim.y );
+    for(int i=0;i<mDim.x*mDim.y;i++)
+        D.mData[i] = mData[i] + r;
+
+    return( std::move(D) );
+}
+
+//
+void TextureChannel::operator+=(TextureChannel & R)
+{
+    uvec2 s = glm::min( mDim, R.size() );
+
+    for(int x=0; x < s.x; x++)
+        for(int y=0; y < s.y; y++)
+        {
+            (*(this))(x,y) += R(x,y);
+        }
+
+}
+
+void TextureChannel::operator-=(TextureChannel & R)
+{
+
+    uvec2 s = glm::min( mDim, R.size() );
+
+    for(int x=0; x < s.x; x++)
+        for(int y=0; y < s.y; y++)
+        {
+            (*(this))(x,y) -= R(x,y);
+        }
+
+}
+
+void TextureChannel::operator-=(unsigned char r)
+{
+
+    uvec2 s = mDim;
+
+    for(int x=0; x < s.x; x++)
+        for(int y=0; y < s.y; y++)
+        {
+            (*(this))(x,y) -= r;
+        }
+
+}
+
+void TextureChannel::operator+=(unsigned char r)
+{
+
+    uvec2 s = mDim;
+
+    for(int x=0; x < s.x; x++)
+        for(int y=0; y < s.y; y++)
+        {
+            (*(this))(x,y) += r;
+        }
+}
+
 }
 
 
