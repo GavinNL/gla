@@ -78,66 +78,64 @@ gla::iTriMesh_PNCU gla::loadModel(const std::string & path, bool FlipYZ)
 
 gla::VertexArrayObject_N gla::createBox( vec3 s )
 {
-    VertexArrayObject_N Box(TRIANGLES);
+    VertexArrayObject Box(TRIANGLES);
 
-    auto Positions = std::make_shared<v3ArrayBuffer>();
-    auto Normals   = std::make_shared<v3ArrayBuffer>();
-    auto UV        = std::make_shared<v2ArrayBuffer>();
+    //auto Positions = std::make_shared<v3ArrayBuffer>();
+    //auto Normals   = std::make_shared<v3ArrayBuffer>();
+    //auto UV        = std::make_shared<v2ArrayBuffer>();
 
 
-    Positions->insert( vec3(0.0,0.0,s.z) ); Normals->insert( vec3(0.0,  0.0, 1.0) ); UV->insert( vec2(0.0,0.0) );
-    Positions->insert( vec3(s.x,0.0,s.z) ); Normals->insert( vec3(0.0,  0.0, 1.0) ); UV->insert( vec2(1.0,0.0) );
-    Positions->insert( vec3(s.x,s.y,s.z) ); Normals->insert( vec3(0.0,  0.0, 1.0) ); UV->insert( vec2(1.0,1.0) );
-    Positions->insert( vec3(0.0,0.0,s.z) ); Normals->insert( vec3(0.0,  0.0, 1.0) ); UV->insert( vec2(0.0,0.0) );
-    Positions->insert( vec3(s.x,s.y,s.z) ); Normals->insert( vec3(0.0,  0.0, 1.0) ); UV->insert( vec2(1.0,1.0) );
-    Positions->insert( vec3(0.0,s.y,s.z) ); Normals->insert( vec3(0.0,  0.0, 1.0) ); UV->insert( vec2(0.0,1.0) );
+    Box.createBuffer<vec3>();
+    Box.createBuffer<vec3>();
+    Box.createBuffer<vec2>();
 
-    Positions->insert( vec3(s.x,s.y,0.0) ); Normals->insert( vec3(0.0,  0.0,-1.0) ); UV->insert( vec2(1.0,1.0) );
-    Positions->insert( vec3(s.x,0.0,0.0) ); Normals->insert( vec3(0.0,  0.0,-1.0) ); UV->insert( vec2(1.0,0.0) );
-    Positions->insert( vec3(0.0,0.0,0.0) ); Normals->insert( vec3(0.0,  0.0,-1.0) ); UV->insert( vec2(0.0,0.0) );
-    Positions->insert( vec3(0.0,s.y,0.0) ); Normals->insert( vec3(0.0,  0.0,-1.0) ); UV->insert( vec2(0.0,1.0) );
-    Positions->insert( vec3(s.x,s.y,0.0) ); Normals->insert( vec3(0.0,  0.0,-1.0) ); UV->insert( vec2(1.0,1.0) );
-    Positions->insert( vec3(0.0,0.0,0.0) ); Normals->insert( vec3(0.0,  0.0,-1.0) ); UV->insert( vec2(0.0,0.0) );
+    Box.insert(0, vec3(0.0,0.0,s.z) ); Box.insert(1, vec3(0.0,  0.0, 1.0) ); Box.insert(2, vec2(0.0,0.0) );
+    Box.insert(0, vec3(s.x,0.0,s.z) ); Box.insert(1, vec3(0.0,  0.0, 1.0) ); Box.insert(2, vec2(1.0,0.0) );
+    Box.insert(0, vec3(s.x,s.y,s.z) ); Box.insert(1, vec3(0.0,  0.0, 1.0) ); Box.insert(2, vec2(1.0,1.0) );
+    Box.insert(0, vec3(0.0,0.0,s.z) ); Box.insert(1, vec3(0.0,  0.0, 1.0) ); Box.insert(2, vec2(0.0,0.0) );
+    Box.insert(0, vec3(s.x,s.y,s.z) ); Box.insert(1, vec3(0.0,  0.0, 1.0) ); Box.insert(2, vec2(1.0,1.0) );
+    Box.insert(0, vec3(0.0,s.y,s.z) ); Box.insert(1, vec3(0.0,  0.0, 1.0) ); Box.insert(2, vec2(0.0,1.0) );
+
+    Box.insert(0, vec3(s.x,s.y,0.0) ); Box.insert(1, vec3(0.0,  0.0,-1.0) ); Box.insert(2, vec2(1.0,1.0) );
+    Box.insert(0, vec3(s.x,0.0,0.0) ); Box.insert(1, vec3(0.0,  0.0,-1.0) ); Box.insert(2, vec2(1.0,0.0) );
+    Box.insert(0, vec3(0.0,0.0,0.0) ); Box.insert(1, vec3(0.0,  0.0,-1.0) ); Box.insert(2, vec2(0.0,0.0) );
+    Box.insert(0, vec3(0.0,s.y,0.0) ); Box.insert(1, vec3(0.0,  0.0,-1.0) ); Box.insert(2, vec2(0.0,1.0) );
+    Box.insert(0, vec3(s.x,s.y,0.0) ); Box.insert(1, vec3(0.0,  0.0,-1.0) ); Box.insert(2, vec2(1.0,1.0) );
+    Box.insert(0, vec3(0.0,0.0,0.0) ); Box.insert(1, vec3(0.0,  0.0,-1.0) ); Box.insert(2, vec2(0.0,0.0) );
 
     //========
 
-    Positions->insert( vec3(0.0,0.0,0.0) ); Normals->insert( vec3(-1.0f, 0.0, 0.0) ); UV->insert( vec2(0.0,0.0) );
-    Positions->insert( vec3(0.0,0.0,s.z) ); Normals->insert( vec3(-1.0f, 0.0, 0.0) ); UV->insert( vec2(0.0,1.0) );
-    Positions->insert( vec3(0.0,s.y,s.z) ); Normals->insert( vec3(-1.0f, 0.0, 0.0) ); UV->insert( vec2(1.0,1.0) );
-    Positions->insert( vec3(0.0,0.0,0.0) ); Normals->insert( vec3(-1.0f, 0.0, 0.0) ); UV->insert( vec2(0.0,0.0) );
-    Positions->insert( vec3(0.0,s.y,s.z) ); Normals->insert( vec3(-1.0f, 0.0, 0.0) ); UV->insert( vec2(1.0,1.0) );
-    Positions->insert( vec3(0.0,s.y,0.0) ); Normals->insert( vec3(-1.0f, 0.0, 0.0) ); UV->insert( vec2(1.0,0.0) );
+    Box.insert(0, vec3(0.0,0.0,0.0) ); Box.insert(1, vec3(-1.0f, 0.0, 0.0) ); Box.insert(2, vec2(0.0,0.0) );
+    Box.insert(0, vec3(0.0,0.0,s.z) ); Box.insert(1, vec3(-1.0f, 0.0, 0.0) ); Box.insert(2, vec2(0.0,1.0) );
+    Box.insert(0, vec3(0.0,s.y,s.z) ); Box.insert(1, vec3(-1.0f, 0.0, 0.0) ); Box.insert(2, vec2(1.0,1.0) );
+    Box.insert(0, vec3(0.0,0.0,0.0) ); Box.insert(1, vec3(-1.0f, 0.0, 0.0) ); Box.insert(2, vec2(0.0,0.0) );
+    Box.insert(0, vec3(0.0,s.y,s.z) ); Box.insert(1, vec3(-1.0f, 0.0, 0.0) ); Box.insert(2, vec2(1.0,1.0) );
+    Box.insert(0, vec3(0.0,s.y,0.0) ); Box.insert(1, vec3(-1.0f, 0.0, 0.0) ); Box.insert(2, vec2(1.0,0.0) );
 
-    Positions->insert( vec3(s.x,s.y,s.z) ); Normals->insert( vec3(1.0f, 0.0, 0.0) ); UV->insert( vec2(1.0,1.0) );
-    Positions->insert( vec3(s.x,0.0,s.z) ); Normals->insert( vec3(1.0f, 0.0, 0.0) ); UV->insert( vec2(1.0,0.0) );
-    Positions->insert( vec3(s.x,0.0,0.0) ); Normals->insert( vec3(1.0f, 0.0, 0.0) ); UV->insert( vec2(0.0,0.0) );
-    Positions->insert( vec3(s.x,s.y,0.0) ); Normals->insert( vec3(1.0f, 0.0, 0.0) ); UV->insert( vec2(1.0,0.0) );
-    Positions->insert( vec3(s.x,s.y,s.z) ); Normals->insert( vec3(1.0f, 0.0, 0.0) ); UV->insert( vec2(1.0,1.0) );
-    Positions->insert( vec3(s.x,0.0,0.0) ); Normals->insert( vec3(1.0f, 0.0, 0.0) ); UV->insert( vec2(0.0,0.0) );
+    Box.insert(0, vec3(s.x,s.y,s.z) ); Box.insert(1, vec3(1.0f, 0.0, 0.0) ); Box.insert(2, vec2(1.0,1.0) );
+    Box.insert(0, vec3(s.x,0.0,s.z) ); Box.insert(1, vec3(1.0f, 0.0, 0.0) ); Box.insert(2, vec2(1.0,0.0) );
+    Box.insert(0, vec3(s.x,0.0,0.0) ); Box.insert(1, vec3(1.0f, 0.0, 0.0) ); Box.insert(2, vec2(0.0,0.0) );
+    Box.insert(0, vec3(s.x,s.y,0.0) ); Box.insert(1, vec3(1.0f, 0.0, 0.0) ); Box.insert(2, vec2(1.0,0.0) );
+    Box.insert(0, vec3(s.x,s.y,s.z) ); Box.insert(1, vec3(1.0f, 0.0, 0.0) ); Box.insert(2, vec2(1.0,1.0) );
+    Box.insert(0, vec3(s.x,0.0,0.0) ); Box.insert(1, vec3(1.0f, 0.0, 0.0) ); Box.insert(2, vec2(0.0,0.0) );
 
     //============
 
-    Positions->insert( vec3(0.0,0.0,0.0) ); Normals->insert( vec3(0.0f,-1.0, 0.0) ); UV->insert( vec2(0.0,0.0) );
-    Positions->insert( vec3(s.x,0.0,0.0) ); Normals->insert( vec3(0.0f,-1.0, 0.0) ); UV->insert( vec2(1.0,0.0) );
-    Positions->insert( vec3(s.x,0.0,s.z) ); Normals->insert( vec3(0.0f,-1.0, 0.0) ); UV->insert( vec2(1.0,1.0) );
-    Positions->insert( vec3(0.0,0.0,0.0) ); Normals->insert( vec3(0.0f,-1.0, 0.0) ); UV->insert( vec2(0.0,0.0) );
-    Positions->insert( vec3(s.x,0.0,s.z) ); Normals->insert( vec3(0.0f,-1.0, 0.0) ); UV->insert( vec2(1.0,1.0) );
-    Positions->insert( vec3(0.0,0.0,s.z) ); Normals->insert( vec3(0.0f,-1.0, 0.0) ); UV->insert( vec2(0.0,1.0) );
+    Box.insert(0, vec3(0.0,0.0,0.0) ); Box.insert(1, vec3(0.0f,-1.0, 0.0) ); Box.insert(2, vec2(0.0,0.0) );
+    Box.insert(0, vec3(s.x,0.0,0.0) ); Box.insert(1, vec3(0.0f,-1.0, 0.0) ); Box.insert(2, vec2(1.0,0.0) );
+    Box.insert(0, vec3(s.x,0.0,s.z) ); Box.insert(1, vec3(0.0f,-1.0, 0.0) ); Box.insert(2, vec2(1.0,1.0) );
+    Box.insert(0, vec3(0.0,0.0,0.0) ); Box.insert(1, vec3(0.0f,-1.0, 0.0) ); Box.insert(2, vec2(0.0,0.0) );
+    Box.insert(0, vec3(s.x,0.0,s.z) ); Box.insert(1, vec3(0.0f,-1.0, 0.0) ); Box.insert(2, vec2(1.0,1.0) );
+    Box.insert(0, vec3(0.0,0.0,s.z) ); Box.insert(1, vec3(0.0f,-1.0, 0.0) ); Box.insert(2, vec2(0.0,1.0) );
 
-    Positions->insert( vec3(s.x,s.y,s.z) ); Normals->insert( vec3(0.0f, 1.0, 0.0) ); UV->insert( vec2(1.0,1.0) );
-    Positions->insert( vec3(s.x,s.y,0.0) ); Normals->insert( vec3(0.0f, 1.0, 0.0) ); UV->insert( vec2(1.0,0.0) );
-    Positions->insert( vec3(0.0,s.y,0.0) ); Normals->insert( vec3(0.0f, 1.0, 0.0) ); UV->insert( vec2(0.0,0.0) );
-    Positions->insert( vec3(0.0,s.y,s.z) ); Normals->insert( vec3(0.0f, 1.0, 0.0) ); UV->insert( vec2(0.0,1.0) );
-    Positions->insert( vec3(s.x,s.y,s.z) ); Normals->insert( vec3(0.0f, 1.0, 0.0) ); UV->insert( vec2(1.0,1.0) );
-    Positions->insert( vec3(0.0,s.y,0.0) ); Normals->insert( vec3(0.0f, 1.0, 0.0) ); UV->insert( vec2(0.0,0.0) );
+    Box.insert(0, vec3(s.x,s.y,s.z) ); Box.insert(1, vec3(0.0f, 1.0, 0.0) ); Box.insert(2, vec2(1.0,1.0) );
+    Box.insert(0, vec3(s.x,s.y,0.0) ); Box.insert(1, vec3(0.0f, 1.0, 0.0) ); Box.insert(2, vec2(1.0,0.0) );
+    Box.insert(0, vec3(0.0,s.y,0.0) ); Box.insert(1, vec3(0.0f, 1.0, 0.0) ); Box.insert(2, vec2(0.0,0.0) );
+    Box.insert(0, vec3(0.0,s.y,s.z) ); Box.insert(1, vec3(0.0f, 1.0, 0.0) ); Box.insert(2, vec2(0.0,1.0) );
+    Box.insert(0, vec3(s.x,s.y,s.z) ); Box.insert(1, vec3(0.0f, 1.0, 0.0) ); Box.insert(2, vec2(1.0,1.0) );
+    Box.insert(0, vec3(0.0,s.y,0.0) ); Box.insert(1, vec3(0.0f, 1.0, 0.0) ); Box.insert(2, vec2(0.0,0.0) );
 
-
-    Positions->addOffset( -s*0.5f );
-
-    Box.insertBuffer(Positions);
-    Box.insertBuffer(Normals);
-    Box.insertBuffer(UV);
-
+    Box.getBuffer<vec3>(0).addOffset( -s*0.5f);
     return std::move(Box);
 
 }

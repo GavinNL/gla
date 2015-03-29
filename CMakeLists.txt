@@ -78,11 +78,25 @@ install(TARGETS gla
 add_executable(main main.cpp)
 target_link_libraries (main ${LIBS})
 
-add_executable(TextureArray TextureArray.cpp)
+        add_executable(TextureArray
+                       TextureArray.cpp)
 target_link_libraries (TextureArray ${LIBS})
 
-add_executable(HelloTriangle HelloTriangle.cpp)
+        add_executable(HelloTriangle
+                       HelloTriangle.cpp)
 target_link_libraries (HelloTriangle ${LIBS_CORE})
+
+        add_executable(HelloTriangleVAO
+                       HelloTriangleVAO.cpp)
+target_link_libraries (HelloTriangleVAO ${LIBS_CORE})
+
+        add_executable(HelloTriangleEncapsulatedVAO
+                       HelloTriangleEncapsulatedVAO.cpp)
+target_link_libraries (HelloTriangleEncapsulatedVAO ${LIBS_CORE})
+
+        add_executable(Textures
+                       Textures.cpp)
+target_link_libraries (Textures ${LIBS_CORE})
 
 add_executable(test test.cpp)
 target_link_libraries (test ${LIBS})

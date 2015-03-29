@@ -1,7 +1,9 @@
 #ifndef GLA_TEXTURE_H
 #define GLA_TEXTURE_H
 
-#include <gla/global.h>
+#include <gla/types.h>
+#include <gla/exceptions.h>
+//#include <gla/global.h>
 #include <iostream>
 #include <string.h>
 #include <functional>
@@ -37,8 +39,10 @@ namespace gla {
 
             void              operator+=( unsigned char c);
             void              operator-=( unsigned char c);
+
             TextureChannel    operator+(  unsigned char c);
             TextureChannel    operator-(  unsigned char c);
+
 
             ChannelReference& operator=(        unsigned char c);
             ChannelReference& operator=(        ChannelReference & c);
@@ -53,7 +57,7 @@ namespace gla {
              * lambda function must take in a const & uvec2 and and return a float
              * between 0 and 1
              */
-            ChannelReference&       operator=( std::function<float(const vec2 &)> F);
+            ChannelReference&       operator=( std::function<float(vec2)> F);
 
 
             private:
@@ -258,7 +262,7 @@ namespace gla {
          * lambda function must take in a const & vec2 and and return a float
          * between 0 and 1. The input vec2 will have component values ranging from 0.1
          */
-        TextureChannel&       operator=( std::function<        float(const  vec2 &)> F);
+        TextureChannel&       operator=( std::function<float(vec2)> F);
 
         private:
             unsigned char * mData;
@@ -398,7 +402,7 @@ namespace gla {
              *
              * @return A GPUTexture
              */
-            GPUTexture toGPU();
+            GPUTexture toGPU(int MipMaps=1);
 
 
             /**
@@ -457,8 +461,8 @@ namespace gla {
             Texture&       operator=(        ChannelReference & c);
             Texture&       operator=(  const TextureChannel   & c);
 
-            Texture&       operator=( std::function<vec4 (const vec2 &)> F);
-            Texture&       operator=( std::function<float(const vec2 &)> F);
+            Texture&       operator=( std::function<vec4 (vec2)> F);
+            Texture&       operator=( std::function<float(vec2)> F);
 
             ChannelReference r;
             ChannelReference g;

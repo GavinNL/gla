@@ -183,7 +183,7 @@ class GPUArrayBuffer
          * @brief bind binds the buffer as the current buffer on the GPU
          * @param type The type of buffer to bind it as, either ARRAY_BUFFER or ELEMENT_ARRAY_BUFFER
          */
-        inline void      bind(ARRAY_TYPE type) { glBindBuffer(type, mGLID); } ;
+        inline void      bind(ARRAY_TYPE type) const { glBindBuffer(type, mGLID); } ;
 
         /**
          * @brief getID
@@ -227,7 +227,7 @@ class GPUArrayBuffer
          * @param index The index of the attribute to set this buffer as
          * @param NormaliseVector set to true if you want to normalize the vector values. Good for surface Normals
          */
-        inline void EnableAttribute(int index, bool NormaliseVector=false)
+        inline void EnableAttribute(int index, bool NormaliseVector=false) const
         {
             // Bind it as an array buffer since it probably wont be an element buffer
             // if we are using attributes.
@@ -235,7 +235,7 @@ class GPUArrayBuffer
             glEnableVertexAttribArray(index);
 
             //const GLenum inttype[5] = {GL_FLOAT, GL_INT, GL_UNSIGNED_INT, GL_BYTE, GL_SHORT};
-            const char IntegralTypeS[5][50] = {"GL_FLOAT", "GL_INT", "GL_UNSIGNED_INT", "GL_BYTE", "GL_SHORT"};
+            //const char IntegralTypeS[5][50] = {"GL_FLOAT", "GL_INT", "GL_UNSIGNED_INT", "GL_BYTE", "GL_SHORT", "GL_UNSIGNED_BYTE"};
             //printf("Activating Attirubte (%d) as %d(%d) elements of type %s\n", index, ((int)mBufferType)%4+1, ((int)mBufferType),IntegralTypeS[(int)mBufferType/5]);
 
 
@@ -274,6 +274,16 @@ class GPUArrayBuffer
            glDrawArrays( p, 0,  NumberOfItems() );
         }
 
+        void Render(PRIMITAVE p, int numberofitems)
+        {
+           glDrawArrays( p, 0,  numberofitems );
+        }
+
+        void Render(PRIMITAVE p, int start, int numberofitems)
+        {
+           glDrawArrays( p, start,  numberofitems );
+        }
+
         /**
          * @brief NumberOfItems
          * @return Returns the number of items in the buffer.
@@ -300,8 +310,8 @@ class GPUArrayBuffer
          */
         GLenum IntegralType() const
         {
-            const GLenum IntegralType[5] = {GL_FLOAT, GL_INT, GL_UNSIGNED_INT, GL_BYTE, GL_SHORT};
-            return( IntegralType[(int)mBufferType/5] );
+            const GLenum IntegralType[7] = {GL_FLOAT, GL_INT, GL_UNSIGNED_INT, GL_BYTE, GL_SHORT, GL_UNSIGNED_BYTE, GL_UNSIGNED_SHORT};
+            return( IntegralType[(int)mBufferType/7] );
         }
 
         GLuint                 mGLID;             // The GL ID associated with it.
@@ -389,7 +399,7 @@ public:
 
     ArrayBuffer_T()
     {
-#define SET_BUFFER_ELEMENT(T2, E1) if( std::is_same<T, T2>::value )  { mBufferElementType = E1; printf("ArrayBuffer created with Type: %d\n", (int)E1); }
+        #define SET_BUFFER_ELEMENT(T2, E1) if( std::is_same<T, T2>::value )  { mBufferElementType = E1; printf("ArrayBuffer created with Type: %d\n", (int)E1); }
 
         SET_BUFFER_ELEMENT(float, F1);
         SET_BUFFER_ELEMENT(vec2,  F2);
@@ -405,6 +415,11 @@ public:
         SET_BUFFER_ELEMENT(ivec2,  I2);
         SET_BUFFER_ELEMENT(ivec3,  I3);
         SET_BUFFER_ELEMENT(ivec4,  I4);
+
+        SET_BUFFER_ELEMENT(unsigned char,   uB1);
+        SET_BUFFER_ELEMENT(ucol2,           uB2);
+        SET_BUFFER_ELEMENT(ucol3,           uB3);
+        SET_BUFFER_ELEMENT(ucol4,           uB4);
 
         #undef SET_BUFFER_ELEMENT
 
@@ -429,7 +444,16 @@ public:
         CHECK_BUFFER_ELEMENT(ivec3,  I3);
         CHECK_BUFFER_ELEMENT(ivec4,  I4);
 
+        CHECK_BUFFER_ELEMENT(unsigned char,   uB1);
+        CHECK_BUFFER_ELEMENT(ucol2,           uB2);
+        CHECK_BUFFER_ELEMENT(ucol3,           uB3);
+        CHECK_BUFFER_ELEMENT(ucol4,           uB4);
         #undef CHECK_BUFFER_ELEMENT
+    }
+
+    inline T & operator[](int i)
+    {
+        return mVector[i];
     }
 
     /**
@@ -453,13 +477,6 @@ public:
         return( (uint)(mVector.size() * sizeof(T)) );
     };
 
-    /**
-     * Gets the fundamental integral type of the buffer
-     */
-    // inline virtual FUNDAMENTAL_TYPE getIntegralType() const
-    // {
-    //     return INTEGRAL_TYPE;
-    // }
 
     /**
      * Gets the number of values per vertex. If representing a vertex in 3d spaces, this value
@@ -481,6 +498,11 @@ public:
         CHECK_BUFFER_ELEMENT(ivec2,  2);
         CHECK_BUFFER_ELEMENT(ivec3,  3);
         CHECK_BUFFER_ELEMENT(ivec4,  4);
+
+        CHECK_BUFFER_ELEMENT(unsigned char,   1);
+        CHECK_BUFFER_ELEMENT(ucol2,           2);
+        CHECK_BUFFER_ELEMENT(ucol3,           3);
+        CHECK_BUFFER_ELEMENT(ucol4,           4);
 
         #undef CHECK_BUFFER_ELEMENT
     }

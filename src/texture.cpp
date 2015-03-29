@@ -29,9 +29,8 @@ Texture GPUTexture::toCPU()
 // Texture
 //=================================================================================================================
 
-GPUTexture Texture::toGPU()
+GPUTexture Texture::toGPU(int MipMaps)
 {
-
     GPUTexture GPU;
 
     glGenTextures(1, &GPU.mTextureID);
@@ -45,7 +44,11 @@ GPUTexture Texture::toGPU()
 
     glBindTexture(GL_TEXTURE_2D, GPU.mTextureID);
 
-    glTexImage2D( GL_TEXTURE_2D, 0 , GL_RGBA, mDim.x, mDim.y, 0, GL_RGBA, GL_UNSIGNED_BYTE,  (void*)mData );
+    //glTexImage2D( GL_TEXTURE_2D, 0 , GL_RGBA, mDim.x, mDim.y, 0, GL_RGBA, GL_UNSIGNED_BYTE,  (void*)mData );
+
+    glTexStorage2D(GL_TEXTURE_2D, MipMaps, GL_RGBA8, mDim.x, mDim.y);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, mDim.x, mDim.y, GL_RGBA, GL_UNSIGNED_BYTE, (void*)mData);
+    glGenerateMipmap(GL_TEXTURE_2D);
 
     GPU.setFilter( GPUTexture::LINEAR, GPUTexture::LINEAR );
 
@@ -364,7 +367,7 @@ void Texture::resize( const uvec2 & newSize)
 }
 
 
-Texture& Texture::operator=( std::function<vec4(const vec2 &)> F)
+Texture& Texture::operator=( std::function<vec4(vec2)> F)
 {
      uvec2 s = size();
 
@@ -377,7 +380,7 @@ Texture& Texture::operator=( std::function<vec4(const vec2 &)> F)
      }
 };
 
-Texture& Texture::operator=( std::function<float(const vec2 &)> F)
+Texture& Texture::operator=( std::function<float(vec2)> F)
 {
      uvec2 s = size();
 
@@ -552,7 +555,7 @@ ChannelReference& ChannelReference::operator=(unsigned char c)
 
 
 
-ChannelReference&       ChannelReference::operator=( std::function<        float(const  vec2 &)> F)
+ChannelReference&       ChannelReference::operator=( std::function<float(vec2)> F)
 {
 
      uvec2 s = size();
@@ -608,7 +611,7 @@ void TextureChannel::resize( const uvec2 & newSize)
         *this = std::move(T);
 }
 
-TextureChannel&       TextureChannel::operator=( std::function<        float(const  vec2 &)> F)
+TextureChannel&       TextureChannel::operator=( std::function<float(vec2)> F)
 {
 
      uvec2 s = size();

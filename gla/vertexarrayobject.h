@@ -13,9 +13,8 @@ namespace gla
 {
 
 
-
-
-    /*
+    /**
+     * @brief The GPUArrayObject class.
      * A GPU array object is an VertexArrayObject that exists in the GPU.
      * This class is small and easily copyable/assignable
      *
@@ -25,6 +24,8 @@ namespace gla
      * GPUArrayObject will not clear GPU memory when the GPUArrayObject goes out of
      * scope. You MUST call clear() before it goes out of scope.
      */
+
+
     class GPUArrayObject
     {
         public:
@@ -32,6 +33,85 @@ namespace gla
             GPUArrayObject() : _VAO(0), _size(0), _isIndexed(0)
             {
 
+            }
+
+
+            GPUArrayObject( const std::vector<GPUArrayBuffer> & ArrayBuffers ) : _VAO(0), _size(0), _isIndexed(0)
+            {
+                 *this =  Create( ArrayBuffers );
+                _PrimitaveType = UNKNOWN_PRIMITAVE;
+            }
+
+            GPUArrayObject( PRIMITAVE PrimitaveType, const std::vector<GPUArrayBuffer> & ArrayBuffers, const GPUArrayBuffer & mIndexBuffer ) : _VAO(0), _size(0), _isIndexed(0)
+            {
+
+                auto GPU = Create( ArrayBuffers );
+                GPU.bind();
+
+                mIndexBuffer.bind(ELEMENT_ARRAY_BUFFER);
+                GPU._isIndexed     = true;
+                GPU._size          = mIndexBuffer.NumberOfItems() * mIndexBuffer.ElementsPerItem();//mIndexBuffer->getVertexCount() * mIndexBuffer->getValuesPerVertex();
+                GPU._PrimitaveType = PrimitaveType;
+
+                glBindVertexArray(0);
+
+                *this = GPU;
+
+            }
+
+            /**
+             * @brief Create Creates a GPUArrayObject from a vector of GPUArrayBuffers
+             * @param ArrayBuffers
+             * @return
+             */
+            static GPUArrayObject Create(const std::vector<GPUArrayBuffer> & ArrayBuffers)
+            {
+                GPUArrayObject GPU;
+
+                if( ArrayBuffers.size() == 0)
+                {
+                    throw gla::GLA_EXCEPTION( "ERROR: Does not contain any buffers.");
+                }
+
+                for(int i=0; i < ArrayBuffers.size() ; i++)
+                {
+                    if( ArrayBuffers[0].NumberOfItems() != ArrayBuffers[i].NumberOfItems() )
+                        throw gla::GLA_EXCEPTION( "ERROR: All buffers in the VAO must be the same size before creating a GPUArrayObject");
+                }
+
+                //===============================
+
+                glGenVertexArrays(1, &GPU._VAO);
+                glBindVertexArray(    GPU._VAO);
+
+                if( !GPU._VAO  )  throw gla::GLA_EXCEPTION( "ARRAY OBJECT NOT CREATED" );
+
+                for(int i = 0; i < ArrayBuffers.size();  i++)
+                {
+                    ArrayBuffers[i].EnableAttribute(i);
+                }
+                //===============================
+
+                glBindVertexArray(0);
+
+                return GPU;
+            }
+
+
+            void print()
+            {
+                std::cout << "============VOA Created============" << std::endl;
+                std::cout << "  ID       : " << _VAO       << std::endl;
+                std::cout << "  size     : " << _size      << std::endl;
+                std::cout << "  isindexed: " << _isIndexed << std::endl;
+                switch(_PrimitaveType )
+                {
+                    case UNKNOWN_PRIMITAVE: std::cout << "elementtype: UNKNOWN"   << std::endl; break;
+                    case LINES: std::cout             << "elementtype: LINES"   << std::endl; break;
+                    case TRIANGLES: std::cout         << "elementtype: TRIANGLES" << std::endl; break;
+                    case QUADS: std::cout             << "elementtype: QUADS"     << std::endl; break;
+                }
+                std::cout << "===================================" << std::endl;
             }
 
             /**
@@ -414,6 +494,45 @@ namespace gla
 
             }
 
+            template<class V>
+            bool insert(int index, const V & item)
+            {
+                if( index > mBuffers.size()-1 )
+                {
+                    throw gla::GLA_EXCEPTION("Buffer does not exist. Create the buffer using the VertexArrayObject.createBuffer<type>() method.");
+                }
+
+                auto b = std::dynamic_pointer_cast< ArrayBuffer_T<V> >( mBuffers[ index ] );
+
+                if(b)
+                {
+                   b->insert( item );
+                   return true;
+                }
+
+                return false;
+            }
+
+            template<class V>
+            bool insertElement(const V & item)
+            {
+                if( !mIndexBuffer )
+                {
+                    mIndexBuffer = std::make_shared< ArrayBuffer_T<V> >();
+                    //throw gla::GLA_EXCEPTION("Buffer does not exist. Create the buffer using the VertexArrayObject.createBuffer<type>() method.");
+                }
+
+                auto b = std::dynamic_pointer_cast< ArrayBuffer_T<V> >( mIndexBuffer );
+
+                if(b)
+                {
+                   b->insert( item );
+                   return true;
+                }
+
+                return false;
+            }
+
             void insertBuffer(std::shared_ptr<ArrayBuffer_b> B)
             {
                 mBuffers.push_back(B);
@@ -424,15 +543,20 @@ namespace gla
                 mIndexBuffer = indexbuffer;
             }
 
-            std::shared_ptr<ArrayBuffer_b > & getBuffer(int i ) { return mBuffers[i];  }
+
+            template<class V>
+            ArrayBuffer_T<V> & getBuffer(int i) { return *std::dynamic_pointer_cast<ArrayBuffer_T<V> >( mBuffers[i] ); };
+
+            //std::shared_ptr<ArrayBuffer_b > & getBuffer(int i ) { return mBuffers[i];  }
             std::shared_ptr<ArrayBuffer_b > & getIndexBuffer()  { return mIndexBuffer; }
+
             unsigned int numBuffers() { return mBuffers.size(); }
 
 
             template<class V>
             int createBuffer()
             {
-                mBuffers.push_back(  std::make_shared<ArrayBuffer_T<V> >()  );
+                mBuffers.push_back(  std::make_shared<ArrayBuffer_T<V>>()  );
                 return( mBuffers.size() - 1 );
             }
 
