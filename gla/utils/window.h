@@ -1,5 +1,5 @@
-#ifndef GLRE_UTILS_WINDOW_H
-#define GLRE_UTILS_WINDOW_H
+#ifndef GLA_UTILS_WINDOW_H
+#define GLA_UTILS_WINDOW_H
 
 #define GLFW_INCLUDE_GL_3
 #include <GL/glew.h>

@@ -1,5 +1,5 @@
-#ifndef GLRE_SKELETON_H
-#define GLRE_SKELETON_H
+#ifndef GLA_SKELETON_H
+#define GLA_SKELETON_H
 
 
 #include <string>

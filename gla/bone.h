@@ -1,5 +1,5 @@
-#ifndef GLRE_BONE_H
-#define GLRE_BONE_H
+#ifndef GLA_BONE_H
+#define GLA_BONE_H
 
 #include <gla/global.h>
 

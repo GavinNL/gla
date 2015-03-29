@@ -1,5 +1,5 @@
-#ifndef GLRE_UTILS_EVENT_H
-#define GLRE_UTILS_EVENT_H
+#ifndef GLA_UTILS_EVENT_H
+#define GLA_UTILS_EVENT_H
 
 #include <GLFW/glfw3.h>
 

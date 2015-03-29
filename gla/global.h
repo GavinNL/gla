@@ -1,5 +1,5 @@
-#ifndef GLRE_GLOBAL_H
-#define GLRE_GLOBAL_H
+#ifndef GLA_GLOBAL_H
+#define GLA_GLOBAL_H
 
 #include <GL/glew.h>
 #include <GL/glext.h>
@@ -84,14 +84,16 @@ namespace gla
 namespace gla
 {
     // Array Buffers
-    typedef gla::ArrayBuffer_T<vec2, FLOAT>  v2ArrayBuffer;
-    typedef gla::ArrayBuffer_T<vec3, FLOAT>  v3ArrayBuffer;
-    typedef gla::ArrayBuffer_T<vec4, FLOAT>  v4ArrayBuffer;
+    typedef gla::ArrayBuffer_T<vec2>  v2ArrayBuffer;
+    typedef gla::ArrayBuffer_T<vec3>  v3ArrayBuffer;
+    typedef gla::ArrayBuffer_T<vec4>  v4ArrayBuffer;
 
-    typedef gla::ArrayBuffer_T<uvec2, UNSIGNED_INT>  u2ArrayBuffer;
-    typedef gla::ArrayBuffer_T<uvec3, UNSIGNED_INT>  u3ArrayBuffer;
-    typedef gla::ArrayBuffer_T<uvec4, UNSIGNED_INT>  u4ArrayBuffer;
+    typedef gla::ArrayBuffer_T<uvec2> u2ArrayBuffer;
+    typedef gla::ArrayBuffer_T<uvec3> u3ArrayBuffer;
+    typedef gla::ArrayBuffer_T<uvec4> u4ArrayBuffer;
 
+
+    typedef gla::VertexArrayObject_N VertexArrayObject;
     // Indexed Meshs
     //                                       VertexType         IndexType   ElementType      VertexAttributeTypes
     typedef gla::IndexedVertexArrayObject< gla::Vertex_PNCU,   gla::uvec3, TRIANGLES,       F3, F3, F4, F2        >   iTriMesh_PNCU;
@@ -99,8 +101,8 @@ namespace gla
 
     // non-indexed meshes.
     //                                       VertexType,    ElementType    VertexAttributeTypes
-    typedef gla::VertexArrayObject< gla::Vertex_PC,         LINES,         F3, F4 >                  Line_PC;
-    typedef gla::VertexArrayObject< gla::Vertex_PNCU,   TRIANGLE_STRIP,    F3, F3, F4, F2     >      TriStripMesh_PNCU;
+    typedef gla::VertexArrayObject_old< gla::Vertex_PC,         LINES,         F3, F4 >                  Line_PC;
+    typedef gla::VertexArrayObject_old< gla::Vertex_PNCU,   TRIANGLE_STRIP,    F3, F3, F4, F2     >      TriStripMesh_PNCU;
     //typedef glre::IndexedVertexArrayObject< glre::Vertex_PC,   glre::uvec2, LINES,     2, F3, F4 >       Line_PC;
 
     typedef TBox<float>  fBox;
@@ -126,25 +128,25 @@ namespace gla
         switch(err)
         {
             case GL_INVALID_OPERATION:
-                throw gla::GLRE_EXCEPTION("ERROR: GL_INVALID_OPERATION\n");
+                throw gla::GLA_EXCEPTION("ERROR: GL_INVALID_OPERATION\n");
                 break;
             case GL_INVALID_ENUM:
-                throw gla::GLRE_EXCEPTION("ERROR: GL_INVALID_ENUM\n");
+                throw gla::GLA_EXCEPTION("ERROR: GL_INVALID_ENUM\n");
                 break;
             case GL_INVALID_VALUE:
-                throw gla::GLRE_EXCEPTION("ERROR: GL_INVALID_VALUE\n");
+                throw gla::GLA_EXCEPTION("ERROR: GL_INVALID_VALUE\n");
                 break;
             case GL_INVALID_FRAMEBUFFER_OPERATION:
-                throw gla::GLRE_EXCEPTION("ERROR: GL_INVALID_FRAMEBUFFER_OPERATION\n");
+                throw gla::GLA_EXCEPTION("ERROR: GL_INVALID_FRAMEBUFFER_OPERATION\n");
                 break;
             case GL_OUT_OF_MEMORY:
-                throw gla::GLRE_EXCEPTION("ERROR: GL_OUT_OF_MEMORY\n");
+                throw gla::GLA_EXCEPTION("ERROR: GL_OUT_OF_MEMORY\n");
                 break;
             case GL_STACK_UNDERFLOW:
-                throw gla::GLRE_EXCEPTION("ERROR: GL_INVALID_FRAMEBUFFER_OPERATION\n");
+                throw gla::GLA_EXCEPTION("ERROR: GL_INVALID_FRAMEBUFFER_OPERATION\n");
                 break;
             case GL_STACK_OVERFLOW:
-                throw gla::GLRE_EXCEPTION("ERROR: GL_INVALID_FRAMEBUFFER_OPERATION\n");
+                throw gla::GLA_EXCEPTION("ERROR: GL_INVALID_FRAMEBUFFER_OPERATION\n");
                 break;
 
             default:

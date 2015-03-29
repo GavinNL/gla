@@ -59,6 +59,8 @@ ENDIF(MAKE_SHARED)
 set(LIBS           ${PROJECT_NAME} assimp z rgui ${GLFW_STATIC_LIBRARIES} ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES} ${SDL2_LIBRARY}  )
 set(LIBS_TEST      ${PROJECT_NAME} z assimp      ${GLFW_STATIC_LIBRARIES} ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES} ${SDL2_LIBRARY}  )
 
+set(LIBS_CORE      ${PROJECT_NAME} ${GLFW_STATIC_LIBRARIES} ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES} )
+
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${MYLIB_VERSION_STRING}
                                            SOVERSION ${MYLIB_VERSION_MAJOR})
 
@@ -78,6 +80,9 @@ target_link_libraries (main ${LIBS})
 
 add_executable(TextureArray TextureArray.cpp)
 target_link_libraries (TextureArray ${LIBS})
+
+add_executable(HelloTriangle HelloTriangle.cpp)
+target_link_libraries (HelloTriangle ${LIBS_CORE})
 
 add_executable(test test.cpp)
 target_link_libraries (test ${LIBS})

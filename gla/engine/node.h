@@ -1,5 +1,5 @@
-#ifndef GLRE_ENGINE_NODE_H
-#define GLRE_ENGINE_NODE_H
+#ifndef GLA_ENGINE_NODE_H
+#define GLA_ENGINE_NODE_H
 
 #include <gla/gla.h>
 

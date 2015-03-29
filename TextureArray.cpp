@@ -73,6 +73,12 @@ class MyApp : public gla::utils::App
              }
         };
 
+        // f(\vec x) = min( c(\vec x-5\hat j), s(\vec x - 9\hat j-4\hat k), s(\vec x - 9\hat j + 6\hat k), t(\vec \x) ) \\
+        // c(\vec x) &=& |\vec x - 22 \hat j \cdot clamp(y/22,0,1)| - 3 \\
+        // s(\vec x) &=& |\vec x| - 5 \\
+        // t(\vec x) &=& \sqrt{(\sqrt{x^2 + z^2} - 64)^2 + y^2}-3\\
+
+
         //--------------------------------------------------------------------------------------------------------------
         // Set the callback to control the camera
         //--------------------------------------------------------------------------------------------------------------
@@ -82,7 +88,13 @@ class MyApp : public gla::utils::App
             switch(E.type)
             {
                 case gla::utils::KEY:
-                    if(E.Key.mods == GLFW_MOD_SHIFT) speed = 160.f;
+                    if(E.Key.mods == GLFW_MOD_SHIFT)
+                    {
+                        speed = 160.f;
+                        mCamera.mMaxSpeed = vec3(20.0f);
+                    }
+                    else
+                        mCamera.mMaxSpeed = vec3(5.0f);
                     switch( E.Key.key )
                     {
                         case GLFW_KEY_W:

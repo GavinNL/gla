@@ -1,5 +1,5 @@
-#ifndef GLRE_UTILS_APP_H
-#define GLRE_UTILS_APP_H
+#ifndef GLA_UTILS_APP_H
+#define GLA_UTILS_APP_H
 
 #include "gla/utils/window.h"
 #include "gla/timer.h"

@@ -1,5 +1,5 @@
-#ifndef GLRE_UTILS_H
-#define GLRE_UTILS_H
+#ifndef GLA_UTILS_H
+#define GLA_UTILS_H
 
 #include <gla/utils/events.h>
 #include <gla/utils/window.h>

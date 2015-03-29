@@ -1,11 +1,16 @@
-#ifndef GLRE_TEXTURE_H
-#define GLRE_TEXTURE_H
+#ifndef GLA_TEXTURE_H
+#define GLA_TEXTURE_H
 
 #include <gla/global.h>
 #include <iostream>
 #include <string.h>
 #include <functional>
 
+/**
+ * \page page_Testing
+ *  this is a test poage
+ *
+ */
 namespace gla {
 
     class Texture;

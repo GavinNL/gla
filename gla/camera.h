@@ -9,8 +9,6 @@ namespace gla {
 class Camera : public Transformation
 {
     public:
-
-
         Camera() : mSpeed(0.0f, 0.0f, 0.0f)
         {
 
@@ -41,17 +39,16 @@ class Camera : public Transformation
             quat q     = reverse();
             vec3 a     = (q * mAcceleration);
 
+
+            for(int i=0;i<3;i++)
+            {
+                if( fabs(a[i]) < 1e-4) mSpeed[i] *= 1.0 - 5.00*dt;
+            }
+
+            mSpeed += a * dt;
+            mSpeed = glm::clamp( mSpeed, -mMaxSpeed, mMaxSpeed );
             vec3 dx    = mSpeed*dt + 0.5f * (dt*dt)*a;
 
-            float drag = glm::dot(mSpeed, mSpeed);
-
-            if( glm::length(mSpeed) < 5.0f);
-                mSpeed  += a * dt;
-
-            if( drag > 0)
-            {
-                mSpeed  -=  drag * mSpeed * dt;
-            }
 
             translate(  dx  );
         }
@@ -82,6 +79,7 @@ class Camera : public Transformation
 
         vec3 mSpeed;
         vec3 mAcceleration;
+        vec3 mMaxSpeed;
 
     private:
             mat4  mProj;

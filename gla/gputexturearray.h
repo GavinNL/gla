@@ -1,5 +1,5 @@
-#ifndef GLRE_GPUTEXTUREARRAY_H
-#define GLRE_GPUTEXTUREARRAY_H
+#ifndef GLA_GPUTEXTUREARRAY_H
+#define GLA_GPUTEXTUREARRAY_H
 
 #include <gla/global.h>
 

@@ -51,7 +51,8 @@ SOURCES +=  main.cpp \
     src/engine/scene.cpp \
     src/engine/node.cpp \
     src/engine/material.cpp \
-    TextureArray.cpp
+    TextureArray.cpp \
+    HelloTriangle.cpp
 
 
 INCLUDEPATH += ./ 
@@ -71,6 +72,8 @@ DISTFILES += \
     shaders/PNU_TextureArray.f \
     shaders/PNU_TextureArray.v \
     shaders/PNU_TriPlanar.f \
-    shaders/PNU_TriPlanar.v
+    shaders/PNU_TriPlanar.v \
+    shaders/HelloTriangle.f \
+    shaders/HelloTriangle.v
 
 

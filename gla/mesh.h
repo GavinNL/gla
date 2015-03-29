@@ -1,5 +1,5 @@
-#ifndef GLRE_MESH_H
-#define GLRE_MESH_H
+#ifndef GLA_MESH_H
+#define GLA_MESH_H
 
 namespace gla {
 class Mesh

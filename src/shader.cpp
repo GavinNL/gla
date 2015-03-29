@@ -35,6 +35,7 @@ GLuint ShaderProgram::linkProgram(const VertexShader & VS, const FragmentShader 
 {
 
     GLuint shader=0;
+
     if( VS.mShaderID && FS.mShaderID )
     {
         GLuint shader = glCreateProgram();
@@ -56,9 +57,6 @@ GLuint ShaderProgram::linkProgram(const VertexShader & VS, const FragmentShader 
 }
 
 
-//inline void ShaderProgram::sendUniform_Sampler2D(const Texture & tex, GLint TextureNumber)
-//{
-//    glUniform1i( tex.getID() , TextureNumber);
-//}
+
 
 }

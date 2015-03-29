@@ -1,12 +1,13 @@
-#ifndef SHADER_H
-#define SHADER_H
+#ifndef GLA_SHADER_H
+#define GLA_SHADER_H
 
 #include <gla/global.h>
 #include <iostream>
+#include <fstream>
+#include <streambuf>
+
 namespace gla
 {
-
-class Texture;
 
 template<uint SHADER_TYPE>
 class ShaderUnit
@@ -36,7 +37,7 @@ class ShaderUnit
 
         GLuint compileFromFile(  const std::string & shader_path)
         {
-            std::ifstream v(shader_path);
+            std::ifstream v(shader_path, std::ifstream::in);
 
             std::string V( (std::istreambuf_iterator<char>(v)),
                             std::istreambuf_iterator<char>() );

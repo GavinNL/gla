@@ -1,5 +1,5 @@
-#ifndef GLRE_ENGINE_SCENE_H
-#define GLRE_ENGINE_SCENE_H
+#ifndef GLA_ENGINE_SCENE_H
+#define GLA_ENGINE_SCENE_H
 
 
 #include <gla/gla.h>

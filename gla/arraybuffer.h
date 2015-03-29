@@ -54,7 +54,7 @@ class ArrayBuffer
 
             if(err != 0)
             {
-                throw gla::GLRE_EXCEPTION("Error sending ArrayBuffer to the GPU. Did you create an OpenGL rendering context fist?");
+                throw gla::GLA_EXCEPTION("Error sending ArrayBuffer to the GPU. Did you create an OpenGL rendering context fist?");
 
             } else {
                 mGPUBufferSize = cpuBufferSize();
@@ -170,25 +170,143 @@ class ArrayBuffer
 }
 
 
-
 //===================================================================================
 
 namespace gla {
 
 
 
-
 class GPUArrayBuffer
 {
     public:
-        inline void   bind() { glBindBuffer(mArrayType, mGLID); } ;
-        inline GLuint getArrayType(){ return mArrayType;   };
-        inline GLuint getID()       { return mGLID;        };
-        inline uint   getByteSize() { return mSizeInBytes; };
+    /**
+         * @brief bind binds the buffer as the current buffer on the GPU
+         * @param type The type of buffer to bind it as, either ARRAY_BUFFER or ELEMENT_ARRAY_BUFFER
+         */
+        inline void      bind(ARRAY_TYPE type) { glBindBuffer(type, mGLID); } ;
 
-        GLuint         mGLID;             // The GL ID associated with it.
-        ARRAY_TYPE     mArrayType;        // The type of buffer, either GL_ARRAY_BUFFER or GL_ELEMENT_ARRAY_BUFFER
-        unsigned int   mSizeInBytes;      // Size in bytes of the buffer
+        /**
+         * @brief getID
+         * @return The openGL id for the array buffer.
+         */
+        inline GLuint    getID()       { return mGLID;        };
+
+
+        /**
+         * @brief getByteSize
+         * @return The size of the buffer in bytes.
+         */
+        inline uint   getByteSize()
+        {
+           // return mSizeInBytes;
+
+            int size=0;
+            switch( IntegralType() )
+            {
+                case GL_FLOAT:
+                case GL_UNSIGNED_INT:
+                case GL_INT:
+                    size = 4; break;
+
+                case GL_SHORT:
+                case GL_UNSIGNED_SHORT:
+                    size = 2; break;
+
+                case GL_BYTE:
+                case GL_UNSIGNED_BYTE:
+                    size = 1; break;
+
+            }
+
+            return mNumberOfItems * ElementsPerItem() * size;
+        };
+
+
+        /**
+         * @brief EnableAttribute
+         * @param index The index of the attribute to set this buffer as
+         * @param NormaliseVector set to true if you want to normalize the vector values. Good for surface Normals
+         */
+        inline void EnableAttribute(int index, bool NormaliseVector=false)
+        {
+            // Bind it as an array buffer since it probably wont be an element buffer
+            // if we are using attributes.
+            bind(ARRAY_BUFFER);
+            glEnableVertexAttribArray(index);
+
+            //const GLenum inttype[5] = {GL_FLOAT, GL_INT, GL_UNSIGNED_INT, GL_BYTE, GL_SHORT};
+            const char IntegralTypeS[5][50] = {"GL_FLOAT", "GL_INT", "GL_UNSIGNED_INT", "GL_BYTE", "GL_SHORT"};
+            //printf("Activating Attirubte (%d) as %d(%d) elements of type %s\n", index, ((int)mBufferType)%4+1, ((int)mBufferType),IntegralTypeS[(int)mBufferType/5]);
+
+
+            glVertexAttribPointer(index,
+                                  ElementsPerItem(),
+                                  IntegralType(),  // GL_FLOAT/GL_INT/etc
+                                  NormaliseVector,                   // Should we normlize the vector?
+                                  0,  // stride
+                                  0); // buffer offset
+        }
+
+        /**
+         * @brief DisableAttribute
+         * @param index the index number to disable
+         */
+        static inline void DisableAttribute(int index)
+        {
+            glDisableVertexAttribArray(index);
+        }
+
+
+        /**
+         * @brief clear Sets the Arraybuffer to be flagged for deletion.
+         */
+        void clear()
+        {
+            glDeleteBuffers(1, &mGLID);
+        }
+
+        /**
+         * @brief Render
+         * @param p The Primitave type to render as, TRIANGLES, QUADS, etc
+         */
+        void Render(PRIMITAVE p)
+        {
+           glDrawArrays( p, 0,  NumberOfItems() );
+        }
+
+        /**
+         * @brief NumberOfItems
+         * @return Returns the number of items in the buffer.
+         *
+         * If you have 4 values of vec3s, it returns 4, not 12.
+         */
+        int NumberOfItems() const
+        {
+            return mNumberOfItems;
+        }
+
+        /**
+         * @brief ElementsPerItem
+         * @return Returns the number of elements per item, eg: Vec3s will return 3, vec4 will return 4
+         */
+        int ElementsPerItem() const
+        {
+            return (((int)mBufferType)%4+1);
+        }
+
+        /**
+         * @brief IntegralType
+         * @return Returns the openGL integral type, GL_FLOAT, GL_INT, etc
+         */
+        GLenum IntegralType() const
+        {
+            const GLenum IntegralType[5] = {GL_FLOAT, GL_INT, GL_UNSIGNED_INT, GL_BYTE, GL_SHORT};
+            return( IntegralType[(int)mBufferType/5] );
+        }
+
+        GLuint                 mGLID;             // The GL ID associated with it.
+        BUFFER_ELEMENT_TYPE    mBufferType;
+        unsigned int           mNumberOfItems;
 };
 
 class ArrayBuffer_b
@@ -213,27 +331,30 @@ class ArrayBuffer_b
             auto err = glGetError();
             if(err != 0)
             {
-                throw gla::GLRE_EXCEPTION("Error sending ArrayBuffer to the GPU. Did you create an OpenGL rendering context fist?");
+                throw gla::GLA_EXCEPTION("Error sending ArrayBuffer to the GPU. Did you create an OpenGL rendering context fist?");
 
             }
 
-            B.mSizeInBytes = this->getByteSize();
-            B.mArrayType   = TY;
+            //B.mSizeInBytes = this->getByteSize();
+            B.mNumberOfItems = getVertexCount();
+            B.mBufferType  = mBufferElementType;
+            //B.mArrayType   = TY;
 
-#ifdef GLRE_VERBOSE_BUFFERS
+
+#ifdef GLA_VERBOSE_BUFFERS
             std::cout << "================Buffer created=================\n";
             std::cout << "ID        : " << B.mGLID <<  std::endl;
-            std::cout << "arraytype : " << (B.mArrayType==GL_ARRAY_BUFFER ? std::string("ARRAY") : std::string("ELEMENT")) <<  std::endl;
-            std::cout << "bytesize  : " << B.mSizeInBytes <<  std::endl;
+            std::cout << "bytesize  : " << B.getByteSize() <<  std::endl;
             std::cout << "vertcount : " << this->getVertexCount() <<  std::endl;
             std::cout << "val/ver   : " << this->getValuesPerVertex() <<  std::endl;
             std::cout << "====================S===========================\n";
 #endif
             return B;
         }
+
         GLuint  getID() { return mGLID; }
 
-        virtual FUNDAMENTAL_TYPE getIntegralType()    const = 0;
+        //virtual FUNDAMENTAL_TYPE getIntegralType()    const = 0;
         virtual void*            getData()            const = 0;
         virtual uint             getByteSize()        const = 0;
         virtual uint             getVertexCount()     const = 0;
@@ -248,21 +369,68 @@ class ArrayBuffer_b
          */
         bool sameTypeAs( const ArrayBuffer_b & b)
         {
-            return( this->getIntegralType()==b.getIntegralType() && this->getValuesPerVertex()==b.getValuesPerVertex());
+            return( this->mBufferElementType == b.mBufferElementType );
+            //return( this->getIntegralType()==b.getIntegralType() && this->getValuesPerVertex()==b.getValuesPerVertex());
         }
 
-    GLuint mGLID;
-    GLuint mArrayType;
-    uint   mBufferSize;
+    GLuint              mGLID;
+   // GLuint              mArrayType;
+    uint                mBufferSize;
+    BUFFER_ELEMENT_TYPE mBufferElementType;
 
 };
 
 
-template <class T, FUNDAMENTAL_TYPE INTEGRAL_TYPE>
+template <class T>
 class ArrayBuffer_T : public ArrayBuffer_b
 {
 public:
 
+
+    ArrayBuffer_T()
+    {
+#define SET_BUFFER_ELEMENT(T2, E1) if( std::is_same<T, T2>::value )  { mBufferElementType = E1; printf("ArrayBuffer created with Type: %d\n", (int)E1); }
+
+        SET_BUFFER_ELEMENT(float, F1);
+        SET_BUFFER_ELEMENT(vec2,  F2);
+        SET_BUFFER_ELEMENT(vec3,  F3);
+        SET_BUFFER_ELEMENT(vec4,  F4);
+
+        SET_BUFFER_ELEMENT(unsigned int, U1);
+        SET_BUFFER_ELEMENT(uvec2,  U2);
+        SET_BUFFER_ELEMENT(uvec3,  U3);
+        SET_BUFFER_ELEMENT(uvec4,  U4);
+
+        SET_BUFFER_ELEMENT(int,    I1);
+        SET_BUFFER_ELEMENT(ivec2,  I2);
+        SET_BUFFER_ELEMENT(ivec3,  I3);
+        SET_BUFFER_ELEMENT(ivec4,  I4);
+
+        #undef SET_BUFFER_ELEMENT
+
+        //printf("ArrayBuffer created with Type: %d\n", (int)E1);
+    }
+
+
+    constexpr BUFFER_ELEMENT_TYPE getBufferType()
+    {
+        #define CHECK_BUFFER_ELEMENT(T2, E1) if( std::is_same<T, T2>::value )  return(E1);
+
+        CHECK_BUFFER_ELEMENT(float, F1);
+        CHECK_BUFFER_ELEMENT(vec2,  F2);
+        CHECK_BUFFER_ELEMENT(vec3,  F3);
+        CHECK_BUFFER_ELEMENT(vec4,  F4);
+        CHECK_BUFFER_ELEMENT(unsigned int, U1);
+        CHECK_BUFFER_ELEMENT(uvec2,  U2);
+        CHECK_BUFFER_ELEMENT(uvec3,  U3);
+        CHECK_BUFFER_ELEMENT(uvec4,  U4);
+        CHECK_BUFFER_ELEMENT(int,    I1);
+        CHECK_BUFFER_ELEMENT(ivec2,  I2);
+        CHECK_BUFFER_ELEMENT(ivec3,  I3);
+        CHECK_BUFFER_ELEMENT(ivec4,  I4);
+
+        #undef CHECK_BUFFER_ELEMENT
+    }
 
     /**
      * Gets the number of vertices in the buffer.
@@ -288,10 +456,10 @@ public:
     /**
      * Gets the fundamental integral type of the buffer
      */
-    inline virtual FUNDAMENTAL_TYPE getIntegralType() const
-    {
-        return INTEGRAL_TYPE;
-    }
+    // inline virtual FUNDAMENTAL_TYPE getIntegralType() const
+    // {
+    //     return INTEGRAL_TYPE;
+    // }
 
     /**
      * Gets the number of values per vertex. If representing a vertex in 3d spaces, this value
@@ -299,23 +467,22 @@ public:
      */
     inline virtual uint getValuesPerVertex() const
     {
-        switch(INTEGRAL_TYPE)
-        {
-            case GL_BYTE:
-            case GL_UNSIGNED_BYTE:
-                return sizeof(T);
-            case GL_SHORT:
-            case GL_2_BYTES:
-            case GL_UNSIGNED_SHORT:
-                return sizeof(T)/2;
-            case GL_3_BYTES:
-                return sizeof(T)/3;
-            case GL_INT:
-            case GL_UNSIGNED_INT:
-            case GL_FLOAT:
-            case GL_4_BYTES:
-                return sizeof(T)/4;
-        }
+        #define CHECK_BUFFER_ELEMENT(T2, E1) if( std::is_same<T, T2>::value )  return(E1)
+
+        CHECK_BUFFER_ELEMENT(float, 1);
+        CHECK_BUFFER_ELEMENT(vec2,  2);
+        CHECK_BUFFER_ELEMENT(vec3,  3);
+        CHECK_BUFFER_ELEMENT(vec4,  4);
+        CHECK_BUFFER_ELEMENT(unsigned int, 1);
+        CHECK_BUFFER_ELEMENT(uvec2,  2);
+        CHECK_BUFFER_ELEMENT(uvec3,  3);
+        CHECK_BUFFER_ELEMENT(uvec4,  4);
+        CHECK_BUFFER_ELEMENT(int,    1);
+        CHECK_BUFFER_ELEMENT(ivec2,  2);
+        CHECK_BUFFER_ELEMENT(ivec3,  3);
+        CHECK_BUFFER_ELEMENT(ivec4,  4);
+
+        #undef CHECK_BUFFER_ELEMENT
     }
 
     /**
@@ -356,3 +523,4 @@ public:
 }
 
 #endif // ARRAYBUFFER_H
+

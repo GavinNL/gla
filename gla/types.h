@@ -1,5 +1,5 @@
-#ifndef GLRE_ENUMS_H
-#define GLRE_ENUMS_H
+#ifndef GLA_ENUMS_H
+#define GLA_ENUMS_H
 
 
 #include <GL/glew.h>
@@ -47,7 +47,15 @@ enum FUNDAMENTAL_TYPE {
 
 };
 
-
+#pragma message "Note to self: if adding more types, make sure to make the appropriate chanes in teh GPUArrayBuffer"
+enum BUFFER_ELEMENT_TYPE
+{
+    F1, F2, F3 ,F4,  // floating point 1d, 2d, 3d, 4d vectors (float, vec2, vec3, vec4)
+    I1, I2, I3, I4,  // integer 1d, 2d, 3d, 4d vectors (int, ivec2, ivec3, ivec4)
+    U1, U2, U3, U4,  // unsigned integer 1d, 2d, 3d, 4d vectors (uint, uvec2, uvec3, uvec4)
+    B1, B2, B3, B4,  // unsigned byte
+    S1, S2, S3, S4   // unsigned short
+};
 
 typedef glm::vec2   vec2;
 typedef glm::vec3   vec3;
@@ -55,7 +63,11 @@ typedef glm::vec4   vec4;
 typedef glm::uvec4  uvec4;
 typedef glm::uvec3  uvec3;
 typedef glm::uvec2  uvec2;
+
+typedef glm::ivec2  ivec2;
 typedef glm::ivec3  ivec3;
+typedef glm::ivec4  ivec4;
+
 typedef glm::mat4   mat4;
 typedef glm::quat   quat;
 typedef glm::u8vec4 ucol4;

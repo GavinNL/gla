@@ -1,5 +1,5 @@
-#ifndef GLRE_MODELLOADER_H
-#define GLRE_MODELLOADER_H
+#ifndef GLA_MODELLOADER_H
+#define GLA_MODELLOADER_H
 
 #include <gla/global.h>
 

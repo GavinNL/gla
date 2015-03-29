@@ -38,7 +38,7 @@ GPUTexture Texture::toGPU()
 
     if( !GPU.mTextureID )
     {
-        throw gla::GLRE_EXCEPTION("Error generating Texture on the GPU");
+        throw gla::GLA_EXCEPTION("Error generating Texture on the GPU");
     }
 
     GPU.mDim = mDim;
@@ -63,7 +63,7 @@ void Texture::clear()
 void Texture::loadFromMemory( unsigned char * Buffer, int buffersize)
 {
     int x, y, comp;
-    glre_uc           * img = glre_load_from_memory( (glre_uc*) Buffer, buffersize, &x, &y, &comp, 4);
+    GLA_uc           * img = GLA_load_from_memory( (GLA_uc*) Buffer, buffersize, &x, &y, &comp, 4);
 
     if( img )
     {
@@ -85,7 +85,7 @@ void Texture::loadFromPath( const std::string & path)
     //==========================================================
     // Load the Texture from an image file.
     //==========================================================
-    unsigned char * img = glre_load(path.c_str(), &x, &y, &comp, 4);
+    unsigned char * img = GLA_load(path.c_str(), &x, &y, &comp, 4);
 
     if( img )
     {
@@ -715,5 +715,5 @@ void TextureChannel::operator+=(unsigned char r)
 }
 
 
-#define GLRE_IMAGE_IMPLEMENTATION
+#define GLA_IMAGE_IMPLEMENTATION
 #include <gla/stb/stb_image.h>

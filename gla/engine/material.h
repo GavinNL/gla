@@ -1,5 +1,5 @@
-#ifndef GLRE_ENGINE_MATERIAL_H
-#define GLRE_ENGINE_MATERIAL_H
+#ifndef GLA_ENGINE_MATERIAL_H
+#define GLA_ENGINE_MATERIAL_H
 
 namespace gla {
 namespace engine {
