@@ -20,8 +20,7 @@ namespace gla
 {
 
 
-    class GPUTexture;
-    class Texture;
+
 
     template <typename T>
     struct TBox

@@ -10,6 +10,11 @@
 
 namespace gla {
 
+
+class GPUTexture;
+class Texture;
+class FrameBufferObject;
+
 enum PRIMITAVE
 {
     UNKNOWN_PRIMITAVE       = -1,

@@ -73,11 +73,6 @@ class MyApp : public gla::utils::App
              }
         };
 
-        // f(\vec x) = min( c(\vec x-5\hat j), s(\vec x - 9\hat j-4\hat k), s(\vec x - 9\hat j + 6\hat k), t(\vec \x) ) \\
-        // c(\vec x) &=& |\vec x - 22 \hat j \cdot clamp(y/22,0,1)| - 3 \\
-        // s(\vec x) &=& |\vec x| - 5 \\
-        // t(\vec x) &=& \sqrt{(\sqrt{x^2 + z^2} - 64)^2 + y^2}-3\\
-
 
         //--------------------------------------------------------------------------------------------------------------
         // Set the callback to control the camera
@@ -166,27 +161,23 @@ class MyApp : public gla::utils::App
         T1.resize( uvec2(32,32) );
         T1.resize( uvec2(256,256) );
         T2.resize( uvec2(256,256) );
-        //
-        // std::cout << T1.size().x << std::endl;
-        // T1   = 0;
-        // T1.r = 0;
-        // T1.a = 255;
-        //
-        // T1.g = [] (const vec2 & r)
-        // {
-        //     float t = glm::length(r - vec2(0.5)) * 3.14529f;
-        //     return(  fabs( cos(t) )  );
-        // };
-
-        //T1  = [] (const vec2 & r)
-        //    {
-        //           float red   =  cos(glm::length( r-vec2(0.5f))*3.14159 );
-        //           float green =  sin(glm::length( r-vec2(0.5f))*3.14159 );
-        //           return( vec4(red,green,1.0,1.0)) ;
-        //    };
 
         TArray.SetLayer( T1 , 0);
         TArray.SetLayer( T2 , 1);
+
+        uvec2 s( (uint)INFO["main"]["width"].as<float>(),  (uint)INFO["main"]["height"].as<float>() );
+        FBO.create( s );
+
+        auto DropDownCallback = [&] ( const rgui::Button::Callback & C, GLuint ID, uvec2 dim)
+        {
+             // M["w3"].lock()->setRawRect( 0, 0, 1, 1, ID, dim.x, dim.y );
+            mGuiInterface->getWidgetByName<rgui::Widget>("RootWidget_w1_w3")->setRawRect(0, 0, 1, 1,ID, dim.x, dim.y);
+        };
+
+        auto gT = FBO.getRenderTexture();
+
+        mGuiInterface->getWidgetByName<rgui::ComboBox>("RootWidget_w1_TextureComboBox")->insertItem("Dragon")->addCallback( "texture", std::bind( DropDownCallback, std::placeholders::_1,  gT.getID(),  gT.size() ) );
+
     }
 
     //===================================================================================================================
@@ -199,6 +190,11 @@ class MyApp : public gla::utils::App
         glEnable(GL_BLEND);
         glBlendFunc(GL_BLEND_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDepthFunc(GL_LESS);
+
+
+        FBO.bind();
+        glViewport(0, mWindow->size().y, mWindow->size().x, -mWindow->size().y);
+
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
         mCamera.calculate(dt);
@@ -216,7 +212,6 @@ class MyApp : public gla::utils::App
         //-----------------------------------------------------------------------------
 
 
-
         TArray.setActiveTexture(0);
         TextureArrayShader.useShader();
             TextureArrayShader.sendUniform_mat4(TA_ShaderCamMatrixId,   mCamera.getProjectionMatrix() * mCamera.getMatrix()  );
@@ -230,9 +225,12 @@ class MyApp : public gla::utils::App
             LineShader.sendUniform_mat4(LineShaderModelMatrixID, glm::scale( mat4(1.0), vec3(5.0,5.0,5.0)) );
         Axis.Render();
 
-        Axis.Render();
 
         // Draw the RGUI interface
+        FBO.unbind();
+        glViewport(0,0, mWindow->size().x,mWindow->size().y);
+        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
         glDisable(GL_CULL_FACE);
         mGuiInterface->draw();
 
@@ -245,10 +243,13 @@ class MyApp : public gla::utils::App
 
         gla::Camera            mCamera;
 
+
         //===================================================================================================================
         // Textures
         //===================================================================================================================
         gla::GPUTextureArray  TArray;
+        gla::GPUTexture        Tex;
+        gla::FrameBufferObject FBO;
 
         //===================================================================================================================
         // Shaders

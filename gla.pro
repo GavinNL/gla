@@ -27,11 +27,12 @@ HEADERS +=  gla/shader.h \
             gla/utils/window.h \
             gla/utils/event.h \
             gla/utils/app.h \
-    gla/utils/utils.h \
-    gla/engine/scene.h \
-    gla/engine/node.h \
-    gla/engine/engine.h \
-     gla/engine/material.h
+            gla/utils/utils.h \
+            gla/engine/scene.h \
+            gla/engine/node.h \
+            gla/engine/engine.h \
+            gla/engine/material.h \
+            gla/framebufferobject.h
 
 
 SOURCES +=  main.cpp \
@@ -48,14 +49,15 @@ SOURCES +=  main.cpp \
             src/mesh.cpp \
             src/gputexturearray.cpp \
             src/utils/window.cpp \
-    src/engine/scene.cpp \
-    src/engine/node.cpp \
-    src/engine/material.cpp \
-    TextureArray.cpp \
-    HelloTriangle.cpp \
-    HelloTriangleVAO.cpp \
-    Textures.cpp \
-    HelloTriangleEncapsulatedVAO.cpp
+            src/framebufferobject.cpp \
+            src/engine/scene.cpp \
+            src/engine/node.cpp \
+            src/engine/material.cpp \
+            TextureArray.cpp \
+            HelloTriangle.cpp \
+            HelloTriangleVAO.cpp \
+            Textures.cpp \
+            HelloTriangleEncapsulatedVAO.cpp
 
 
 INCLUDEPATH += ./ 

@@ -3,7 +3,6 @@
 
 #include <gla/types.h>
 #include <gla/exceptions.h>
-//#include <gla/global.h>
 #include <iostream>
 #include <string.h>
 #include <functional>
@@ -89,6 +88,7 @@ namespace gla {
 
             }
 
+
             /**
              *  Sets the Min and Mag filter for this texture
              *
@@ -103,7 +103,7 @@ namespace gla {
                 glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, Mag);
             }
 
-            inline void bind()
+            inline void bind() const
             {
                 glBindTexture(GL_TEXTURE_2D, mTextureID);
             };
@@ -116,7 +116,7 @@ namespace gla {
              *  @param unit The texture unit to set it as, usually between 0-32, but this is HW dependant. Default is 0.
              *
              */
-            inline void setActiveTexture(unsigned int unit=0)
+            inline void setActiveTexture(unsigned int unit=0) const
             {
                 glActiveTexture(GL_TEXTURE0 + unit);
                 glBindTexture(GL_TEXTURE_2D, mTextureID);
@@ -158,6 +158,7 @@ namespace gla {
             GLuint       mTextureID;
 
        friend class Texture;
+       friend class FrameBufferObject;
     };
 
 

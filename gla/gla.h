@@ -103,6 +103,7 @@
 #include <gla/modelloader.h>
 #include <gla/gputexturearray.h>
 #include <gla/vertexarrayobject.h>
+#include <gla/framebufferobject.h>
 
 namespace gla {
 
