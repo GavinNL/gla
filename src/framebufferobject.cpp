@@ -18,7 +18,6 @@ FrameBufferObject::~FrameBufferObject()
 void FrameBufferObject::attachTexture( GPUTexture &tex, int attachmentNumber)
 {
 
-
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+attachmentNumber, tex.getID(), 0);
 
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -39,7 +38,6 @@ void FrameBufferObject::create(const uvec2 & size)
     glGenFramebuffers(1,             &mID);
     glBindFramebuffer(GL_FRAMEBUFFER, mID);
 
-
     //=================Create the texture=============================
     glGenTextures(1,            &mGPUTexture.mTextureID);
     glBindTexture(GL_TEXTURE_2D, mGPUTexture.mTextureID);
@@ -53,11 +51,14 @@ void FrameBufferObject::create(const uvec2 & size)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+
+
     //=================Create depth buffer=============================
     glGenRenderbuffers(1, &mDepthRenderBuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, mDepthRenderBuffer);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, size.x, size.y);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mDepthRenderBuffer);
+
 
     // set the render texture as our colour attachment
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mGPUTexture.mTextureID, 0);
@@ -72,6 +73,8 @@ void FrameBufferObject::create(const uvec2 & size)
         throw gla::GLA_EXCEPTION("FrameBufferObject did not get created fully.\n");
     }
     std::cout << "FrameBufferObject created: " << mID << ", " << mGPUTexture.mTextureID << " , " << mDepthRenderBuffer << std::endl;
+
+    glBindFramebuffers(GL_FRAMEBUFFER, mID);
 }
 
 }

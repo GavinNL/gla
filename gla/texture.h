@@ -73,21 +73,56 @@ namespace gla {
         public:
 
 
-            typedef enum {
-                NEAREST                = GL_NEAREST,
-                LINEAR                 = GL_LINEAR,
-                NEAREST_MIPMAP_NEAREST = GL_NEAREST_MIPMAP_NEAREST,
-                LINEAR_MIPMAP_NEAREST  = GL_LINEAR_MIPMAP_NEAREST,
-                NEAREST_MIPMAP_LINEAR  = GL_NEAREST_MIPMAP_LINEAR,
-                LINEAR_MIPMAP_LINEAR   = GL_LINEAR_MIPMAP_LINEAR
-            } FilterType;
-
-
             GPUTexture() : mDim(0,0), mTextureID(0)
             {
 
             }
 
+            /**
+             * @brief GPUTexture
+             * @param size size of the texture to create on the GPU.
+             */
+            GPUTexture( const uvec2 & size)
+            {
+                create(size);
+            }
+
+            /**
+             * @brief create Creates a blank texture
+             * @param size The size of the texture to create on the GPU.
+             */
+            inline void create(const uvec2                         &size,
+                               TEXTURECOLOURFORMAT InternalFormat = RGBA,
+                               TEXTURECOLOURFORMAT Format         = RGBA,
+                               FUNDAMENTAL_TYPE    Type           = UNSIGNED_BYTE,
+                               void*               Data           = 0)
+            {
+                glGenTextures(1,            &mTextureID);
+                glBindTexture(GL_TEXTURE_2D, mTextureID);
+
+                if( !mTextureID )
+                {
+                    return false;
+                }
+
+                glTexStorage2D(GL_TEXTURE_2D, MipMaps, InternalFormat, size.x, size.y, 0, Format, Type, Data);
+                mDim = size;
+
+                mColourFormat = InternalFormat == RED ? 0 :
+                                InternalFormat == RG  ? 1 :
+                                InternalFormat == RGB ? 2 :
+                                InternalFormat == BGR ? 3 :
+                                InternalFormat == RGBA? 4 :
+                                InternalFormat == BGRA? 5 :
+                                InternalFormat == DEPTH_COMPONENT  ? 6 : 7;
+
+                return true;
+            }
+
+            inline bool create(const uvec2 & size, TEXTURECOLOURFORMAT Format = RGBA)
+            {
+                return create(size, Format, Format, UNSIGNED_BYTE,0);
+            }
 
             /**
              *  Sets the Min and Mag filter for this texture
@@ -95,13 +130,22 @@ namespace gla {
              * @param Min The MIN filter to use
              * @param Mag The MAG filter to use
              */
-            inline void setFilter( FilterType Min, FilterType Mag)
+            inline void setFilter( TEXTUREFILTERTYPE Min, TEXTUREFILTERTYPE Mag, bool BindFirst=true)
             {
-                bind();
+                if(BindFirst) bind();
 
                 glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, Min);
                 glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, Mag);
             }
+
+            inline void setTextureWrap( TEXTUREWRAPTYPE S_direction, TEXTUREWRAPTYPE T_direction, bool BindFirst=true)
+            {
+                if(BindFirst) bind();
+
+                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, S_direction);
+                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, T_direction);
+            }
+
 
             inline void bind() const
             {
@@ -141,6 +185,18 @@ namespace gla {
             inline uvec2  size()  const { return mDim; }
             inline GLuint getID() const { return mTextureID;  }
 
+            inline TEXTURECOLOURFORMAT getColourFormat()
+            {
+                const TEXTURECOLOURFORMAT Form[] = {RED, RG, RGB,BGR, RGBA,BGRA, DEPTH_COMPONENT, DEPTH_STENCIL};
+                return Form[mColourFormat];
+            }
+
+            inline FUNDAMENTAL_TYPE getIntegralType()
+            {
+                const FUNDAMENTAL_TYPE Ty[] = {BYTE, UNSIGNED_BYTE, SHORT, UNSIGNED_SHORT, INT, UNSIGNED_INT, FLOAT, DOUBLE};
+                return Ty[mFundamentalType];
+            }
+
             //=============================================================
             /**
              * @brief get_MAX_TEXTURE_SIZE
@@ -154,8 +210,10 @@ namespace gla {
             }
 
        private:
-            uvec2        mDim;
-            GLuint       mTextureID;
+            uvec2         mDim;
+            GLuint        mTextureID;
+            unsigned char mColourFormat;
+            unsigned char mFundamentalType;
 
        friend class Texture;
        friend class FrameBufferObject;
@@ -414,6 +472,7 @@ namespace gla {
 
             void resize( const uvec2 & newSize);
 
+
             /**
              * @brief get Returns the value of the pixel (x,y)
              * @param x
@@ -458,7 +517,7 @@ namespace gla {
             Texture        operator+(  unsigned char c );
             Texture        operator-(  unsigned char c );
 
-            Texture&       operator=(        unsigned char c);
+            Texture&       operator=(        unsigned char      c);
             Texture&       operator=(        ChannelReference & c);
             Texture&       operator=(  const TextureChannel   & c);
 
@@ -494,6 +553,20 @@ namespace gla {
     {
         return mTexture->size();
     };
+
+
+
+
+
+//====================================================================================================
+
+template<class T>
+class Texture_T
+{
+    glm::u8vec3 x;
+
+};
+
 
 
 }

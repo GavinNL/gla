@@ -171,6 +171,41 @@ gla::VertexArrayObject_N gla::createAxes()
     return( std::move(Axis) );
 }
 
+gla::VertexArrayObject_N gla::createPlane(int x_segments, int z_segments)
+{
+    VertexArrayObject_N      Mesh;
+
+    float X = (float)x_segments;
+    float Z = (float)z_segments;
+
+    Mesh.createBuffer<vec3>(); // Position
+    Mesh.createBuffer<vec3>(); // Normal
+    Mesh.createBuffer<vec2>(); // UV
+
+    float z = 0.0;
+    while(z < Z)
+    {
+        for(float x = 0; x <= X; x += 1.0f)
+        {
+
+            Mesh.insert<vec3>(0,  vec3(x  , 0.0, z)      );  Mesh.insert<vec3>(1,  vec3(0.0, 1.0, 0.0) );  Mesh.insert<vec2>(2,  vec2(x,z)     );
+            Mesh.insert<vec3>(0,  vec3(x  , 0.0, z+1.0f) );  Mesh.insert<vec3>(1,  vec3(0.0, 1.0, 0.0) );  Mesh.insert<vec2>(2,  vec2(x,z+1.0) );
+        }
+
+        Mesh.insert<vec3>( 0, vec3(X  , 0.0, z+1.0f) );  Mesh.insert<vec3>( 1, vec3(0.0, 1.0, 0.0) );  Mesh.insert<vec2>( 2, vec2(X,z+1.0)  );
+        z += 1.0;
+
+        for( float x = X; x > 0; x -= 1.0f )
+        {
+            Mesh.insert<vec3>(0, vec3(x  , 0.0, z) );     Mesh.insert<vec3>(1, vec3(0.0, 1.0, 0.0));   Mesh.insert<vec2>(2, vec2(x,z)     );
+            Mesh.insert<vec3>(0, vec3(x  , 0.0, z+1.0f)); Mesh.insert<vec3>(1, vec3(0.0, 1.0, 0.0));   Mesh.insert<vec2>(2, vec2(x,z+1.0) );
+        }
+    }
+
+    Mesh.getBuffer<vec3>(0).addOffset( -vec3( X/2.0, 0.0, Z/2.0) );
+
+    return Mesh;
+}
 
 gla::TriStripMesh_PNCU gla::createPlane(int x_segments, int z_segments, bool sendToGPU)
 {

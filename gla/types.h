@@ -15,6 +15,37 @@ class GPUTexture;
 class Texture;
 class FrameBufferObject;
 
+
+
+
+typedef enum {
+    NEAREST                = GL_NEAREST,
+    LINEAR                 = GL_LINEAR,
+    NEAREST_MIPMAP_NEAREST = GL_NEAREST_MIPMAP_NEAREST,
+    LINEAR_MIPMAP_NEAREST  = GL_LINEAR_MIPMAP_NEAREST,
+    NEAREST_MIPMAP_LINEAR  = GL_NEAREST_MIPMAP_LINEAR,
+    LINEAR_MIPMAP_LINEAR   = GL_LINEAR_MIPMAP_LINEAR
+} TEXTUREFILTERTYPE;
+
+
+typedef enum {
+    CLAMP                  = GL_CLAMP,
+    REPEAT                 = GL_REPEAT
+} TEXTUREWRAPTYPE;
+
+
+typedef enum
+{
+    RED            = GL_RED,
+    RG             = GL_RG,
+    RGB            = GL_RGB,
+    BGR            = GL_BGR,
+    RGBA           = GL_RGBA,
+    BGRA           = GL_BGRA,
+    DEPTH_COMPONENT= GL_DEPTH_COMPONENT,
+    DEPTH_STENCIL  = GL_DEPTH_STENCIL
+} TEXTURECOLOURFORMAT;
+
 enum PRIMITAVE
 {
     UNKNOWN_PRIMITAVE       = -1,

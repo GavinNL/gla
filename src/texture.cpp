@@ -33,7 +33,13 @@ GPUTexture Texture::toGPU(int MipMaps)
 {
     GPUTexture GPU;
 
-    glGenTextures(1, &GPU.mTextureID);
+    if( GPU.create( mDim, RGBA, RGBA, GL_UNSIGNED_BYTE, (void*)mData) )
+    {
+        return GPU;
+    }
+
+
+//    glGenTextures(1, &GPU.mTextureID);
 
     if( !GPU.mTextureID )
     {
@@ -50,7 +56,8 @@ GPUTexture Texture::toGPU(int MipMaps)
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, mDim.x, mDim.y, GL_RGBA, GL_UNSIGNED_BYTE, (void*)mData);
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    GPU.setFilter( GPUTexture::LINEAR, GPUTexture::LINEAR );
+    GPU.setFilter(     LINEAR, LINEAR, false );
+    GPU.setTextureWrap(REPEAT, REPEAT, false);
 
     return GPU;
 }

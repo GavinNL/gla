@@ -14,6 +14,7 @@ namespace gla
     //
     VertexArrayObject_N createAxes();
     VertexArrayObject_N createBox( vec3 size);
+    VertexArrayObject_N createPlane(int x_segments, int z_segments);
 
     TriStripMesh_PNCU createPlane(int x_segments, int z_segments, bool sendToGPU);
 

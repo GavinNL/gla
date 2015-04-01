@@ -194,6 +194,7 @@ class MyApp : public gla::utils::App
 
         FBO.bind();
         glViewport(0, mWindow->size().y, mWindow->size().x, -mWindow->size().y);
+        //glViewport(0, 0, 32, 32);
 
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
