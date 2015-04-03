@@ -5,8 +5,6 @@
 
 namespace gla {
 
-class Texture;
-
 //===========================================================================
 // GPUTextureArray
 //   - an array of 2D textures stored on the GPU.
@@ -34,8 +32,35 @@ public:
      * @param Layer - the layer number to copy the texture into
      * @param pOffset - an offset parameter.
      */
-    void SetLayer( const Texture & T, uint Layer, const uvec2 & pOffset=uvec2(0,0) );
+//    void SetLayer( const Texture & T, uint Layer, const uvec2 & pOffset=uvec2(0,0) );
 
+    void SetLayer(const TextureRGBA & T, uint Layer, const uvec2 & pOffset=uvec2(0,0))
+    {
+        bind();
+
+        if( Layer >= mSize.z)
+        {
+            throw gla::GLA_EXCEPTION("ERROR: Layer number is larger than the allocated size of the TextureArray.");
+        }
+
+        if( T.size().x + pOffset.x > mSize.x || T.size().y + pOffset.y > mSize.y )
+        {
+            throw gla::GLA_EXCEPTION("ERROR: The texture dimensions do not match");
+        }
+
+        glTexSubImage3D(  GL_TEXTURE_2D_ARRAY,
+                          0,                // level
+                          pOffset.x,        // x-offset
+                          pOffset.y,        // y-offset
+                          Layer,                // z-offset
+                          T.size().x,       // width
+                          T.size().y,       // height
+                          1,            // depth
+                          GL_RGBA,          // format
+                          GL_UNSIGNED_BYTE, // type
+                          T.getRawData()    // image data
+                       );
+    }
 
     inline void bind() { glBindTexture(GL_TEXTURE_2D_ARRAY, mID); }
 

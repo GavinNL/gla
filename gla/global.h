@@ -19,9 +19,6 @@
 namespace gla
 {
 
-
-
-
     template <typename T>
     struct TBox
     {
@@ -79,6 +76,7 @@ namespace gla
 
 #include <gla/transformation.h>
 #include <gla/vertexarrayobject.h>
+#include <gla/texture.h>
 
 namespace gla
 {
@@ -112,8 +110,11 @@ namespace gla
     typedef TRect<int>   iRect;
     typedef TRect<uint>  uRect;
 
-    /* Implementation in texture.cpp */
-    Texture LoadTexture(const std::string & path);
+
+    typedef Texture<glm::u8vec1> TextureR;
+    typedef Texture<glm::u8vec2> TextureRG;
+    typedef Texture<glm::u8vec3> TextureRGB;
+    typedef Texture<glm::u8vec4> TextureRGBA;
 
 
 

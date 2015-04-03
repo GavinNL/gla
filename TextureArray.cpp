@@ -154,8 +154,8 @@ class MyApp : public gla::utils::App
 
         TArray.create( uvec2(256,256), 2, 1 );
 
-        Texture T1("resources/greyrock.png");
-        Texture T2("resources/rocks.jpg");
+        TextureRGBA T1("resources/greyrock.png");
+        TextureRGBA T2("resources/rocks.jpg");
 
 
         T1.resize( uvec2(32,32) );
@@ -229,7 +229,7 @@ class MyApp : public gla::utils::App
 
         // Draw the RGUI interface
         FBO.unbind();
-        glViewport(0,0, mWindow->size().x,mWindow->size().y);
+        glViewport( 0, 0 , mWindow->size().x,mWindow->size().y );
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
         glDisable(GL_CULL_FACE);
@@ -265,8 +265,20 @@ class MyApp : public gla::utils::App
         gla::GPUArrayObject  Box;
 };
 
+
+
+
+///======================================
+
+
+
 int main ()
 {
+
+//    for(uvec3 &x : LoopRange<uvec3>(uvec3(2,2,2)))
+//    {
+//        std::cout << x.x << "," << x.y << "," << x.z << "\n";
+//    }
 
      MyApp A;
      A.start();

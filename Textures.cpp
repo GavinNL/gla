@@ -78,7 +78,7 @@ int main()
     //---------------------------------------------------------------------------
     // Load a texture
     //---------------------------------------------------------------------------
-    Texture cpuTex ("resources/rocks1024.jpg");
+    TextureRGBA cpuTex ("resources/rocks1024.jpg");
 
     // resize the texture
     cpuTex.resize( {256,256});
@@ -86,13 +86,13 @@ int main()
     //---------------------------------------------------------------------------
     // Do some texture manipulation for fun.
     //---------------------------------------------------------------------------
-    cpuTex.r = cpuTex.g;   // copy the green channel into the red channel
-    cpuTex.g = 0;          // set the green channel to zero;
+    // cpuTex.r = cpuTex.g;   // copy the green channel into the red channel
+    // cpuTex.g = 0;          // set the green channel to zero;
 
     // Set the values of the blue channel based on the position of the
     // pixel values.  the input arguments const vec2 & x ranges from 0..1
     // and the lambda must return a float between 0 and 1
-    cpuTex.b = [] (vec2 x) { return (float)(0.5f * glm::perlin( x*4.0f ) + 0.5);  };
+    //cpuTex.b = [] (vec2 x) { return (float)(0.5f * glm::perlin( x*4.0f ) + 0.5);  };
 
 
     cpuTex(10,10) = {255,255,255,255};

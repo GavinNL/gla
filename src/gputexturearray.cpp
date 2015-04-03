@@ -48,33 +48,33 @@ void GPUTextureArray::create( uvec2 size, unsigned int depth, int MipMapCount )
     mSize = uvec3(size.x, size.y, depth);
 }
 
-void GPUTextureArray::SetLayer(const Texture & T, uint Layer, const uvec2 & pOffset)
-{
-    bind();
+//void GPUTextureArray::SetLayer(const Texture & T, uint Layer, const uvec2 & pOffset)
+//{
+//    bind();
 
-    if( Layer >= mSize.z)
-    {
-        throw gla::GLA_EXCEPTION("ERROR: Layer number is larger than the allocated size of the TextureArray.");
-    }
+//    if( Layer >= mSize.z)
+//    {
+//        throw gla::GLA_EXCEPTION("ERROR: Layer number is larger than the allocated size of the TextureArray.");
+//    }
 
-    if( T.size().x + pOffset.x > mSize.x || T.size().y + pOffset.y > mSize.y )
-    {
-        throw gla::GLA_EXCEPTION("ERROR: The texture dimensions do not match");
-    }
+//    if( T.size().x + pOffset.x > mSize.x || T.size().y + pOffset.y > mSize.y )
+//    {
+//        throw gla::GLA_EXCEPTION("ERROR: The texture dimensions do not match");
+//    }
 
-    glTexSubImage3D(  GL_TEXTURE_2D_ARRAY,
-                      0,                // level
-                      pOffset.x,        // x-offset
-                      pOffset.y,        // y-offset
-                      Layer,                // z-offset
-                      T.size().x,       // width
-                      T.size().y,       // height
-                      1,            // depth
-                      GL_RGBA,          // format
-                      GL_UNSIGNED_BYTE, // type
-                      T.getRawData()    // image data
-                   );
-}
+//    glTexSubImage3D(  GL_TEXTURE_2D_ARRAY,
+//                      0,                // level
+//                      pOffset.x,        // x-offset
+//                      pOffset.y,        // y-offset
+//                      Layer,                // z-offset
+//                      T.size().x,       // width
+//                      T.size().y,       // height
+//                      1,            // depth
+//                      GL_RGBA,          // format
+//                      GL_UNSIGNED_BYTE, // type
+//                      T.getRawData()    // image data
+//                   );
+//}
 
 GPUTextureArray::GPUTextureArray(uvec3 size)
 {

@@ -3,449 +3,192 @@
 #include <stdio.h>
 
 #include <gla/gla.h>
-#include <gla/utils/window.h>
-#include <gla/utils/app.h>
 #include <locale>
-
-#include <rgui/rgui.h>
-
 
 using namespace gla;
 
 
-class MyApp : public gla::utils::App
+//=================================================================================
+// Global Variables and Function Prototypes
+//=================================================================================
+#define WINDOW_WIDTH  640
+#define WINDOW_HEIGHT 480
+GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
+//=================================================================================
+
+int main()
 {
-    public:
+    GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    //===================================================================================================================
-    // Init - load the json file
-    //===================================================================================================================
-    virtual void init()
+
+    //===========================================================================
+    // GLA code.
+    //===========================================================================
+
+    //---------------------------------------------------------------------------
+    // Create two buffers on the CPU to hold position and colour information
+    //---------------------------------------------------------------------------
+    v3ArrayBuffer cpuPositions;
+    v2ArrayBuffer cpuTexCoords;
+
+    // Also create an index buffer.
+    u4ArrayBuffer cpuIndex;
+
+    cpuPositions.insert( vec3(-1.0f, -1.0f, 0.f));
+    cpuPositions.insert( vec3( 1.0f ,-1.0f, 0.f));
+    cpuPositions.insert( vec3( 1.0f , 1.0f, 0.f));
+    cpuPositions.insert( vec3(-1.0f , 1.0f, 0.f));
+
+    cpuTexCoords.insert( vec2( 0.f, 0.f ) );
+    cpuTexCoords.insert( vec2( 1.f, 0.f ) );
+    cpuTexCoords.insert( vec2( 1.f, 1.f ) );
+    cpuTexCoords.insert( vec2( 0.f, 1.f ) );
+
+    cpuIndex.insert( uvec4(0,1,2,3) );
+
+    // Copy the CPU buffers to the GPU.
+    GPUArrayBuffer gpuPositions = cpuPositions.toGPU(ARRAY_BUFFER);   // same as GL_ARRAY_BUFFER, but placed in a enum
+    GPUArrayBuffer gpuTexCoords = cpuTexCoords.toGPU(ARRAY_BUFFER);   // same as GL_ARRAY_BUFFER, but placed in a enum
+    GPUArrayBuffer gpuIndex     =     cpuIndex.toGPU(ELEMENT_ARRAY_BUFFER);   // same as GL_ARRAY_BUFFER, but placed in a enum
+
+    // The data in the CPU buffers are no longer needed. We can clear their memory
+    cpuPositions.clear();
+    cpuTexCoords.clear();
+    cpuIndex.clear();
+
+    // Create a VertexArrayObject with Positions as the first attribute, colours as the second attribute
+    // Use the gpuIndex as the index buffer
+    // and use TRIANGLES as the render method.
+    GPUArrayObject VAO(  QUADS,
+                        {gpuPositions, gpuTexCoords},
+                         gpuIndex);
+
+
+    /* NOTE: We can also create a VAO without a Index buffer, simple call
+     * GPUArrayObject VAO( TRIANGLES, {gpuPositions, gpuColours}); */
+
+
+    // GPUArrayBuffers are bound to the VAO now, we can clear the buffers, but they wont
+    // be removed from GPU memory until we clear the VOA
+    gpuPositions.clear();
+    cpuTexCoords.clear();
+    gpuIndex.clear();
+
+    //---------------------------------------------------------------------------
+    // Load a texture
+    //---------------------------------------------------------------------------
+    TextureRGBA cpuTex ("resources/rocks1024.jpg");
+
+    // resize the texture
+    cpuTex.resize( {256,256});
+
+    //---------------------------------------------------------------------------
+    // Do some texture manipulation for fun.
+    //---------------------------------------------------------------------------
+    // cpuTex.r = cpuTex.g;   // copy the green channel into the red channel
+    // cpuTex.g = 0;          // set the green channel to zero;
+
+    // Set the values of the blue channel based on the position of the
+    // pixel values.  the input arguments const vec2 & x ranges from 0..1
+    // and the lambda must return a float between 0 and 1
+    //cpuTex.b = [] (vec2 x) { return (float)(0.5f * glm::perlin( x*4.0f ) + 0.5);  };
+
+
+    cpuTex(10,10) = {255,255,255,255};
+    cpuTex(20,20) = ucol4(255,255,255,255);
+
+    // Set the green channel to be the difference of the red channel and the blue channel
+    //cpuTex.g = cpuTex.r - cpuTex.b;
+
+    Texture_T<ucol4> A("resources/rocks.jpg");
+    Texture_T<ucol3> A2("resources/rocks1024.jpg");
+
+   // A2.resize( {512,512});
+
+    A.b = A2.r-1.0f;
+   // A.r = 0;
+   // A.g = 0;
+
+
+
+
+
+    //---------------------------------------------------------------------------
+    // Finally send the texture to the GPU
+    //---------------------------------------------------------------------------
+    GPUTexture gpuTex = A.toGPU();
+
+    // we dont need the cpu texture anymore, so we can clear it.
+    cpuTex.clear();
+
+
+    //---------------------------------------------------------------------------
+    // Create a shader
+    //---------------------------------------------------------------------------
+
+    // Create the two shaders. The second argument is set to true because we are
+    // compiling the shaders straight from a string. If we were compiling from a file
+    // we'd just do:  VertexShader vs(Path_to_file);
+    ShaderProgram TriangleShader;
+    TriangleShader.linkProgram(  VertexShader("shaders/Textures.v"),  FragmentShader("shaders/Textures.f")  );
+
+    // get the uniform location ID
+    int SamplerLocation = TriangleShader.getUniformLocation("uSampler");
+    //==========================================================
+
+    while (!glfwWindowShouldClose(gMainWindow) )
     {
-        INFO.fromFile("resources/ExtraInfo.json");
 
-        CreateWindow( (uint)INFO["main"]["width"].as<float>(),  (uint)INFO["main"]["height"].as<float>() , "GLRE Window" );
+        // Set the GPu as the current texture 0;
+        gpuTex.setActiveTexture(0);
 
-        setupGUI();
-        setupOpenGL();
+        VAO.bind();
+            TriangleShader.sendUniform_Sampler2D( SamplerLocation ,0 ); // the uniform to the shader
+        VAO.Render(QUADS);
+
+
+
+        glfwSwapBuffers(gMainWindow);
+        glfwPollEvents();
     }
 
-    //===================================================================================================================
-    // Setup Rgui and the callbacks.
-    //===================================================================================================================
-    void setupGUI()
-    {
-        auto R = rgui::Root::getInstance();
-             R->init();
-
-        auto size     = mWindow->size();
-        mGuiInterface = R->createInterface(  size.x, size.y,
-                                             "MainInterface",
-                                             INFO["main"]["skin"].as<std::string>() );
-
-        auto M = mGuiInterface->getRootWidget()->loadFromJSON( INFO["main"]["GUI"] );
-        for(auto m : M )  std::cout << m.second.lock()->getName() << std::endl;
-
-        //--------------------------------------------------------------------------------------------------------------
-        // Set the callback for RGUI.
-        //--------------------------------------------------------------------------------------------------------------
-        mWindow->EventsMap["GUI"] = [&] (const gla::utils::Event & E)
-        {
-            switch(E.type)
-            {
-                case gla::utils::MOUSECURSOR:
-                    mGuiInterface->injectMousePosition(rgui::LEFT_BUTTON, E.MouseCursor.x, E.MouseCursor.y);
-                    break;
-
-                case gla::utils::TEXT:
-                    mGuiInterface->injectCharacters( E.Text.codepoint );
-                    break;
-
-                case gla::utils::KEY:
-                    mGuiInterface->injectKey( rgui::FromGLFW[ E.Key.key ] , E.Key.action);
-                    break;
-                case gla::utils::MOUSEBUTTON:
-                    const rgui::MouseButton MB[8] = {rgui::LEFT_BUTTON, rgui::RIGHT_BUTTON, rgui::MIDDLE_BUTTON,rgui::NONE,rgui::NONE,rgui::NONE,rgui::NONE, rgui::NONE};
-                    mGuiInterface->injectMouseButton( MB[E.MouseButton.button], E.MouseButton.action, E.MouseButton.x, E.MouseButton.y);
-                    break;
-                break;
-
-             }
-        };
-
-        //--------------------------------------------------------------------------------------------------------------
-        // Set the callback to control the camera
-        //--------------------------------------------------------------------------------------------------------------
-        mWindow->EventsMap["CAM"] = [&] (const gla::utils::Event & E)
-        {
-            float speed = 10.0f;
-            switch(E.type)
-            {
-                case gla::utils::KEY:
-                    if(E.Key.mods == GLFW_MOD_SHIFT) speed = 160.f;
-                    switch( E.Key.key )
-                    {
-                        case GLFW_KEY_W:
-                            mCamera.mAcceleration[2] = E.Key.action ? speed : 0.0;
-                            break;
-                        case GLFW_KEY_S:
-                            mCamera.mAcceleration[2] = E.Key.action ? -speed  : 0.0;
-                            break;
-                        case GLFW_KEY_A:
-                            mCamera.mAcceleration[0] = E.Key.action ? speed  : 0.0;
-                            break;
-                        case GLFW_KEY_D:
-                            mCamera.mAcceleration[0] = E.Key.action ? -speed  : 0.0;
-                            break;
-                    }
-
-                case gla::utils::MOUSECURSOR:
-                    if( mWindow->isMouseButtonPressed(gla::utils::MOUSE::RIGHT_MOUSE_BUTTON))
-                        mCamera.rotate(   vec3( -(float)E.MouseCursor.dy*0.001,  (float)E.MouseCursor.dx*0.001, 0.0 ) );
-                    break;
-
-                case gla::utils::MOUSEBUTTON:
-                    switch( E.MouseButton.button )
-                    {
-                        case GLFW_MOUSE_BUTTON_RIGHT:
-                            if( E.MouseButton.action == GLFW_PRESS)
-                                mWindow->SetCursorMode( gla::utils::MOUSE::CURSOR_DISABLED);
-                            else
-                                mWindow->SetCursorMode(  gla::utils::MOUSE::CURSOR_NORMAL );
-                            break;
-
-                    }
-
-                break;
-            }
-        };
-
-    }
-
-
-    void setupOpenGL()
-    {
-        glEnable (GL_DEPTH_TEST); // enable depth-testing
-        glDepthFunc (GL_LESS);    // depth-testing interprets a smaller value as "closer"
-        glEnable (GL_BLEND);
-        glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        // Load the shaders
-        LineShader.linkProgram(  VertexShader("shaders/Line_PC.v")   , FragmentShader("shaders/Line_PC.f")    );
-        BasicSahder.linkProgram( VertexShader("shaders/Basic_PNCU.v"), FragmentShader("shaders/Basic_PNCU.f") );
-
-        // load the objects
-        Axis  = gla::createAxes().toGPU();
-
-        // setup the camera
-        mCamera.perspective(45, 640.0/480.0 ,0.2f, 1000.0f);
-
-        mCamera.setPosition( vec3(5.0,1.0,5.0) );
-        mCamera.yaw( -45.0f* 3.14159 / 180.0f );
-
-    }
-
-    //===================================================================================================================
-    // The main render loop
-    //===================================================================================================================
-    virtual bool render(double dt, double t)
-    {
-        glEnable(GL_CULL_FACE);
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
-        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-        mCamera.calculate(dt);
-
-        //-----------------------------------------------------------------------------
-        // Create static variables of some of the uniform locations.
-        // This shouldn't be done in practice, it's just convenient for now.
-        //-----------------------------------------------------------------------------
-        static GLuint LineShaderCamMatrixId   = LineShader.getUniformLocation("inCameraMatrix");
-        static GLuint LineShaderModelMatrixID = LineShader.getUniformLocation("inModelMatrix");
-        //-----------------------------------------------------------------------------
-
-        LineShader.useShader();
-            LineShader.sendUniform_mat4(LineShaderCamMatrixId,   mCamera.getProjectionMatrix() * mCamera.getMatrix()  );
-            LineShader.sendUniform_mat4(LineShaderModelMatrixID, glm::scale( mat4(1.0), vec3(5.0,5.0,5.0)) );
-        Axis.Render();
-
-        // Draw the RGUI interface
-        glDisable(GL_CULL_FACE);
-        mGuiInterface->draw();
-
-        return true;
-    };
-
-    private:
-        rgui::json::Value INFO;
-        rgui::pInterface  mGuiInterface;
-
-        gla::Camera      mCamera;
-
-        //===================================================================================================================
-        // Shaders
-        //===================================================================================================================
-        gla::ShaderProgram LineShader;
-        gla::ShaderProgram BasicSahder;
-
-        //===================================================================================================================
-        // OpenGL Objects
-        //===================================================================================================================
-        gla::GPUArrayObject Axis;
-        gla::GPUArrayBuffer Plane;
-};
-
-int main ()
-{
-
-     MyApp A;
-     A.start();
-
-     return 0;
-    rgui::json::Value JSON;
-    JSON.fromFile("resources/ExtraInfo.json");
-
-    int width  = (uint)JSON["main"]["width" ].as<float>();
-    int height = (uint)JSON["main"]["height"].as<float>();
-
-
-    if (!glfwInit () )
-    {
-        fprintf (stderr, "ERROR: could not start GLFW3\n");
-        return 1;
-    }
-
-
-  auto w1 = gla::utils::Window::create(width,height, "Test window");
-
-
-        auto R = rgui::Root::getInstance();
-             R->init();
-
-        auto I = R->createInterface( (uint)JSON["main"]["width"].as<float>(),
-                                     (uint)JSON["main"]["height"].as<float>(),
-                                     "MainInterface",
-                                     JSON["main"]["skin"].as<std::string>() );
-
-
-        auto M = I->getRootWidget()->loadFromJSON( JSON["main"]["GUI"] );
-
-        for(auto m : M )
-                std::cout << m.second.lock()->getName() << std::endl;
-
-
-
-        w1->EventsMap["GUI"] = [&] (const gla::utils::Event & E) {
-
-                        switch(E.type)
-                        {
-                            case gla::utils::MOUSECURSOR:
-                                I->injectMousePosition(rgui::LEFT_BUTTON, E.MouseCursor.x, E.MouseCursor.y);
-                                break;
-                            case gla::utils::TEXT:
-                                I->injectCharacters( E.Text.codepoint );
-                                break;
-                            case gla::utils::KEY:
-                                I->injectKey( rgui::FromGLFW[ E.Key.key ] , E.Key.action);
-                            case gla::utils::MOUSEBUTTON:
-
-                                const rgui::MouseButton MB[8] = {rgui::LEFT_BUTTON, rgui::RIGHT_BUTTON, rgui::MIDDLE_BUTTON,rgui::NONE,rgui::NONE,rgui::NONE,rgui::NONE, rgui::NONE};
-
-                                I->injectMouseButton( MB[E.MouseButton.button], E.MouseButton.action, E.MouseButton.x, E.MouseButton.y);
-                            break;
-
-                        }
-
-        };
-
-        gla::Camera Cam;
-        Cam.perspective(45, 640.0/480.0 ,0.2f, 1000.0f);
-
-
-        w1->EventsMap["CAM"] = [&] (const gla::utils::Event & E) {
-
-                        switch(E.type)
-                        {
-                            case gla::utils::KEY:
-                                switch( E.Key.key )
-                                {
-                                    case GLFW_KEY_W:
-                                        Cam.mAcceleration[2] = E.Key.action ?  10.f : 0.0;
-                                        break;
-                                    case GLFW_KEY_S:
-                                        Cam.mAcceleration[2] = E.Key.action ? -10.f : 0.0;
-                                        break;
-                                    case GLFW_KEY_A:
-                                        Cam.mAcceleration[0] = E.Key.action ?  10.f : 0.0;
-                                        break;
-                                    case GLFW_KEY_D:
-                                        Cam.mAcceleration[0] = E.Key.action ? -10.f : 0.0;
-                                        break;
-                                }
-
-                            case gla::utils::MOUSECURSOR:
-                                if( w1->isMouseButtonPressed(gla::utils::MOUSE::RIGHT_MOUSE_BUTTON))
-                                {
-                                    Cam.rotate(   vec3( -(float)E.MouseCursor.dy*0.001,  (float)E.MouseCursor.dx*0.001, 0.0 ) );
-                                }
-
-                                break;
-
-                            case gla::utils::MOUSEBUTTON:
-
-                                switch( E.MouseButton.button )
-                                {
-                                    case GLFW_MOUSE_BUTTON_RIGHT:
-
-                                        if( E.MouseButton.action == GLFW_PRESS)
-                                        {
-                                            w1->SetCursorMode( gla::utils::MOUSE::CURSOR_DISABLED);
-                                        }
-                                        else
-                                        {
-                                            w1->SetCursorMode(  gla::utils::MOUSE::CURSOR_NORMAL );
-                                        }
-                                        break;
-
-                                }
-
-                            break;
-                        }
-        };
-
-  // get version info
-  const GLubyte* renderer = glGetString (GL_RENDERER); // get renderer string
-  const GLubyte* version  = glGetString (GL_VERSION);  // version as a string
-
-  int maxTexLayers;
-  glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &maxTexLayers);
-  printf ("Renderer: %s\n", renderer);
-  printf ("OpenGL version supported %s\n", version);
-  printf ("Max texture layers %d\n", maxTexLayers);
-
-
-
-  auto DropDownCallback = [&] ( const rgui::Button::Callback & C, GLuint ID, uvec2 dim)
-  {
-        M["w3"].lock()->setRawRect( 0, 0, 1, 1, ID, dim.x, dim.y );
-  };
-
-
-  //=============================================================================
-  // Load the models
-  //=============================================================================
-  //auto DragonGPU = loadModel( "resources/dragon.obj",true).CreateGPUObject();
-  //auto DragonGPU = glre::ModelLoader::loadModel( JSON["main"]["model"].as<std::string>() ).toGPU();
-  auto DragonGPU = gla::createBox( vec3(2.0,2.0,8.0) ).toGPU();
-  auto    Axis   = gla::createAxes().toGPU();
-
-
-  //=============================================================================
-  // Load the Textures
-  //=============================================================================
-  GPUTexture Tex  = gla::LoadTexture("resources/dragontexture.png").toGPU();
-  //GPUTexture Tex  = glre::LoadTexture("resources/boblampclean.md5mesh").toGPU();
-  GPUTexture Tex2 = gla::LoadTexture("resources/marble.jpg"       ).toGPU();
-  GPUTexture Tex3 = gla::LoadTexture("resources/SpiderTex.jpg"    ).toGPU();
-
-  Texture T(1024,1024);
-  for( uint i = 0; i < 1024; i++)
-      for( uint j = 0; j < 1024; j++)
-      {
-          float f = glm::simplex( 5.f * vec2(i,j) / (1024.0f) );
-          T(i,j).r = (unsigned char)(128 + 128*f );
-          T(i,j).a = 255;
-      }
-
-  auto  Tex4 = T.toGPU();
-  //=============================================================================
-  // Load the Shaders
-  //=============================================================================
-  gla::ShaderProgram LineShader( VertexShader("shaders/Line_PC.v")   , FragmentShader("shaders/Line_PC.f")   );
-  gla::ShaderProgram S(          VertexShader("shaders/Basic_PNCU.v"), FragmentShader("shaders/Basic_PNCU.f"));
-  //=============================================================================
-
-
-
-  //=============================================================================
-  //  Set the callback methods for to see the texture in the GGUI
-  //=============================================================================
-  std::dynamic_pointer_cast<rgui::ComboBox>(M["w2"].lock())->insertItem("Dragon")->addCallback( "texture", std::bind( DropDownCallback, std::placeholders::_1,  Tex.getID(),  Tex.size() ) );
-  std::dynamic_pointer_cast<rgui::ComboBox>(M["w2"].lock())->insertItem("Marble")->addCallback( "texture", std::bind( DropDownCallback, std::placeholders::_1, Tex2.getID(), Tex2.size() ) );
-  std::dynamic_pointer_cast<rgui::ComboBox>(M["w2"].lock())->insertItem("Spider")->addCallback( "texture", std::bind( DropDownCallback, std::placeholders::_1, Tex3.getID(), Tex3.size() ) );
-  std::dynamic_pointer_cast<rgui::ComboBox>(M["w2"].lock())->insertItem("Noise")->addCallback(  "texture", std::bind( DropDownCallback, std::placeholders::_1, Tex4.getID(), Tex4.size() ) );
-  //=============================================================================
-
-
-  GLuint LineShaderCamMatrixId   = LineShader.getUniformLocation("inCameraMatrix");
-  GLuint LineShaderModelMatrixID = LineShader.getUniformLocation("inModelMatrix");
-
-  GLuint camMatrixId             = S.getUniformLocation("inCameraMatrix");
-  GLuint modelMatrixID           = S.getUniformLocation("inModelMatrix");
-  GLuint projectionMatrixID      = S.getUniformLocation("inProjectionMatrix");
-  GLuint lightPositionID         = S.getUniformLocation("uLightPosition");
-  GLuint uSampler0ID             = S.getUniformLocation("uSampler");
-
-  gla::mat4 Pv = Cam.getProjectionMatrix();
-
-  // tell GL to only draw onto a pixel if the shape is closer to the viewer
-
-
-  glEnable (GL_DEPTH_TEST); // enable depth-testing
-  glDepthFunc (GL_LESS);    // depth-testing interprets a smaller value as "closer"
-  glEnable (GL_BLEND);
-  glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-
-  Cam.setPosition( vec3(0.5 ,1.0, 0.5) );
-  Transformation DragonTransform;
-  DragonTransform.setScale( vec3(0.1,0.1,0.1) );
-  Timer_T<float> tim;
-  float dt = 0;
-  while( !w1->WantsToClose() )
-  {
-
-       glEnable(GL_CULL_FACE);
-       glEnable(GL_DEPTH_TEST);
-       glDepthFunc(GL_LESS);
-
-       glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-       Cam.calculate(dt);
-       //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-       auto CameraMatrix = Cam.getMatrix();
-
-       Tex.setActiveTexture(0);
-           S.useShader();
-           DragonTransform.yaw( dt * 3.14159 / 10.0 );
-           S.sendUniform_mat4(camMatrixId       , CameraMatrix       );
-           S.sendUniform_mat4(modelMatrixID     , DragonTransform.getMatrix()      );
-           S.sendUniform_mat4(projectionMatrixID, Pv                 );
-           S.sendUniform_vec3(lightPositionID   , vec3(50,50,50)     );
-           S.sendUniform_Sampler2D(uSampler0ID, 0);
-       DragonGPU.Render();
-
-       LineShader.useShader();
-           LineShader.sendUniform_mat4(LineShaderCamMatrixId,   Pv * CameraMatrix  );
-           LineShader.sendUniform_mat4(LineShaderModelMatrixID, glm::scale( mat4(1.0), vec3(5.0,5.0,5.0)) );
-       Axis.Render();
-
-
-       glDisable(GL_CULL_FACE);
-       I->draw();
-
-       gla::utils::Window::PollEvents();
-       w1->SwapBuffers();
-
-       dt = tim.getElapsedTime();
-       tim.reset();
-  }
-
-
-  /* OTHER STUFF GOES HERE NEXT */
-
-  // close GL context and any other GLFW resources
-  glfwTerminate();
-  return 0;
+    // Clear the VAO
+    // Since we had flagged the array buffers for deletion ,they will now be
+    // cleared as well since they are no longer bound to any VAOs
+    VAO.clear();
+
+
+    glfwDestroyWindow(gMainWindow);
+    glfwTerminate();
+    return 0;
 }
 
+
+
+//=============================================================================
+// Set up GLFW and GLEW
+//=============================================================================
+GLFWwindow* SetupOpenGLLibrariesAndCreateWindow()
+{
+    glewExperimental = GL_TRUE;
+    if (!glfwInit())
+        exit(EXIT_FAILURE);
+
+    auto gMainWindow = glfwCreateWindow(640, 480, "Hello Triangle", NULL, NULL);
+
+    if (!gMainWindow)
+    {
+        glfwTerminate();
+        exit(EXIT_FAILURE);
+    }
+    glfwMakeContextCurrent(gMainWindow);
+
+    int width, height;
+    glfwGetFramebufferSize(gMainWindow, &width, &height);
+    GLenum err = glewInit();
+
+    return(gMainWindow);
+
+}
+//=============================================================================

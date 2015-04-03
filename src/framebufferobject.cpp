@@ -74,7 +74,7 @@ void FrameBufferObject::create(const uvec2 & size)
     }
     std::cout << "FrameBufferObject created: " << mID << ", " << mGPUTexture.mTextureID << " , " << mDepthRenderBuffer << std::endl;
 
-    glBindFramebuffers(GL_FRAMEBUFFER, mID);
+    glBindFramebuffer(GL_FRAMEBUFFER, mID);
 }
 
 }

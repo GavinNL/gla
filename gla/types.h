@@ -12,7 +12,6 @@ namespace gla {
 
 
 class GPUTexture;
-class Texture;
 class FrameBufferObject;
 
 
@@ -112,6 +111,7 @@ typedef glm::quat   quat;
 typedef glm::u8vec4 ucol4;
 typedef glm::u8vec3 ucol3;
 typedef glm::u8vec2 ucol2;
+typedef glm::u8vec1 ucol1;
 
 typedef glm::vec4    col4;
 typedef glm::vec3    col3;
