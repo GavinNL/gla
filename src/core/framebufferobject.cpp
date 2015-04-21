@@ -1,6 +1,6 @@
-#include "gla/framebufferobject.h"
-#include <gla/exceptions.h>
-#include <gla/texture.h>
+#include "gla/core/framebufferobject.h"
+#include <gla/core/exceptions.h>
+#include <gla/core/texture.h>
 
 namespace gla {
 

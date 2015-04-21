@@ -1,8 +1,8 @@
 #ifndef GLA_FRAMEBUFFEROBJECT_H
 #define GLA_FRAMEBUFFEROBJECT_H
 
-#include <gla/types.h>
-#include <gla/texture.h>
+#include <gla/core/types.h>
+#include <gla/core/texture.h>
 
 namespace gla {
 

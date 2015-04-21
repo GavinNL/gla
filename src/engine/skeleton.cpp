@@ -1,11 +1,11 @@
-#include "gla/skeleton.h"
+#include "gla/engine/skeleton.h"
 
 #include <algorithm>
 #include <stack>
 #include <map>
 #include <set>
 
-#include <gla/transformsequence.h>
+#include <gla/engine/transformsequence.h>
 
 namespace gla {
 

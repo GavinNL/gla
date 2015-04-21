@@ -13,7 +13,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/noise.hpp>
 
-#include <gla/types.h>
+#include <gla/core/types.h>
 
 
 namespace gla
@@ -74,9 +74,9 @@ namespace gla
 
 }
 
-#include <gla/transformation.h>
-#include <gla/vertexarrayobject.h>
-#include <gla/texture.h>
+#include <gla/core/transformation.h>
+#include <gla/core/vertexarrayobject.h>
+#include <gla/core/texture.h>
 
 namespace gla
 {
@@ -111,10 +111,10 @@ namespace gla
     typedef TRect<uint>  uRect;
 
 
-    typedef Texture<glm::u8vec1> TextureR;
-    typedef Texture<glm::u8vec2> TextureRG;
-    typedef Texture<glm::u8vec3> TextureRGB;
-    typedef Texture<glm::u8vec4> TextureRGBA;
+    typedef Texture_T<glm::u8vec1> TextureR;
+    typedef Texture_T<glm::u8vec2> TextureRG;
+    typedef Texture_T<glm::u8vec3> TextureRGB;
+    typedef Texture_T<glm::u8vec4> TextureRGBA;
 
 
 

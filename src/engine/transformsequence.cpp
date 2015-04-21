@@ -1,4 +1,4 @@
-#include "gla/transformsequence.h"
+#include "gla/engine/transformsequence.h"
 
 #include <algorithm>
 namespace gla
@@ -36,23 +36,54 @@ TransformSequence &TransformSequence::operator=(TransformSequence &other)
     return *this;
 }
 
+
+void TransformSequence::setPositionKey(float t, const gla::vec3 & p)
+{
+    auto it = std::lower_bound(mPKeys.begin(), mPKeys.end(), t,
+              [](vec3key const & x, float d)
+              { return x.mTime < d; });
+
+    mPKeys.insert(it, vec3key(t,p ) );
+}
+
+void TransformSequence::setScaleKey(float t, const gla::vec3 & s)
+{
+    auto it = std::lower_bound(mSKeys.begin(), mSKeys.end(), t,
+              [](vec3key const & x, float d)
+              { return x.mTime < d; });
+
+    mSKeys.insert(it, vec3key(t,s));
+}
+
+void TransformSequence::setRotKey(float t, const gla::quat & q)
+{
+    auto it = std::lower_bound(mRKeys.begin(), mRKeys.end(), t,
+              [](quatkey const & x, float d)
+              { return x.mTime < d; });
+
+    mRKeys.insert(it, quatkey(t,q));
+}
+
 vec3 TransformSequence::getPosition(float t)
 {
-    if( mPKeys.size() ==0 ) return vec3(0,0,0);
+    if( mPKeys.size() == 0 ) return vec3(0,0,0);
 
     auto it = std::lower_bound(mPKeys.begin(), mPKeys.end(), t,
               [](vec3key const & x, float d)
               { return x.mTime < d; });
 
-    vec3 p = it->mValue;
+    vec3 p = (it-1)->mValue;
+
     if(it==mPKeys.end()) return p;
 
-    float  s = it->mTime;
-    float DT = (it++)->mTime - it->mTime;
+    float  s = (it-1)->mTime;
+    float DT = (it)->mTime - (it-1)->mTime;
 
-           s = ( t - s ) / DT;
+           s = ( t-s ) / DT;
 
-    p += s*( it->mValue - p );
+
+    p += s * ( it->mValue - p );
+
     return p;
 
 
@@ -60,38 +91,46 @@ vec3 TransformSequence::getPosition(float t)
 
 vec3 TransformSequence::getScale(float t)
 {
-    if( mSKeys.size() ==0 ) return vec3(1,1,1);
+    if( mSKeys.size() == 0 ) return vec3(1.f,1.f,1.f);
+
     auto it = std::lower_bound(mSKeys.begin(), mSKeys.end(), t,
               [](vec3key const & x, float d)
               { return x.mTime < d; });
 
-    vec3 p = it->mValue;
+    vec3 p = (it-1)->mValue;
+
     if(it==mSKeys.end()) return p;
 
-    float  s = it->mTime;
-    float DT = (it++)->mTime - it->mTime;
+    float  s = (it-1)->mTime;
+    float DT = (it  )->mTime - (it-1)->mTime;
 
-           s = ( t - s ) / DT;
+           s = ( t-s ) / DT;
 
-    p += s*( it->mValue - p );
+
+    p += s * ( it->mValue - p );
+
     return p;
 }
 
 gla::quat TransformSequence::getRotation(float t)
 {
-    if( mRKeys.size() ==0 ) return quat();
+    if( mRKeys.size() == 0 ) return quat();
+
     auto it = std::lower_bound(mRKeys.begin(), mRKeys.end(), t,
               [](quatkey const & x, float d)
               { return x.mTime < d; });
 
-    gla::quat p = it->mValue;
-    if(it == mRKeys.end()) return p;
+    quat p = (it-1)->mValue;
 
-    float  s = it->mTime;
-    float DT = (it++)->mTime - it->mTime;
+    if(it==mRKeys.end()) return p;
 
-    gla::quat p2 = it->mValue;
-           s = ( t - s ) / DT;
+    float  s = (it-1)->mTime;
+    float DT = (it  )->mTime - (it-1)->mTime;
+
+           s = ( t-s ) / DT;
+
+
+    auto p2 = it->mValue;
 
            return glm::slerp(p,p2,s);
 }

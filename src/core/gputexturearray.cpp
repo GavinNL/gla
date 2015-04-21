@@ -1,5 +1,5 @@
-#include "gla/gputexturearray.h"
-#include "gla/texture.h"
+#include "gla/core/gputexturearray.h"
+#include "gla/core/texture.h"
 
 namespace gla {
 

@@ -35,10 +35,10 @@ int main()
     // Also create an index buffer.
     u4ArrayBuffer cpuIndex;
 
-    cpuPositions.insert( vec3(-1.0f, -1.0f, 0.f));
-    cpuPositions.insert( vec3( 1.0f ,-1.0f, 0.f));
-    cpuPositions.insert( vec3( 1.0f , 1.0f, 0.f));
-    cpuPositions.insert( vec3(-1.0f , 1.0f, 0.f));
+    cpuPositions.insert( vec3(-0.9f, -0.9f, 0.f));
+    cpuPositions.insert( vec3( 0.9f ,-0.9f, 0.f));
+    cpuPositions.insert( vec3( 0.9f , 0.9f, 0.f));
+    cpuPositions.insert( vec3(-0.9f , 0.9f, 0.f));
 
     cpuTexCoords.insert( vec2( 0.f, 0.f ) );
     cpuTexCoords.insert( vec2( 1.f, 0.f ) );
@@ -102,11 +102,18 @@ int main()
     //cpuTex.g = cpuTex.r - cpuTex.b;
 
     Texture_T<ucol4> A("resources/rocks.jpg");
-    Texture_T<ucol3> A2("resources/rocks1024.jpg");
+    Texture_T<ucol4> A2("resources/rocks1024.jpg");
 
    // A2.resize( {512,512});
 
-    A.b = A2.r-1.0f;
+    A2.a = [] (vec2 x)
+    {
+        float r  = glm::length( x - vec2(0.25f,0.25f) );
+        return (float)( r < 0.25 ? 1.0 : r);
+    };
+    A.r = A.r - A.r*A2.a + A2.a * A2.r ;
+    A.b = A.b - A.b*A2.a + A2.a * A2.b ;
+    A.g = A.g - A.g*A2.a + A2.a * A2.g ;
    // A.r = 0;
    // A.g = 0;
 

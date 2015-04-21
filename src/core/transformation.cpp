@@ -1,4 +1,4 @@
-#include "gla/transformation.h"
+#include "gla/core/transformation.h"
 
 gla::Transformation::Transformation() : mScale(1.0,1.0,1.0)
 {

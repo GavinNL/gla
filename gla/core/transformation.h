@@ -5,7 +5,7 @@
 #ifndef TRANSFORMATION_H
 #define TRANSFORMATION_H
 
-#include <gla/global.h>
+#include <gla/core/global.h>
 
 namespace gla
 {

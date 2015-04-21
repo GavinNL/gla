@@ -1,7 +1,7 @@
 #ifndef GLA_SHADER_H
 #define GLA_SHADER_H
 
-#include <gla/global.h>
+#include <gla/core/global.h>
 #include <iostream>
 #include <fstream>
 #include <streambuf>

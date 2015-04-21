@@ -7,7 +7,7 @@
 #include <map>
 #include <memory>
 
-#include <gla/types.h>
+#include <gla/core/types.h>
 #include <gla/utils/event.h>
 
 namespace gla  {

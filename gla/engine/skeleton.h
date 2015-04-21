@@ -7,10 +7,10 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include <gla/transformation.h>
-#include <gla/transformsequence.h>
+#include <gla/core/transformation.h>
+#include <gla/engine/transformsequence.h>
+#include <gla/engine/bone.h>
 
-#include <gla/bone.h>
 
 #include <map>
 

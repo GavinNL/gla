@@ -152,18 +152,26 @@ class MyApp : public gla::utils::App
 
         TextureArrayShader.linkProgram( VertexShader("shaders/PNU_TextureArray.v"), FragmentShader("shaders/PNU_TextureArray.f") );
 
-        TArray.create( uvec2(256,256), 2, 1 );
+        TArray.create( uvec2(256,256), 3, 1 );
 
         TextureRGBA T1("resources/greyrock.png");
         TextureRGBA T2("resources/rocks.jpg");
+        TextureRGBA T3(256,256);
+
+        T3.r = [] (vec2 x) {
+            return glm::perlin( x * 2.0f )*0.5 + 0.5f;
+        };
+
+        T3.a = 255;
 
 
-        T1.resize( uvec2(32,32) );
+       // T1.resize( uvec2(32,32) );
         T1.resize( uvec2(256,256) );
         T2.resize( uvec2(256,256) );
 
         TArray.SetLayer( T1 , 0);
         TArray.SetLayer( T2 , 1);
+        TArray.SetLayer( T3 , 2);
 
         uvec2 s( (uint)INFO["main"]["width"].as<float>(),  (uint)INFO["main"]["height"].as<float>() );
         FBO.create( s );
@@ -192,8 +200,8 @@ class MyApp : public gla::utils::App
         glDepthFunc(GL_LESS);
 
 
-        FBO.bind();
-        glViewport(0, mWindow->size().y, mWindow->size().x, -mWindow->size().y);
+        FBO.unbind();
+        //glViewport(0, mWindow->size().y, mWindow->size().x, -mWindow->size().y);
         //glViewport(0, 0, 32, 32);
 
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -228,9 +236,9 @@ class MyApp : public gla::utils::App
 
 
         // Draw the RGUI interface
-        FBO.unbind();
-        glViewport( 0, 0 , mWindow->size().x,mWindow->size().y );
-        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+        //FBO.unbind();
+        //glViewport( 0, 0 , mWindow->size().x,mWindow->size().y );
+        //glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
         glDisable(GL_CULL_FACE);
         mGuiInterface->draw();

@@ -2,7 +2,7 @@
 #define GLA_UTILS_APP_H
 
 #include "gla/utils/window.h"
-#include "gla/timer.h"
+#include "gla/core/timer.h"
 
 namespace gla  {
 namespace utils {

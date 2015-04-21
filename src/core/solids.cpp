@@ -1,5 +1,5 @@
-#include "gla/solids.h"
-#include "gla/vertexarrayobject.h"
+#include "gla/core/solids.h"
+#include "gla/core/vertexarrayobject.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>

@@ -1,8 +1,8 @@
 #ifndef GLA_TEXTURE_H
 #define GLA_TEXTURE_H
 
-#include <gla/types.h>
-#include <gla/exceptions.h>
+#include <gla/core/types.h>
+#include <gla/core/exceptions.h>
 #include <iostream>
 #include <string.h>
 #include <functional>
@@ -395,17 +395,6 @@ namespace gla {
                     return GPU;
                 }
 
-//                glBindTexture(GL_TEXTURE_2D, GPU.mTextureID);
-
-//                //glTexImage2D( GL_TEXTURE_2D, 0 , GL_RGBA, mDim.x, mDim.y, 0, GL_RGBA, GL_UNSIGNED_BYTE,  (void*)mData );
-
-//                glTexStorage2D(GL_TEXTURE_2D, MipMaps, GL_RGBA8, mDim.x, mDim.y);
-//                glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, mDim.x, mDim.y, GL_RGBA, GL_UNSIGNED_BYTE, (void*)mData);
-//                glGenerateMipmap(GL_TEXTURE_2D);
-
-//                GPU.setFilter(     LINEAR, LINEAR, false );
-//                GPU.setTextureWrap(REPEAT, REPEAT, false);
-
                 return GPU;
             }
 
@@ -494,7 +483,6 @@ namespace gla {
               OPERATOR( +,  unsigned char ,  (*this)(x,y) ,   + ,    c  )
               OPERATOR( *,  unsigned char ,  (*this)(x,y) ,   * ,    c  )
               OPERATOR( /,  unsigned char ,  (*this)(x,y) ,   / ,    c  )
-
 
 
         protected:
@@ -660,6 +648,15 @@ class ChannelReference
         OPERATOR_CHANNELREF_INTEGRAL( -,   unsigned char, (*this)(x,y),  -,  c )
 
 
+        ChannelReference<PixelType,index> & operator=( std::function<float(vec2)> f)
+        {
+                std::cout << "Function: Size: " << mSize.x << "," << mSize.y << std::endl;
+                for(int y=0;y<mSize.y;y++)
+                for(int x=0;x<mSize.x;x++)
+                {
+                    (*this)(x,y) = static_cast<unsigned char>( 255.0f * f( vec2( (float)x / (float)mSize.x , (float) y / (float)mSize.y ) ) );
+                }
+        };
 
 
         PixelType * mData;
@@ -743,10 +740,20 @@ class Texture_T : public Texture<PixelType>, public ChannelMembers<PixelType>
 // }
 
 template<class PixelType>
-inline Texture<PixelType> operator * (float & left, Texture<PixelType> & right)
+inline Texture<PixelType> operator * (const float & left, const Texture<PixelType> & right)
 {
     return(  right * left  );
 }
+
+template<class PixelType>
+inline Texture<PixelType> operator - (const float & left, const Texture<PixelType> & right)
+{
+    Texture<PixelType> T( right.size() );
+    T = left;
+    return(  T * right );
+}
+
+
 
 
 //SCALAR_MULTIPLICATION(float)

@@ -1,4 +1,4 @@
-#include "gla/bone.h"
+#include "gla/engine/bone.h"
 
 namespace gla {
 

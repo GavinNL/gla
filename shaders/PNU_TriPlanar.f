@@ -29,13 +29,13 @@ void main()
     OutColour = blend_weights.xxxx * co1.xyzw +
                 blend_weights.yyyy * co2.xyzw +
                 blend_weights.zzzz * co3.xyzw;
-
-
-   // vec2 r = outTexCoord0;
-   //
-   // float t = abs(cos( length(r) * 3.14159 * 2.0 ));
-   //
-   // OutColour = (1.0-t)*texture( uTex0, outTexCoord0 ) +
-   //                   t*texture( uTex1, outTexCoord0 );
+  
+    //OutColour = vec4(1.0,1.0,1.0,1.0);
+    //vec2 r = outTexCoord0;
+   
+    //float t = abs(cos( length(r) * 3.14159 * 2.0 ));
+   
+    //OutColour = (1.0-t)*texture( uTex0, outTexCoord0 ) +
+                      //t*texture( uTex1, outTexCoord0 );
 
 }

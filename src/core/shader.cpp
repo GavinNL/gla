@@ -1,5 +1,5 @@
-#include <gla/shader.h>
-#include <gla/texture.h>
+#include <gla/core/shader.h>
+#include <gla/core/texture.h>
 #include <iostream>
 #include <vector>
 #include <string>

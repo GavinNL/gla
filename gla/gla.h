@@ -93,17 +93,18 @@
 #ifndef GLA_H
 #define GLA_H
 
-#include <gla/global.h>
-#include <gla/camera.h>
-#include <gla/texture.h>
-#include <gla/timer.h>
-#include <gla/shader.h>
-#include <gla/solids.h>
-#include <gla/skeleton.h>
-#include <gla/modelloader.h>
-#include <gla/gputexturearray.h>
-#include <gla/vertexarrayobject.h>
-#include <gla/framebufferobject.h>
+#include <gla/core/global.h>
+#include <gla/core/camera.h>
+#include <gla/core/texture.h>
+#include <gla/core/timer.h>
+#include <gla/core/shader.h>
+#include <gla/core/gputexturearray.h>
+#include <gla/core/vertexarrayobject.h>
+#include <gla/core/framebufferobject.h>
+#include <gla/core/solids.h>
+#include <gla/engine/transformsequence.h>
+#include <gla/engine/skeleton.h>
+#include <gla/engine/modelloader.h>
 
 namespace gla {
 

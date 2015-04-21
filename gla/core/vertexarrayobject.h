@@ -1,12 +1,12 @@
 #ifndef VERTEXARRAYOBJECT_H
 #define VERTEXARRAYOBJECT_H
 
-#include <gla/global.h>
+#include <gla/core/global.h>
 #include <GLFW/glfw3.h>
 #include <vector>
 #include <tuple>
 #include <array>
-#include <gla/arraybuffer.h>
+#include <gla/core/arraybuffer.h>
 #include <memory>
 
 namespace gla
@@ -57,6 +57,15 @@ namespace gla
 
                 *this = GPU;
 
+            }
+
+            GPUArrayObject& operator=(const GPUArrayObject & other)
+            {
+                _VAO           = other._VAO;
+                _PrimitaveType = other._PrimitaveType;
+                _size          = other._size;
+                _isIndexed     = other._isIndexed;
+                return *this;
             }
 
             /**

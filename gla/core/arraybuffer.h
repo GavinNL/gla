@@ -8,8 +8,8 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
-#include <gla/exceptions.h>
-#include <gla/types.h>
+#include <gla/core/exceptions.h>
+#include <gla/core/types.h>
 
 namespace gla {
 

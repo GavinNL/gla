@@ -5,82 +5,78 @@ CONFIG -= qt
 
 LIBS += -lGLEW -lGL -lGLU -lSDL2
 
-HEADERS +=  gla/shader.h \
-            gla/global.h \
-            gla/camera.h \
-            gla/transformation.h \
-            gla/arraybuffer.h \
-            gla/vertexarrayobject.h \
-            gla/gla.h \
-            gla/texture.h \
-            gla/stb/stb_image.h \
-            gla/solids.h \
-            gla/exceptions.h \
-            gla/timer.h \
-            gla/skeleton.h \
-            gla/transformsequence.h \
-            gla/bone.h \
-            gla/modelloader.h \
-            gla/mesh.h \
-            gla/types.h \
-            gla/gputexturearray.h \
-            gla/utils/window.h \
-            gla/utils/event.h \
-            gla/utils/app.h \
-            gla/utils/utils.h \
-            gla/engine/scene.h \
-            gla/engine/node.h \
-            gla/engine/engine.h \
-            gla/engine/material.h \
-            gla/framebufferobject.h
+HEADERS +=  gla/gla.h                          \
+            gla/core/shader.h                  \
+            gla/core/global.h                  \
+            gla/core/camera.h                  \
+            gla/core/transformation.h          \
+            gla/core/arraybuffer.h             \
+            gla/core/vertexarrayobject.h       \
+            gla/core/exceptions.h              \
+            gla/core/texture.h                 \
+            gla/core/types.h                   \
+            gla/core/gputexturearray.h         \
+            gla/core/timer.h                   \
+            gla/core/framebufferobject.h       \
+            gla/core/solids.h                  \
+            gla/engine/skeleton.h              \
+            gla/engine/transformsequence.h     \
+            gla/engine/bone.h                  \
+            gla/engine/modelloader.h           \
+            gla/utils/window.h                 \
+            gla/utils/event.h                  \
+            gla/utils/app.h                    \
+            gla/utils/utils.h                  \
+            gla/engine/scene.h                 \
+            gla/engine/node.h                  \
+            gla/engine/engine.h                \
+            gla/engine/material.h              \
+            gla/stb/stb_image.h
 
-
-SOURCES +=  main.cpp \
-            src/shader.cpp \
-            src/transformation.cpp \
-            src/texture.cpp \
-            src/solids.cpp \
-            test.cpp \
-            gla/src/events.cpp \
-            src/skeleton.cpp \
-            src/transformsequence.cpp \
-            src/bone.cpp \
-            src/modelloader.cpp \
-            src/mesh.cpp \
-            src/gputexturearray.cpp \
-            src/utils/window.cpp \
-            src/framebufferobject.cpp \
-            src/engine/scene.cpp \
-            src/engine/node.cpp \
-            src/engine/material.cpp \
-            TextureArray.cpp \
-            HelloTriangle.cpp \
-            HelloTriangleVAO.cpp \
-            Textures.cpp \
-            HelloTriangleEncapsulatedVAO.cpp
-
+SOURCES +=  main.cpp                                     \
+            src/core/shader.cpp                          \
+            src/core/transformation.cpp                  \
+            src/core/texture.cpp                         \
+            src/core/solids.cpp                          \
+            src/core/gputexturearray.cpp                 \
+            src/core/framebufferobject.cpp               \
+            src/engine/transformsequence.cpp             \
+            src/engine/skeleton.cpp                      \
+            src/engine/bone.cpp                          \
+            src/engine/modelloader.cpp                   \
+            src/engine/scene.cpp                         \
+            src/engine/node.cpp                          \
+            src/engine/material.cpp                      \
+            src/utils/window.cpp                         \
+            examples/TextureArray.cpp                             \
+            examples/HelloTriangle.cpp                            \
+            examples/HelloTriangleVAO.cpp                         \
+            examples/Textures.cpp                                 \
+            examples/TransformSequence.cpp                        \
+            examples/HelloTriangleEncapsulatedVAO.cpp             \
+            test.cpp
 
 INCLUDEPATH += ./ 
 
 QMAKE_CXXFLAGS += -std=c++11 -w -O3
 
-OTHER_FILES += \ 
-    CMakeLists.txt \
-    shaders/Basic_PNCU.v \
-    shaders/Basic_PNCU.f \
-    shaders/Line_PC.v \
-    shaders/Line_PC.f \
+OTHER_FILES +=                         \
+    CMakeLists.txt                     \
+    shaders/Basic_PNCU.v               \
+    shaders/Basic_PNCU.f               \
+    shaders/Line_PC.v                  \
+    shaders/Line_PC.f                  \
     resources/ExtraInfo.json
 
-DISTFILES += \
-    Doxygen.cfg \
-    shaders/PNU_TextureArray.f \
-    shaders/PNU_TextureArray.v \
-    shaders/PNU_TriPlanar.f \
-    shaders/PNU_TriPlanar.v \
-    shaders/HelloTriangle.f \
-    shaders/HelloTriangle.v \
-    shaders/Textures.f \
+DISTFILES +=                           \
+    Doxygen.cfg                        \
+    shaders/PNU_TextureArray.f         \
+    shaders/PNU_TextureArray.v         \
+    shaders/PNU_TriPlanar.f            \
+    shaders/PNU_TriPlanar.v            \
+    shaders/HelloTriangle.f            \
+    shaders/HelloTriangle.v            \
+    shaders/Textures.f                 \
     shaders/Textures.v
 
 

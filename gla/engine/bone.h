@@ -1,7 +1,7 @@
 #ifndef GLA_BONE_H
 #define GLA_BONE_H
 
-#include <gla/global.h>
+#include <gla/core/global.h>
 
 namespace gla {
 
@@ -9,8 +9,8 @@ class Bone
 {
     public:
         Bone();
-        Bone(const Bone & other);
-        Bone( Bone && other);
+        Bone(const Bone  & other);
+        Bone(      Bone && other);
 
         ~Bone();
 
@@ -20,7 +20,7 @@ class Bone
 
         std::string                     mName;               // The Bone name
         int                             mIndex;              // The Bone index, -1 if there is no bone
-        gla::mat4                      mTransformMatrix;    // The initial transformation matrix;
+        gla::mat4                       mTransformMatrix;    // The initial transformation matrix;
         std::vector<Bone*>              mChildren;
         uint                            mNumChildren;
 

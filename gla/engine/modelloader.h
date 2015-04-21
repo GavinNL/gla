@@ -1,13 +1,13 @@
 #ifndef GLA_MODELLOADER_H
 #define GLA_MODELLOADER_H
 
-#include <gla/global.h>
+#include <gla/core/global.h>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include <gla/skeleton.h>
+#include <gla/engine/skeleton.h>
 #include <string>
 
 namespace gla {

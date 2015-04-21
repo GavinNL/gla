@@ -1,7 +1,7 @@
 #ifndef GLA_TRANSFORMSEQUENCE_H
 #define GLA_TRANSFORMSEQUENCE_H
 
-#include <gla/global.h>
+#include <gla/core/global.h>
 
 namespace gla
 {
@@ -11,12 +11,20 @@ struct ParameterKey
 {
     float mTime;
     T     mValue;
+    ParameterKey(): mTime(0){};
+    ParameterKey(float t, T val) : mTime(t), mValue(val)
+    {}
 };
 
 typedef ParameterKey<gla::vec3> vec3key;
 typedef ParameterKey<gla::quat> quatkey;
 
 
+/**
+ * @brief The TransformSequence class holds a sequence of transformations for animation purposes
+ *
+ *
+ */
 class TransformSequence
 {
     public:
@@ -31,6 +39,11 @@ class TransformSequence
         gla::vec3           getPosition(float t);
         gla::vec3           getScale(float t);
         gla::quat           getRotation(float t);
+
+        void setPositionKey(float t, const gla::vec3 & p);
+        void setScaleKey(float t, const gla::vec3 & s);
+        void setRotKey(float t, const gla::quat & q);
+
 
         Transformation       getTransformation(float t);
         mat4                 getTransformationMatrix(float t);

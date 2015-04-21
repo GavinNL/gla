@@ -1,4 +1,4 @@
-#include "gla/texture.h"
+#include "gla/core/texture.h"
 #include <string.h>
 #include <iostream>
 #include <gla/stb/stb_image.h>

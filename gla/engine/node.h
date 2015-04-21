@@ -12,8 +12,11 @@ class Node
          Node();
         ~Node();
 
+
     private:
         gla::Transformation mTransform;
+        gla::mat4           mMatrix;
+
 
 };
 
