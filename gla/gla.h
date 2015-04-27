@@ -6,6 +6,9 @@
  * use it for my own experimentations, but I am releasing it to the public in case anyone else might find it useful. GLA
  * allows easy creation and manipulation of OpenGL core objects such as.
  *
+ * GLA is broken up into two libraries, the Core library and the Engine library. The Core library is purely a library for
+ * working with OpenGL objects for example:
+ *
  * \li \ref TextureExample_sec "Textures"
  * \li \ref TextureArraysExample_sec "Texture Arrays"
  * \li \ref ArrayBuffersExample_sec "Array Buffers"
@@ -14,6 +17,15 @@
  * \li \ref ShadersExample_sec "Shaders"
  * \li \ref PrimitaveExample_sec "Primitave geometry (spheres, planes, cones, etc)"
  * \li \ref FrameBufferObjectExample_sec "FrameBuffer Objects"
+ *
+ * The Engine library is optional and has other methods/class that can help in designing a game or any other graphical application.
+ * It is not required. It provides the following:
+ *
+ * \li TransformationSequences
+ * \li Model Loading
+ * \li Bone Hierarchy
+ * \li Scene Management
+ * \li Materials
  *
  * GLA is NOT a full-fledge rendering engine like Ogre3d or Irrlicht, it does NOT provide any of the following, although
  * you can use GLA to create these things yourself. Some of the items in the following list may apper as a module.
@@ -93,17 +105,18 @@
 #ifndef GLA_H
 #define GLA_H
 
-#include <gla/global.h>
-#include <gla/camera.h>
-#include <gla/texture.h>
-#include <gla/timer.h>
-#include <gla/shader.h>
-#include <gla/solids.h>
-#include <gla/skeleton.h>
-#include <gla/modelloader.h>
-#include <gla/gputexturearray.h>
-#include <gla/vertexarrayobject.h>
-#include <gla/framebufferobject.h>
+#include <gla/core/global.h>
+#include <gla/core/camera.h>
+#include <gla/core/texture.h>
+#include <gla/core/timer.h>
+#include <gla/core/shader.h>
+#include <gla/core/gputexturearray.h>
+#include <gla/core/vertexarrayobject.h>
+#include <gla/core/framebufferobject.h>
+#include <gla/core/solids.h>
+#include <gla/engine/transformsequence.h>
+#include <gla/engine/skeleton.h>
+#include <gla/engine/modelloader.h>
 
 namespace gla {
 
