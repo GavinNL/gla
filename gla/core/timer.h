@@ -22,7 +22,7 @@ namespace gla {
              *
              * @return double seconds since construction or reset call()
              */
-            double   getElapsedTime()
+            FloatOrDouble   getElapsedTime()
             {
                 auto end = std::chrono::system_clock::now();
                 std::chrono::duration<FloatOrDouble> elapsed_seconds = end-mStart;

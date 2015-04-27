@@ -1,10 +1,17 @@
-#include "gla/utils/window.h"
-#include "gla/utils/event.h"
-#include <iostream>
+#include "gla/utils/app.h"
+//#include "gla/utils/window.h"
+//#include "gla/utils/event.h"
+//#include <iostream>
 
-namespace gla  {
-namespace utils {
+gla::Timer_T<float>    gla::utils::RootApp::mTimer      = Timer_T<float>();
+std::map<int,int> gla::utils::RootApp::KEY         = std::map<int,int>();
+std::map<int,int> gla::utils::RootApp::BUTTON      = std::map<int,int>();
+std::map<std::string, std::function<void(gla::utils::InputEvent&)> >gla::utils::RootApp::InputEvents = std::map<std::string, std::function<void(InputEvent&)> >();
+GLFWwindow * gla::utils::RootApp::mWindow = NULL;
+// namespace gla  {
+// namespace utils {
 
+/*
 //int Something::s_nValue = 1;
 std::map<GLFWwindow*, std::weak_ptr<Window> > Window::WindowMap = std::map<GLFWwindow*, std::weak_ptr<Window> >();
 
@@ -89,7 +96,7 @@ std::shared_ptr<Window> Window::create(unsigned int width, unsigned int height, 
 {
     static bool IsInit = false;
 
-    if(!IsInit)
+    if( !IsInit )
     {
         glfwInit();
         IsInit = true;
@@ -108,7 +115,7 @@ std::shared_ptr<Window> Window::create(unsigned int width, unsigned int height, 
 
     W->mWindow = glfwCreateWindow(width, height, title, NULL, NULL);
 
-    if (!W->mWindow)
+    if( !W->mWindow )
     {
       fprintf (stderr, "ERROR: could not open window with GLFW3\n");
       glfwTerminate();
@@ -322,6 +329,4 @@ void Window::setSize(const uvec2 &size)
 {
     glfwSetWindowSize(mWindow, size.x, size.y);
 }
-
-}
-}
+*/

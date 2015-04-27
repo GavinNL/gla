@@ -23,10 +23,12 @@ HEADERS +=  gla/gla.h                          \
             gla/engine/transformsequence.h     \
             gla/engine/bone.h                  \
             gla/engine/modelloader.h           \
+\
             gla/utils/window.h                 \
-            gla/utils/event.h                  \
+            gla/utils/cameracontrol.h          \
             gla/utils/app.h                    \
             gla/utils/utils.h                  \
+\
             gla/engine/scene.h                 \
             gla/engine/node.h                  \
             gla/engine/engine.h                \

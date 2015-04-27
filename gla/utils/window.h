@@ -8,12 +8,14 @@
 #include <memory>
 
 #include <gla/core/types.h>
-#include <gla/utils/event.h>
+//#include <gla/utils/event.h>
 
 namespace gla  {
 namespace utils {
-
+/*
 class  Window;
+
+
 
 class Window
 {
@@ -28,7 +30,6 @@ class Window
         void Restore();
 
         void Destroy();
-
 
         void SetCursorMode(MOUSE::CursorMode mode);
 
@@ -74,7 +75,7 @@ class Window
 };
 
 
-
+*/
 } //namespace
 } //glre
 #endif // WINDOW_H

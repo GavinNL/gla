@@ -6,14 +6,13 @@
 
 namespace gla {
 
-class Camera : public Transformation
+class Camera
 {
     public:
-        Camera() : mSpeed(0.0f, 0.0f, 0.0f)
+        Camera()
         {
 
         }
-
 
         inline void perspective(float FOV, float AspectRatio, float zMin, float zMax)
         {
@@ -26,63 +25,47 @@ class Camera : public Transformation
 
         inline void setPosition( const vec3 & pos )
         {
-            this->Transformation::setPosition( -pos );
+            mTransform.setPosition(pos);
         }
 
         inline void translate( const vec3 & pos )
         {
-            this->Transformation::translate( pos );
+            mTransform.translate( pos );
         }
 
-        void calculate(float dt)
+        inline void setEuler(const vec3 & PitchYawRoll)
         {
-            quat q     = reverse();
-            vec3 a     = (q * mAcceleration);
-
-
-            for(int i=0;i<3;i++)
-            {
-                if( fabs(a[i]) < 1e-4) mSpeed[i] *= 1.0 - 5.00*dt;
-            }
-
-            mSpeed += a * dt;
-            mSpeed = glm::clamp( mSpeed, -mMaxSpeed, mMaxSpeed );
-            vec3 dx    = mSpeed*dt + 0.5f * (dt*dt)*a;
-
-
-            translate(  dx  );
-        }
-
-        inline void moveTowardOrientation( const vec3 & displacement )
-        {
-            this->Transformation::translate( quat( mOrientation.w, -mOrientation.x, -mOrientation.y, -mOrientation.z) * displacement );
-        }
-
-        inline vec3 getDirection(const vec3 Forward = vec3(0.0,0.0,1.0) )
-        {
-            return quat( mOrientation.w, -mOrientation.x, -mOrientation.y, -mOrientation.z) * Forward;
+             mTransform.setEuler(PitchYawRoll);
         }
 
         mat4 & getProjectionMatrix() { return mProj; };
 
+        inline mat4 getMatrix()
+        {
+            auto mLook = mTransform.getOrientation() * vec3(0, 0,-1) + mTransform.getPosition();
+            auto mUp   = mTransform.getOrientation() * vec3(0, 1, 0);
+
+            mView = glm::lookAt( mTransform.getPosition(), mLook, mUp);
+            return mView;
+        }
 
         float getFOV() {return mFOV;}
         float getAspectRatio() { return mAspectRatio; };
         float getZMin() { return mZMin;}
         float getZMax() { return mZMax;}
 
-        void setFOV(float fov) { perspective(fov, mAspectRatio, mZMin, mZMax); }
-        void setAspectRatio(float aspectratio) { perspective(mFOV, aspectratio, mZMin, mZMax); }
-        void setZMax(float zmax) { perspective(mFOV, mAspectRatio, mZMin, zmax); }
-        void setZMin(float zmin) { perspective(mFOV, mAspectRatio, zmin, mZMax); }
+        void  setFOV(float fov)       { perspective(fov, mAspectRatio,  mZMin, mZMax); }
+        void  setAspectRatio(float ar){ perspective(mFOV, ar         ,  mZMin, mZMax); }
+        void  setZMax(float zmax)     { perspective(mFOV, mAspectRatio, mZMin, zmax); }
+        void  setZMin(float zmin)     { perspective(mFOV, mAspectRatio, zmin, mZMax); }
 
-
-        vec3 mSpeed;
-        vec3 mAcceleration;
-        vec3 mMaxSpeed;
+        Transformation & getTransform() { return mTransform; };
 
     private:
             mat4  mProj;
+            mat4  mView;
+
+            Transformation mTransform;
 
             float mFOV;
             float mAspectRatio;

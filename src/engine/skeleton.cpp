@@ -100,7 +100,7 @@ void Skeleton::_ConstructBoneTree(const aiNode *node, Bone &rootnode, const aiMe
     rootnode.mChildren.resize( node->mNumChildren );
 
     aiMatrix4x4 T = node->mTransformation;
-    rootnode.mTransformMatrix = gla::mat4(  T.a1, T.a2, T.a3, T.a4,
+    rootnode.mTransformMatrix = gla::mat4(   T.a1, T.a2, T.a3, T.a4,
                                              T.b1, T.b2, T.b3, T.b4,
                                              T.c1, T.c2, T.c3, T.c4,
                                              T.d1, T.d2, T.d3, T.d4 );
@@ -163,33 +163,29 @@ TransformSequence Skeleton::_GetTransformationSequence(const aiNodeAnim *node)
 {
     TransformSequence T;
 
-
     for(int i=0;i< node->mNumPositionKeys; i++)
     {
-        vec3key P;
-        P.mTime = node->mPositionKeys[i].mTime;
-        P.mValue = gla::vec3( node->mPositionKeys[i].mValue.x, node->mPositionKeys[i].mValue.y, node->mPositionKeys[i].mValue.z);
+        auto mTime  = node->mPositionKeys[i].mTime;
+        auto mValue = gla::vec3( node->mPositionKeys[i].mValue.x, node->mPositionKeys[i].mValue.y, node->mPositionKeys[i].mValue.z);
 
-        T.mPKeys.push_back( P );
+        T.setPositionKey( mTime, mValue);
     }
 
-    std::cout << "p: " << T.mPKeys.back().mTime << std::endl;
+
     for(int i=0; i < node->mNumScalingKeys; i++)
     {
-        vec3key S;
-        S.mTime = node->mScalingKeys[i].mTime;
-        S.mValue = gla::vec3( node->mScalingKeys[i].mValue.x, node->mScalingKeys[i].mValue.y, node->mScalingKeys[i].mValue.z);
+        auto mTime  = node->mScalingKeys[i].mTime;
+        auto mValue = gla::vec3( node->mScalingKeys[i].mValue.x, node->mScalingKeys[i].mValue.y, node->mScalingKeys[i].mValue.z);
 
-        T.mSKeys.push_back( S );
+        T.setScaleKey( mTime, mValue );
     }
-  // std::cout << "s: " << T.mSKeys.back().mTime << std::endl;
+
     for(int i=0; i < node->mNumRotationKeys; i++)
     {
-        quatkey Q;
-        Q.mTime = node->mRotationKeys[i].mTime;
-        Q.mValue = gla::quat( node->mRotationKeys[i].mValue.w, node->mRotationKeys[i].mValue.x, node->mRotationKeys[i].mValue.y, node->mRotationKeys[i].mValue.z);
+        auto mTime  = node->mRotationKeys[i].mTime;
+        auto mValue = gla::quat( node->mRotationKeys[i].mValue.w, node->mRotationKeys[i].mValue.x, node->mRotationKeys[i].mValue.y, node->mRotationKeys[i].mValue.z);
 
-        T.mRKeys.push_back( Q );
+        T.setRotKey( mTime, mValue );
     }
 
    // std::cout << "r: " << T.mRKeys.back().mTime << std::endl;

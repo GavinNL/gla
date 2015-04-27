@@ -1,16 +1,58 @@
-#ifndef GLA_ENGINE_MATERIAL_H
-#define GLA_ENGINE_MATERIAL_H
+#ifndef GLA_MATERIAL_H
+#define GLA_MATERIAL_H
+
+#include <gla/core/shader.h>
 
 namespace gla {
-namespace engine {
 
+
+/**
+ * @brief The Base class for all materials
+ *
+ * The Material class is used on various geometry to give it it's associated look. When inheriting from
+ * this class, do not unload the shader. It will be automatically done for you.
+ */
 class Material
 {
     public:
         Material();
+
         ~Material();
+
+        /**
+         * @brief init
+         *
+         * Initializes the material. Use this method to load the shader or any globals.
+         */
+        virtual void init()
+        {
+
+        }
+
+
+        virtual void use(){};
+
+
+        virtual void onApply( GPUArrayObject & pEntity)
+        {
+
+        }
+
+        /**
+         * @brief sendUniforms Sends uniforms to the shader
+         * @param pEntity A reference to the entity that is to be drawn
+         *
+         * A virtual method that must be overrideen to make use of. The input paramters
+         * pEntity and pSceneNode can be use to get various information about the object
+         * such as transformations, etc.
+         *
+         * This will be sent just before the object is rendered.
+         */
+        virtual void sendUniforms( GPUArrayObject & pEntity /*, ScenenNode & pSceneNode*/){};
+
+    protected:
+        ShaderProgram mShader;
 };
 
-}
 }
 #endif // MATERIAL_H

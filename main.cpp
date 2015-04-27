@@ -5,6 +5,8 @@
 #include <gla/gla.h>
 #include <locale>
 
+#include <functional>
+
 using namespace gla;
 
 
@@ -14,6 +16,37 @@ using namespace gla;
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 480
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
+
+struct KeyEvent
+{
+    int key;
+    int scancode;
+    int action;
+    int mods;
+};
+
+struct ButtonEvent
+{
+    int button;
+    int action;
+    int mods;
+    double x;
+    double y;
+};
+
+struct MouseEvent
+{
+    double x;
+    double y;
+};
+
+std::map<std::string, std::function<void(KeyEvent&)> >    KeyEvents;
+std::map<std::string, std::function<void(MouseEvent&)> >  MouseEvents;
+std::map<std::string, std::function<void(ButtonEvent&)> > ButtonEvents;
+
+void _KeyCallback        (GLFWwindow* window, int key, int scancode, int action, int mods);
+void _MousePosCallback   (GLFWwindow* window, double xpos, double ypos);
+void _MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 //=================================================================================
 
 int main()
@@ -119,7 +152,10 @@ int main()
 
 
 
-
+    MouseEvents["mouse"] = [&] (const MouseEvent & E)
+    {
+      std::cout << "x: "   << E.x <<  "   y: " << E.y << std::endl;
+    };
 
     //---------------------------------------------------------------------------
     // Finally send the texture to the GPU
@@ -195,7 +231,43 @@ GLFWwindow* SetupOpenGLLibrariesAndCreateWindow()
     glfwGetFramebufferSize(gMainWindow, &width, &height);
     GLenum err = glewInit();
 
+
+    glfwSetKeyCallback          ( gMainWindow, _KeyCallback);
+    glfwSetCursorPosCallback    ( gMainWindow, _MousePosCallback);
+    glfwSetMouseButtonCallback  ( gMainWindow, _MouseButtonCallback);
+    // glfwSetWindowCloseCallback  ( W->mWindow, Window::_WindowCloseCallback);
+    // glfwSetWindowFocusCallback  ( W->mWindow, Window::_WindowFocusCallback);
+    // glfwSetWindowIconifyCallback( W->mWindow, Window::_WindowMinimizedCallback);
+    // glfwSetDropCallback         ( W->mWindow, Window::_WindowFileDropCallback);
+    // glfwSetCharModsCallback     ( W->mWindow, Window::_WindowTextCallback);
+
     return(gMainWindow);
 
 }
+
+void _KeyCallback        (GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    KeyEvent K;
+
+    K = {key, scancode, action, mods};
+
+    for(auto a : KeyEvents) a.second(K);
+}
+
+void _MousePosCallback   (GLFWwindow* window, double xpos, double ypos)
+{
+    MouseEvent K;
+    K = {xpos, ypos};
+
+    for(auto a : MouseEvents) a.second(K);
+}
+
+void _MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+{
+    ButtonEvent K;
+    K = {button, action, mods};
+
+    for(auto a : ButtonEvents) a.second(K);
+}
+
 //=============================================================================
