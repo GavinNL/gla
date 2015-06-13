@@ -41,7 +41,10 @@ int main()
     // KeyFrame.insert(3000, Transformation( {2.0f,0.0f,2.0f}, quat() ) );
 
     TransformSequence KeyFrame;
-    KeyFrame.setScaleKey(0.0f, {1.0,1.0,1.0});
+    KeyFrame.setScaleKey(    0.0f, {1.0,1.0,1.0 });
+    KeyFrame.setScaleKey(    3.0f, {1.0,1.0,10.0});
+    KeyFrame.setScaleKey(    4.0f, {1.0,1.0,1.0 });
+
     KeyFrame.setPositionKey( 0.0f, {2.0,0.0,2.0} );
     KeyFrame.setPositionKey( 2.0f, {4.0,0.0,2.0} );
     KeyFrame.setPositionKey( 3.0f, {0.0,0.0,4.0} );
@@ -58,11 +61,11 @@ int main()
     gla::utils::CameraControl CamController( &Cam );
 
 
-    auto Axis  = gla::createAxes().toGPU();
+    auto Axis  = gla::Solids::createAxes().toGPU();
 
 
     //---------------------------------------------------------------------------
-    // Create a shader
+    //    Create a shader
     //---------------------------------------------------------------------------
     // Create the two shaders. The second argument is set to true because we are
     // compiling the shaders straight from a string. If we were compiling from a file

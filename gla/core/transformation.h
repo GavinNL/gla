@@ -17,7 +17,10 @@ namespace gla
 class Transformation
 {
     public:
-        Transformation();
+        Transformation() : mScale(1.0,1.0,1.0)
+        {
+        }
+
         Transformation(const vec3 & position, const quat & rot, const vec3 & scale) : mPosition(position), mScale(scale), mOrientation(rot)
         {
         }
@@ -39,9 +42,15 @@ class Transformation
         inline virtual void rotate(const vec3 & axis, float AngleRadians) { mOrientation = glm::rotate( mOrientation, AngleRadians, axis ); };
 
 
-        void setEuler( const vec3 & PitchYawRoll );
+        inline void setEuler( const vec3 & PitchYawRoll )
+        {
+            mOrientation = quat(PitchYawRoll);
+        }
 
-        gla::mat4 getMatrix(bool inverse=false);
+        inline gla::mat4 getMatrix()
+        {
+            return glm::translate(mat4(1.0f), mPosition) * glm::mat4_cast(mOrientation) * glm::scale( mat4(1.0), mScale);
+        }
 
         const gla::quat   & getOrientation(){ return mOrientation; };
         const gla::vec3   & getPosition   (){ return mPosition   ; };

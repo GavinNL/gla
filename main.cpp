@@ -5,7 +5,8 @@
 #include <gla/gla.h>
 #include <locale>
 
-#include <functional>
+#include <gla/utils/app.h>
+#include <gla/utils/cameracontrol.h>
 
 using namespace gla;
 
@@ -13,261 +14,107 @@ using namespace gla;
 //=================================================================================
 // Global Variables and Function Prototypes
 //=================================================================================
-#define WINDOW_WIDTH  640
-#define WINDOW_HEIGHT 480
-GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
+#define WINDOW_WIDTH  1280
+#define WINDOW_HEIGHT 1024
+#define WINDOW_TITLE "TransformSequence"
 
-struct KeyEvent
-{
-    int key;
-    int scancode;
-    int action;
-    int mods;
-};
-
-struct ButtonEvent
-{
-    int button;
-    int action;
-    int mods;
-    double x;
-    double y;
-};
-
-struct MouseEvent
-{
-    double x;
-    double y;
-};
-
-std::map<std::string, std::function<void(KeyEvent&)> >    KeyEvents;
-std::map<std::string, std::function<void(MouseEvent&)> >  MouseEvents;
-std::map<std::string, std::function<void(ButtonEvent&)> > ButtonEvents;
-
-void _KeyCallback        (GLFWwindow* window, int key, int scancode, int action, int mods);
-void _MousePosCallback   (GLFWwindow* window, double xpos, double ypos);
-void _MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
-//=================================================================================
 
 int main()
 {
-    GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
-    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
+    //===========================================================================
+    // This line create the window and initializes GLFW and also
+    // creates handles the callbacks.
+    //===========================================================================
+    gla::utils::RootApp::Initialize( WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
+
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     //===========================================================================
     // GLA code.
     //===========================================================================
+    Timer_T<double> Time;
 
-    //---------------------------------------------------------------------------
-    // Create two buffers on the CPU to hold position and colour information
-    //---------------------------------------------------------------------------
-    v3ArrayBuffer cpuPositions;
-    v2ArrayBuffer cpuTexCoords;
+    // TransformationTimeLine  KeyFrame;
+    // KeyFrame.insert(0000, Transformation( {2.0f,0.0f,2.0f}, quat() ) );
+    // KeyFrame.insert(2000, Transformation( {2.0f,0.0f,2.0f}, glm::rotate( quat(), 3.0f*3.14159f/2.0f, vec3(0.0,1.0,0.0)) ) );
+    // KeyFrame.insert(3000, Transformation( {2.0f,0.0f,2.0f}, quat() ) );
 
-    // Also create an index buffer.
-    u4ArrayBuffer cpuIndex;
+    TransformSequence KeyFrame;
+    KeyFrame.setScaleKey(0.0f, {1.0,1.0,1.0});
+    KeyFrame.setScaleKey(3.0f, {1.0,1.0,10.0});
+    KeyFrame.setScaleKey(4.0f, {1.0,1.0,1.0});
 
-    cpuPositions.insert( vec3(-0.9f, -0.9f, 0.f));
-    cpuPositions.insert( vec3( 0.9f ,-0.9f, 0.f));
-    cpuPositions.insert( vec3( 0.9f , 0.9f, 0.f));
-    cpuPositions.insert( vec3(-0.9f , 0.9f, 0.f));
+    KeyFrame.setPositionKey( 0.0f, {2.0,0.0,2.0} );
+    KeyFrame.setPositionKey( 2.0f, {4.0,0.0,2.0} );
+    KeyFrame.setPositionKey( 3.0f, {0.0,0.0,4.0} );
+    KeyFrame.setPositionKey( 4.0f, {2.0,0.0,2.0} );
 
-    cpuTexCoords.insert( vec2( 0.f, 0.f ) );
-    cpuTexCoords.insert( vec2( 1.f, 0.f ) );
-    cpuTexCoords.insert( vec2( 1.f, 1.f ) );
-    cpuTexCoords.insert( vec2( 0.f, 1.f ) );
+    Camera Cam;
+    Cam.perspective(45, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT ,0.2f, 1000.0f);
+    Cam.setPosition( vec3(2.0,  2.0,  3.0) );
+    Cam.setEuler(    vec3(-15,  0.0 , 0.0) * (3.14159f / 180.0f) );
 
-    cpuIndex.insert( uvec4(0,1,2,3) );
+    Transformation Tm;
 
-    // Copy the CPU buffers to the GPU.
-    GPUArrayBuffer gpuPositions = cpuPositions.toGPU(ARRAY_BUFFER);   // same as GL_ARRAY_BUFFER, but placed in a enum
-    GPUArrayBuffer gpuTexCoords = cpuTexCoords.toGPU(ARRAY_BUFFER);   // same as GL_ARRAY_BUFFER, but placed in a enum
-    GPUArrayBuffer gpuIndex     =     cpuIndex.toGPU(ELEMENT_ARRAY_BUFFER);   // same as GL_ARRAY_BUFFER, but placed in a enum
+    // The utils:CameraControl class handles all the
+    gla::utils::CameraControl CamController( &Cam );
 
-    // The data in the CPU buffers are no longer needed. We can clear their memory
-    cpuPositions.clear();
-    cpuTexCoords.clear();
-    cpuIndex.clear();
-
-    // Create a VertexArrayObject with Positions as the first attribute, colours as the second attribute
-    // Use the gpuIndex as the index buffer
-    // and use TRIANGLES as the render method.
-    GPUArrayObject VAO(  QUADS,
-                        {gpuPositions, gpuTexCoords},
-                         gpuIndex);
-
-
-    /* NOTE: We can also create a VAO without a Index buffer, simple call
-     * GPUArrayObject VAO( TRIANGLES, {gpuPositions, gpuColours}); */
-
-
-    // GPUArrayBuffers are bound to the VAO now, we can clear the buffers, but they wont
-    // be removed from GPU memory until we clear the VOA
-    gpuPositions.clear();
-    cpuTexCoords.clear();
-    gpuIndex.clear();
-
-    //---------------------------------------------------------------------------
-    // Load a texture
-    //---------------------------------------------------------------------------
-    TextureRGBA cpuTex ("resources/rocks1024.jpg");
-
-    // resize the texture
-    cpuTex.resize( {256,256});
-
-    //---------------------------------------------------------------------------
-    // Do some texture manipulation for fun.
-    //---------------------------------------------------------------------------
-    // cpuTex.r = cpuTex.g;   // copy the green channel into the red channel
-    // cpuTex.g = 0;          // set the green channel to zero;
-
-    // Set the values of the blue channel based on the position of the
-    // pixel values.  the input arguments const vec2 & x ranges from 0..1
-    // and the lambda must return a float between 0 and 1
-    //cpuTex.b = [] (vec2 x) { return (float)(0.5f * glm::perlin( x*4.0f ) + 0.5);  };
-
-
-    cpuTex(10,10) = {255,255,255,255};
-    cpuTex(20,20) = ucol4(255,255,255,255);
-
-    // Set the green channel to be the difference of the red channel and the blue channel
-    //cpuTex.g = cpuTex.r - cpuTex.b;
-
-    Texture_T<ucol4> A("resources/rocks.jpg");
-    Texture_T<ucol4> A2("resources/rocks1024.jpg");
-
-   // A2.resize( {512,512});
-
-    A2.a = [] (vec2 x)
-    {
-        float r  = glm::length( x - vec2(0.25f,0.25f) );
-        return (float)( r < 0.25 ? 1.0 : r);
-    };
-    A.r = A.r - A.r*A2.a + A2.a * A2.r ;
-    A.b = A.b - A.b*A2.a + A2.a * A2.b ;
-    A.g = A.g - A.g*A2.a + A2.a * A2.g ;
-   // A.r = 0;
-   // A.g = 0;
-
-
-
-    MouseEvents["mouse"] = [&] (const MouseEvent & E)
-    {
-      std::cout << "x: "   << E.x <<  "   y: " << E.y << std::endl;
-    };
-
-    //---------------------------------------------------------------------------
-    // Finally send the texture to the GPU
-    //---------------------------------------------------------------------------
-    GPUTexture gpuTex = A.toGPU();
-
-    // we dont need the cpu texture anymore, so we can clear it.
-    cpuTex.clear();
-
+    auto Axis  = gla::Solids::createAxes().toGPU();
 
     //---------------------------------------------------------------------------
     // Create a shader
     //---------------------------------------------------------------------------
-
     // Create the two shaders. The second argument is set to true because we are
     // compiling the shaders straight from a string. If we were compiling from a file
     // we'd just do:  VertexShader vs(Path_to_file);
-    ShaderProgram TriangleShader;
-    TriangleShader.linkProgram(  VertexShader("shaders/Textures.v"),  FragmentShader("shaders/Textures.f")  );
+    ShaderProgram LineShader(  VertexShader("shaders/Line_PC.v"),  FragmentShader("shaders/Line_PC.f")  );
+    GLuint LineShaderCamMatrixId   = LineShader.getUniformLocation("inCameraMatrix");
+    GLuint LineShaderModelMatrixID = LineShader.getUniformLocation("inModelMatrix");
 
-    // get the uniform location ID
-    int SamplerLocation = TriangleShader.getUniformLocation("uSampler");
     //==========================================================
 
-    while (!glfwWindowShouldClose(gMainWindow) )
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_BLEND_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDepthFunc(GL_LESS);
+
+    Timer_T<float> Tf;
+    Tf.reset();
+
+    vec3 yrp;
+
+    while ( gla::utils::RootApp::isRunning() )
     {
+        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-        // Set the GPu as the current texture 0;
-        gpuTex.setActiveTexture(0);
+        //yrp.y += 3.14159f/10.0f * Tf.getElapsedTime();
 
-        VAO.bind();
-            TriangleShader.sendUniform_Sampler2D( SamplerLocation ,0 ); // the uniform to the shader
-        VAO.Render(QUADS);
+        // Can use any one of the following to render the triangle, they are all equivelant.
+        // as long as both buffers have the same number of items in it. In our case 3.
+        LineShader.useShader();
+            LineShader.sendUniform_mat4(LineShaderCamMatrixId,   Cam.getProjectionMatrix() * Cam.getMatrix() * Tm.getMatrix()   );
+            LineShader.sendUniform_mat4(LineShaderModelMatrixID, glm::scale( mat4(1.0), vec3(10.0,10.0,10.0)) );
+        Axis.Render();
+
+       // plane.Render();
+       // std::cout << (float)fmod(Time.getElapsedTime(), 3.0)  << std::endl;
+        LineShader.sendUniform_mat4(LineShaderCamMatrixId,   Cam.getProjectionMatrix() * Cam.getMatrix()   );
+        LineShader.sendUniform_mat4(LineShaderModelMatrixID, KeyFrame.getTransformationMatrix( (float)fmod(Time.getElapsedTime(),4.0f)) );
+        //LineShader.sendUniform_mat4(LineShaderModelMatrixID, KeyFrame.get(  static_cast<unsigned int>(Time.getElapsedTime()*1000)%3000).getMatrix() );
+        Axis.Render();
 
 
-
-        glfwSwapBuffers(gMainWindow);
-        glfwPollEvents();
+        glfwSwapBuffers( gla::utils::RootApp::mWindow );
     }
 
     // Clear the VAO
     // Since we had flagged the array buffers for deletion ,they will now be
     // cleared as well since they are no longer bound to any VAOs
-    VAO.clear();
+    Axis.clear();
+    LineShader.DeleteShader();
 
-
-    glfwDestroyWindow(gMainWindow);
-    glfwTerminate();
+    gla::utils::RootApp::terminate();
     return 0;
 }
-
-
-
-//=============================================================================
-// Set up GLFW and GLEW
-//=============================================================================
-GLFWwindow* SetupOpenGLLibrariesAndCreateWindow()
-{
-    glewExperimental = GL_TRUE;
-    if (!glfwInit())
-        exit(EXIT_FAILURE);
-
-    auto gMainWindow = glfwCreateWindow(640, 480, "Hello Triangle", NULL, NULL);
-
-    if (!gMainWindow)
-    {
-        glfwTerminate();
-        exit(EXIT_FAILURE);
-    }
-    glfwMakeContextCurrent(gMainWindow);
-
-    int width, height;
-    glfwGetFramebufferSize(gMainWindow, &width, &height);
-    GLenum err = glewInit();
-
-
-    glfwSetKeyCallback          ( gMainWindow, _KeyCallback);
-    glfwSetCursorPosCallback    ( gMainWindow, _MousePosCallback);
-    glfwSetMouseButtonCallback  ( gMainWindow, _MouseButtonCallback);
-    // glfwSetWindowCloseCallback  ( W->mWindow, Window::_WindowCloseCallback);
-    // glfwSetWindowFocusCallback  ( W->mWindow, Window::_WindowFocusCallback);
-    // glfwSetWindowIconifyCallback( W->mWindow, Window::_WindowMinimizedCallback);
-    // glfwSetDropCallback         ( W->mWindow, Window::_WindowFileDropCallback);
-    // glfwSetCharModsCallback     ( W->mWindow, Window::_WindowTextCallback);
-
-    return(gMainWindow);
-
-}
-
-void _KeyCallback        (GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    KeyEvent K;
-
-    K = {key, scancode, action, mods};
-
-    for(auto a : KeyEvents) a.second(K);
-}
-
-void _MousePosCallback   (GLFWwindow* window, double xpos, double ypos)
-{
-    MouseEvent K;
-    K = {xpos, ypos};
-
-    for(auto a : MouseEvents) a.second(K);
-}
-
-void _MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
-{
-    ButtonEvent K;
-    K = {button, action, mods};
-
-    for(auto a : ButtonEvents) a.second(K);
-}
-
-//=============================================================================

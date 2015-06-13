@@ -522,7 +522,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 
 int main(void)
 {
-
+/*
     auto W  = gla::utils::Window::create(640,480, "window 1");
 
     W->EventsMap["Exit"] = [&] (const gla::utils::Event & E)
@@ -600,5 +600,7 @@ int main(void)
     W.reset();
 
     glfwTerminate();
+    */
     exit(EXIT_SUCCESS);
+
 }

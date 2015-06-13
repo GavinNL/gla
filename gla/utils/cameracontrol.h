@@ -1,5 +1,5 @@
-#ifndef GLA_UTILS_EVENT_H
-#define GLA_UTILS_EVENT_H
+#ifndef GLA_CAMERA_CONTROL_H
+#define GLA_CAMERA_CONTROL_H
 
 #include <GLFW/glfw3.h>
 #include <gla/utils/app.h>
@@ -55,12 +55,14 @@ public:
 
                         vec3 oAcc  = ACC_MAG*( mCamera->getTransform().getOrientation()*acc )*t;
 
-                        const float DRAG = 4.5;
+                        const float DRAG = 0.01;
 
                         vec3 dragForce = glm::length(oAcc) > 1.e-3 ? vec3(0.0f) : (-DRAG * mSpeed);
 
                         mSpeed     += (oAcc + dragForce ) * t;
                         mSpeed      =   mSpeed  * glm::min( 5.0f, glm::length(mSpeed) ) / ( glm::length(mSpeed) + 0.001f);
+
+                        printf("%f\n", mSpeed[0]);
 
                         mCamera->setPosition( mCamera->getTransform().getPosition() + t*mSpeed + 0.5f*oAcc*t*t );
                     }

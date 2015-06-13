@@ -13,10 +13,12 @@ class GPUTextureArray
 {
 
 public:
-    GPUTextureArray();
-    GPUTextureArray(uint width, uint height, uint depth);
-    GPUTextureArray(uvec3 size);
-    ~GPUTextureArray();
+    GPUTextureArray(){};
+
+    GPUTextureArray(uint width, uint height, uint depth) : mID(0), mSize(0,0,0), mMipLevelCount(1) {};
+
+    GPUTextureArray(uvec3 size){}
+    ~GPUTextureArray(){};
 
     /**
      * @brief create Creates the texture array on the GPU
@@ -26,14 +28,14 @@ public:
      */
     void create(uvec2 size, unsigned int depth, int MipMapCount=1);
 
+
+
     /**
      * @brief SetLayer - Copies a CPU texture into a particular depth in the Texture Array
      * @param T - CPU texture to copy. This must be the same dimensions as the TextureArray
      * @param Layer - the layer number to copy the texture into
      * @param pOffset - an offset parameter.
      */
-//    void SetLayer( const Texture & T, uint Layer, const uvec2 & pOffset=uvec2(0,0) );
-
     void SetLayer(const TextureRGBA & T, uint Layer, const uvec2 & pOffset=uvec2(0,0))
     {
         bind();
@@ -118,6 +120,49 @@ public:
         uvec3   mSize;
         GLsizei mMipLevelCount;
 };
+
+
+
+//============================================
+inline void GPUTextureArray::create(uvec2 size, unsigned int depth, int MipMapCount)
+{
+    try
+    {
+        GetGLError();
+    } catch (std::exception & e)
+    {
+
+    }
+
+    if( mID ) clear();
+
+    glGenTextures(1, &mID);
+
+    GetGLError();
+
+    if( !mID )
+    {
+        throw gla::GLA_EXCEPTION("ERROR: error generating textures for TextureArray2D");
+    }
+
+    bind();
+
+    glTexStorage3D( GL_TEXTURE_2D_ARRAY, MipMapCount, GL_RGBA8, size.x, size.y, depth);
+
+    GetGLError();
+
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S    , GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T    , GL_CLAMP_TO_EDGE);
+
+    GetGLError();
+
+    mSize = uvec3(size.x, size.y, depth);
+};
+
+
+
 
 };
 

@@ -1,8 +1,8 @@
 /*
  ===================================================================================
   NOTE: this file was modified by performing a find and replace of the following
-      STB->GLRE
-      stbi->glre
+      STB->GLA
+      stbi->gla
 
       This was done to prevent redefinition errors that may occur if two libraries
       both use stb_image. I may change this later.
@@ -17,7 +17,7 @@
       #define GLA_IMAGE_IMPLEMENTATION
    before you include this file in *one* C or C++ file to create the implementation.
 
-   #define GLREI_ASSERT(x) to avoid using assert.h.
+   #define GLAI_ASSERT(x) to avoid using assert.h.
 
    QUICK NOTES:
       Primarily of interest to game developers and other people who can
@@ -34,16 +34,16 @@
       HDR (radiance rgbE format)
       PIC (Softimage PIC)
 
-      - decode from memory or through FILE (define GLREI_NO_STDIO to remove code)
+      - decode from memory or through FILE (define GLAI_NO_STDIO to remove code)
       - decode from arbitrary I/O callbacks
-      - overridable dequantizing-IDCT, YCbCr-to-RGB conversion (define GLREI_SIMD)
+      - overridable dequantizing-IDCT, YCbCr-to-RGB conversion (define GLAI_SIMD)
 
    Latest revisions:
       1.46 (2014-08-26) fix broken tRNS chunk in non-paletted PNG
       1.45 (2014-08-16) workaround MSVC-ARM internal compiler error by wrapping malloc
       1.44 (2014-08-07) warnings
       1.43 (2014-07-15) fix MSVC-only bug in 1.42
-      1.42 (2014-07-09) no _CRT_SECURE_NO_WARNINGS; error-path fixes; GLREI_ASSERT
+      1.42 (2014-07-09) no _CRT_SECURE_NO_WARNINGS; error-path fixes; GLAI_ASSERT
       1.41 (2014-06-25) fix search&replace that messed up comments/error messages
       1.40 (2014-06-22) gcc warning
       1.39 (2014-06-15) TGA optimization bugfix, multiple BMP fixes
@@ -89,8 +89,8 @@
                                                  Michal Cichon
 */
 
-#ifndef GLREI_GLA_INCLUDE_GLA_IMAGE_H
-#define GLREI_GLA_INCLUDE_GLA_IMAGE_H
+#ifndef GLAI_GLA_INCLUDE_GLA_IMAGE_H
+#define GLAI_GLA_INCLUDE_GLA_IMAGE_H
 
 // Limitations:
 //    - no jpeg progressive support
@@ -136,8 +136,8 @@
 // If image loading fails for any reason, the return value will be NULL,
 // and *x, *y, *comp will be unchanged. The function GLA_failure_reason()
 // can be queried for an extremely brief, end-user unfriendly explanation
-// of why the load failed. Define GLREI_NO_FAILURE_STRINGS to avoid
-// compiling these strings at all, and GLREI_FAILURE_USERMSG to get slightly
+// of why the load failed. Define GLAI_NO_FAILURE_STRINGS to avoid
+// compiling these strings at all, and GLAI_FAILURE_USERMSG to get slightly
 // more user-friendly ones.
 //
 // Paletted PNG, BMP, GIF, and PIC images are automatically depalettized.
@@ -159,7 +159,7 @@
 //
 // ===========================================================================
 //
-// HDR image support   (disable by defining GLREI_NO_HDR)
+// HDR image support   (disable by defining GLAI_NO_HDR)
 //
 // stb_image now supports loading HDR images in general, and currently
 // the Radiance .HDR file format, although the support is provided
@@ -206,20 +206,20 @@
 // "skip" (skips some bytes of data), "eof" (reports if the stream is at the end).
 
 
-#ifndef GLREI_NO_STDIO
-#include <stdio.h>
-#endif // GLREI_NO_STDIO
+#ifndef GLAI_NO_STDIO
+    #include <stdio.h>
+#endif // GLAI_NO_STDIO
 
-#define GLREI_VERSION 1
+#define GLAI_VERSION 1
 
 enum
 {
-   GLREI_default = 0, // only used for req_comp
+   GLAI_default = 0, // only used for req_comp
 
-   GLREI_grey       = 1,
-   GLREI_grey_alpha = 2,
-   GLREI_rgb        = 3,
-   GLREI_rgb_alpha  = 4
+   GLAI_grey       = 1,
+   GLAI_grey_alpha = 2,
+   GLAI_rgb        = 3,
+   GLAI_rgb_alpha  = 4
 };
 
 typedef unsigned char GLA_uc;
@@ -228,10 +228,11 @@ typedef unsigned char GLA_uc;
 extern "C" {
 #endif
 
+#define GLA_IMAGE_STATIC
 #ifdef GLA_IMAGE_STATIC
-#define GLREIDEF static
+    #define GLAIDEF static
 #else
-#define GLREIDEF extern
+    #define GLAIDEF extern
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
@@ -243,11 +244,11 @@ extern "C" {
 // load image by filename, open file, or memory buffer
 //
 
-GLREIDEF GLA_uc *GLA_load_from_memory(GLA_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp);
+GLAIDEF GLA_uc *GLA_load_from_memory(GLA_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp);
 
-#ifndef GLREI_NO_STDIO
-GLREIDEF GLA_uc *GLA_load            (char const *filename,     int *x, int *y, int *comp, int req_comp);
-GLREIDEF GLA_uc *GLA_load_from_file  (FILE *f,                  int *x, int *y, int *comp, int req_comp);
+#ifndef GLAI_NO_STDIO
+GLAIDEF GLA_uc *GLA_load            (char const *filename,     int *x, int *y, int *comp, int req_comp);
+GLAIDEF GLA_uc *GLA_load_from_file  (FILE *f,                  int *x, int *y, int *comp, int req_comp);
 // for GLA_load_from_file, file pointer is left pointing immediately after image
 #endif
 
@@ -258,48 +259,48 @@ typedef struct
    int      (*eof)   (void *user);                       // returns nonzero if we are at end of file/data
 } GLA_io_callbacks;
 
-GLREIDEF GLA_uc *GLA_load_from_callbacks  (GLA_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp);
+GLAIDEF GLA_uc *GLA_load_from_callbacks  (GLA_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp);
 
-#ifndef GLREI_NO_HDR
-   GLREIDEF float *GLA_loadf_from_memory(GLA_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp);
+#ifndef GLAI_NO_HDR
+   GLAIDEF float *GLA_loadf_from_memory(GLA_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp);
 
-   #ifndef GLREI_NO_STDIO
-   GLREIDEF float *GLA_loadf            (char const *filename,   int *x, int *y, int *comp, int req_comp);
-   GLREIDEF float *GLA_loadf_from_file  (FILE *f,                int *x, int *y, int *comp, int req_comp);
+   #ifndef GLAI_NO_STDIO
+       GLAIDEF float *GLA_loadf            (char const *filename,   int *x, int *y, int *comp, int req_comp);
+       GLAIDEF float *GLA_loadf_from_file  (FILE *f,                int *x, int *y, int *comp, int req_comp);
    #endif
    
-   GLREIDEF float *GLA_loadf_from_callbacks  (GLA_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp);
+   GLAIDEF float *GLA_loadf_from_callbacks  (GLA_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp);
 
-   GLREIDEF void   GLA_hdr_to_ldr_gamma(float gamma);
-   GLREIDEF void   GLA_hdr_to_ldr_scale(float scale);
+   GLAIDEF void   GLA_hdr_to_ldr_gamma(float gamma);
+   GLAIDEF void   GLA_hdr_to_ldr_scale(float scale);
 
-   GLREIDEF void   GLA_ldr_to_hdr_gamma(float gamma);
-   GLREIDEF void   GLA_ldr_to_hdr_scale(float scale);
-#endif // GLREI_NO_HDR
+   GLAIDEF void   GLA_ldr_to_hdr_gamma(float gamma);
+   GLAIDEF void   GLA_ldr_to_hdr_scale(float scale);
+#endif // GLAI_NO_HDR
 
 // GLA_is_hdr is always defined
-GLREIDEF int    GLA_is_hdr_from_callbacks(GLA_io_callbacks const *clbk, void *user);
-GLREIDEF int    GLA_is_hdr_from_memory(GLA_uc const *buffer, int len);
-#ifndef GLREI_NO_STDIO
-GLREIDEF int      GLA_is_hdr          (char const *filename);
-GLREIDEF int      GLA_is_hdr_from_file(FILE *f);
-#endif // GLREI_NO_STDIO
+GLAIDEF int    GLA_is_hdr_from_callbacks(GLA_io_callbacks const *clbk, void *user);
+GLAIDEF int    GLA_is_hdr_from_memory(GLA_uc const *buffer, int len);
+#ifndef GLAI_NO_STDIO
+GLAIDEF int      GLA_is_hdr          (char const *filename);
+GLAIDEF int      GLA_is_hdr_from_file(FILE *f);
+#endif // GLAI_NO_STDIO
 
 
 // get a VERY brief reason for failure
 // NOT THREADSAFE
-GLREIDEF const char *GLA_failure_reason  (void);
+GLAIDEF const char *GLA_failure_reason  (void);
 
 // free the loaded image -- this is just free()
-GLREIDEF void     GLA_image_free      (void *retval_from_GLA_load);
+GLAIDEF void     GLA_image_free      (void *retval_from_GLA_load);
 
 // get image dimensions & components without fully decoding
-GLREIDEF int      GLA_info_from_memory(GLA_uc const *buffer, int len, int *x, int *y, int *comp);
-GLREIDEF int      GLA_info_from_callbacks(GLA_io_callbacks const *clbk, void *user, int *x, int *y, int *comp);
+GLAIDEF int      GLA_info_from_memory(GLA_uc const *buffer, int len, int *x, int *y, int *comp);
+GLAIDEF int      GLA_info_from_callbacks(GLA_io_callbacks const *clbk, void *user, int *x, int *y, int *comp);
 
-#ifndef GLREI_NO_STDIO
-GLREIDEF int      GLA_info            (char const *filename,     int *x, int *y, int *comp);
-GLREIDEF int      GLA_info_from_file  (FILE *f,                  int *x, int *y, int *comp);
+#ifndef GLAI_NO_STDIO
+GLAIDEF int      GLA_info            (char const *filename,     int *x, int *y, int *comp);
+GLAIDEF int      GLA_info_from_file  (FILE *f,                  int *x, int *y, int *comp);
 
 #endif
 
@@ -308,26 +309,26 @@ GLREIDEF int      GLA_info_from_file  (FILE *f,                  int *x, int *y,
 // for image formats that explicitly notate that they have premultiplied alpha,
 // we just return the colors as stored in the file. set this flag to force
 // unpremultiplication. results are undefined if the unpremultiply overflow.
-GLREIDEF void GLA_set_unpremultiply_on_load(int flag_true_if_should_unpremultiply);
+GLAIDEF void GLA_set_unpremultiply_on_load(int flag_true_if_should_unpremultiply);
 
 // indicate whether we should process iphone images back to canonical format,
 // or just pass them through "as-is"
-GLREIDEF void GLA_convert_iphone_png_to_rgb(int flag_true_if_should_convert);
+GLAIDEF void GLA_convert_iphone_png_to_rgb(int flag_true_if_should_convert);
 
 
 // ZLIB client - used by PNG, available for other purposes
 
-GLREIDEF char *GLA_zlib_decode_malloc_guesssize(const char *buffer, int len, int initial_size, int *outlen);
-GLREIDEF char *GLA_zlib_decode_malloc_guesssize_headerflag(const char *buffer, int len, int initial_size, int *outlen, int parse_header);
-GLREIDEF char *GLA_zlib_decode_malloc(const char *buffer, int len, int *outlen);
-GLREIDEF int   GLA_zlib_decode_buffer(char *obuffer, int olen, const char *ibuffer, int ilen);
+//GLAIDEF char *GLA_zlib_decode_malloc_guesssize(const char *buffer, int len, int initial_size, int *outlen);
+//GLAIDEF char *GLA_zlib_decode_malloc_guesssize_headerflag(const char *buffer, int len, int initial_size, int *outlen, int parse_header);
+GLAIDEF char *GLA_zlib_decode_malloc(const char *buffer, int len, int *outlen);
+GLAIDEF int   GLA_zlib_decode_buffer(char *obuffer, int olen, const char *ibuffer, int ilen);
 
-GLREIDEF char *GLA_zlib_decode_noheader_malloc(const char *buffer, int len, int *outlen);
-GLREIDEF int   GLA_zlib_decode_noheader_buffer(char *obuffer, int olen, const char *ibuffer, int ilen);
+GLAIDEF char *GLA_zlib_decode_noheader_malloc(const char *buffer, int len, int *outlen);
+GLAIDEF int   GLA_zlib_decode_noheader_buffer(char *obuffer, int olen, const char *ibuffer, int ilen);
 
 
 // define faster low-level operations (typically SIMD support)
-#ifdef GLREI_SIMD
+#ifdef GLAI_SIMD
 typedef void (*GLA_idct_8x8)(GLA_uc *out, int out_stride, short data[64], unsigned short *dequantize);
 // compute an integer IDCT on "input"
 //     input[x] = data[x] * dequantize[x]
@@ -341,9 +342,9 @@ typedef void (*GLA_YCbCr_to_RGB_run)(GLA_uc *output, GLA_uc const  *y, GLA_uc co
 //     cb: Cb input channel; scale/biased to be 0..255
 //     cr: Cr input channel; scale/biased to be 0..255
 
-GLREIDEF void GLA_install_idct(GLA_idct_8x8 func);
-GLREIDEF void GLA_install_YCbCr_to_RGB(GLA_YCbCr_to_RGB_run func);
-#endif // GLREI_SIMD
+GLAIDEF void GLA_install_idct(GLA_idct_8x8 func);
+GLAIDEF void GLA_install_YCbCr_to_RGB(GLA_YCbCr_to_RGB_run func);
+#endif // GLAI_SIMD
 
 
 #ifdef __cplusplus
@@ -353,65 +354,110 @@ GLREIDEF void GLA_install_YCbCr_to_RGB(GLA_YCbCr_to_RGB_run func);
 //
 //
 ////   end header file   /////////////////////////////////////////////////////
-#endif // GLREI_INCLUDE_GLA_IMAGE_H
+#endif // GLAI_INCLUDE_GLA_IMAGE_H
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#define GLA_IMAGE_IMPLEMENTATION
 #ifdef GLA_IMAGE_IMPLEMENTATION
 
-#ifndef GLREI_NO_HDR
-#include <math.h>  // ldexp
-#include <string.h> // strcmp, strtok
+#ifndef GLAI_NO_HDR
+    #include <math.h>  // ldexp
+    #include <string.h> // strcmp, strtok
 #endif
 
-#ifndef GLREI_NO_STDIO
-#include <stdio.h>
+#ifndef GLAI_NO_STDIO
+    #include <stdio.h>
 #endif
 #include <stdlib.h>
 #include <string.h>
-#ifndef GLREI_ASSERT
-#include <assert.h>
-#define GLREI_ASSERT(x) assert(x)
+#ifndef GLAI_ASSERT
+    #include <assert.h>
+    #define GLAI_ASSERT(x) assert(x)
 #endif
+
 #include <stdarg.h>
 #include <stddef.h> // ptrdiff_t on osx
 
 #ifndef _MSC_VER
    #ifdef __cplusplus
-   #define GLA_inline inline
+       #define GLA_inline inline
    #else
-   #define GLA_inline
+       #define GLA_inline
    #endif
 #else
-   #define GLA_inline __forceinline
+       #define GLA_inline __forceinline
 #endif
 
 
 #ifdef _MSC_VER
-typedef unsigned short GLA__uint16;
-typedef   signed short GLA__int16;
-typedef unsigned int   GLA__uint32;
-typedef   signed int   GLA__int32;
+    typedef unsigned short GLA__uint16;
+    typedef   signed short GLA__int16;
+    typedef unsigned int   GLA__uint32;
+    typedef   signed int   GLA__int32;
 #else
 #include <stdint.h>
-typedef uint16_t GLA__uint16;
-typedef int16_t  GLA__int16;
-typedef uint32_t GLA__uint32;
-typedef int32_t  GLA__int32;
+    typedef uint16_t GLA__uint16;
+    typedef int16_t  GLA__int16;
+    typedef uint32_t GLA__uint32;
+    typedef int32_t  GLA__int32;
 #endif
 
 // should produce compiler error if size is wrong
 typedef unsigned char validate_uint32[sizeof(GLA__uint32)==4 ? 1 : -1];
 
 #ifdef _MSC_VER
-#define GLREI_NOTUSED(v)  (void)(v)
+    #define GLAI_NOTUSED(v)  (void)(v)
 #else
-#define GLREI_NOTUSED(v)  (void)sizeof(v)
+    #define GLAI_NOTUSED(v)  (void)sizeof(v)
 #endif
 
 #ifdef _MSC_VER
-#define GLREI_HAS_LROTL
+#define GLAI_HAS_LROTL
 #endif
 
-#ifdef GLREI_HAS_LROTL
+#ifdef GLAI_HAS_LROTL
    #define GLA_lrot(x,y)  _lrotl(x,y)
 #else
    #define GLA_lrot(x,y)  (((x) << (y)) | ((x) >> (32 - (y))))
@@ -440,7 +486,11 @@ typedef struct
 } GLA__context;
 
 
-static void GLA__refill_buffer(GLA__context *s);
+class ImageLoader
+{
+public:
+
+//static void GLA__refill_buffer(GLA__context *s);
 
 // initialize a memory-decode context
 static void GLA__start_mem(GLA__context *s, GLA_uc const *buffer, int len)
@@ -462,7 +512,7 @@ static void GLA__start_callbacks(GLA__context *s, GLA_io_callbacks *c, void *use
    GLA__refill_buffer(s);
 }
 
-#ifndef GLREI_NO_STDIO
+#ifndef GLAI_NO_STDIO
 
 static int GLA__stdio_read(void *user, char *data, int size)
 {
@@ -479,21 +529,23 @@ static int GLA__stdio_eof(void *user)
    return feof((FILE*) user);
 }
 
-static GLA_io_callbacks GLA__stdio_callbacks =
-{
-   GLA__stdio_read,
-   GLA__stdio_skip,
-   GLA__stdio_eof,
-};
+
 
 static void GLA__start_file(GLA__context *s, FILE *f)
 {
+    static GLA_io_callbacks GLA__stdio_callbacks =
+    {
+       GLA__stdio_read,
+       GLA__stdio_skip,
+       GLA__stdio_eof,
+    };
+
    GLA__start_callbacks(s, &GLA__stdio_callbacks, (void *) f);
 }
 
 //static void stop_file(GLA__context *s) { }
 
-#endif // !GLREI_NO_STDIO
+#endif // !GLAI_NO_STDIO
 
 static void GLA__rewind(GLA__context *s)
 {
@@ -503,34 +555,11 @@ static void GLA__rewind(GLA__context *s)
    s->img_buffer = s->img_buffer_original;
 }
 
-static int      GLA__jpeg_test(GLA__context *s);
-static GLA_uc *GLA__jpeg_load(GLA__context *s, int *x, int *y, int *comp, int req_comp);
-static int      GLA__jpeg_info(GLA__context *s, int *x, int *y, int *comp);
-static int      GLA__png_test(GLA__context *s);
-static GLA_uc *GLA__png_load(GLA__context *s, int *x, int *y, int *comp, int req_comp);
-static int      GLA__png_info(GLA__context *s, int *x, int *y, int *comp);
-static int      GLA__bmp_test(GLA__context *s);
-static GLA_uc *GLA__bmp_load(GLA__context *s, int *x, int *y, int *comp, int req_comp);
-static int      GLA__tga_test(GLA__context *s);
-static GLA_uc *GLA__tga_load(GLA__context *s, int *x, int *y, int *comp, int req_comp);
-static int      GLA__tga_info(GLA__context *s, int *x, int *y, int *comp);
-static int      GLA__psd_test(GLA__context *s);
-static GLA_uc *GLA__psd_load(GLA__context *s, int *x, int *y, int *comp, int req_comp);
-#ifndef GLREI_NO_HDR
-static int      GLA__hdr_test(GLA__context *s);
-static float   *GLA__hdr_load(GLA__context *s, int *x, int *y, int *comp, int req_comp);
-#endif
-static int      GLA__pic_test(GLA__context *s);
-static GLA_uc *GLA__pic_load(GLA__context *s, int *x, int *y, int *comp, int req_comp);
-static int      GLA__gif_test(GLA__context *s);
-static GLA_uc *GLA__gif_load(GLA__context *s, int *x, int *y, int *comp, int req_comp);
-static int      GLA__gif_info(GLA__context *s, int *x, int *y, int *comp);
-
-
 // this is not threadsafe
-static const char *GLA__g_failure_reason;
+/*
+const char *GLA__g_failure_reason;
 
-GLREIDEF const char *GLA_failure_reason(void)
+GLAIDEF const char *GLA_failure_reason(void)
 {
    return GLA__g_failure_reason;
 }
@@ -540,6 +569,7 @@ static int GLA__err(const char *str)
    GLA__g_failure_reason = str;
    return 0;
 }
+*/
 
 static void *GLA__malloc(size_t size)
 {
@@ -550,9 +580,10 @@ static void *GLA__malloc(size_t size)
 // GLA__errpf - error returning pointer to float
 // GLA__errpuc - error returning pointer to unsigned char
 
-#ifdef GLREI_NO_FAILURE_STRINGS
+#define GLAI_NO_FAILURE_STRINGS
+#ifdef GLAI_NO_FAILURE_STRINGS
    #define GLA__err(x,y)  0
-#elif defined(GLREI_FAILURE_USERMSG)
+#elif defined(GLAI_FAILURE_USERMSG)
    #define GLA__err(x,y)  GLA__err(y)
 #else
    #define GLA__err(x,y)  GLA__err(x)
@@ -561,14 +592,14 @@ static void *GLA__malloc(size_t size)
 #define GLA__errpf(x,y)   ((float *) (GLA__err(x,y)?NULL:NULL))
 #define GLA__errpuc(x,y)  ((unsigned char *) (GLA__err(x,y)?NULL:NULL))
 
-GLREIDEF void GLA_image_free(void *retval_from_GLA_load)
+GLAIDEF void GLA_image_free(void *retval_from_GLA_load)
 {
    free(retval_from_GLA_load);
 }
 
-#ifndef GLREI_NO_HDR
-static float   *GLA__ldr_to_hdr(GLA_uc *data, int x, int y, int comp);
-static GLA_uc *GLA__hdr_to_ldr(float   *data, int x, int y, int comp);
+#ifndef GLAI_NO_HDR
+//static float   *GLA__ldr_to_hdr(GLA_uc *data, int x, int y, int comp);
+//static GLA_uc *GLA__hdr_to_ldr(float   *data, int x, int y, int comp);
 #endif
 
 static unsigned char *GLA_load_main(GLA__context *s, int *x, int *y, int *comp, int req_comp)
@@ -580,8 +611,9 @@ static unsigned char *GLA_load_main(GLA__context *s, int *x, int *y, int *comp, 
    if (GLA__psd_test(s))  return GLA__psd_load(s,x,y,comp,req_comp);
    if (GLA__pic_test(s))  return GLA__pic_load(s,x,y,comp,req_comp);
 
-   #ifndef GLREI_NO_HDR
-   if (GLA__hdr_test(s)) {
+   #ifndef GLAI_NO_HDR
+   if (GLA__hdr_test(s))
+   {
       float *hdr = GLA__hdr_load(s, x,y,comp,req_comp);
       return GLA__hdr_to_ldr(hdr, *x, *y, req_comp ? req_comp : *comp);
    }
@@ -590,12 +622,13 @@ static unsigned char *GLA_load_main(GLA__context *s, int *x, int *y, int *comp, 
    // test tga last because it's a crappy test!
    if (GLA__tga_test(s))
       return GLA__tga_load(s,x,y,comp,req_comp);
+
    return GLA__errpuc("unknown image type", "Image not of any known type, or corrupt");
 }
 
-#ifndef GLREI_NO_STDIO
+#ifndef GLAI_NO_STDIO
 
-FILE *GLA__fopen(char const *filename, char const *mode)
+GLAIDEF FILE *GLA__fopen(char const *filename, char const *mode)
 {
    FILE *f;
 #if defined(_MSC_VER) && _MSC_VER >= 1400
@@ -608,7 +641,7 @@ FILE *GLA__fopen(char const *filename, char const *mode)
 }
 
 
-GLREIDEF unsigned char *GLA_load(char const *filename, int *x, int *y, int *comp, int req_comp)
+GLAIDEF unsigned char *GLA_load(char const *filename, int *x, int *y, int *comp, int req_comp)
 {
    FILE *f = GLA__fopen(filename, "rb");
    unsigned char *result;
@@ -618,21 +651,22 @@ GLREIDEF unsigned char *GLA_load(char const *filename, int *x, int *y, int *comp
    return result;
 }
 
-GLREIDEF unsigned char *GLA_load_from_file(FILE *f, int *x, int *y, int *comp, int req_comp)
+GLAIDEF unsigned char *GLA_load_from_file(FILE *f, int *x, int *y, int *comp, int req_comp)
 {
    unsigned char *result;
    GLA__context s;
    GLA__start_file(&s,f);
    result = GLA_load_main(&s,x,y,comp,req_comp);
-   if (result) {
+   if (result)
+   {
       // need to 'unget' all the characters in the IO buffer
       fseek(f, - (int) (s.img_buffer_end - s.img_buffer), SEEK_CUR);
    }
    return result;
 }
-#endif //!GLREI_NO_STDIO
+#endif //!GLAI_NO_STDIO
 
-GLREIDEF unsigned char *GLA_load_from_memory(GLA_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp)
+GLAIDEF unsigned char *GLA_load_from_memory(GLA_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp)
 {
    GLA__context s;
    GLA__start_mem(&s,buffer,len);
@@ -646,12 +680,12 @@ unsigned char *GLA_load_from_callbacks(GLA_io_callbacks const *clbk, void *user,
    return GLA_load_main(&s,x,y,comp,req_comp);
 }
 
-#ifndef GLREI_NO_HDR
+#ifndef GLAI_NO_HDR
 
 float *GLA_loadf_main(GLA__context *s, int *x, int *y, int *comp, int req_comp)
 {
    unsigned char *data;
-   #ifndef GLREI_NO_HDR
+   #ifndef GLAI_NO_HDR
    if (GLA__hdr_test(s))
       return GLA__hdr_load(s,x,y,comp,req_comp);
    #endif
@@ -675,7 +709,7 @@ float *GLA_loadf_from_callbacks(GLA_io_callbacks const *clbk, void *user, int *x
    return GLA_loadf_main(&s,x,y,comp,req_comp);
 }
 
-#ifndef GLREI_NO_STDIO
+#ifndef GLAI_NO_STDIO
 float *GLA_loadf(char const *filename, int *x, int *y, int *comp, int req_comp)
 {
    float *result;
@@ -692,29 +726,29 @@ float *GLA_loadf_from_file(FILE *f, int *x, int *y, int *comp, int req_comp)
    GLA__start_file(&s,f);
    return GLA_loadf_main(&s,x,y,comp,req_comp);
 }
-#endif // !GLREI_NO_STDIO
+#endif // !GLAI_NO_STDIO
 
-#endif // !GLREI_NO_HDR
+#endif // !GLAI_NO_HDR
 
-// these is-hdr-or-not is defined independent of whether GLREI_NO_HDR is
-// defined, for API simplicity; if GLREI_NO_HDR is defined, it always
+// these is-hdr-or-not is defined independent of whether GLAI_NO_HDR is
+// defined, for API simplicity; if GLAI_NO_HDR is defined, it always
 // reports false!
 
 int GLA_is_hdr_from_memory(GLA_uc const *buffer, int len)
 {
-   #ifndef GLREI_NO_HDR
+   #ifndef GLAI_NO_HDR
    GLA__context s;
    GLA__start_mem(&s,buffer,len);
    return GLA__hdr_test(&s);
    #else
-   GLREI_NOTUSED(buffer);
-   GLREI_NOTUSED(len);
+   GLAI_NOTUSED(buffer);
+   GLAI_NOTUSED(len);
    return 0;
    #endif
 }
 
-#ifndef GLREI_NO_STDIO
-GLREIDEF int      GLA_is_hdr          (char const *filename)
+#ifndef GLAI_NO_STDIO
+GLAIDEF int      GLA_is_hdr          (char const *filename)
 {
    FILE *f = GLA__fopen(filename, "rb");
    int result=0;
@@ -725,9 +759,9 @@ GLREIDEF int      GLA_is_hdr          (char const *filename)
    return result;
 }
 
-GLREIDEF int      GLA_is_hdr_from_file(FILE *f)
+GLAIDEF int      GLA_is_hdr_from_file(FILE *f)
 {
-   #ifndef GLREI_NO_HDR
+   #ifndef GLAI_NO_HDR
    GLA__context s;
    GLA__start_file(&s,f);
    return GLA__hdr_test(&s);
@@ -735,11 +769,11 @@ GLREIDEF int      GLA_is_hdr_from_file(FILE *f)
    return 0;
    #endif
 }
-#endif // !GLREI_NO_STDIO
+#endif // !GLAI_NO_STDIO
 
-GLREIDEF int      GLA_is_hdr_from_callbacks(GLA_io_callbacks const *clbk, void *user)
+GLAIDEF int      GLA_is_hdr_from_callbacks(GLA_io_callbacks const *clbk, void *user)
 {
-   #ifndef GLREI_NO_HDR
+   #ifndef GLAI_NO_HDR
    GLA__context s;
    GLA__start_callbacks(&s, (GLA_io_callbacks *) clbk, user);
    return GLA__hdr_test(&s);
@@ -748,15 +782,57 @@ GLREIDEF int      GLA_is_hdr_from_callbacks(GLA_io_callbacks const *clbk, void *
    #endif
 }
 
-#ifndef GLREI_NO_HDR
-static float GLA__h2l_gamma_i=1.0f/2.2f, GLA__h2l_scale_i=1.0f;
-static float GLA__l2h_gamma=2.2f, GLA__l2h_scale=1.0f;
+#ifndef GLAI_NO_HDR
+    //static float GLA__h2l_gamma_i=1.0f/2.2f, GLA__h2l_scale_i=1.0f;
+    //static float GLA__l2h_gamma=2.2f, GLA__l2h_scale=1.0f;
 
-void   GLA_hdr_to_ldr_gamma(float gamma) { GLA__h2l_gamma_i = 1/gamma; }
-void   GLA_hdr_to_ldr_scale(float scale) { GLA__h2l_scale_i = 1/scale; }
 
-void   GLA_ldr_to_hdr_gamma(float gamma) { GLA__l2h_gamma = gamma; }
-void   GLA_ldr_to_hdr_scale(float scale) { GLA__l2h_scale = scale; }
+    static float GLA__h2l_gamma_i(bool SET=false, float value=0)
+    {
+        static float v = 1.0f/2.2f;
+
+        if(SET)
+            v = value;
+
+        return v;
+    }
+
+    static float GLA__h2l_scale_i(bool SET=false, float value=0)
+    {
+        static float v = 1.0f/2.2f;
+
+        if(SET)
+            v = value;
+
+        return v;
+    }
+
+    static float GLA__l2h_gamma(bool SET=false, float value=0)
+    {
+        static float v = 1.0f/2.2f;
+
+        if(SET)
+            v = value;
+
+        return v;
+    }
+
+    static float GLA__l2h_scale(bool SET=false, float value=0)
+    {
+        static float v = 1.0f/2.2f;
+
+        if(SET)
+            v = value;
+
+        return v;
+    }
+
+
+    static void   GLA_hdr_to_ldr_gamma(float gamma) { GLA__h2l_gamma_i(true, 1/gamma); }
+    static void   GLA_hdr_to_ldr_scale(float scale) { GLA__h2l_scale_i(true, 1/scale); }
+
+    static void   GLA_ldr_to_hdr_gamma(float gamma) { GLA__l2h_gamma(true, gamma); }
+    static void   GLA_ldr_to_hdr_scale(float scale) { GLA__l2h_scale(true, scale); }
 #endif
 
 
@@ -894,7 +970,7 @@ static unsigned char *GLA__convert_format(unsigned char *data, int img_n, int re
    unsigned char *good;
 
    if (req_comp == img_n) return data;
-   GLREI_ASSERT(req_comp >= 1 && req_comp <= 4);
+   GLAI_ASSERT(req_comp >= 1 && req_comp <= 4);
 
    good = (unsigned char *) GLA__malloc(req_comp * x * y);
    if (good == NULL) {
@@ -923,7 +999,7 @@ static unsigned char *GLA__convert_format(unsigned char *data, int img_n, int re
          CASE(4,1) dest[0]=GLA__compute_y(src[0],src[1],src[2]); break;
          CASE(4,2) dest[0]=GLA__compute_y(src[0],src[1],src[2]), dest[1] = src[3]; break;
          CASE(4,3) dest[0]=src[0],dest[1]=src[1],dest[2]=src[2]; break;
-         default: GLREI_ASSERT(0);
+         default: GLAI_ASSERT(0);
       }
       #undef CASE
    }
@@ -932,9 +1008,12 @@ static unsigned char *GLA__convert_format(unsigned char *data, int img_n, int re
    return good;
 }
 
-#ifndef GLREI_NO_HDR
+#ifndef GLAI_NO_HDR
 static float   *GLA__ldr_to_hdr(GLA_uc *data, int x, int y, int comp)
 {
+   float l2h_scale =  GLA__l2h_scale();
+   float l2h_gamma =  GLA__l2h_gamma();
+
    int i,k,n;
    float *output = (float *) GLA__malloc(x * y * comp * sizeof(float));
    if (output == NULL) { free(data); return GLA__errpf("outofmem", "Out of memory"); }
@@ -942,7 +1021,7 @@ static float   *GLA__ldr_to_hdr(GLA_uc *data, int x, int y, int comp)
    if (comp & 1) n = comp; else n = comp-1;
    for (i=0; i < x*y; ++i) {
       for (k=0; k < n; ++k) {
-         output[i*comp + k] = (float) (pow(data[i*comp+k]/255.0f, GLA__l2h_gamma) * GLA__l2h_scale);
+         output[i*comp + k] = (float) (pow(data[i*comp+k]/255.0f, l2h_gamma) * l2h_scale);
       }
       if (k < comp) output[i*comp + k] = data[i*comp+k]/255.0f;
    }
@@ -953,6 +1032,9 @@ static float   *GLA__ldr_to_hdr(GLA_uc *data, int x, int y, int comp)
 #define GLA__float2int(x)   ((int) (x))
 static GLA_uc *GLA__hdr_to_ldr(float   *data, int x, int y, int comp)
 {
+   float h2l_scale_i =  GLA__h2l_scale_i();
+   float h2l_gamma_i =  GLA__h2l_gamma_i();
+
    int i,k,n;
    GLA_uc *output = (GLA_uc *) GLA__malloc(x * y * comp);
    if (output == NULL) { free(data); return GLA__errpuc("outofmem", "Out of memory"); }
@@ -960,7 +1042,7 @@ static GLA_uc *GLA__hdr_to_ldr(float   *data, int x, int y, int comp)
    if (comp & 1) n = comp; else n = comp-1;
    for (i=0; i < x*y; ++i) {
       for (k=0; k < n; ++k) {
-         float z = (float) pow(data[i*comp+k]*GLA__h2l_scale_i, GLA__h2l_gamma_i) * 255 + 0.5f;
+         float z = (float) pow(data[i*comp+k]*h2l_scale_i, h2l_gamma_i) * 255 + 0.5f;
          if (z < 0) z = 0;
          if (z > 255) z = 255;
          output[i*comp + k] = (GLA_uc) GLA__float2int(z);
@@ -1020,7 +1102,7 @@ typedef struct
 
 typedef struct
 {
-   #ifdef GLREI_SIMD
+   #ifdef GLAI_SIMD
    unsigned short dequant2[4][64];
    #endif
    GLA__context *s;
@@ -1116,11 +1198,12 @@ static void GLA__grow_buffer_unsafe(GLA__jpeg *j)
 }
 
 // (1 << n) - 1
-static GLA__uint32 GLA__bmask[17]={0,1,3,7,15,31,63,127,255,511,1023,2047,4095,8191,16383,32767,65535};
+
 
 // decode a jpeg huffman value from the bitstream
 GLA_inline static int GLA__jpeg_huff_decode(GLA__jpeg *j, GLA__huffman *h)
 {
+    static GLA__uint32 GLA__bmask[17]={0,1,3,7,15,31,63,127,255,511,1023,2047,4095,8191,16383,32767,65535};
    unsigned int temp;
    int c,k;
 
@@ -1160,7 +1243,7 @@ GLA_inline static int GLA__jpeg_huff_decode(GLA__jpeg *j, GLA__huffman *h)
 
    // convert the huffman code to the symbol id
    c = ((j->code_buffer >> (32 - k)) & GLA__bmask[k]) + h->delta[k];
-   GLREI_ASSERT((((j->code_buffer) >> (32 - h->size[c])) & GLA__bmask[h->size[c]]) == h->code[c]);
+   GLAI_ASSERT((((j->code_buffer) >> (32 - h->size[c])) & GLA__bmask[h->size[c]]) == h->code[c]);
 
    // convert the id to a symbol
    j->code_bits -= k;
@@ -1172,6 +1255,7 @@ GLA_inline static int GLA__jpeg_huff_decode(GLA__jpeg *j, GLA__huffman *h)
 // always extends everything it receives.
 GLA_inline static int GLA__extend_receive(GLA__jpeg *j, int n)
 {
+    static GLA__uint32 GLA__bmask[17]={0,1,3,7,15,31,63,127,255,511,1023,2047,4095,8191,16383,32767,65535};
    unsigned int m = 1 << (n-1);
    unsigned int k;
    if (j->code_bits < n) GLA__grow_buffer_unsafe(j);
@@ -1197,26 +1281,43 @@ GLA_inline static int GLA__extend_receive(GLA__jpeg *j, int n)
 
 // given a value that's at position X in the zigzag stream,
 // where does it appear in the 8x8 matrix coded as row-major?
-static GLA_uc GLA__jpeg_dezigzag[64+15] =
-{
-    0,  1,  8, 16,  9,  2,  3, 10,
-   17, 24, 32, 25, 18, 11,  4,  5,
-   12, 19, 26, 33, 40, 48, 41, 34,
-   27, 20, 13,  6,  7, 14, 21, 28,
-   35, 42, 49, 56, 57, 50, 43, 36,
-   29, 22, 15, 23, 30, 37, 44, 51,
-   58, 59, 52, 45, 38, 31, 39, 46,
-   53, 60, 61, 54, 47, 55, 62, 63,
-   // let corrupt input sample past end
-   63, 63, 63, 63, 63, 63, 63, 63,
-   63, 63, 63, 63, 63, 63, 63
-};
+//static constexpr GLA_uc GLA__jpeg_dezigzag[64+15] =
+//{
+//    0,  1,  8, 16,  9,  2,  3, 10,
+//   17, 24, 32, 25, 18, 11,  4,  5,
+//   12, 19, 26, 33, 40, 48, 41, 34,
+//   27, 20, 13,  6,  7, 14, 21, 28,
+//   35, 42, 49, 56, 57, 50, 43, 36,
+//   29, 22, 15, 23, 30, 37, 44, 51,
+//   58, 59, 52, 45, 38, 31, 39, 46,
+//   53, 60, 61, 54, 47, 55, 62, 63,
+//   // let corrupt input sample past end
+//   63, 63, 63, 63, 63, 63, 63, 63,
+//   63, 63, 63, 63, 63, 63, 63
+//};
+
 
 // decode one 64-entry block--
 static int GLA__jpeg_decode_block(GLA__jpeg *j, short data[64], GLA__huffman *hdc, GLA__huffman *hac, int b)
 {
    int diff,dc,k;
    int t = GLA__jpeg_huff_decode(j, hdc);
+
+   static GLA_uc GLA__jpeg_dezigzag[64+15] =
+   {
+       0,  1,  8, 16,  9,  2,  3, 10,
+      17, 24, 32, 25, 18, 11,  4,  5,
+      12, 19, 26, 33, 40, 48, 41, 34,
+      27, 20, 13,  6,  7, 14, 21, 28,
+      35, 42, 49, 56, 57, 50, 43, 36,
+      29, 22, 15, 23, 30, 37, 44, 51,
+      58, 59, 52, 45, 38, 31, 39, 46,
+      53, 60, 61, 54, 47, 55, 62, 63,
+      // let corrupt input sample past end
+      63, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 63, 63, 63
+   };
+
    if (t < 0) return GLA__err("bad huffman code","Corrupt JPEG");
 
    // 0 all the ac values now so we can do it 32-bits at a time
@@ -1262,7 +1363,7 @@ GLA_inline static GLA_uc GLA__clamp(int x)
 #define GLA__fsh(x)  ((x) << 12)
 
 // derived from jidctint -- DCT_ISLOW
-#define GLREI__IDCT_1D(s0,s1,s2,s3,s4,s5,s6,s7)       \
+#define GLAI__IDCT_1D(s0,s1,s2,s3,s4,s5,s6,s7)       \
    int t0,t1,t2,t3,p1,p2,p3,p4,p5,x0,x1,x2,x3; \
    p2 = s2;                                    \
    p3 = s6;                                    \
@@ -1299,7 +1400,7 @@ GLA_inline static GLA_uc GLA__clamp(int x)
    t1 += p2+p4;                                \
    t0 += p1+p3;
 
-#ifdef GLREI_SIMD
+#ifdef GLAI_SIMD
 typedef unsigned short GLA_dequantize_t;
 #else
 typedef GLA_uc GLA_dequantize_t;
@@ -1325,7 +1426,7 @@ static void GLA__idct_block(GLA_uc *out, int out_stride, short data[64], GLA_deq
          int dcterm = d[0] * dq[0] << 2;
          v[0] = v[8] = v[16] = v[24] = v[32] = v[40] = v[48] = v[56] = dcterm;
       } else {
-         GLREI__IDCT_1D(d[ 0]*dq[ 0],d[ 8]*dq[ 8],d[16]*dq[16],d[24]*dq[24],
+         GLAI__IDCT_1D(d[ 0]*dq[ 0],d[ 8]*dq[ 8],d[16]*dq[16],d[24]*dq[24],
                  d[32]*dq[32],d[40]*dq[40],d[48]*dq[48],d[56]*dq[56])
          // constants scaled things up by 1<<12; let's bring them back
          // down, but keep 2 extra bits of precision
@@ -1343,7 +1444,7 @@ static void GLA__idct_block(GLA_uc *out, int out_stride, short data[64], GLA_deq
 
    for (i=0, v=val, o=out; i < 8; ++i,v+=8,o+=out_stride) {
       // no fast case since the first 1D IDCT spread components out
-      GLREI__IDCT_1D(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7])
+      GLAI__IDCT_1D(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7])
       // constants scaled things up by 1<<12, plus we had 1<<2 from first
       // loop, plus horizontal and vertical each scale by sqrt(8) so together
       // we've got an extra 1<<3, so 1<<17 total we need to remove.
@@ -1367,25 +1468,25 @@ static void GLA__idct_block(GLA_uc *out, int out_stride, short data[64], GLA_deq
    }
 }
 
-#ifdef GLREI_SIMD
+#ifdef GLAI_SIMD
 static GLA_idct_8x8 GLA__idct_installed = GLA__idct_block;
 
-GLREIDEF void GLA_install_idct(GLA_idct_8x8 func)
+GLAIDEF void GLA_install_idct(GLA_idct_8x8 func)
 {
    GLA__idct_installed = func;
 }
 #endif
 
-#define GLREI__MARKER_none  0xff
+#define GLAI__MARKER_none  0xff
 // if there's a pending marker from the entropy stream, return that
 // otherwise, fetch from the stream and get a marker. if there's no
 // marker, return 0xff, which is never a valid marker value
 static GLA_uc GLA__get_marker(GLA__jpeg *j)
 {
    GLA_uc x;
-   if (j->marker != GLREI__MARKER_none) { x = j->marker; j->marker = GLREI__MARKER_none; return x; }
+   if (j->marker != GLAI__MARKER_none) { x = j->marker; j->marker = GLAI__MARKER_none; return x; }
    x = GLA__get8(j->s);
-   if (x != 0xff) return GLREI__MARKER_none;
+   if (x != 0xff) return GLAI__MARKER_none;
    while (x == 0xff)
       x = GLA__get8(j->s);
    return x;
@@ -1393,7 +1494,7 @@ static GLA_uc GLA__get_marker(GLA__jpeg *j)
 
 // in each scan, we'll have scan_n components, and the order
 // of the components is specified by order[]
-#define GLREI__RESTART(x)     ((x) >= 0xd0 && (x) <= 0xd7)
+#define GLAI__RESTART(x)     ((x) >= 0xd0 && (x) <= 0xd7)
 
 // after a restart interval, GLA__jpeg_reset the entropy decoder and
 // the dc prediction
@@ -1403,7 +1504,7 @@ static void GLA__jpeg_reset(GLA__jpeg *j)
    j->code_buffer = 0;
    j->nomore = 0;
    j->img_comp[0].dc_pred = j->img_comp[1].dc_pred = j->img_comp[2].dc_pred = 0;
-   j->marker = GLREI__MARKER_none;
+   j->marker = GLAI__MARKER_none;
    j->todo = j->restart_interval ? j->restart_interval : 0x7fffffff;
    // no more than 1<<31 MCUs if no restart_interal? that's plenty safe,
    // since we don't even allow 1<<30 pixels
@@ -1414,7 +1515,7 @@ static int GLA__parse_entropy_coded_data(GLA__jpeg *z)
    GLA__jpeg_reset(z);
    if (z->scan_n == 1) {
       int i,j;
-      #ifdef GLREI_SIMD
+      #ifdef GLAI_SIMD
       __declspec(align(16))
       #endif
       short data[64];
@@ -1428,7 +1529,7 @@ static int GLA__parse_entropy_coded_data(GLA__jpeg *z)
       for (j=0; j < h; ++j) {
          for (i=0; i < w; ++i) {
             if (!GLA__jpeg_decode_block(z, data, z->huff_dc+z->img_comp[n].hd, z->huff_ac+z->img_comp[n].ha, n)) return 0;
-            #ifdef GLREI_SIMD
+            #ifdef GLAI_SIMD
             GLA__idct_installed(z->img_comp[n].data+z->img_comp[n].w2*j*8+i*8, z->img_comp[n].w2, data, z->dequant2[z->img_comp[n].tq]);
             #else
             GLA__idct_block(z->img_comp[n].data+z->img_comp[n].w2*j*8+i*8, z->img_comp[n].w2, data, z->dequant[z->img_comp[n].tq]);
@@ -1438,7 +1539,7 @@ static int GLA__parse_entropy_coded_data(GLA__jpeg *z)
                if (z->code_bits < 24) GLA__grow_buffer_unsafe(z);
                // if it's NOT a restart, then just bail, so we get corrupt data
                // rather than no data
-               if (!GLREI__RESTART(z->marker)) return 1;
+               if (!GLAI__RESTART(z->marker)) return 1;
                GLA__jpeg_reset(z);
             }
          }
@@ -1458,7 +1559,7 @@ static int GLA__parse_entropy_coded_data(GLA__jpeg *z)
                      int x2 = (i*z->img_comp[n].h + x)*8;
                      int y2 = (j*z->img_comp[n].v + y)*8;
                      if (!GLA__jpeg_decode_block(z, data, z->huff_dc+z->img_comp[n].hd, z->huff_ac+z->img_comp[n].ha, n)) return 0;
-                     #ifdef GLREI_SIMD
+                     #ifdef GLAI_SIMD
                      GLA__idct_installed(z->img_comp[n].data+z->img_comp[n].w2*y2+x2, z->img_comp[n].w2, data, z->dequant2[z->img_comp[n].tq]);
                      #else
                      GLA__idct_block(z->img_comp[n].data+z->img_comp[n].w2*y2+x2, z->img_comp[n].w2, data, z->dequant[z->img_comp[n].tq]);
@@ -1472,7 +1573,7 @@ static int GLA__parse_entropy_coded_data(GLA__jpeg *z)
                if (z->code_bits < 24) GLA__grow_buffer_unsafe(z);
                // if it's NOT a restart, then just bail, so we get corrupt data
                // rather than no data
-               if (!GLREI__RESTART(z->marker)) return 1;
+               if (!GLAI__RESTART(z->marker)) return 1;
                GLA__jpeg_reset(z);
             }
          }
@@ -1484,8 +1585,24 @@ static int GLA__parse_entropy_coded_data(GLA__jpeg *z)
 static int GLA__process_marker(GLA__jpeg *z, int m)
 {
    int L;
+   static GLA_uc GLA__jpeg_dezigzag[64+15] =
+   {
+       0,  1,  8, 16,  9,  2,  3, 10,
+      17, 24, 32, 25, 18, 11,  4,  5,
+      12, 19, 26, 33, 40, 48, 41, 34,
+      27, 20, 13,  6,  7, 14, 21, 28,
+      35, 42, 49, 56, 57, 50, 43, 36,
+      29, 22, 15, 23, 30, 37, 44, 51,
+      58, 59, 52, 45, 38, 31, 39, 46,
+      53, 60, 61, 54, 47, 55, 62, 63,
+      // let corrupt input sample past end
+      63, 63, 63, 63, 63, 63, 63, 63,
+      63, 63, 63, 63, 63, 63, 63
+   };
+
+
    switch (m) {
-      case GLREI__MARKER_none: // no marker found
+      case GLAI__MARKER_none: // no marker found
          return GLA__err("expected marker","Corrupt JPEG");
 
       case 0xC2: // GLA__SOF - progressive
@@ -1506,7 +1623,7 @@ static int GLA__process_marker(GLA__jpeg *z, int m)
             if (t > 3) return GLA__err("bad DQT table","Corrupt JPEG");
             for (i=0; i < 64; ++i)
                z->dequant[t][GLA__jpeg_dezigzag[i]] = GLA__get8(z->s);
-            #ifdef GLREI_SIMD
+            #ifdef GLAI_SIMD
             for (i=0; i < 64; ++i)
                z->dequant2[t][i] = z->dequant[t][i];
             #endif
@@ -1657,7 +1774,7 @@ static int GLA__process_frame_header(GLA__jpeg *z, int scan)
 static int decode_jpeg_header(GLA__jpeg *z, int scan)
 {
    int m;
-   z->marker = GLREI__MARKER_none; // initialize cached marker to empty
+   z->marker = GLAI__MARKER_none; // initialize cached marker to empty
    m = GLA__get_marker(z);
    if (!GLA__SOI(m)) return GLA__err("no GLA__SOI","Corrupt JPEG");
    if (scan == SCAN_type) return 1;
@@ -1665,7 +1782,7 @@ static int decode_jpeg_header(GLA__jpeg *z, int scan)
    while (!GLA__SOF(m)) {
       if (!GLA__process_marker(z,m)) return 0;
       m = GLA__get_marker(z);
-      while (m == GLREI__MARKER_none) {
+      while (m == GLAI__MARKER_none) {
          // some files have extra padding after their blocks, so ok, we'll scan
          if (GLA__at_eof(z->s)) return GLA__err("no GLA__SOF", "Corrupt JPEG");
          m = GLA__get_marker(z);
@@ -1685,7 +1802,7 @@ static int decode_jpeg_image(GLA__jpeg *j)
       if (GLA__SOS(m)) {
          if (!GLA__process_scan_header(j)) return 0;
          if (!GLA__parse_entropy_coded_data(j)) return 0;
-         if (j->marker == GLREI__MARKER_none ) {
+         if (j->marker == GLAI__MARKER_none ) {
             // handle 0s at the end of image data from IP Kamera 9060
             while (!GLA__at_eof(j->s)) {
                int x = GLA__get8(j->s);
@@ -1715,10 +1832,10 @@ typedef GLA_uc *(*resample_row_func)(GLA_uc *out, GLA_uc *in0, GLA_uc *in1,
 
 static GLA_uc *resample_row_1(GLA_uc *out, GLA_uc *in_near, GLA_uc *in_far, int w, int hs)
 {
-   GLREI_NOTUSED(out);
-   GLREI_NOTUSED(in_far);
-   GLREI_NOTUSED(w);
-   GLREI_NOTUSED(hs);
+   GLAI_NOTUSED(out);
+   GLAI_NOTUSED(in_far);
+   GLAI_NOTUSED(w);
+   GLAI_NOTUSED(hs);
    return in_near;
 }
 
@@ -1726,7 +1843,7 @@ static GLA_uc* GLA__resample_row_v_2(GLA_uc *out, GLA_uc *in_near, GLA_uc *in_fa
 {
    // need to generate two samples vertically for every one in input
    int i;
-   GLREI_NOTUSED(hs);
+   GLAI_NOTUSED(hs);
    for (i=0; i < w; ++i)
       out[i] = GLA__div4(3*in_near[i] + in_far[i] + 2);
    return out;
@@ -1754,8 +1871,8 @@ static GLA_uc*  GLA__resample_row_h_2(GLA_uc *out, GLA_uc *in_near, GLA_uc *in_f
    out[i*2+0] = GLA__div4(input[w-2]*3 + input[w-1] + 2);
    out[i*2+1] = input[w-1];
 
-   GLREI_NOTUSED(in_far);
-   GLREI_NOTUSED(hs);
+   GLAI_NOTUSED(in_far);
+   GLAI_NOTUSED(hs);
 
    return out;
 }
@@ -1781,7 +1898,7 @@ static GLA_uc *GLA__resample_row_hv_2(GLA_uc *out, GLA_uc *in_near, GLA_uc *in_f
    }
    out[w*2-1] = GLA__div4(t1+2);
 
-   GLREI_NOTUSED(hs);
+   GLAI_NOTUSED(hs);
 
    return out;
 }
@@ -1790,7 +1907,7 @@ static GLA_uc *GLA__resample_row_generic(GLA_uc *out, GLA_uc *in_near, GLA_uc *i
 {
    // resample with nearest-neighbor
    int i,j;
-   GLREI_NOTUSED(in_far);
+   GLAI_NOTUSED(in_far);
    for (i=0; i < w; ++i)
       for (j=0; j < hs; ++j)
          out[i*hs+j] = in_near[i];
@@ -1826,10 +1943,10 @@ static void GLA__YCbCr_to_RGB_row(GLA_uc *out, const GLA_uc *y, const GLA_uc *pc
    }
 }
 
-#ifdef GLREI_SIMD
+#ifdef GLAI_SIMD
 static GLA_YCbCr_to_RGB_run GLA__YCbCr_installed = GLA__YCbCr_to_RGB_row;
 
-GLREIDEF void GLA_install_YCbCr_to_RGB(GLA_YCbCr_to_RGB_run func)
+GLAIDEF void GLA_install_YCbCr_to_RGB(GLA_YCbCr_to_RGB_run func)
 {
    GLA__YCbCr_installed = func;
 }
@@ -1937,7 +2054,7 @@ static GLA_uc *load_jpeg_image(GLA__jpeg *z, int *out_x, int *out_y, int *comp, 
          if (n >= 3) {
             GLA_uc *y = coutput[0];
             if (z->s->img_n == 3) {
-               #ifdef GLREI_SIMD
+               #ifdef GLAI_SIMD
                GLA__YCbCr_installed(out, y, coutput[1], coutput[2], z->s->img_x, n);
                #else
                GLA__YCbCr_to_RGB_row(out, y, coutput[1], coutput[2], z->s->img_x, n);
@@ -2008,14 +2125,14 @@ static int GLA__jpeg_info(GLA__context *s, int *x, int *y, int *comp)
 //      - fast huffman
 
 // fast-way is faster to check than jpeg huffman, but slow way is slower
-#define GLREI__ZFAST_BITS  9 // accelerate all cases in default tables
-#define GLREI__ZFAST_MASK  ((1 << GLREI__ZFAST_BITS) - 1)
+#define GLAI__ZFAST_BITS  9 // accelerate all cases in default tables
+#define GLAI__ZFAST_MASK  ((1 << GLAI__ZFAST_BITS) - 1)
 
 // zlib-style huffman encoding
 // (jpegs packs from left, zlib from right, so can't share code)
 typedef struct
 {
-   GLA__uint16 fast[1 << GLREI__ZFAST_BITS];
+   GLA__uint16 fast[1 << GLAI__ZFAST_BITS];
    GLA__uint16 firstcode[16];
    int maxcode[17];
    GLA__uint16 firstsymbol[16];
@@ -2034,7 +2151,7 @@ GLA_inline static int GLA__bitreverse16(int n)
 
 GLA_inline static int GLA__bit_reverse(int v, int bits)
 {
-   GLREI_ASSERT(bits <= 16);
+   GLAI_ASSERT(bits <= 16);
    // to bit reverse n bits, reverse 16 and shift
    // e.g. 11 bits, bit reverse and shift away 5
    return GLA__bitreverse16(v) >> (16-bits);
@@ -2052,7 +2169,7 @@ static int GLA__zbuild_huffman(GLA__zhuffman *z, GLA_uc *sizelist, int num)
       ++sizes[sizelist[i]];
    sizes[0] = 0;
    for (i=1; i < 16; ++i)
-      GLREI_ASSERT(sizes[i] <= (1 << i));
+      GLAI_ASSERT(sizes[i] <= (1 << i));
    code = 0;
    for (i=1; i < 16; ++i) {
       next_code[i] = code;
@@ -2072,9 +2189,9 @@ static int GLA__zbuild_huffman(GLA__zhuffman *z, GLA_uc *sizelist, int num)
          int c = next_code[s] - z->firstcode[s] + z->firstsymbol[s];
          z->size [c] = (GLA_uc     ) s;
          z->value[c] = (GLA__uint16) i;
-         if (s <= GLREI__ZFAST_BITS) {
+         if (s <= GLAI__ZFAST_BITS) {
             int k = GLA__bit_reverse(next_code[s],s);
-            while (k < (1 << GLREI__ZFAST_BITS)) {
+            while (k < (1 << GLAI__ZFAST_BITS)) {
                z->fast[k] = (GLA__uint16) c;
                k += (1 << s);
             }
@@ -2114,7 +2231,7 @@ GLA_inline static GLA_uc GLA__zget8(GLA__zbuf *z)
 static void GLA__fill_bits(GLA__zbuf *z)
 {
    do {
-      GLREI_ASSERT(z->code_buffer < (1U << z->num_bits));
+      GLAI_ASSERT(z->code_buffer < (1U << z->num_bits));
       z->code_buffer |= GLA__zget8(z) << z->num_bits;
       z->num_bits += 8;
    } while (z->num_bits <= 24);
@@ -2134,7 +2251,7 @@ GLA_inline static int GLA__zhuffman_decode(GLA__zbuf *a, GLA__zhuffman *z)
 {
    int b,s,k;
    if (a->num_bits < 16) GLA__fill_bits(a);
-   b = z->fast[a->code_buffer & GLREI__ZFAST_MASK];
+   b = z->fast[a->code_buffer & GLAI__ZFAST_MASK];
    if (b < 0xffff) {
       s = z->size[b];
       a->code_buffer >>= s;
@@ -2145,13 +2262,13 @@ GLA_inline static int GLA__zhuffman_decode(GLA__zbuf *a, GLA__zhuffman *z)
    // not resolved by fast table, so compute it the slow way
    // use jpeg approach, which requires MSbits at top
    k = GLA__bit_reverse(a->code_buffer, 16);
-   for (s=GLREI__ZFAST_BITS+1; ; ++s)
+   for (s=GLAI__ZFAST_BITS+1; ; ++s)
       if (k < z->maxcode[s])
          break;
    if (s == 16) return -1; // invalid code!
    // code size is s, so:
    b = (k >> (16-s)) - z->firstcode[s] + z->firstsymbol[s];
-   GLREI_ASSERT(z->size[b] == s);
+   GLAI_ASSERT(z->size[b] == s);
    a->code_buffer >>= s;
    a->num_bits -= s;
    return z->value[b];
@@ -2174,22 +2291,21 @@ static int GLA__zexpand(GLA__zbuf *z, int n)  // need to make room for n bytes
    return 1;
 }
 
-static int GLA__zlength_base[31] = {
-   3,4,5,6,7,8,9,10,11,13,
-   15,17,19,23,27,31,35,43,51,59,
-   67,83,99,115,131,163,195,227,258,0,0 };
 
-static int GLA__zlength_extra[31]=
-{ 0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0,0,0 };
 
-static int GLA__zdist_base[32] = { 1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,
-257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577,0,0};
 
-static int GLA__zdist_extra[32] =
-{ 0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13};
 
 static int GLA__parse_huffman_block(GLA__zbuf *a)
 {
+   static  int GLA__zdist_extra[32] = { 0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13};
+   static  int GLA__zlength_base[31] = {
+      3,4,5,6,7,8,9,10,11,13,
+      15,17,19,23,27,31,35,43,51,59,
+      67,83,99,115,131,163,195,227,258,0,0 };
+   static  int GLA__zlength_extra[31] = { 0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0,0,0 };
+   static int GLA__zdist_base[32] = { 1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193, 257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577,0,0};
+
+
    for(;;) {
       int z = GLA__zhuffman_decode(a, &a->z_length);
       if (z < 256) {
@@ -2238,7 +2354,7 @@ static int GLA__compute_huffman_codes(GLA__zbuf *a)
    n = 0;
    while (n < hlit + hdist) {
       int c = GLA__zhuffman_decode(a, &z_codelength);
-      GLREI_ASSERT(c >= 0 && c < 19);
+      GLAI_ASSERT(c >= 0 && c < 19);
       if (c < 16)
          lencodes[n++] = (GLA_uc) c;
       else if (c == 16) {
@@ -2250,7 +2366,7 @@ static int GLA__compute_huffman_codes(GLA__zbuf *a)
          memset(lencodes+n, 0, c);
          n += c;
       } else {
-         GLREI_ASSERT(c == 18);
+         GLAI_ASSERT(c == 18);
          c = GLA__zreceive(a,7)+11;
          memset(lencodes+n, 0, c);
          n += c;
@@ -2275,7 +2391,7 @@ static int GLA__parse_uncomperssed_block(GLA__zbuf *a)
       a->code_buffer >>= 8;
       a->num_bits -= 8;
    }
-   GLREI_ASSERT(a->num_bits == 0);
+   GLAI_ASSERT(a->num_bits == 0);
    // now fill header the normal way
    while (k < 4)
       header[k++] = GLA__zget8(a);
@@ -2305,16 +2421,30 @@ static int GLA__parse_zlib_header(GLA__zbuf *a)
 }
 
 // @TODO: should statically initialize these for optimal thread safety
-static GLA_uc GLA__zdefault_length[288], GLA__zdefault_distance[32];
+//static GLA_uc GLA__zdefault_length[288], GLA__zdefault_distance[32];
+
+static GLA_uc* GLA__zdefault_length()
+{
+    static GLA_uc v[288];
+    return v;
+}
+
+static GLA_uc* GLA__zdefault_distance()
+{
+    static GLA_uc v[288];
+    return v;
+}
+
+
 static void GLA__init_zdefaults(void)
 {
    int i;   // use <= to match clearly with spec
-   for (i=0; i <= 143; ++i)     GLA__zdefault_length[i]   = 8;
-   for (   ; i <= 255; ++i)     GLA__zdefault_length[i]   = 9;
-   for (   ; i <= 279; ++i)     GLA__zdefault_length[i]   = 7;
-   for (   ; i <= 287; ++i)     GLA__zdefault_length[i]   = 8;
+   for (i=0; i <= 143; ++i)     GLA__zdefault_length()[i]   = 8;
+   for (   ; i <= 255; ++i)     GLA__zdefault_length()[i]   = 9;
+   for (   ; i <= 279; ++i)     GLA__zdefault_length()[i]   = 7;
+   for (   ; i <= 287; ++i)     GLA__zdefault_length()[i]   = 8;
 
-   for (i=0; i <=  31; ++i)     GLA__zdefault_distance[i] = 5;
+   for (i=0; i <=  31; ++i)     GLA__zdefault_distance()[i] = 5;
 }
 
 static int GLA__parse_zlib(GLA__zbuf *a, int parse_header)
@@ -2334,9 +2464,9 @@ static int GLA__parse_zlib(GLA__zbuf *a, int parse_header)
       } else {
          if (type == 1) {
             // use fixed code lengths
-            if (!GLA__zdefault_distance[31]) GLA__init_zdefaults();
-            if (!GLA__zbuild_huffman(&a->z_length  , GLA__zdefault_length  , 288)) return 0;
-            if (!GLA__zbuild_huffman(&a->z_distance, GLA__zdefault_distance,  32)) return 0;
+            if (!GLA__zdefault_distance()[31]) GLA__init_zdefaults();
+            if (!GLA__zbuild_huffman(&a->z_length  , GLA__zdefault_length()  , 288)) return 0;
+            if (!GLA__zbuild_huffman(&a->z_distance, GLA__zdefault_distance(),  32)) return 0;
          } else {
             if (!GLA__compute_huffman_codes(a)) return 0;
          }
@@ -2356,7 +2486,7 @@ static int GLA__do_zlib(GLA__zbuf *a, char *obuf, int olen, int exp, int parse_h
    return GLA__parse_zlib(a, parse_header);
 }
 
-GLREIDEF char *GLA_zlib_decode_malloc_guesssize(const char *buffer, int len, int initial_size, int *outlen)
+GLAIDEF char *GLA_zlib_decode_malloc_guesssize(const char *buffer, int len, int initial_size, int *outlen)
 {
    GLA__zbuf a;
    char *p = (char *) GLA__malloc(initial_size);
@@ -2372,12 +2502,12 @@ GLREIDEF char *GLA_zlib_decode_malloc_guesssize(const char *buffer, int len, int
    }
 }
 
-GLREIDEF char *GLA_zlib_decode_malloc(char const *buffer, int len, int *outlen)
+GLAIDEF char *GLA_zlib_decode_malloc(char const *buffer, int len, int *outlen)
 {
    return GLA_zlib_decode_malloc_guesssize(buffer, len, 16384, outlen);
 }
 
-GLREIDEF char *GLA_zlib_decode_malloc_guesssize_headerflag(const char *buffer, int len, int initial_size, int *outlen, int parse_header)
+GLAIDEF char *GLA_zlib_decode_malloc_guesssize_headerflag(const char *buffer, int len, int initial_size, int *outlen, int parse_header)
 {
    GLA__zbuf a;
    char *p = (char *) GLA__malloc(initial_size);
@@ -2393,7 +2523,7 @@ GLREIDEF char *GLA_zlib_decode_malloc_guesssize_headerflag(const char *buffer, i
    }
 }
 
-GLREIDEF int GLA_zlib_decode_buffer(char *obuffer, int olen, char const *ibuffer, int ilen)
+GLAIDEF int GLA_zlib_decode_buffer(char *obuffer, int olen, char const *ibuffer, int ilen)
 {
    GLA__zbuf a;
    a.zbuffer = (GLA_uc *) ibuffer;
@@ -2404,7 +2534,7 @@ GLREIDEF int GLA_zlib_decode_buffer(char *obuffer, int olen, char const *ibuffer
       return -1;
 }
 
-GLREIDEF char *GLA_zlib_decode_noheader_malloc(char const *buffer, int len, int *outlen)
+GLAIDEF char *GLA_zlib_decode_noheader_malloc(char const *buffer, int len, int *outlen)
 {
    GLA__zbuf a;
    char *p = (char *) GLA__malloc(16384);
@@ -2420,7 +2550,7 @@ GLREIDEF char *GLA_zlib_decode_noheader_malloc(char const *buffer, int len, int 
    }
 }
 
-GLREIDEF int GLA_zlib_decode_noheader_buffer(char *obuffer, int olen, const char *ibuffer, int ilen)
+GLAIDEF int GLA_zlib_decode_noheader_buffer(char *obuffer, int olen, const char *ibuffer, int ilen)
 {
    GLA__zbuf a;
    a.zbuffer = (GLA_uc *) ibuffer;
@@ -2475,14 +2605,11 @@ typedef struct
 
 
 enum {
-   GLREI__F_none=0, GLREI__F_sub=1, GLREI__F_up=2, GLREI__F_avg=3, GLREI__F_paeth=4,
-   GLREI__F_avg_first, GLREI__F_paeth_first
+   GLAI__F_none=0, GLAI__F_sub=1, GLAI__F_up=2, GLAI__F_avg=3, GLAI__F_paeth=4,
+   GLAI__F_avg_first, GLAI__F_paeth_first
 };
 
-static GLA_uc first_row_filter[5] =
-{
-   GLREI__F_none, GLREI__F_sub, GLREI__F_none, GLREI__F_avg_first, GLREI__F_paeth_first
-};
+
 
 static int GLA__paeth(int a, int b, int c)
 {
@@ -2495,16 +2622,21 @@ static int GLA__paeth(int a, int b, int c)
    return c;
 }
 
-#define GLREI__BYTECAST(x)  ((GLA_uc) ((x) & 255))  // truncate int to byte without warnings
+#define GLAI__BYTECAST(x)  ((GLA_uc) ((x) & 255))  // truncate int to byte without warnings
 
 // create the png data from post-deflated data
 static int GLA__create_png_image_raw(GLA__png *a, GLA_uc *raw, GLA__uint32 raw_len, int out_n, GLA__uint32 x, GLA__uint32 y)
 {
+    static GLA_uc first_row_filter[5] =
+    {
+       GLAI__F_none, GLAI__F_sub, GLAI__F_none, GLAI__F_avg_first, GLAI__F_paeth_first
+    };
+
    GLA__context *s = a->s;
    GLA__uint32 i,j,stride = x*out_n;
    int k;
    int img_n = s->img_n; // copy it into a local for later
-   GLREI_ASSERT(out_n == s->img_n || out_n == s->img_n+1);
+   GLAI_ASSERT(out_n == s->img_n || out_n == s->img_n+1);
    a->out = (GLA_uc *) GLA__malloc(x * y * out_n);
    if (!a->out) return GLA__err("outofmem", "Out of memory");
    if (s->img_x == x && s->img_y == y) {
@@ -2522,13 +2654,13 @@ static int GLA__create_png_image_raw(GLA__png *a, GLA_uc *raw, GLA__uint32 raw_l
       // handle first pixel explicitly
       for (k=0; k < img_n; ++k) {
          switch (filter) {
-            case GLREI__F_none       : cur[k] = raw[k]; break;
-            case GLREI__F_sub        : cur[k] = raw[k]; break;
-            case GLREI__F_up         : cur[k] = GLREI__BYTECAST(raw[k] + prior[k]); break;
-            case GLREI__F_avg        : cur[k] = GLREI__BYTECAST(raw[k] + (prior[k]>>1)); break;
-            case GLREI__F_paeth      : cur[k] = GLREI__BYTECAST(raw[k] + GLA__paeth(0,prior[k],0)); break;
-            case GLREI__F_avg_first  : cur[k] = raw[k]; break;
-            case GLREI__F_paeth_first: cur[k] = raw[k]; break;
+            case GLAI__F_none       : cur[k] = raw[k]; break;
+            case GLAI__F_sub        : cur[k] = raw[k]; break;
+            case GLAI__F_up         : cur[k] = GLAI__BYTECAST(raw[k] + prior[k]); break;
+            case GLAI__F_avg        : cur[k] = GLAI__BYTECAST(raw[k] + (prior[k]>>1)); break;
+            case GLAI__F_paeth      : cur[k] = GLAI__BYTECAST(raw[k] + GLA__paeth(0,prior[k],0)); break;
+            case GLAI__F_avg_first  : cur[k] = raw[k]; break;
+            case GLAI__F_paeth_first: cur[k] = raw[k]; break;
          }
       }
       if (img_n != out_n) cur[img_n] = 255;
@@ -2542,29 +2674,29 @@ static int GLA__create_png_image_raw(GLA__png *a, GLA_uc *raw, GLA__uint32 raw_l
                 for (i=x-1; i >= 1; --i, raw+=img_n,cur+=img_n,prior+=img_n) \
                    for (k=0; k < img_n; ++k)
          switch (filter) {
-            CASE(GLREI__F_none)         cur[k] = raw[k]; break;
-            CASE(GLREI__F_sub)          cur[k] = GLREI__BYTECAST(raw[k] + cur[k-img_n]); break;
-            CASE(GLREI__F_up)           cur[k] = GLREI__BYTECAST(raw[k] + prior[k]); break;
-            CASE(GLREI__F_avg)          cur[k] = GLREI__BYTECAST(raw[k] + ((prior[k] + cur[k-img_n])>>1)); break;
-            CASE(GLREI__F_paeth)        cur[k] = GLREI__BYTECAST(raw[k] + GLA__paeth(cur[k-img_n],prior[k],prior[k-img_n])); break;
-            CASE(GLREI__F_avg_first)    cur[k] = GLREI__BYTECAST(raw[k] + (cur[k-img_n] >> 1)); break;
-            CASE(GLREI__F_paeth_first)  cur[k] = GLREI__BYTECAST(raw[k] + GLA__paeth(cur[k-img_n],0,0)); break;
+            CASE(GLAI__F_none)         cur[k] = raw[k]; break;
+            CASE(GLAI__F_sub)          cur[k] = GLAI__BYTECAST(raw[k] + cur[k-img_n]); break;
+            CASE(GLAI__F_up)           cur[k] = GLAI__BYTECAST(raw[k] + prior[k]); break;
+            CASE(GLAI__F_avg)          cur[k] = GLAI__BYTECAST(raw[k] + ((prior[k] + cur[k-img_n])>>1)); break;
+            CASE(GLAI__F_paeth)        cur[k] = GLAI__BYTECAST(raw[k] + GLA__paeth(cur[k-img_n],prior[k],prior[k-img_n])); break;
+            CASE(GLAI__F_avg_first)    cur[k] = GLAI__BYTECAST(raw[k] + (cur[k-img_n] >> 1)); break;
+            CASE(GLAI__F_paeth_first)  cur[k] = GLAI__BYTECAST(raw[k] + GLA__paeth(cur[k-img_n],0,0)); break;
          }
          #undef CASE
       } else {
-         GLREI_ASSERT(img_n+1 == out_n);
+         GLAI_ASSERT(img_n+1 == out_n);
          #define CASE(f) \
              case f:     \
                 for (i=x-1; i >= 1; --i, cur[img_n]=255,raw+=img_n,cur+=out_n,prior+=out_n) \
                    for (k=0; k < img_n; ++k)
          switch (filter) {
-            CASE(GLREI__F_none)         cur[k] = raw[k]; break;
-            CASE(GLREI__F_sub)          cur[k] = GLREI__BYTECAST(raw[k] + cur[k-out_n]); break;
-            CASE(GLREI__F_up)           cur[k] = GLREI__BYTECAST(raw[k] + prior[k]); break;
-            CASE(GLREI__F_avg)          cur[k] = GLREI__BYTECAST(raw[k] + ((prior[k] + cur[k-out_n])>>1)); break;
-            CASE(GLREI__F_paeth)        cur[k] = GLREI__BYTECAST(raw[k] + GLA__paeth(cur[k-out_n],prior[k],prior[k-out_n])); break;
-            CASE(GLREI__F_avg_first)    cur[k] = GLREI__BYTECAST(raw[k] + (cur[k-out_n] >> 1)); break;
-            CASE(GLREI__F_paeth_first)  cur[k] = GLREI__BYTECAST(raw[k] + GLA__paeth(cur[k-out_n],0,0)); break;
+            CASE(GLAI__F_none)         cur[k] = raw[k]; break;
+            CASE(GLAI__F_sub)          cur[k] = GLAI__BYTECAST(raw[k] + cur[k-out_n]); break;
+            CASE(GLAI__F_up)           cur[k] = GLAI__BYTECAST(raw[k] + prior[k]); break;
+            CASE(GLAI__F_avg)          cur[k] = GLAI__BYTECAST(raw[k] + ((prior[k] + cur[k-out_n])>>1)); break;
+            CASE(GLAI__F_paeth)        cur[k] = GLAI__BYTECAST(raw[k] + GLA__paeth(cur[k-out_n],prior[k],prior[k-out_n])); break;
+            CASE(GLAI__F_avg_first)    cur[k] = GLAI__BYTECAST(raw[k] + (cur[k-out_n] >> 1)); break;
+            CASE(GLAI__F_paeth_first)  cur[k] = GLAI__BYTECAST(raw[k] + GLA__paeth(cur[k-out_n],0,0)); break;
          }
          #undef CASE
       }
@@ -2617,7 +2749,7 @@ static int GLA__compute_transparency(GLA__png *z, GLA_uc tc[3], int out_n)
 
    // compute color-based transparency, assuming we've
    // already got 255 as the alpha value in the output
-   GLREI_ASSERT(out_n == 2 || out_n == 4);
+   GLAI_ASSERT(out_n == 2 || out_n == 4);
 
    if (out_n == 2) {
       for (i=0; i < pixel_count; ++i) {
@@ -2666,22 +2798,36 @@ static int GLA__expand_png_palette(GLA__png *a, GLA_uc *palette, int len, int pa
    free(a->out);
    a->out = temp_out;
 
-   GLREI_NOTUSED(len);
+   GLAI_NOTUSED(len);
 
    return 1;
 }
 
-static int GLA__unpremultiply_on_load = 0;
-static int GLA__de_iphone_flag = 0;
+//static int GLA__unpremultiply_on_load = 0;
+//static int GLA__de_iphone_flag        = 0;
 
-GLREIDEF void GLA_set_unpremultiply_on_load(int flag_true_if_should_unpremultiply)
+static int GLA__unpremultiply_on_load(bool SET=false, int value=0)
 {
-   GLA__unpremultiply_on_load = flag_true_if_should_unpremultiply;
+    static int v = 0;
+    if(SET) v = value;
+    return v;
 }
 
-GLREIDEF void GLA_convert_iphone_png_to_rgb(int flag_true_if_should_convert)
+static int GLA__de_iphone_flag(bool SET=false, int value=0)
 {
-   GLA__de_iphone_flag = flag_true_if_should_convert;
+    static int v = 0;
+    if(SET) v = value;
+    return v;
+}
+
+GLAIDEF void GLA_set_unpremultiply_on_load(int flag_true_if_should_unpremultiply)
+{
+   GLA__unpremultiply_on_load(true, flag_true_if_should_unpremultiply);
+}
+
+GLAIDEF void GLA_convert_iphone_png_to_rgb(int flag_true_if_should_convert)
+{
+   GLA__de_iphone_flag(true, flag_true_if_should_convert);
 }
 
 static void GLA__de_iphone(GLA__png *z)
@@ -2698,8 +2844,8 @@ static void GLA__de_iphone(GLA__png *z)
          p += 3;
       }
    } else {
-      GLREI_ASSERT(s->img_out_n == 4);
-      if (GLA__unpremultiply_on_load) {
+      GLAI_ASSERT(s->img_out_n == 4);
+      if (GLA__unpremultiply_on_load()) {
          // convert bgr to rgb and unpremultiply
          for (i=0; i < pixel_count; ++i) {
             GLA_uc a = p[3];
@@ -2735,8 +2881,8 @@ static int GLA__parse_png_file(GLA__png *z, int scan, int req_comp)
    GLA__context *s = z->s;
 
    z->expanded = NULL;
-   z->idata = NULL;
-   z->out = NULL;
+   z->idata    = NULL;
+   z->out      = NULL;
 
    if (!GLA__check_png_header(s)) return 0;
 
@@ -2861,13 +3007,13 @@ static int GLA__parse_png_file(GLA__png *z, int scan, int req_comp)
             // if critical, fail
             if (first) return GLA__err("first not IHDR", "Corrupt PNG");
             if ((c.type & (1 << 29)) == 0) {
-               #ifndef GLREI_NO_FAILURE_STRINGS
+               #ifndef GLAI_NO_FAILURE_STRINGS
                // not threadsafe
                static char invalid_chunk[] = "XXXX PNG chunk not known";
-               invalid_chunk[0] = GLREI__BYTECAST(c.type >> 24);
-               invalid_chunk[1] = GLREI__BYTECAST(c.type >> 16);
-               invalid_chunk[2] = GLREI__BYTECAST(c.type >>  8);
-               invalid_chunk[3] = GLREI__BYTECAST(c.type >>  0);
+               invalid_chunk[0] = GLAI__BYTECAST(c.type >> 24);
+               invalid_chunk[1] = GLAI__BYTECAST(c.type >> 16);
+               invalid_chunk[2] = GLAI__BYTECAST(c.type >>  8);
+               invalid_chunk[3] = GLAI__BYTECAST(c.type >>  0);
                #endif
                return GLA__err(invalid_chunk, "PNG not supported: unknown PNG chunk type");
             }
@@ -3053,7 +3199,7 @@ static GLA_uc *GLA__bmp_load(GLA__context *s, int *x, int *y, int *comp, int req
                   mb = 0xffu <<  0;
                   ma = 0xffu << 24;
                   fake_a = 1; // @TODO: check for cases like alpha value is all 0 and switch it to 255
-                  GLREI_NOTUSED(fake_a);
+                  GLAI_NOTUSED(fake_a);
                } else {
                   mr = 31u << 10;
                   mg = 31u <<  5;
@@ -3072,7 +3218,7 @@ static GLA_uc *GLA__bmp_load(GLA__context *s, int *x, int *y, int *comp, int req
                return GLA__errpuc("bad BMP", "bad BMP");
          }
       } else {
-         GLREI_ASSERT(hsz == 108 || hsz == 124);
+         GLAI_ASSERT(hsz == 108 || hsz == 124);
          mr = GLA__get32le(s);
          mg = GLA__get32le(s);
          mb = GLA__get32le(s);
@@ -3170,11 +3316,11 @@ static GLA_uc *GLA__bmp_load(GLA__context *s, int *x, int *y, int *comp, int req
             for (i=0; i < (int) s->img_x; ++i) {
                GLA__uint32 v = (GLA__uint32) (bpp == 16 ? GLA__get16le(s) : GLA__get32le(s));
                int a;
-               out[z++] = GLREI__BYTECAST(GLA__shiftsigned(v & mr, rshift, rcount));
-               out[z++] = GLREI__BYTECAST(GLA__shiftsigned(v & mg, gshift, gcount));
-               out[z++] = GLREI__BYTECAST(GLA__shiftsigned(v & mb, bshift, bcount));
+               out[z++] = GLAI__BYTECAST(GLA__shiftsigned(v & mr, rshift, rcount));
+               out[z++] = GLAI__BYTECAST(GLA__shiftsigned(v & mg, gshift, gcount));
+               out[z++] = GLAI__BYTECAST(GLA__shiftsigned(v & mb, bshift, bcount));
                a = (ma ? GLA__shiftsigned(v & ma, ashift, acount) : 255);
-               if (target == 4) out[z++] = GLREI__BYTECAST(a);
+               if (target == 4) out[z++] = GLAI__BYTECAST(a);
             }
          }
          GLA__skip(s, pad);
@@ -3462,7 +3608,7 @@ static GLA_uc *GLA__tga_load(GLA__context *s, int *x, int *y, int *comp, int req
 }
 
 // *************************************************************************************************
-// Photoshop PSD loader -- PD by Thatcher Ulrich, integration by Nicolas Schulz, tweaked by GLRE
+// Photoshop PSD loader -- PD by Thatcher Ulrich, integration by Nicolas Schulz, tweaked by GLA
 
 static int GLA__psd_test(GLA__context *s)
 {
@@ -3905,7 +4051,7 @@ static int GLA__gif_header(GLA__context *s, GLA__gif *g, int *comp, int is_info)
    if (version != '7' && version != '9')    return GLA__err("not GIF", "Corrupt GIF");
    if (GLA__get8(s) != 'a')                      return GLA__err("not GIF", "Corrupt GIF");
  
-   GLA__g_failure_reason = "";
+   //GLA__g_failure_reason = "";
    g->w = GLA__get16le(s);
    g->h = GLA__get16le(s);
    g->flags = GLA__get8(s);
@@ -4188,7 +4334,7 @@ static int GLA__gif_info(GLA__context *s, int *x, int *y, int *comp)
 // *************************************************************************************************
 // Radiance RGBE HDR loader
 // originally by Nicolas Schulz
-#ifndef GLREI_NO_HDR
+#ifndef GLAI_NO_HDR
 static int GLA__hdr_test_core(GLA__context *s)
 {
    const char *signature = "#?RADIANCE\n";
@@ -4206,7 +4352,7 @@ static int GLA__hdr_test(GLA__context* s)
    return r;
 }
 
-#define GLREI__HDR_BUFLEN  1024
+#define GLAI__HDR_BUFLEN  1024
 static char *GLA__hdr_gettoken(GLA__context *z, char *buffer)
 {
    int len=0;
@@ -4216,7 +4362,7 @@ static char *GLA__hdr_gettoken(GLA__context *z, char *buffer)
 
    while (!GLA__at_eof(z) && c != '\n') {
       buffer[len++] = c;
-      if (len == GLREI__HDR_BUFLEN-1) {
+      if (len == GLAI__HDR_BUFLEN-1) {
          // flush to end of line
          while (!GLA__at_eof(z) && GLA__get8(z) != '\n')
             ;
@@ -4258,7 +4404,7 @@ static void GLA__hdr_convert(float *output, GLA_uc *input, int req_comp)
 
 static float *GLA__hdr_load(GLA__context *s, int *x, int *y, int *comp, int req_comp)
 {
-   char buffer[GLREI__HDR_BUFLEN];
+   char buffer[GLAI__HDR_BUFLEN];
    char *token;
    int valid = 0;
    int width, height;
@@ -4369,7 +4515,7 @@ static float *GLA__hdr_load(GLA__context *s, int *x, int *y, int *comp, int req_
 
 static int GLA__hdr_info(GLA__context *s, int *x, int *y, int *comp)
 {
-   char buffer[GLREI__HDR_BUFLEN];
+   char buffer[GLAI__HDR_BUFLEN];
    char *token;
    int valid = 0;
 
@@ -4405,7 +4551,7 @@ static int GLA__hdr_info(GLA__context *s, int *x, int *y, int *comp)
    *comp = 3;
    return 1;
 }
-#endif // GLREI_NO_HDR
+#endif // GLAI_NO_HDR
 
 static int GLA__bmp_info(GLA__context *s, int *x, int *y, int *comp)
 {
@@ -4525,7 +4671,7 @@ static int GLA__info_main(GLA__context *s, int *x, int *y, int *comp)
        return 1;
    if (GLA__pic_info(s, x, y, comp))
        return 1;
-   #ifndef GLREI_NO_HDR
+   #ifndef GLAI_NO_HDR
    if (GLA__hdr_info(s, x, y, comp))
        return 1;
    #endif
@@ -4535,42 +4681,44 @@ static int GLA__info_main(GLA__context *s, int *x, int *y, int *comp)
    return GLA__err("unknown image type", "Image not of any known type, or corrupt");
 }
 
-#ifndef GLREI_NO_STDIO
-GLREIDEF int GLA_info(char const *filename, int *x, int *y, int *comp)
-{
-    FILE *f = GLA__fopen(filename, "rb");
-    int result;
-    if (!f) return GLA__err("can't fopen", "Unable to open file");
-    result = GLA_info_from_file(f, x, y, comp);
-    fclose(f);
-    return result;
-}
+#ifndef GLAI_NO_STDIO
+    GLAIDEF int GLA_info(char const *filename, int *x, int *y, int *comp)
+    {
+        FILE *f = GLA__fopen(filename, "rb");
+        int result;
+        if (!f) return GLA__err("can't fopen", "Unable to open file");
+        result = GLA_info_from_file(f, x, y, comp);
+        fclose(f);
+        return result;
+    }
 
-GLREIDEF int GLA_info_from_file(FILE *f, int *x, int *y, int *comp)
-{
-   int r;
-   GLA__context s;
-   long pos = ftell(f);
-   GLA__start_file(&s, f);
-   r = GLA__info_main(&s,x,y,comp);
-   fseek(f,pos,SEEK_SET);
-   return r;
-}
-#endif // !GLREI_NO_STDIO
+    GLAIDEF int GLA_info_from_file(FILE *f, int *x, int *y, int *comp)
+    {
+       int r;
+       GLA__context s;
+       long pos = ftell(f);
+       GLA__start_file(&s, f);
+       r = GLA__info_main(&s,x,y,comp);
+       fseek(f,pos,SEEK_SET);
+       return r;
+    }
+#endif // !GLAI_NO_STDIO
 
-GLREIDEF int GLA_info_from_memory(GLA_uc const *buffer, int len, int *x, int *y, int *comp)
+GLAIDEF int GLA_info_from_memory(GLA_uc const *buffer, int len, int *x, int *y, int *comp)
 {
    GLA__context s;
    GLA__start_mem(&s,buffer,len);
    return GLA__info_main(&s,x,y,comp);
 }
 
-GLREIDEF int GLA_info_from_callbacks(GLA_io_callbacks const *c, void *user, int *x, int *y, int *comp)
+GLAIDEF int GLA_info_from_callbacks(GLA_io_callbacks const *c, void *user, int *x, int *y, int *comp)
 {
    GLA__context s;
    GLA__start_callbacks(&s, (GLA_io_callbacks *) c, user);
    return GLA__info_main(&s,x,y,comp);
 }
+
+};
 
 #endif // GLA_IMAGE_IMPLEMENTATION
 
@@ -4587,7 +4735,7 @@ GLREIDEF int GLA_info_from_callbacks(GLA_io_callbacks const *c, void *user, int 
       1.42 (2014-07-09)
              don't define _CRT_SECURE_NO_WARNINGS (affects user code)
              fixes to GLA__cleanup_jpeg path
-             added GLREI_ASSERT to avoid requiring assert.h
+             added GLAI_ASSERT to avoid requiring assert.h
       1.41 (2014-06-25)
              fix search&replace from 1.36 that messed up comments/error messages
       1.40 (2014-06-22)
@@ -4606,14 +4754,14 @@ GLREIDEF int GLA_info_from_callbacks(GLA_io_callbacks const *c, void *user, int 
              if de-iphone isn't set, load iphone images color-swapped instead of returning NULL
       1.35 (2014-05-27)
              various warnings
-             fix broken GLREI_SIMD path
+             fix broken GLAI_SIMD path
              fix bug where GLA_load_from_file no longer left file pointer in correct place
              fix broken non-easy path for 32-bit BMP (possibly never used)
              TGA optimization by Arseny Kapoulkine
       1.34 (unknown)
-             use GLREI_NOTUSED in GLA__resample_row_generic(), fix one more leak in tga failure case
+             use GLAI_NOTUSED in GLA__resample_row_generic(), fix one more leak in tga failure case
       1.33 (2011-07-14)
-             make GLA_is_hdr work in GLREI_NO_HDR (as specified), minor compiler-friendly improvements
+             make GLA_is_hdr work in GLAI_NO_HDR (as specified), minor compiler-friendly improvements
       1.32 (2011-07-13)
              support for "info" function for all supported filetypes (SpartanJ)
       1.31 (2011-06-20)
@@ -4655,7 +4803,7 @@ GLREIDEF int GLA_info_from_callbacks(GLA_io_callbacks const *c, void *user, int 
       1.16   major bugfix - GLA__convert_format converted one too many pixels
       1.15   initialize some fields for thread safety
       1.14   fix threadsafe conversion bug
-             header-file-only version (#define GLREI_HEADER_FILE_ONLY before including)
+             header-file-only version (#define GLAI_HEADER_FILE_ONLY before including)
       1.13   threadsafe
       1.12   const qualifiers in the API
       1.11   Support installable IDCT, colorspace conversion routines
@@ -4667,7 +4815,7 @@ GLREIDEF int GLA_info_from_callbacks(GLA_io_callbacks const *c, void *user, int 
       1.06   attempt to fix C++ warning/errors again
       1.05   fix TGA loading to return correct *comp and use good luminance calc
       1.04   default float alpha is 1, not 255; use 'void *' for GLA_image_free
-      1.03   bugfixes to GLREI_NO_STDIO, GLREI_NO_HDR
+      1.03   bugfixes to GLAI_NO_STDIO, GLAI_NO_HDR
       1.02   support for (subset of) HDR files, float interface for preferred access to them
       1.01   fix bug: possible bug in handling right-side up bmps... not sure
              fix bug: the GLA__bmp_load() and GLA__tga_load() functions didn't work at all
@@ -4677,7 +4825,7 @@ GLREIDEF int GLA_info_from_callbacks(GLA_io_callbacks const *c, void *user, int 
       0.97   jpeg errors on too large a file; also catch another malloc failure
       0.96   fix detection of invalid v value - particleman@mollyrocket forum
       0.95   during header scan, seek to markers in case of padding
-      0.94   GLREI_NO_STDIO to disable stdio usage; rename all #defines the same
+      0.94   GLAI_NO_STDIO to disable stdio usage; rename all #defines the same
       0.93   handle jpegtran output; verbose errors
       0.92   read 4,8,16,24,32-bit BMP files of several formats
       0.91   output 24-bit Windows 3.0 BMP files

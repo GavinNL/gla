@@ -10,13 +10,25 @@ namespace gla {
 namespace engine {
 
 
+/**
+ * @brief The Scene class
+ *
+ * The Scene class is used to hold an entire set of objects to be rendered. It contains
+ * the bare minimum required to draw a scene.
+ *
+ */
 class Scene
 {
     public:
         Scene();
         ~Scene();
 
-        Node * mRootNode;
+
+        Camera& getCamera() { return mCamera; };
+
+    protected:
+        Node    mRootNode;
+        Camera  mCamera;
 };
 
 };

@@ -1,7 +1,6 @@
 #ifndef GLA_UTILS_APP_H
 #define GLA_UTILS_APP_H
 
-//#include "gla/utils/window.h"
 #include "gla/core/timer.h"
 #include <map>
 #include <functional>
@@ -58,10 +57,6 @@ struct InputEvent
 };
 
 
-// void _KeyCallback        (GLFWwindow* window, int    key,    int    scancode, int action, int mods);
-// void _MouseButtonCallback(GLFWwindow* window, int    button, int    action,   int mods);
-// void _MousePosCallback   (GLFWwindow* window, double xpos,   double ypos);
-
 class RootApp
 {
     public:
@@ -92,10 +87,10 @@ class RootApp
 
             //std::map<GLFWwindow*, std::weak_ptr<Window> > Window::WindowMap = std::map<GLFWwindow*, std::weak_ptr<Window> >();
 
-            mTimer = Timer_T<float>();
-            KEY = std::map<int,int>();
-            BUTTON = std::map<int,int>();
-            InputEvents = std::map<std::string, std::function<void(InputEvent&)> >();
+            // mTimer      = Timer_T<float>();
+            // KEY         = std::map<int,int>();
+            // BUTTON      = std::map<int,int>();
+            // InputEvents = std::map<std::string, std::function<void(InputEvent&)> >();
 
             glfwSetKeyCallback          ( mWindow, RootApp::_KeyCallback);
             glfwSetCursorPosCallback    ( mWindow, RootApp::_MousePosCallback);

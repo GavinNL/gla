@@ -35,8 +35,8 @@ int main ()
     ShaderProgram TextureArrayShader( VertexShader("shaders/PNU_TextureArray.v"), FragmentShader("shaders/PNU_TextureArray.f") );
 
     // Load the objects
-    auto Axis  = gla::createAxes().toGPU();
-    auto Box   = gla::createBox( vec3(5.0,5.0,5.0) ).toGPU();
+    auto Axis  = gla::Solids::createAxes().toGPU();
+    auto Box   = gla::Solids::createBox( vec3(5.0,5.0,5.0) ).toGPU();
 
     // setup the camera
     Camera mCamera;

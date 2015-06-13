@@ -58,7 +58,7 @@ int main()
     GPUArrayObject VAO = cpuVAO.toGPU();
 
     // we can free the memory from the cpu since it is all on the gpu now.
-
+    cpuVAO.clear();
     //---------------------------------------------------------------------------
     // Create a shader
     //---------------------------------------------------------------------------
@@ -78,6 +78,7 @@ int main()
         // Can use any one of the following to render the triangle, they are all equivelant.
         // as long as both buffers have the same number of items in it. In our case 3.
         VAO.bind();
+        TriangleShader.useShader();
         VAO.Render(TRIANGLES);
 
         glfwSwapBuffers(gMainWindow);

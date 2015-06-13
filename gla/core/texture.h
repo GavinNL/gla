@@ -40,6 +40,7 @@ namespace gla {
             }
 
 
+
             inline bool create(const uvec2 & size, TEXTURECOLOURFORMAT InternalFormat=RGBA, int MipMaps=-1)
             {
                 return( create(size, InternalFormat, InternalFormat, UNSIGNED_BYTE, 0, MipMaps) );
@@ -50,10 +51,10 @@ namespace gla {
              * @param size The size of the texture to create on the GPU.
              */
             inline bool create(const uvec2                         &size,
-                               TEXTURECOLOURFORMAT InternalFormat = RGBA,
-                               TEXTURECOLOURFORMAT Format         = RGBA,
-                               FUNDAMENTAL_TYPE    Type           = UNSIGNED_BYTE,
-                               void*               Data           = 0,
+                               TEXTURECOLOURFORMAT InternalFormat =  RGBA,
+                               TEXTURECOLOURFORMAT Format         =  RGBA,
+                               FUNDAMENTAL_TYPE    Type           =  UNSIGNED_BYTE,
+                               void*               Data           =  0,
                                int                 MipMaps        = -1)
             {
                 glGenTextures(1,            &mTextureID);
@@ -312,6 +313,18 @@ namespace gla {
                 clear();
             }
 
+
+            /**
+             * @brief get_MAX_TEXTURE_SIZE
+             * @return the maximum dimension of the textures.
+             */
+            static GLuint get_MAX_TEXTURE_SIZE()
+            {
+                GLint max;
+                glGetIntegerv (GL_MAX_TEXTURE_SIZE, &max);
+                return max;
+            }
+
             //===========================================================================
             // Loading functions
             //===========================================================================
@@ -326,7 +339,7 @@ namespace gla {
             void loadFromMemory( unsigned char * Buffer, int buffersize)
             {
                 int x, y, comp;
-                GLA_uc           * img = GLA_load_from_memory( (GLA_uc*) Buffer, buffersize, &x, &y, &comp, sizeof(PixelType) );
+                GLA_uc           * img = ImageLoader::GLA_load_from_memory( (GLA_uc*) Buffer, buffersize, &x, &y, &comp, sizeof(PixelType) );
 
                 if( img )
                 {
@@ -352,7 +365,7 @@ namespace gla {
                 //==========================================================
                 // Load the Texture from an image file.
                 //==========================================================
-                unsigned char * img = GLA_load(path.c_str(), &x, &y, &comp, sizeof(PixelType) );
+                unsigned char * img = ImageLoader::GLA_load(path.c_str(), &x, &y, &comp, sizeof(PixelType) );
 
                 if( img )
                 {

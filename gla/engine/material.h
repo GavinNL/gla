@@ -22,17 +22,21 @@ class Material
         /**
          * @brief init
          *
-         * Initializes the material. Use this method to load the shader or any globals.
+         * Initializes the material. Use this method to compile the shader and get all the uniform locations
          */
         virtual void init()
         {
 
         }
 
-
         virtual void use(){};
 
-
+        /**
+         * @brief onApply
+         * @param pEntity
+         *
+         * This method will be called
+         */
         virtual void onApply( GPUArrayObject & pEntity)
         {
 

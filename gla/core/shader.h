@@ -100,6 +100,7 @@ class ShaderUnit
 
 typedef gla::ShaderUnit<GL_VERTEX_SHADER  > VertexShader;
 typedef gla::ShaderUnit<GL_FRAGMENT_SHADER> FragmentShader;
+typedef gla::ShaderUnit<GL_GEOMETRY_SHADER> GeometryShader;
 
 
 class ShaderProgram
@@ -109,7 +110,6 @@ class ShaderProgram
          ShaderProgram();
         ~ShaderProgram();
 
-         void destroy();
 
         ShaderProgram(const ShaderProgram & other)
         {
@@ -121,7 +121,6 @@ class ShaderProgram
             mProgram = other.mProgram;
             return(*this);
         }
-
 
         inline void DeleteShader()
         {
@@ -135,7 +134,30 @@ class ShaderProgram
             return x;
         }
 
-        GLuint linkProgram(const VertexShader & VS, const FragmentShader & FS);
+        GLuint linkProgram(const VertexShader & VS, const FragmentShader & FS)
+        {
+
+            GLuint shader=0;
+
+            if( VS.mShaderID && FS.mShaderID )
+            {
+                GLuint shader = glCreateProgram();
+                glAttachShader( shader, VS.mShaderID );
+                glAttachShader( shader, FS.mShaderID );
+
+                glLinkProgram(shader);
+                glUseProgram (shader);
+
+                mProgram = shader;
+                std::cout << "Shader Program created: "  << shader << std::endl;
+                return shader;
+            } else {
+                std::cout << "Unable to link shader. Vertex or Fragment shader is not compiled properly." << std::endl;
+                return shader;
+            }
+
+            return shader;
+        }
 
         inline void useShader() { glUseProgram(mProgram);}
 
@@ -160,11 +182,31 @@ class ShaderProgram
         {
             glUniform3fv(location, count, &V[0]);
         }
+
+
+        //
+
     private:
 
         GLuint mProgram;
 
 };
+
+inline ShaderProgram::ShaderProgram(const VertexShader & VS, const FragmentShader & FS) : mProgram(0)
+{
+    linkProgram(VS, FS);
+}
+
+inline ShaderProgram::ShaderProgram() : mProgram(0)
+{
+}
+
+inline ShaderProgram::~ShaderProgram()
+{
+    //glDeleteProgram(mProgram);
+//    #warning "TODO: Figure out what to do about unloading shaders."
+}
+
 
 }
 #endif // SHADER_H

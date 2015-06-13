@@ -36,12 +36,8 @@ HEADERS +=  gla/gla.h                          \
             gla/stb/stb_image.h
 
 SOURCES +=  main.cpp                                     \
-            src/core/shader.cpp                          \
-            src/core/transformation.cpp                  \
             src/core/texture.cpp                         \
             src/core/solids.cpp                          \
-            src/core/gputexturearray.cpp                 \
-            src/core/framebufferobject.cpp               \
             src/engine/transformsequence.cpp             \
             src/engine/skeleton.cpp                      \
             src/engine/bone.cpp                          \

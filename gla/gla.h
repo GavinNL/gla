@@ -114,6 +114,7 @@
 #include <gla/core/vertexarrayobject.h>
 #include <gla/core/framebufferobject.h>
 #include <gla/core/solids.h>
+
 #include <gla/engine/transformsequence.h>
 #include <gla/engine/skeleton.h>
 #include <gla/engine/modelloader.h>

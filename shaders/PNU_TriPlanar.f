@@ -18,9 +18,9 @@ void main()
     blend_weights /= (blend_weights.x + blend_weights.y + blend_weights.z);
 
 
-    vec2 c1 = pPos.yz * 0.01;
-    vec2 c2 = pPos.zx * 0.01;
-    vec2 c3 = pPos.xy * 0.01;
+    vec2 c1 = pPos.yz;
+    vec2 c2 = pPos.zx;
+    vec2 c3 = pPos.xy;
 
     vec4 co1 = texture(uTex0, c1);
     vec4 co2 = texture(uTex1, c2);

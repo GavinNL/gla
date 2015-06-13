@@ -435,7 +435,6 @@ namespace gla
                 {
                     pGPUBuffers.push_back( mBuffers[i]->toGPU(ARRAY_BUFFER) );  // creates the GPU Array buffer and binds it
                     pGPUBuffers[ pGPUBuffers.size()-1 ].EnableAttribute(i);
-                    //_ActivateAttribute(i, mBuffers[i]->getValuesPerVertex(), mBuffers[i]->getIntegralType(), GL_FALSE);
                 }
 
                 //===============================
@@ -446,6 +445,10 @@ namespace gla
                     mIndexBuffer->toGPU( ELEMENT_ARRAY_BUFFER );
                     GPU._isIndexed     = true;
                     GPU._size          = mIndexBuffer->getVertexCount() * mIndexBuffer->getValuesPerVertex();
+
+                    const PRIMITAVE P[5] = {UNKNOWN_PRIMITAVE, UNKNOWN_PRIMITAVE, LINES, TRIANGLES, QUADS};
+                    GPU._PrimitaveType = P[mIndexBuffer->getValuesPerVertex()];
+
                 } else {
                     GPU._isIndexed     = false;
                     GPU._size          = mBuffers[0]->getVertexCount();
@@ -453,11 +456,6 @@ namespace gla
                 }
 
                 glBindVertexArray(0);
-                if( mIndexBuffer)
-                {
-                    const PRIMITAVE P[5] = {UNKNOWN_PRIMITAVE,UNKNOWN_PRIMITAVE, LINES, TRIANGLES, QUADS};
-                    GPU._PrimitaveType = P[mIndexBuffer->getValuesPerVertex()];
-                }
 
 
                 std::cout << "============VOA Created============" << std::endl;
@@ -485,6 +483,12 @@ namespace gla
 
             }
 
+            void clear()
+            {
+                mIndexBuffer.reset();
+                mBuffers.clear();
+            }
+
             void _ActivateAttribute(int index, uint Num_Values_Per_Vertex, GLenum IntegralType, bool ShouldNormalize)
             {
                 glEnableVertexAttribArray(index);
@@ -503,6 +507,15 @@ namespace gla
 
             }
 
+
+            /**
+             * @brief insert
+             * @param index - The attribute index
+             * @param item - the attribute to insert
+             * @return
+             *
+             * Inserts a vertex attribute into the VAO. Will throw an exception if the index does not exist.
+             */
             template<class V>
             bool insert(int index, const V & item)
             {
@@ -556,12 +569,18 @@ namespace gla
             template<class V>
             ArrayBuffer_T<V> & getBuffer(int i) { return *std::dynamic_pointer_cast<ArrayBuffer_T<V> >( mBuffers[i] ); };
 
-            //std::shared_ptr<ArrayBuffer_b > & getBuffer(int i ) { return mBuffers[i];  }
             std::shared_ptr<ArrayBuffer_b > & getIndexBuffer()  { return mIndexBuffer; }
 
             unsigned int numBuffers() { return mBuffers.size(); }
 
 
+            /**
+             * @brief createBuffer
+             * @return
+             *
+             * Creates a buffer. Use the template argument to indicate what kind of buffer you want to create.
+             * eg: vec3, vec2, vec4, etc
+             */
             template<class V>
             int createBuffer()
             {
@@ -569,6 +588,12 @@ namespace gla
                 return( mBuffers.size() - 1 );
             }
 
+            /**
+             * @brief createIndexBuffer
+             *
+             * Create an index buffer. Use the template argument to indicate what kind of element to use.
+             * eg: use uvec2 for lines, uvec3 for triangles, uvec4 for quads.
+             */
             template<class V>
             void createIndexBuffer()
             {
@@ -599,51 +624,6 @@ namespace gla
                     }
                 }
 
-                //for(int i=0; i < other.mBuffers.size(); i++)
-                //{
-                //    if( mBuffers[i]->getIntegralType() == GL_FLOAT)
-                //    {
-                //        #define VALUETYPE FLOAT
-                //            if( mBuffers[i]->getValuesPerVertex()==4 )
-                //            {
-                //                _joinBuffers<gla::vec4, VALUETYPE>( mBuffers[i], other.mBuffers[i], vec4(0.0,0.0,0.0,0.0));
-                //            }
-                //            else if(  mBuffers[i]->getValuesPerVertex()==3 )
-                //            {
-                //                _joinBuffers<gla::vec3, VALUETYPE>( mBuffers[i], other.mBuffers[i], vec3(0.0,0.0,0.0));
-                //            }
-                //            else if( mBuffers[i]->getValuesPerVertex()==2 )
-                //            {
-                //                _joinBuffers<gla::vec2, VALUETYPE>( mBuffers[i], other.mBuffers[i], vec2(0.0,0.0));
-                //            }
-                //            else if( mBuffers[i]->getValuesPerVertex()==1 )
-                //            {
-                //                _joinBuffers<float, VALUETYPE>( mBuffers[i], other.mBuffers[i], 0.f);
-                //            }
-                //        #undef VALUETYPE
-                //    }
-                //    else if( mBuffers[i]->getIntegralType() == GL_UNSIGNED_INT)
-                //    {
-                //        #define VALUETYPE UNSIGNED_INT
-                //            if( mBuffers[i]->getValuesPerVertex()==4 )
-                //            {
-                //                _joinBuffers<gla::uvec4, VALUETYPE>( mBuffers[i], other.mBuffers[i], uvec4(0,0,0,0));
-                //            }
-                //            else if(  mBuffers[i]->getValuesPerVertex()==3 )
-                //            {
-                //                _joinBuffers<gla::uvec3, VALUETYPE>( mBuffers[i], other.mBuffers[i], uvec3(0,0,0));
-                //            }
-                //            else if( mBuffers[i]->getValuesPerVertex()==2 )
-                //            {
-                //                _joinBuffers<gla::uvec2, VALUETYPE>( mBuffers[i], other.mBuffers[i], uvec2(0,0));
-                //            }
-                //            else if( mBuffers[i]->getValuesPerVertex()==1 )
-                //            {
-                //                _joinBuffers<unsigned int, VALUETYPE>( mBuffers[i], other.mBuffers[i], 0);
-                //            }
-                //        #undef VALUETYPE
-                //    }
-                //}
                 if( mIndexBuffer && other.mIndexBuffer)
                 {
                     unsigned int off = mIndexBuffer->getVertexCount();

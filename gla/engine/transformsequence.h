@@ -133,7 +133,8 @@ class TransformSequence
 
         mat4                 getTransformationMatrix(float t)
         {
-            return glm::mat4_cast( getRotation(t) ) * glm::translate( glm::scale( mat4(1.0), getScale(t)), getPosition(t) );
+            return glm::translate(mat4(1.0f), getPosition(t) ) * glm::mat4_cast(getRotation(t)) * glm::scale( mat4(1.0), getScale(t));
+            //return glm::mat4_cast( getRotation(t) ) * glm::translate( glm::scale( mat4(1.0), getScale(t)), getPosition(t) );
         }
 
         inline gla::vec3     getPosition(float t) { return mFrame_position.get( static_cast<unsigned int>(t * 1000) ); }

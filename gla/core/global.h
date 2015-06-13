@@ -71,7 +71,6 @@ namespace gla
         col4 c; // colour
     };
 
-
 }
 
 #include <gla/core/transformation.h>
@@ -115,7 +114,6 @@ namespace gla
     typedef Texture_T<glm::u8vec2> TextureRG;
     typedef Texture_T<glm::u8vec3> TextureRGB;
     typedef Texture_T<glm::u8vec4> TextureRGBA;
-
 
 
     /* Shared Pointer stuff*/
