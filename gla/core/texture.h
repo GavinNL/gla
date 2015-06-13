@@ -6,7 +6,14 @@
 #include <iostream>
 #include <string.h>
 #include <functional>
-#include <gla/stb/stb_image.h>
+
+#ifdef GLA_IMAGE_USE_STB
+    #include <stb/stb_image.h>
+#elif GLA_IMAGE_USE_FREEIMAGE
+    #include <freeimage.h>
+#else
+    #include <gla/core/stb_image_headeronly.h>
+#endif
 
 
 /**
