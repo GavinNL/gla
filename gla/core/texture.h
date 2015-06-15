@@ -1,6 +1,7 @@
 #ifndef GLA_TEXTURE_H
 #define GLA_TEXTURE_H
 
+#include <gla/core/global.h>
 #include <gla/core/types.h>
 #include <gla/core/exceptions.h>
 #include <iostream>
@@ -24,6 +25,7 @@
 namespace gla {
 
     class ChannelRef;
+    class Texture;
 
     //===========================================================================
     // GPUTexture
@@ -97,6 +99,8 @@ namespace gla {
                 return true;
             }
 
+            void pasteSubImage( const gla::uvec2 & xy, const Texture & T, int level=0);
+
             inline bool create(const uvec2 & size, TEXTURECOLOURFORMAT Format = RGBA)
             {
                  return create(size, Format, Format, UNSIGNED_BYTE, 0);
@@ -141,7 +145,8 @@ namespace gla {
             inline void setActiveTexture(unsigned int unit=0) const
             {
                 glActiveTexture(GL_TEXTURE0 + unit);
-                glBindTexture(GL_TEXTURE_2D, mTextureID);
+                //glBindTexture(GL_TEXTURE_2D, mTextureID);
+                gla::BindTexture(mTextureID);
             }
 
             /**
@@ -300,12 +305,12 @@ namespace gla {
             {
                 if(mData) clear();
 
-                mData   = T.mData;
-                mDim    = T.mDim;
+                mData       = T.mData;
+                mDim        = T.mDim;
                 mComponents = T.mComponents;
 
-                T.mDim  = {0,0};
-                T.mData = 0;
+                T.mDim        = {0,0};
+                T.mData       = 0;
                 T.mComponents = 0;
 
                 std::cout << " Texture::Move operator\n";
@@ -436,7 +441,7 @@ namespace gla {
                 mData = 0;
             }
 
-            //void resize(const uvec2 & newSize);
+
 
 
 
@@ -470,7 +475,7 @@ namespace gla {
 
                 for(int j=0; j < d.y; j++)
                 for(int i=0; i < d.x; i++)
-                for(int z=0; z < d.x; z++)
+                for(int z=0; z < mComponents; z++)
                     {
                         // scale the x and y dimeninos to be between 0 and 1
                         float x = (float)i / (float)d.x;
@@ -547,132 +552,132 @@ namespace gla {
             }
 
 
-                                inline Texture operator  + ( const Texture & c) const
-                                {
-                                    uvec2 siz      = glm::min( size(), c.size() );
-                                    unsigned int C = mComponents;
-                                    Texture T(    siz.x,siz.y  ,C   );
+            inline Texture operator  + ( const Texture & c) const
+            {
+                uvec2 siz      = glm::min( size(), c.size() );
+                unsigned int C = mComponents;
+                Texture T(    siz.x,siz.y  ,C   );
 
-                                    for(int y=0;y<siz.y;y++)
-                                    for(int x=0;x<siz.x;x++)
-                                    for(int z=0;z<C;z++)
-                                    {
-                                        T(x,y,z) = (*this)(x,y,z) + c(x,y,z);
-                                    }
+                for(int y=0;y<siz.y;y++)
+                for(int x=0;x<siz.x;x++)
+                for(int z=0;z<C;z++)
+                {
+                    T(x,y,z) = (*this)(x,y,z) + c(x,y,z);
+                }
 
-                                   return T;
-                                };
+               return T;
+            };
 
-                                inline Texture operator  - ( const Texture & c) const
-                                {
-                                    uvec2 siz      = glm::min( size(), c.size() );
-                                    unsigned int C = mComponents;
-                                    Texture T(    siz.x,siz.y  ,C   );
+            inline Texture operator  - ( const Texture & c) const
+            {
+                uvec2 siz      = glm::min( size(), c.size() );
+                unsigned int C = mComponents;
+                Texture T(    siz.x,siz.y  ,C   );
 
-                                    for(int y=0;y<siz.y;y++)
-                                    for(int x=0;x<siz.x;x++)
-                                    for(int z=0;z<C;z++)
-                                    {
-                                        T(x,y,z) = (*this)(x,y,z) - c(x,y,z);
-                                    }
+                for(int y=0;y<siz.y;y++)
+                for(int x=0;x<siz.x;x++)
+                for(int z=0;z<C;z++)
+                {
+                    T(x,y,z) = (*this)(x,y,z) - c(x,y,z);
+                }
 
-                                   return T;
-                                };
-
-
-
-
-                                inline Texture        operator  - ( const float & c) const
-                                {
-                                   uvec2 siz      = size();
-                                   unsigned int C = mComponents;
-                                   Texture T(    siz.x,siz.y ,C    );
-
-                                    //DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }
-                                    for(int y=0;y<siz.y;y++)
-                                    for(int x=0;x<siz.x;x++)
-                                    for(int z=0;z<C;z++)
-                                    {
-                                        T(x,y,z) = (*this)(x,y,z) - static_cast<unsigned char>(c*255.f);
-                                    }
-
-                                   return T;
-                                };
-
-                                inline Texture        operator  + ( const float & c) const
-                                {
-                                   uvec2 siz      = size();
-                                   unsigned int C = mComponents;
-                                   Texture T(    siz.x,siz.y ,C    );
-
-                                    //DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }
-                                    for(int y=0;y<siz.y;y++)
-                                    for(int x=0;x<siz.x;x++)
-                                    for(int z=0;z<C;z++)
-                                    {
-                                        T(x,y,z) = (*this)(x,y,z) + static_cast<unsigned char>(c*255.f);
-                                    }
-
-                                   return T;
-                                };
-
-                                inline Texture        operator  * ( const float & c) const
-                                {
-                                   uvec2 siz      = size();
-                                   unsigned int C = mComponents;
-                                   Texture T(    siz.x,siz.y ,C    );
-
-                                    //DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }
-                                    for(int y=0;y<siz.y;y++)
-                                    for(int x=0;x<siz.x;x++)
-                                    for(int z=0;z<C;z++)
-                                    {
-                                        T(x,y,z) = (*this)(x,y,z) * c;
-                                    }
-
-                                   return T;
-                                };
-
-                                inline Texture        operator  / ( const float & c) const
-                                {
-                                   uvec2 siz      = size();
-                                   unsigned int C = mComponents;
-                                   Texture T(    siz.x,siz.y ,C    );
-
-                                    //DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }
-                                    for(int y=0;y<siz.y;y++)
-                                    for(int x=0;x<siz.x;x++)
-                                    for(int z=0;z<C;z++)
-                                    {
-                                        T(x,y,z) = (*this)(x,y,z) / c;
-                                    }
-
-                                   return T;
-                                };
-
-                                #define OPERATOR(OP)                                                 \
-                                inline Texture        operator  OP ( const unsigned char & c) const   \
-                                {                                                                    \
-                                   uvec2 siz      = size();                                          \
-                                   unsigned int C = mComponents;                                     \
-                                   Texture T(    siz.x,siz.y ,C    );                                \
-                                                                                                     \
-                                    for(int y=0; y<siz.y;y++)                                         \
-                                    for(int x=0; x<siz.x;x++)                                         \
-                                    for(int z=0; z<C    ;z++)                                         \
-                                    {                                                                \
-                                        T(x,y,z) = (*this)(x,y,z) OP c;                               \
-                                    }                                                                \
-                                                                                                     \
-                                   return T;                                                         \
-                                };
+               return T;
+            };
 
 
 
-                                  OPERATOR( - )
-                                  OPERATOR( + )
-                                  OPERATOR( * )
-                                  OPERATOR( / )
+
+            inline Texture        operator  - ( const float & c) const
+            {
+               uvec2 siz      = size();
+               unsigned int C = mComponents;
+               Texture T(    siz.x,siz.y ,C    );
+
+                //DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }
+                for(int y=0;y<siz.y;y++)
+                for(int x=0;x<siz.x;x++)
+                for(int z=0;z<C;z++)
+                {
+                    T(x,y,z) = (*this)(x,y,z) - static_cast<unsigned char>(c*255.f);
+                }
+
+               return T;
+            };
+
+            inline Texture        operator  + ( const float & c) const
+            {
+               uvec2 siz      = size();
+               unsigned int C = mComponents;
+               Texture T(    siz.x,siz.y ,C    );
+
+                //DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }
+                for(int y=0;y<siz.y;y++)
+                for(int x=0;x<siz.x;x++)
+                for(int z=0;z<C;z++)
+                {
+                    T(x,y,z) = (*this)(x,y,z) + static_cast<unsigned char>(c*255.f);
+                }
+
+               return T;
+            };
+
+            inline Texture        operator  * ( const float & c) const
+            {
+               uvec2 siz      = size();
+               unsigned int C = mComponents;
+               Texture T(    siz.x,siz.y ,C    );
+
+                //DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }
+                for(int y=0;y<siz.y;y++)
+                for(int x=0;x<siz.x;x++)
+                for(int z=0;z<C;z++)
+                {
+                    T(x,y,z) = (*this)(x,y,z) * c;
+                }
+
+               return T;
+            };
+
+            inline Texture        operator  / ( const float & c) const
+            {
+               uvec2 siz      = size();
+               unsigned int C = mComponents;
+               Texture T(    siz.x,siz.y ,C    );
+
+                //DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }
+                for(int y=0;y<siz.y;y++)
+                for(int x=0;x<siz.x;x++)
+                for(int z=0;z<C;z++)
+                {
+                    T(x,y,z) = (*this)(x,y,z) / c;
+                }
+
+               return T;
+            };
+
+            #define OPERATOR(OP)                                                 \
+            inline Texture        operator  OP ( const unsigned char & c) const   \
+            {                                                                    \
+               uvec2 siz      = size();                                          \
+               unsigned int C = mComponents;                                     \
+               Texture T(    siz.x,siz.y ,C    );                                \
+                                                                                 \
+                for(int y=0; y<siz.y;y++)                                         \
+                for(int x=0; x<siz.x;x++)                                         \
+                for(int z=0; z<C    ;z++)                                         \
+                {                                                                \
+                    T(x,y,z) = (*this)(x,y,z) OP c;                               \
+                }                                                                \
+                                                                                 \
+               return T;                                                         \
+            };
+
+
+
+              OPERATOR( - )
+              OPERATOR( + )
+              OPERATOR( * )
+              OPERATOR( / )
 
 
         protected:
@@ -968,6 +973,27 @@ namespace gla {
 
         return std::move(T);
     }
+
+
+    inline void GPUTexture::pasteSubImage( const gla::uvec2 & xy, const Texture & T, int level)
+    {
+        if(!mTextureID) return;
+
+        auto d = T.getRawData();
+        if(!d) return;
+
+        //have a bigger image bigImage and the
+        // subImage sub
+        std::cout << "Copying subimage over\n";
+        glBindTexture(GL_TEXTURE_2D,   mTextureID);
+
+        // Note, i/j might have the origin int he bottom left corner instead of top left.
+        GLenum Format[] = {GL_RED, GL_RG, GL_RGB, GL_RGBA};
+        glTexSubImage2D(GL_TEXTURE_2D, level, xy.x, xy.y, T.size().x, T.size().y, Format[T.getChannels()-1], GL_UNSIGNED_BYTE, d );
+    }
+
 }
+
+
 #endif // TEXTURE_H
 

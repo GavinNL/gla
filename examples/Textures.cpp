@@ -78,11 +78,13 @@ int main()
     //---------------------------------------------------------------------------
     // Load a texture
     //---------------------------------------------------------------------------
-    TextureC cpuTex ("resources/rocks1024.jpg", 4 );
+    TextureC cpuTex ("resources/rocks1024.jpg", 3 );
+    TextureC cpuTex2("resources/rocks1024.jpg", 3 );
 
     cpuTex.g = cpuTex.r*cpuTex.b*cpuTex.b*cpuTex.b*cpuTex.b;
     // resize the texture
-   // cpuTex.resize( {256,256});
+    cpuTex2.resize( {512,512} );
+
 
     //---------------------------------------------------------------------------
     // Do some texture manipulation for fun.
@@ -97,9 +99,6 @@ int main()
     cpuTex.r = [] (float x, float y) { return (float)(0.5f * glm::perlin( glm::vec2(x,y)*8.0f ) + 0.5);  };
 
 
-    //cpuTex(10,10) = {255,255,255,255};
-    //cpuTex(20,20) = ucol4(255,255,255,255);
-
     // Set the green channel to be the difference of the red channel and the blue channel
     //cpuTex.g = cpuTex.r - cpuTex.b;
 
@@ -108,7 +107,7 @@ int main()
     // Finally send the texture to the GPU
     //---------------------------------------------------------------------------
     GPUTexture gpuTex = cpuTex.toGPU();
-
+    gpuTex.pasteSubImage( {25,25}, cpuTex2);
     // we dont need the cpu texture anymore, so we can clear it.
     cpuTex.clear();
 

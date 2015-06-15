@@ -22,54 +22,55 @@ namespace gla
     template <typename T>
     struct TBox
     {
-        T x;
-        T y;
-        T z;
-        T w;
-        T h;
-        T d;
-
+        T pos;
+        T dim;
     };
 
-    template<typename T>
-    struct TRect
+
+//    struct Vertex_PNCUBI
+//    {
+//        vec3 p; // position
+//        vec3 n; // normal
+//        col4 c; // colour
+//        vec2 u; // uv coords
+//        vec4 b; // bone weights
+//        uint i; // bone index
+//    };
+
+//    struct Vertex_PNCU
+//    {
+//        vec3 p; // position
+//        vec3 n; // normal
+//        col4 c; // colour
+//        vec2 u; // uv coords
+//    };
+
+//    struct Vertex_PNU
+//    {
+//        vec3 p;  // position
+//        vec3 n;  // normal
+//        vec3 u;  // UV
+//    };
+
+//    struct Vertex_PC
+//    {
+//        vec3 p; // position
+//        col4 c; // colour
+//    };
+
+
+    // Keep track of the texture that is currently bound
+    inline GLuint BindTexture(GLuint tex)
     {
-        T x;
-        T y;
-        T w;
-        T h;
-    };
-
-    struct Vertex_PNCUBI
-    {
-        vec3 p; // position
-        vec3 n; // normal
-        col4 c; // colour
-        vec2 u; // uv coords
-        vec4 b; // bone weights
-        uint i; // bone index
-    };
-
-    struct Vertex_PNCU
-    {
-        vec3 p; // position
-        vec3 n; // normal
-        col4 c; // colour
-        vec2 u; // uv coords
-    };
-
-    struct Vertex_PNU
-    {
-        vec3 p;  // position
-        vec3 n;  // normal
-        vec3 u;  // UV
-    };
-
-    struct Vertex_PC
-    {
-        vec3 p; // position
-        col4 c; // colour
-    };
+        static GLuint _Current=0;
+        if( _Current != tex)
+        {
+            glBindTexture(GL_TEXTURE_2D,  tex);
+            _Current = tex;
+            return _Current;
+        }
+        return _Current;
+    }
 
 }
 
@@ -92,22 +93,22 @@ namespace gla
     typedef gla::VertexArrayObject_N VertexArrayObject;
     // Indexed Meshs
     //                                       VertexType         IndexType   ElementType      VertexAttributeTypes
-    typedef gla::IndexedVertexArrayObject< gla::Vertex_PNCU,   gla::uvec3, TRIANGLES,       F3, F3, F4, F2        >   iTriMesh_PNCU;
-    typedef gla::IndexedVertexArrayObject< gla::Vertex_PNCUBI, gla::uvec3, TRIANGLES,       F3, F3, F4, F2,F4,U1    > iTriMesh_PNCUBI;
+    //typedef gla::IndexedVertexArrayObject< gla::Vertex_PNCU,   gla::uvec3, TRIANGLES,       F3, F3, F4, F2        >   iTriMesh_PNCU;
+    //typedef gla::IndexedVertexArrayObject< gla::Vertex_PNCUBI, gla::uvec3, TRIANGLES,       F3, F3, F4, F2,F4,U1    > iTriMesh_PNCUBI;
 
     // non-indexed meshes.
     //                                       VertexType,    ElementType    VertexAttributeTypes
-    typedef gla::VertexArrayObject_old< gla::Vertex_PC,         LINES,         F3, F4 >                  Line_PC;
-    typedef gla::VertexArrayObject_old< gla::Vertex_PNCU,   TRIANGLE_STRIP,    F3, F3, F4, F2     >      TriStripMesh_PNCU;
+    //typedef gla::VertexArrayObject_old< gla::Vertex_PC,         LINES,         F3, F4 >                  Line_PC;
+    //typedef gla::VertexArrayObject_old< gla::Vertex_PNCU,   TRIANGLE_STRIP,    F3, F3, F4, F2     >      TriStripMesh_PNCU;
     //typedef glre::IndexedVertexArrayObject< glre::Vertex_PC,   glre::uvec2, LINES,     2, F3, F4 >       Line_PC;
 
-    typedef TBox<float>  fBox;
-    typedef TBox<int>    iBox;
-    typedef TBox<uint>   uBox;
+    typedef TBox<gla::vec3>  fBox;
+    typedef TBox<gla::ivec3> iBox;
+    typedef TBox<gla::uvec3> uBox;
 
-    typedef TRect<float> fRect;
-    typedef TRect<int>   iRect;
-    typedef TRect<uint>  uRect;
+    typedef TBox<gla::vec2>  fRect;
+    typedef TBox<gla::ivec2> iRect;
+    typedef TBox<gla::uvec2> uRect;
 
 
     //typedef Texture_T<glm::u8vec1> TextureR;
@@ -151,6 +152,8 @@ namespace gla
                 break;
         }
     }
+
+
 }
 
 
