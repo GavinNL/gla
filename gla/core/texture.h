@@ -23,6 +23,8 @@
  */
 namespace gla {
 
+    class ChannelRef;
+
     //===========================================================================
     // GPUTexture
     //   - A 2D texture stored on the GPU
@@ -202,13 +204,6 @@ namespace gla {
 
 
 
-
-
-
-
-
-
-
     /*! @brief Texture class for holding image information in rgba format.
      *
      * The Texture class holds image information on the CPU. It also contains
@@ -245,67 +240,73 @@ namespace gla {
      *      GPUTexture TexGpu = T.toGPU();    // send the texture to the GPU so that it can be used in openGL calls.
      *    \endcode
      */
-    template< class PixelType >
     class Texture
     {
 
-        public:
+        protected:
 
             Texture() : mData(0)
             {
 
             }
 
-            Texture( const uvec2 & size) : mData(0)
+            Texture( const uvec2 & size, unsigned int components=4) : mData(0)
             {
                 mDim.x = size.x;
                 mDim.y = size.y;
-                mData  = new PixelType[ mDim[0] * mDim[1] ];
+                mComponents = components;
+                mData  = new unsigned char[ mDim[0] * mDim[1] * components];
             }
 
-            Texture(uint w, uint h) : mData(0)
+            Texture(uint w, uint h, unsigned int components=4) : mData(0)
             {
                 mDim.x = w;
                 mDim.y = h;
-                mData  = new PixelType[ mDim[0] * mDim[1] ];
+
+                mComponents = components;
+                mData  = new unsigned char[ mDim[0] * mDim[1] * components];
+
             }
 
-            Texture(const std::string & path) :  mData(0)
-            {
-                loadFromPath(path);
-            }
 
-            explicit Texture(Texture<PixelType> & T) :  mData(0)
+
+            explicit Texture(Texture & T) :  mData(0)
             {
 
                 mDim  = T.mDim;
-
-                mData = new PixelType[mDim[0]*mDim[1]];
-                memcpy( mData, (void*)T.mData, mDim[0]*mDim[1] * 4);
+                mComponents = T.mComponents;
+                mData = new unsigned char[mDim[0]*mDim[1]*T.mComponents];
+                memcpy( mData, (void*)T.mData, mDim[0] * mDim[1] * T.mComponents);
 
             }
 
-            Texture(Texture<PixelType> && T) : mData(0)
+            Texture(Texture && T) : mData(0)
             {
                 if(mData) clear();
 
                 mData   = T.mData;
                 mDim    = T.mDim;
+                mComponents = T.mComponents;
+
                 T.mDim  = { 0, 0 };
                 T.mData = 0;
-
+                T.mComponents = 0;
                 std::cout << " Texture::Move constructor\n";
 
             }
 
-            Texture<PixelType> & operator=(Texture<PixelType> && T)
+    public:
+            Texture & operator=(Texture && T)
             {
                 if(mData) clear();
 
                 mData   = T.mData;
                 mDim    = T.mDim;
+                mComponents = T.mComponents;
+
                 T.mDim  = {0,0};
                 T.mData = 0;
+                T.mComponents = 0;
 
                 std::cout << " Texture::Move operator\n";
                 return *this;
@@ -315,7 +316,7 @@ namespace gla {
              * Frees all memory associated with this texture including GPU
              * data. The OpenGL Texture id will be freed.
              */
-            ~Texture<PixelType>()
+            ~Texture()
             {
                 clear();
             }
@@ -346,14 +347,15 @@ namespace gla {
             void loadFromMemory( unsigned char * Buffer, int buffersize)
             {
                 int x, y, comp;
-                GLA_uc           * img = ImageLoader::GLA_load_from_memory( (GLA_uc*) Buffer, buffersize, &x, &y, &comp, sizeof(PixelType) );
+                GLA_uc           * img = ImageLoader::GLA_load_from_memory( (GLA_uc*) Buffer, buffersize, &x, &y, &comp, 0 );
 
                 if( img )
                 {
                     _handleRawPixels(img, static_cast<unsigned int>( x ), static_cast<unsigned int>( y ) );
-
-                  //  free(img);
-                } else {
+                    mComponents = comp;
+                }
+                else
+                {
                     std::cout << "from Memory error: " << x << "," << y << "\n";
                 }
 
@@ -364,7 +366,7 @@ namespace gla {
              *
              * @param Path a path to the file
              */
-            void loadFromPath( const std::string & path)
+            void loadFromPath( const std::string & path, unsigned int ForceNumberChannels=0)
             {
 
                 int x, y, comp;
@@ -372,13 +374,14 @@ namespace gla {
                 //==========================================================
                 // Load the Texture from an image file.
                 //==========================================================
-                unsigned char * img = ImageLoader::GLA_load(path.c_str(), &x, &y, &comp, sizeof(PixelType) );
+                unsigned char * img = ImageLoader::GLA_load(path.c_str(), &x, &y, &comp, ForceNumberChannels );
 
                 if( img )
                 {
                     _handleRawPixels(img, static_cast<unsigned int>( x ), static_cast<unsigned int>( y ) );
+                    mComponents = ForceNumberChannels!=0 ? ForceNumberChannels : comp;
+                    std::cout << "Texture loaded with #components = " << mComponents << std::endl;
 
-                    //free(img);
                 } else {
                     std::cout << "Error loading texture: " << path << std::endl;
                 }
@@ -399,7 +402,7 @@ namespace gla {
 
                 TEXTURECOLOURFORMAT format;
 
-                switch( sizeof(PixelType) )
+                switch( mComponents )
                 {
                     case 1: format = RED;  break;
                     case 2: format = RG;   break;
@@ -419,6 +422,11 @@ namespace gla {
             }
 
 
+            inline unsigned int getChannels() const
+            {
+                return mComponents;
+            }
+
             /**
              * Clears the image data from the CPU.
              */
@@ -428,18 +436,18 @@ namespace gla {
                 mData = 0;
             }
 
-            void resize(const uvec2 & newSize);
+            //void resize(const uvec2 & newSize);
 
 
 
 
-            /**
-             * @brief get Returns the value of the pixel (x,y)
-             * @param x
-             * @param y
-             * @return a copy of the pixel at location (x,y)
-             */
-            inline PixelType  get(int x, int y) const { return mData[ y*mDim[0] + x ]; }
+            ///**
+            // * @brief get Returns the value of the pixel (x,y)
+            // * @param x
+            // * @param y
+            // * @return a copy of the pixel at location (x,y)
+            // */
+            //inline PixelType  get(int x, int y) const { return mData[ y*mDim[0] + x ]; }
 
             /**
              * @brief size Gets the dimensions of the texture
@@ -453,56 +461,218 @@ namespace gla {
              */
             inline void* getRawData() const { return (void*)mData; };
 
+
+
+            inline void resize( const uvec2 & newSize)
+            {
+                Texture T( newSize.x, newSize.y , mComponents);
+                auto d = T.size();
+
+                for(int j=0; j < d.y; j++)
+                for(int i=0; i < d.x; i++)
+                for(int z=0; z < d.x; z++)
+                    {
+                        // scale the x and y dimeninos to be between 0 and 1
+                        float x = (float)i / (float)d.x;
+                        float y = (float)j / (float)d.y;
+
+                        // Find the index on the main texture
+                        int X = static_cast<int>(x * mDim.x);
+                        int Y = static_cast<int>(y * mDim.y);
+
+                        // sample the 4 locations
+                        float f00 = float( (*this)(X,Y    , z ) );
+                        float f01 = float( (*this)(X,Y+1  , z ) );
+                        float f10 = float( (*this)(X+1,Y  , z ) );
+                        float f11 = float( (*this)(X+1,Y+1, z ) );
+
+                        float s = x * static_cast<float>(mDim.x);
+                        float t = y * static_cast<float>(mDim.y);
+
+                        // get the fractional part
+                        s = s-floor(s);
+                        t = t-floor(t);
+
+                        T(i,j,z) =f00 * (1-s)*(1-t) + f10*s*(1-t) + f01*(1-s)*t + f11*s*t;
+
+                    }
+
+                *this = std::move(T);
+            }
+
+
             /**
              * Access pixel data on the CPU. This is unpredictable if you
              * have cleared the CPU data.
              */
-            inline PixelType & operator ()(int x, int y) const { return mData[ y*mDim[0] + x ]; }
+            inline unsigned char & operator ()(int x, int y, int comp) const { return mData[ y*(mDim[0] * mComponents) + x*mComponents + comp ]; }
 
             //=====================================
             // Operators
             //=====================================
+            Texture& operator=(  std::function<gla::ucol4(float,float) > F)
+            {
+                uvec2 S = size();
+                float W = 1.0 / (float)S.x;
+                float H = 1.0 / (float)S.y;
+                for(int y =0; y < S.y; y++)
+                    for(int x=0; x < S.x; x++)
+                    {
+                        auto c = (F( (float)x * W, (float)y*H ));
+                        (*this)(x,y,0) = c[0];
+                        (*this)(x,y,1) = c[1];
+                        (*this)(x,y,2) = c[2];
+                        (*this)(x,y,3) = c[3];
+                    }
 
-#define DOUBLE_LOOP(size)  for(int y=0; y<siz.y; y++) for(int x=0;x<siz.x;x++)
+                return *this;
+            }
+
+            Texture& operator=(  std::function<gla::vec4(float,float) > F)
+            {
+                uvec2 S = size();
+                float W = 1.0 / (float)S.x;
+                float H = 1.0 / (float)S.y;
+                for(int y =0; y < S.y; y++)
+                    for(int x=0; x < S.x; x++)
+                    {
+                        auto c = (F( (float)x * W, (float)y*H ) );
+                        (*this)(x,y,0) = (unsigned char)c[0]*255.f;
+                        (*this)(x,y,1) = (unsigned char)c[1]*255.f;
+                        (*this)(x,y,2) = (unsigned char)c[2]*255.f;
+                        (*this)(x,y,3) = (unsigned char)c[3]*255.f;
+                    }
+
+                return *this;
+            }
 
 
-#define OPERATOR( OP , RIGHT_PAR, LeftOp, OPP,  RightOp )  inline Texture<PixelType>        operator  OP ( const  RIGHT_PAR & c) const \
-                                {                                                                                    \
-                                   uvec2 siz = glm::min( size(), c.size() );                                         \
-                                   Texture T(    siz.x,siz.y     );                                                  \
-                                                                                                                     \
-                                    DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }                             \
-                                                                                                                     \
-                                   return T;                                                                         \
+                                inline Texture operator  + ( const Texture & c) const
+                                {
+                                    uvec2 siz      = glm::min( size(), c.size() );
+                                    unsigned int C = mComponents;
+                                    Texture T(    siz.x,siz.y  ,C   );
+
+                                    for(int y=0;y<siz.y;y++)
+                                    for(int x=0;x<siz.x;x++)
+                                    for(int z=0;z<C;z++)
+                                    {
+                                        T(x,y,z) = (*this)(x,y,z) + c(x,y,z);
+                                    }
+
+                                   return T;
+                                };
+
+                                inline Texture operator  - ( const Texture & c) const
+                                {
+                                    uvec2 siz      = glm::min( size(), c.size() );
+                                    unsigned int C = mComponents;
+                                    Texture T(    siz.x,siz.y  ,C   );
+
+                                    for(int y=0;y<siz.y;y++)
+                                    for(int x=0;x<siz.x;x++)
+                                    for(int z=0;z<C;z++)
+                                    {
+                                        T(x,y,z) = (*this)(x,y,z) - c(x,y,z);
+                                    }
+
+                                   return T;
                                 };
 
 
-              OPERATOR( +,  Texture<PixelType> , (*this)(x,y) , + , c(x,y) )
-              OPERATOR( -,  Texture<PixelType> , (*this)(x,y) , - , c(x,y) )
 
 
+                                inline Texture        operator  - ( const float & c) const
+                                {
+                                   uvec2 siz      = size();
+                                   unsigned int C = mComponents;
+                                   Texture T(    siz.x,siz.y ,C    );
 
-#undef OPERATOR
-#define OPERATOR( OP , RIGHT_PAR, LeftOp, OPP,  RightOp )  inline Texture<PixelType>        operator  OP ( const  RIGHT_PAR & c) const \
-                                {                                                                                                      \
-                                   uvec2 siz = size();                                                                                 \
-                                   Texture T(    siz.x,siz.y     );                                                                    \
-                                                                                                                                       \
-                                    DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }                                              \
-                                                                                                                                       \
-                                   return T;                                                                                           \
+                                    //DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }
+                                    for(int y=0;y<siz.y;y++)
+                                    for(int x=0;x<siz.x;x++)
+                                    for(int z=0;z<C;z++)
+                                    {
+                                        T(x,y,z) = (*this)(x,y,z) - static_cast<unsigned char>(c*255.f);
+                                    }
+
+                                   return T;
+                                };
+
+                                inline Texture        operator  + ( const float & c) const
+                                {
+                                   uvec2 siz      = size();
+                                   unsigned int C = mComponents;
+                                   Texture T(    siz.x,siz.y ,C    );
+
+                                    //DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }
+                                    for(int y=0;y<siz.y;y++)
+                                    for(int x=0;x<siz.x;x++)
+                                    for(int z=0;z<C;z++)
+                                    {
+                                        T(x,y,z) = (*this)(x,y,z) + static_cast<unsigned char>(c*255.f);
+                                    }
+
+                                   return T;
+                                };
+
+                                inline Texture        operator  * ( const float & c) const
+                                {
+                                   uvec2 siz      = size();
+                                   unsigned int C = mComponents;
+                                   Texture T(    siz.x,siz.y ,C    );
+
+                                    //DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }
+                                    for(int y=0;y<siz.y;y++)
+                                    for(int x=0;x<siz.x;x++)
+                                    for(int z=0;z<C;z++)
+                                    {
+                                        T(x,y,z) = (*this)(x,y,z) * c;
+                                    }
+
+                                   return T;
+                                };
+
+                                inline Texture        operator  / ( const float & c) const
+                                {
+                                   uvec2 siz      = size();
+                                   unsigned int C = mComponents;
+                                   Texture T(    siz.x,siz.y ,C    );
+
+                                    //DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }
+                                    for(int y=0;y<siz.y;y++)
+                                    for(int x=0;x<siz.x;x++)
+                                    for(int z=0;z<C;z++)
+                                    {
+                                        T(x,y,z) = (*this)(x,y,z) / c;
+                                    }
+
+                                   return T;
+                                };
+
+                                #define OPERATOR(OP)                                                 \
+                                inline Texture        operator  OP ( const unsigned char & c) const   \
+                                {                                                                    \
+                                   uvec2 siz      = size();                                          \
+                                   unsigned int C = mComponents;                                     \
+                                   Texture T(    siz.x,siz.y ,C    );                                \
+                                                                                                     \
+                                    for(int y=0; y<siz.y;y++)                                         \
+                                    for(int x=0; x<siz.x;x++)                                         \
+                                    for(int z=0; z<C    ;z++)                                         \
+                                    {                                                                \
+                                        T(x,y,z) = (*this)(x,y,z) OP c;                               \
+                                    }                                                                \
+                                                                                                     \
+                                   return T;                                                         \
                                 };
 
 
-              OPERATOR( -,  float         ,  (*this)(x,y) ,   - ,    static_cast<unsigned char>(c * 255.f) )
-              OPERATOR( +,  float         ,  (*this)(x,y) ,   + ,    static_cast<unsigned char>(c * 255.f) )
-              OPERATOR( *,  float         ,  (*this)(x,y) ,   * ,    c  )
-              OPERATOR( /,  float         ,  (*this)(x,y) ,   / ,    c  )
 
-              OPERATOR( -,  unsigned char ,  (*this)(x,y) ,   - ,    c  )
-              OPERATOR( +,  unsigned char ,  (*this)(x,y) ,   + ,    c  )
-              OPERATOR( *,  unsigned char ,  (*this)(x,y) ,   * ,    c  )
-              OPERATOR( /,  unsigned char ,  (*this)(x,y) ,   / ,    c  )
+                                  OPERATOR( - )
+                                  OPERATOR( + )
+                                  OPERATOR( * )
+                                  OPERATOR( / )
 
 
         protected:
@@ -512,468 +682,292 @@ namespace gla {
 
                 mDim = {width, height};
 
-                mData = (PixelType*)buffer;;
+                mData = buffer;;
 
             }
 
-            PixelType   *mData;
-
-            uvec2        mDim;
+            unsigned char   *mData;
+            int              mComponents;
+            uvec2            mDim;
 
 
     };
 
 
+    class TextureC;
 
+    //=====================
 
-template<class PixelType, int index>
-class ChannelReference
-{
+    class ChannelRef
+    {
     public:
-        explicit ChannelReference() : mData(0), mSize(0){};
-        explicit ChannelReference(PixelType * data, uvec2 size) : mData(data), mSize(size) {}
-
-        void setup(PixelType * data, uvec2 size) {
-
-            mData = data; mSize = size;
-        }
-
-
-        unsigned char & operator()(int x, int y) const
+        ChannelRef(Texture * parent, unsigned int comp) : mParent(parent), mComp(comp)
         {
-            return mData[y*mSize.x + x][index];
         }
 
-
-    public:
-
-
-
-        #undef OPERATOR
-        #define ASSIGNMENT_OPERATOR( RightOp,  EXPRESSION )                                   \
-        ChannelReference<PixelType,index> & operator = ( const RightOp & c)                   \
-        {                                                                                     \
-            for(int y=0;y<mSize.y;y++) for(int x=0; x<mSize.x;x++)                            \
-            {                                                                                 \
-                  EXPRESSION ;                                                                \
-            }                                                                                 \
-            return *this;                                                                     \
-        };
-
-        ASSIGNMENT_OPERATOR( float        ,  (*this)(x,y) = static_cast<unsigned char>(c*255.f) )
-        ASSIGNMENT_OPERATOR( unsigned char,  (*this)(x,y) = c )
-        ASSIGNMENT_OPERATOR( int          ,  (*this)(x,y) = static_cast<unsigned char>(c) )
-
-        ChannelReference<PixelType,index> & operator=( const Texture<glm::u8vec1> & other)
+        inline unsigned char & operator()(int x, int y)
         {
-            std::cout << "ChannelRef = Texture1\n";
-            std::cout <<    mSize.x << ", " << mSize.y << std::endl;
-                std::cout <<    other.size().x << ", " << other.size().y << std::endl;
-            uvec2 size = glm::min( mSize, other.size() );
-
-            for(int y=0;y<size.y;y++) for(int x=0;x<size.x;x++)
-            {
-                (*this)(x,y) = other(x,y)[0];
-            }
-            return *this;
+            return (*mParent)(x,y, mComp);
         }
 
-
-        template<class P, int in>
-        ChannelReference<PixelType,index> & operator=( const ChannelReference<P,in> & other)
+        ChannelRef& operator=(ChannelRef & other)
         {
+            int c   = other.mComp;
+            uvec2 S = glm::min( mParent->size(), other.mParent->size() );
 
+            printf(" === %d %d ===\n", other.mComp, mComp);
 
-            uvec2 size = glm::min( mSize, other.mSize );
-
-            for(int y=0;y<size.y;y++) for(int x=0;x<size.x;x++)
-            {
-                (*this)(x,y) = other(x,y);
-            }
-            return *this;
-        }
-
-
-        //============================================================================
-        // Opeartor           Texture1d
-        //============================================================================
-
-        #define OPERATOR_TEXTURE( OP , LeftOp, OPP,  RightOp )                             \
-        Texture<glm::u8vec1>  operator OP ( const Texture<glm::u8vec1> & c)                \
-        {                                                                                  \
-            uvec2 size = glm::min( mSize, c.size());                                       \
-            Texture<glm::u8vec1> T(size);                                                  \
-            for(int y=0;y<size.y;y++) for(int x=0; x<size.x;x++)                           \
-            {                                                                              \
-                       T(x,y)= LeftOp OPP RightOp  ;                                       \
-            }                                                                              \
-            return T;                                                                      \
-        }
-
-        OPERATOR_TEXTURE( +,   (*this)(x,y),  +,  c(x,y).r )
-        OPERATOR_TEXTURE( -,   (*this)(x,y),  -,  c(x,y).r )
-        OPERATOR_TEXTURE( *,   (*this)(x,y),  *,  static_cast<float>(c(x,y).r)/255.0f )
-        OPERATOR_TEXTURE( /,   (*this)(x,y),  *,  static_cast<float>(c(x,y).r)/255.0f )
-
-        #undef OPERATOR_TEXTURE
-
-
-        //============================================================================
-        // Opeartor           ChannelReference
-        //============================================================================
-
-        #define OPERATOR_CHANNELREFERENCE( OP , LeftOp, OPP,  RightOp )                       \
-        template<class P, int in>                                                             \
-        Texture<glm::u8vec1>  operator OP ( const ChannelReference<P,in> & c)                 \
-        {                                                                                     \
-            uvec2 size = glm::min( mSize, c.mSize);                                           \
-            Texture<glm::u8vec1> T(size);                                                     \
-            for(int y=0;y<size.y;y++) for(int x=0; x<size.x;x++)                              \
-            {                                                                                 \
-                       T(x,y)= LeftOp OPP RightOp;                                            \
-            }                                                                                 \
-            return T;                                                                         \
-        };
-
-        OPERATOR_CHANNELREFERENCE( +,      (*this)(x,y),  +,  c(x,y) )
-        OPERATOR_CHANNELREFERENCE( -,      (*this)(x,y),  -,  c(x,y) )
-        OPERATOR_CHANNELREFERENCE( *,      (*this)(x,y),  *,  static_cast<float>( c(x,y) )/255.0f )
-
-        #undef OPERATOR_CHANNELREFERENCE
-
-
-        //============================================================================
-        // Opeartor           Integral
-        //============================================================================
-        #define OPERATOR_CHANNELREF_INTEGRAL( OP , INTEGRAL, LeftOp, OPP,  RightOp )       \
-        Texture<glm::u8vec1>  operator OP ( const INTEGRAL & c)                            \
-        {                                                                                  \
-            uvec2 size = glm::min( mSize, mSize   );                                       \
-            Texture<glm::u8vec1> T(size);                                                  \
-            for(int y=0;y<size.y;y++) for(int x=0; x<size.x;x++)                           \
-            {                                                                              \
-                       T(x,y)= LeftOp OPP RightOp  ;                                       \
-            }                                                                              \
-            return T;                                                                      \
-        }
-
-        OPERATOR_CHANNELREF_INTEGRAL( +,   float, (*this)(x,y),  +,  static_cast<unsigned char>(c*255.f) )
-        OPERATOR_CHANNELREF_INTEGRAL( -,   float, (*this)(x,y),  -,  static_cast<unsigned char>(c*255.f) )
-        OPERATOR_CHANNELREF_INTEGRAL( *,   float, (*this)(x,y),  +,  c )
-
-
-        OPERATOR_CHANNELREF_INTEGRAL( +,   int, (*this)(x,y),  +,  static_cast<unsigned char>(c) )
-        OPERATOR_CHANNELREF_INTEGRAL( -,   int, (*this)(x,y),  -,  static_cast<unsigned char>(c) )
-        OPERATOR_CHANNELREF_INTEGRAL( +,   unsigned char, (*this)(x,y),  +,  c )
-        OPERATOR_CHANNELREF_INTEGRAL( -,   unsigned char, (*this)(x,y),  -,  c )
-
-
-        ChannelReference<PixelType,index> & operator=( std::function<float(vec2)> f)
-        {
-                std::cout << "Function: Size: " << mSize.x << "," << mSize.y << std::endl;
-                for(int y=0;y<mSize.y;y++)
-                for(int x=0;x<mSize.x;x++)
+            for(int y =0; y < S.y; y++)
+                for(int x=0; x < S.x; x++)
                 {
-                    (*this)(x,y) = static_cast<unsigned char>( 255.0f * f( vec2( (float)x / (float)mSize.x , (float) y / (float)mSize.y ) ) );
+                    (*mParent)(x,y,(int)mComp) = (*other.mParent)(x, y, c);
                 }
-        };
 
-
-        PixelType * mData;
-        uvec2       mSize;
-
-};
-
-
-template<class T>
-class ChannelMembers
-{
-    ChannelMembers(){};
-    void setup(T * data, uvec2 size);
-};
-
-template<>
-class ChannelMembers<glm::u8vec3>
-{
-    public:
-        ChannelMembers<glm::u8vec3>(glm::u8vec3 * data, uvec2 size) : r(data, size), g(data, size), b(data, size)
-        {};
-
-
-        void setup(glm::u8vec3 * data, uvec2 size)
-        {
-            r.setup(data, size);
-            g.setup(data, size);
-            b.setup(data, size);
-        };
-
-        ChannelReference<glm::u8vec3,0> r;
-        ChannelReference<glm::u8vec3,1> g;
-        ChannelReference<glm::u8vec3,2> b;
-};
-
-template<>
-class ChannelMembers<glm::u8vec4>
-{
-public:
-        ChannelMembers<glm::u8vec4>(glm::u8vec4 * data, uvec2 size) : r(data, size),g(data, size), b(data, size), a(data, size)
-        {};
-
-       // template<class P>
-        void setup(glm::u8vec4 * data, uvec2 size)
-        {
-            r.setup(data, size);
-            g.setup(data, size);
-            b.setup(data, size);
-            a.setup(data, size);
-            std::cout << "setup all channel references\n";
-        };
-
-        ChannelReference<glm::u8vec4,0> r;
-        ChannelReference<glm::u8vec4,1> g;
-        ChannelReference<glm::u8vec4,2> b;
-        ChannelReference<glm::u8vec4,3> a;
-};
-
-
-template<class PixelType>
-class Texture_T : public Texture<PixelType>, public ChannelMembers<PixelType>
-{
-    public:
-
-        Texture_T(unsigned int w, unsigned int h) : Texture<PixelType>(w,h) , ChannelMembers<PixelType>(this->mData,uvec2(w,h)) {};
-
-        Texture_T(const std::string & path) : Texture<PixelType>(path) , ChannelMembers<PixelType>(this->mData,uvec2(0,0))
-        {
-            this->ChannelMembers<PixelType>::setup( this->mData, this->size() );
-        };
-};
-
-//====================================================================================================
-
-
-// #define SCALAR_MULTIPLICATION( TYP )
-// template<class PixelType>                                                                 \
-// inline Texture<PixelType> operator * (const TYP & left, const Texture<PixelType> & right) \
-// {                                                                                         \
-//     return( std::move( right * left ) );                                                  \
-// }
-
-template<class PixelType>
-inline Texture<PixelType> operator * (const float & left, const Texture<PixelType> & right)
-{
-    return(  right * left  );
-}
-
-template<class PixelType>
-inline Texture<PixelType> operator - (const float & left, const Texture<PixelType> & right)
-{
-    Texture<PixelType> T( right.size() );
-    T = left;
-    return(  T * right );
-}
-
-
-
-
-//SCALAR_MULTIPLICATION(float)
-
-//SCALAR_MULTIPLICATION(double)
-
-//SCALAR_MULTIPLICATION(int)
-
-//SCALAR_MULTIPLICATION(unsigned int)
-
-
-//template<class PixelType, class Typ>
-//inline Texture<PixelType> operator + (const Typ & left, const Texture<PixelType> & right)
-//{
-//    return( std::move( right + left ) );
-//}
-//
-//template<class PixelType, class Typ>
-//inline Texture<PixelType> operator - (const Typ & left, const Texture<PixelType> & right)
-//{
-//    return( std::move( right - left ) );
-//}
-
-
-
-// template<class PixelType, int in, class Typ>
-// inline Texture<glm::u8vec1> operator * (const Typ & left, const ChannelReference<PixelType,in> & right)
-// {
-//     return( std::move( right * left ) );
-// }
-//
-// template<class PixelType, int in, class Typ>
-// inline Texture<glm::u8vec1> operator - (const Typ & left, const ChannelReference<PixelType,in> & right)
-// {
-//     return( std::move( left - right ) );
-// }
-//
-// template<class PixelType, int in, class Typ>
-// inline Texture<glm::u8vec1> operator + (const Typ & left, const ChannelReference<PixelType,in> & right)
-// {
-//     return( std::move( right + left ) );
-// }
-
-
-
-
-template<>
-inline void Texture<glm::u8vec1>::resize( const uvec2 & newSize)
-{
-    Texture<glm::u8vec1> T( newSize.x, newSize.y);
-    auto d = T.size();
-
-    for(int i=0; i < d.x; i++)
-        for(int j=0; j < d.y; j++)
-        {
-            // scale the x and y dimeninos to be between 0 and 1
-            float x = (float)i / (float)d.x;
-            float y = (float)j / (float)d.y;
-
-            // Find the index on the main texture
-            int X = static_cast<int>(x * mDim.x);
-            int Y = static_cast<int>(y * mDim.y);
-
-
-            // sample the 4 locations
-            float f00 = float( (*this)(X,Y)    [0]);
-            float f01 = float( (*this)(X,Y+1)  [0]);
-            float f10 = float( (*this)(X+1,Y)  [0]);
-            float f11 = float( (*this)(X+1,Y+1)[0]);
-
-            float s = x * static_cast<float>(mDim.x);
-            float t = y * static_cast<float>(mDim.y);
-
-            // get the fractional part
-            s = s-floor(s);
-            t = t-floor(t);
-
-            T(i,j) = glm::u8vec1( f00 * (1-s)*(1-t) + f10*s*(1-t) + f01*(1-s)*t + f11*s*t);
-
+            return *this;
         }
 
-    *this = std::move(T);
-}
 
 
-template<>
-inline void Texture<glm::u8vec2>::resize( const uvec2 & newSize)
-{
-    Texture<glm::u8vec2> T( newSize.x, newSize.y);
-    auto d = T.size();
 
-    for(int i=0; i < d.x; i++)
-        for(int j=0; j < d.y; j++)
+        ChannelRef& operator=(const TextureC & other);
+
+
+        TextureC operator+(ChannelRef & other);
+        TextureC operator-(ChannelRef & other);
+        TextureC operator*(ChannelRef & other);
+        TextureC operator/(ChannelRef & other);
+
+
+        ChannelRef& operator=(  std::function<float(float,float) > F)
         {
-            // scale the x and y dimeninos to be between 0 and 1
-            float x = (float)i / (float)d.x;
-            float y = (float)j / (float)d.y;
+            uvec2 S = mParent->size();
+            float W = 1.0 / (float)S.x;
+            float H = 1.0 / (float)S.y;
+            for(int y =0; y < S.y; y++)
+                for(int x=0; x < S.x; x++)
+                {
+                    (*mParent)(x,y,(int)mComp) = (unsigned char)(F( (float)x * W, (float)y*H ) * 255.f);
+                }
 
-            // Find the index on the main texture
-            int X = static_cast<int>(x * mDim.x);
-            int Y = static_cast<int>(y * mDim.y);
-
-
-            // sample the 4 locations
-            vec2 f00 = vec2( (*this)(X,Y)    );
-            vec2 f01 = vec2( (*this)(X,Y+1)  );
-            vec2 f10 = vec2( (*this)(X+1,Y)  );
-            vec2 f11 = vec2( (*this)(X+1,Y+1));
-
-            float s = x * static_cast<float>(mDim.x);
-            float t = y * static_cast<float>(mDim.y);
-
-            // get the fractional part
-            s = s-floor(s);
-            t = t-floor(t);
-
-            T(i,j) = glm::u8vec2( f00 * (1-s)*(1-t) + f10*s*(1-t) + f01*(1-s)*t + f11*s*t);
-
+            return *this;
         }
 
-    *this = std::move(T);
-}
 
-template<>
-inline void Texture<glm::u8vec3>::resize( const uvec2 & newSize)
-{
-    Texture<glm::u8vec3> T( newSize.x, newSize.y);
-    auto d = T.size();
-
-    for(int i=0; i < d.x; i++)
-        for(int j=0; j < d.y; j++)
-        {
-            // scale the x and y dimeninos to be between 0 and 1
-            float x = (float)i / (float)d.x;
-            float y = (float)j / (float)d.y;
-
-            // Find the index on the main texture
-            int X = static_cast<int>(x * mDim.x);
-            int Y = static_cast<int>(y * mDim.y);
+        unsigned int    mComp;
+        Texture         *mParent;
+    };
 
 
-            // sample the 4 locations
-            vec3 f00 = vec3( (*this)(X,Y)    );
-            vec3 f01 = vec3( (*this)(X,Y+1)  );
-            vec3 f10 = vec3( (*this)(X+1,Y)  );
-            vec3 f11 = vec3( (*this)(X+1,Y+1));
 
-            float s = x * static_cast<float>(mDim.x);
-            float t = y * static_cast<float>(mDim.y);
-
-            // get the fractional part
-            s = s-floor(s);
-            t = t-floor(t);
-
-            T(i,j) = glm::u8vec3( f00 * (1-s)*(1-t) + f10*s*(1-t) + f01*(1-s)*t + f11*s*t);
-
-        }
-
-    *this = std::move(T);
-}
-
-template<>
-inline void Texture<glm::u8vec4>::resize( const uvec2 & newSize)
-{
-    Texture<glm::u8vec4> T( newSize.x, newSize.y);
-    auto d = T.size();
-
-    for(int i=0; i < d.x; i++)
-        for(int j=0; j < d.y; j++)
-        {
-            // scale the x and y dimeninos to be between 0 and 1
-            float x = (float)i / (float)d.x;
-            float y = (float)j / (float)d.y;
-
-            // Find the index on the main texture
-            int X = static_cast<int>(x * mDim.x);
-            int Y = static_cast<int>(y * mDim.y);
+    class TextureC : public Texture
+    {
+        public:
+            ChannelRef r;
+            ChannelRef g;
+            ChannelRef b;
+            ChannelRef a;
 
 
-            // sample the 4 locations
-            vec4 f00 = vec4( (*this)(X,Y)    );
-            vec4 f01 = vec4( (*this)(X,Y+1)  );
-            vec4 f10 = vec4( (*this)(X+1,Y)  );
-            vec4 f11 = vec4( (*this)(X+1,Y+1));
+            TextureC() : r(this,0),g(this,1),b(this,2),a(this,3)
+            {
 
-            float s = x * static_cast<float>(mDim.x);
-            float t = y * static_cast<float>(mDim.y);
+            }
 
-            // get the fractional part
-            s = s-floor(s);
-            t = t-floor(t);
+            TextureC( const uvec2 & size, unsigned int components=4) : r(this,0),g(this,1),b(this,2),a(this,3), Texture(size,components)
+            {
+            }
 
-            T(i,j) = glm::u8vec4( f00 * (1-s)*(1-t) + f10*s*(1-t) + f01*(1-s)*t + f11*s*t);
+            TextureC(uint w, uint h, unsigned int components=4) : r(this,0),g(this,1),b(this,2),a(this,3), Texture(w,h,components)
+            {
+            }
 
-        }
+            TextureC(const std::string & path, unsigned int ForceNumberChannels=0) : r(this,0),g(this,1),b(this,2),a(this,3)
+            {
+                loadFromPath(path, ForceNumberChannels);
+            }
 
-    *this = std::move(T);
-}
+            explicit TextureC(TextureC & T) : r(this,0),g(this,1),b(this,2),a(this,3),  Texture(T)
+            {
+            }
+
+            TextureC(TextureC && T) :r(this,0),g(this,1),b(this,2),a(this,3),  Texture(T)
+            {
+            }
+
+            TextureC & operator=(TextureC && T)
+            {
+                *this = std::move(T);
+                return *this;
+            }
+    };
 
 
+    inline ChannelRef& ChannelRef::operator=(const TextureC & other)
+    {
+        uvec2 S = glm::min( mParent->size(), other.size() );
+
+        for(int y =0; y < S.y; y++)
+            for(int x=0; x < S.x; x++)
+            {
+                (*mParent)(x,y,(int)mComp) = other(x, y, 0);
+            }
+        return *this;
+    }
+
+
+    inline TextureC ChannelRef::operator+(ChannelRef & other)
+    {
+        int c   = other.mComp;
+        uvec2 S = glm::min( mParent->size(), other.mParent->size() );
+        TextureC T( S, 1);
+
+
+
+        for(int y =0; y < S.y; y++)
+            for(int x=0; x < S.x; x++)
+            {
+                T(x,y,0) = (*mParent)(x, y, mComp) + (*other.mParent)(x, y, c);
+            }
+
+        return std::move(T);
+    }
+
+    inline TextureC ChannelRef::operator-(ChannelRef & other)
+    {
+        int c   = other.mComp;
+        uvec2 S = glm::min( mParent->size(), other.mParent->size() );
+        TextureC T( S, 1);
+
+
+
+        for(int y =0; y < S.y; y++)
+            for(int x=0; x < S.x; x++)
+            {
+                T(x,y,0) = (*mParent)(x, y, mComp) - (*other.mParent)(x, y, c);
+            }
+
+        return std::move(T);
+    }
+
+    inline TextureC ChannelRef::operator*(ChannelRef & other)
+    {
+        int c   = other.mComp;
+        uvec2 S = glm::min( mParent->size(), other.mParent->size() );
+        TextureC T( S, 1);
+
+
+        for(int y =0; y < S.y; y++)
+            for(int x=0; x < S.x; x++)
+            {
+                float t = (float)(*mParent)(x, y, mComp) * (float)(*other.mParent)(x, y, c);
+                T(x,y,0) = (unsigned char)(t / (255.f));
+            }
+
+        return std::move(T);
+    }
+
+    inline TextureC ChannelRef::operator/(ChannelRef & other)
+    {
+        int c   = other.mComp;
+        uvec2 S = glm::min( mParent->size(), other.mParent->size() );
+        TextureC T( S, 1);
+
+
+        for(int y =0; y < S.y; y++)
+            for(int x=0; x < S.x; x++)
+            {
+                float t = (float)(*mParent)(x, y, mComp) / (float)(*other.mParent)(x, y, c);
+                T(x,y,0) = (unsigned char)(t * (255.f));
+            }
+
+        return std::move(T);
+    }
+
+
+
+    inline TextureC operator / (const ChannelRef & left, const TextureC & right)
+    {
+
+        uvec2 S = glm::min( left.mParent->size(), right.size() );
+        TextureC T( S, 1);
+
+
+        for(int y =0; y < S.y; y++)
+            for(int x=0; x < S.x; x++)
+            {
+                T(x,y,0) = (unsigned char) (  (float)(*left.mParent)(x, y, left.mComp) / (float) right(x, y, 0) * (255.f)  );
+            }
+
+        return std::move(T);
+    }
+
+    inline TextureC operator * (const  ChannelRef & left,  const TextureC & right)
+    {
+
+        uvec2 S = glm::min( left.mParent->size(), right.size() );
+        TextureC T( S, 1);
+
+
+        for(int y =0; y < S.y; y++)
+            for(int x=0; x < S.x; x++)
+            {
+                T(x,y,0) = (unsigned char) (  (float)(*left.mParent)(x, y, left.mComp) * (float) right(x, y, 0) * (1.0f/255.f)  );
+            }
+
+        return std::move(T);
+    }
+
+    inline TextureC operator * ( const TextureC & left,  const ChannelRef & right)
+    {
+       return right * left;
+    }
+
+    inline TextureC operator + (const  ChannelRef & left,  const TextureC & right)
+    {
+
+        uvec2 S = glm::min( left.mParent->size(), right.size() );
+        TextureC T( S, 1);
+
+
+        for(int y =0; y < S.y; y++)
+            for(int x=0; x < S.x; x++)
+            {
+                T(x,y,0) = (*left.mParent)(x, y, left.mComp) + right(x, y, 0);
+            }
+
+        return std::move(T);
+    }
+
+    inline TextureC operator - ( const ChannelRef & left,  const TextureC & right)
+    {
+        uvec2 S = glm::min( left.mParent->size(), right.size() );
+        TextureC T( S, 1);
+
+
+        for(int y =0; y < S.y; y++)
+            for(int x=0; x < S.x; x++)
+            {
+                T(x,y,0) = (*left.mParent)(x, y, left.mComp) - right(x, y, 0);
+            }
+
+        return std::move(T);
+    }
+
+
+    inline TextureC operator - ( const TextureC & left,  const ChannelRef & right)
+    {
+        uvec2 S = glm::min( left.size(), right.mParent->size() );
+        TextureC T( S, 1);
+
+
+        for(int y =0; y < S.y; y++)
+            for(int x=0; x < S.x; x++)
+            {
+                T(x,y,0) = - left(x, y, 0) - (*right.mParent)(x, y, right.mComp);
+            }
+
+        return std::move(T);
+    }
 }
 #endif // TEXTURE_H
 

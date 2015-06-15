@@ -110,10 +110,10 @@ namespace gla
     typedef TRect<uint>  uRect;
 
 
-    typedef Texture_T<glm::u8vec1> TextureR;
-    typedef Texture_T<glm::u8vec2> TextureRG;
-    typedef Texture_T<glm::u8vec3> TextureRGB;
-    typedef Texture_T<glm::u8vec4> TextureRGBA;
+    //typedef Texture_T<glm::u8vec1> TextureR;
+    //typedef Texture_T<glm::u8vec2> TextureRG;
+    //typedef Texture_T<glm::u8vec3> TextureRGB;
+    //typedef Texture_T<glm::u8vec4> TextureRGBA;
 
 
     /* Shared Pointer stuff*/

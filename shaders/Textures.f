@@ -9,5 +9,5 @@ out vec4 color;
 void main()
 {
     // Output color = red
-    color = texture2D( uSampler, FragmentTexCoord ).rgba;
+    color = vec4( texture2D( uSampler, FragmentTexCoord ).rgb, 1.0);
 }

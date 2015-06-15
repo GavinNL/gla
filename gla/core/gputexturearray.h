@@ -15,7 +15,7 @@ class GPUTextureArray
 public:
     GPUTextureArray(){};
 
-    GPUTextureArray(uint width, uint height, uint depth) : mID(0), mSize(0,0,0), mMipLevelCount(1) {};
+    GPUTextureArray(uint width, uint height, uint depth, uint comp) : mID(0), mSize(0,0,0), mMipLevelCount(1) , mComponents(comp) {};
 
     GPUTextureArray(uvec3 size){}
     ~GPUTextureArray(){};
@@ -26,7 +26,7 @@ public:
      * @param depth the number of textures to allocate space for
      * @param MipMapCount the mipmap level, default is 1
      */
-    void create(uvec2 size, unsigned int depth, int MipMapCount=1);
+    void create(uvec2 size, unsigned int depth, int MipMapCount=1, unsigned int components=4);
 
 
 
@@ -36,7 +36,7 @@ public:
      * @param Layer - the layer number to copy the texture into
      * @param pOffset - an offset parameter.
      */
-    void SetLayer(const TextureRGBA & T, uint Layer, const uvec2 & pOffset=uvec2(0,0))
+    void SetLayer(const Texture & T, uint Layer, const uvec2 & pOffset=uvec2(0,0))
     {
         bind();
 
@@ -50,17 +50,24 @@ public:
             throw gla::GLA_EXCEPTION("ERROR: The texture dimensions do not match");
         }
 
+        if( T.getChannels() != mComponents )
+        {
+            throw gla::GLA_EXCEPTION("ERROR: Texture channels do not match the number of channels in the TextureArray");
+        }
+
+        GLuint format[4] = {GL_RED, GL_RG, GL_RGB, GL_RGBA};
+
         glTexSubImage3D(  GL_TEXTURE_2D_ARRAY,
-                          0,                // level
-                          pOffset.x,        // x-offset
-                          pOffset.y,        // y-offset
-                          Layer,                // z-offset
-                          T.size().x,       // width
-                          T.size().y,       // height
-                          1,            // depth
-                          GL_RGBA,          // format
-                          GL_UNSIGNED_BYTE, // type
-                          T.getRawData()    // image data
+                          0,                      // level
+                          pOffset.x,              // x-offset
+                          pOffset.y,              // y-offset
+                          Layer,                  // z-offset
+                          T.size().x,             // width
+                          T.size().y,             // height
+                          1,                      // depth
+                          format[T.getChannels()],  // format
+                          GL_UNSIGNED_BYTE,       // type
+                          T.getRawData()          // image data
                        );
     }
 
@@ -72,7 +79,7 @@ public:
         if(mID)   glDeleteTextures(1, &mID);
 
         mSize          = {0,0};
-        mMipLevelCount =0;
+        mMipLevelCount = 0;
     };
 
     inline void setActiveTexture(unsigned int unit=0)
@@ -118,13 +125,14 @@ public:
     private:
         GLuint  mID;
         uvec3   mSize;
+        unsigned int mComponents;
         GLsizei mMipLevelCount;
 };
 
 
 
 //============================================
-inline void GPUTextureArray::create(uvec2 size, unsigned int depth, int MipMapCount)
+inline void GPUTextureArray::create(uvec2 size, unsigned int depth, int MipMapCount, unsigned int components)
 {
     try
     {
@@ -147,7 +155,8 @@ inline void GPUTextureArray::create(uvec2 size, unsigned int depth, int MipMapCo
 
     bind();
 
-    glTexStorage3D( GL_TEXTURE_2D_ARRAY, MipMapCount, GL_RGBA8, size.x, size.y, depth);
+    GLuint format[4] = {GL_R8, GL_RG8, GL_RGB8, GL_RGBA8};
+    glTexStorage3D( GL_TEXTURE_2D_ARRAY, MipMapCount, format[components], size.x, size.y, depth);
 
     GetGLError();
 
@@ -159,6 +168,7 @@ inline void GPUTextureArray::create(uvec2 size, unsigned int depth, int MipMapCo
     GetGLError();
 
     mSize = uvec3(size.x, size.y, depth);
+    mComponents = components;
 };
 
 

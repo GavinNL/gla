@@ -137,6 +137,19 @@ namespace gla
             }
 
             /**
+             * @brief Render
+             * @param PrimitaveType
+             * @param IndexRange an vec2 of unsigned int that indicate the range of indices to draw, start and end indices
+             */
+            inline virtual void Render(PRIMITAVE PrimitaveType, const gla::uvec2 & IndexRange)
+            {
+                    //std::cout << "Render: " << _size << " : " << _VAO << std::endl;
+                    glBindVertexArray( _VAO );
+                        _isIndexed ? glDrawElementsBaseVertex(PrimitaveType, _size, GL_UNSIGNED_INT, 0,0) : glDrawArrays(PrimitaveType, IndexRange.x, IndexRange.y-IndexRange.x);
+                    glBindVertexArray(0);
+            }
+
+            /**
              * Renders the ArrayObject as the default primitave type as defined when
              * it was created on the CPU
              *
@@ -176,6 +189,10 @@ namespace gla
                 _VAO = 0;
             }
 
+            inline int size()
+            {
+                return _size;
+            }
 
             inline GLint getID() { return _VAO; }
 

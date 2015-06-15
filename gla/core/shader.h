@@ -114,24 +114,49 @@ class ShaderProgram
         ShaderProgram(const ShaderProgram & other)
         {
             mProgram = other.mProgram;
+            mUniformLocations = other.mUniformLocations;
         }
 
         ShaderProgram & operator=(const ShaderProgram & other)
         {
             mProgram = other.mProgram;
+            mUniformLocations = other.mUniformLocations;
             return(*this);
         }
 
         inline void DeleteShader()
         {
             glDeleteProgram(mProgram);
+            mUniformLocations.clear();
         }
 
         inline GLuint getUniformLocation(const GLchar *name)
         {
             auto x = glGetUniformLocation(mProgram, name);
-            std::cout << "Uniform locatiom("<<mProgram<<"):,  " << name << ": " <<  x << std::endl;
+            //std::cout << "Uniform locatiom("<<mProgram<<"):,  " << name << ": " <<  x << std::endl;
             return x;
+        }
+
+        inline int GetNumUniforms()
+        {
+            int total = -1;
+            glGetProgramiv( mProgram, GL_ACTIVE_UNIFORMS, &total );
+            return total;
+        }
+
+        std::string GetUniformName(int i)
+        {
+            int name_len=-1, num=-1;
+
+            GLenum type = GL_ZERO;
+
+            char name[100];
+
+            glGetActiveUniform( mProgram, GLuint(i), sizeof(name)-1, &name_len,  &num,  &type,  name );
+            name[name_len] = 0;
+            GLuint location = glGetUniformLocation( mProgram, name );
+
+            return std::string(name);
         }
 
         GLuint linkProgram(const VertexShader & VS, const FragmentShader & FS)
@@ -150,6 +175,13 @@ class ShaderProgram
 
                 mProgram = shader;
                 std::cout << "Shader Program created: "  << shader << std::endl;
+
+                // ============ Get number of uniform locations ==================
+                int N = GetNumUniforms();
+                mUniformLocations.clear();
+                mUniformLocations.assign(N,-1);
+                // ============ Get number of uniform locations ==================
+
                 return shader;
             } else {
                 std::cout << "Unable to link shader. Vertex or Fragment shader is not compiled properly." << std::endl;
@@ -159,7 +191,14 @@ class ShaderProgram
             return shader;
         }
 
-        inline void useShader() { glUseProgram(mProgram);}
+        inline void useShader()
+        {
+            static int CurrentlyBoundShader = 0;
+            if(CurrentlyBoundShader==mProgram) return;
+
+            CurrentlyBoundShader = mProgram;
+            glUseProgram(mProgram);
+        }
 
         // Sending data to the shader
 
@@ -184,10 +223,80 @@ class ShaderProgram
         }
 
 
+        /**
+         * @brief sendUniform
+         * @param location - a unique index in the array to store the uniform locations. Start at 0 and increment for each new uniform you are going to send
+         * @param name - the name of the uniform in the shader
+         * @param V
+         * @param count - number of elements to send, default is 1
+         *
+         * This method combines finding the uniform location and sending the uniform into one. This is a specialized function that will only find
+         * the uniform location once, then store it in an array.  For example:
+         *
+         * sendUniformLocation(0, "projectionMatrix", proj);
+         * sendUniformLocation(1, "ModelMatrix", model);
+         * sendUniformLocation(3, "ModelMatrix", model);  // this shouldn't be done, use 2 instead of 3. Must go sequentally
+         */
+        inline void sendUniform(GLuint location, const char *name, const gla::mat4 & V, uint count=1 )
+        {
+            switch( mUniformLocations[location] )
+            {
+                case -1:
+                    mUniformLocations[location] = getUniformLocation(name);
+                    std::cout << "Location found: " << mUniformLocations[location] << std::endl;
+                default:
+                    glUniformMatrix4fv(mUniformLocations[location], count, GL_FALSE, &V[0][0] );
+            }
+        }
+
+        inline void sendUniform(GLuint location, const char *name, const gla::vec3 & V, uint count=1 )
+        {
+            switch( mUniformLocations[location] )
+            {
+                case -1:
+                    mUniformLocations[location] = getUniformLocation(name);
+                default:
+                    glUniform3fv(mUniformLocations[location], count, &V[0]);
+            }
+        }
+
+        inline void sendUniform(GLuint location, const char *name, const gla::vec4 & V, uint count=1 )
+        {
+            switch( mUniformLocations[location] )
+            {
+                case -1:
+                    mUniformLocations[location] = getUniformLocation(name);
+                default:
+                    glUniform4fv(mUniformLocations[location], count, &V[0]);
+            }
+        }
+
+        inline void sendUniform(GLuint location, const char *name, const gla::vec2 & V, uint count=1 )
+        {
+            switch( mUniformLocations[location] )
+            {
+                case -1:
+                    mUniformLocations[location] = getUniformLocation(name);
+                default:
+                    glUniform2fv(mUniformLocations[location], count, &V[0]);
+            }
+        }
+
+        inline void sendUniform(GLuint location, const char *name, const float * V, uint count=1 )
+        {
+            switch( mUniformLocations[location] )
+            {
+                case -1:
+                    mUniformLocations[location] = getUniformLocation(name);
+                default:
+                    glUniform1fv(mUniformLocations[location], count, V);
+            }
+        }
+
         //
 
     private:
-
+        std::vector<int> mUniformLocations;
         GLuint mProgram;
 
 };
