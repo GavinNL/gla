@@ -78,8 +78,8 @@ int main()
     //---------------------------------------------------------------------------
     // Load a texture
     //---------------------------------------------------------------------------
-    TextureC cpuTex ("resources/rocks1024.jpg", 3 );
-    TextureC cpuTex2("resources/rocks1024.jpg", 3 );
+    Texture cpuTex ("resources/rocks1024.jpg", 3 );
+    Texture cpuTex2("resources/rocks1024.jpg", 3 );
 
     cpuTex.g = cpuTex.r*cpuTex.b*cpuTex.b*cpuTex.b*cpuTex.b;
     // resize the texture

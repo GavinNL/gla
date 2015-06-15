@@ -25,7 +25,7 @@
 namespace gla {
 
     class ChannelRef;
-    class Texture;
+    class TextureBase;
 
     //===========================================================================
     // GPUTexture
@@ -99,7 +99,7 @@ namespace gla {
                 return true;
             }
 
-            void pasteSubImage( const gla::uvec2 & xy, const Texture & T, int level=0);
+            void pasteSubImage( const gla::uvec2 & xy, const TextureBase & T, int level=0);
 
             inline bool create(const uvec2 & size, TEXTURECOLOURFORMAT Format = RGBA)
             {
@@ -150,7 +150,7 @@ namespace gla {
             }
 
             /**
-             *  Clears the Texture from the GPU. This is not done automatically when the destructor is called.
+             *  Clears the TextureBase from the GPU. This is not done automatically when the destructor is called.
              *
              */
             void clear()
@@ -163,7 +163,7 @@ namespace gla {
              * @brief toCPU
              * @return Returns a CPU copy of the texture
              */
-            //Texture toCPU();
+            //TextureBase toCPU();
 
             inline uvec2  size()  const { return mDim; }
             inline GLuint getID() const { return mTextureID;  }
@@ -209,15 +209,15 @@ namespace gla {
 
 
 
-    /*! @brief Texture class for holding image information in rgba format.
+    /*! @brief TextureBase class for holding image information in rgba format.
      *
-     * The Texture class holds image information on the CPU. It also contains
+     * The TextureBase class holds image information on the CPU. It also contains
      * methods and functions to manipulate the pixel information.
      *
      * Example #1:
      *
      *   \code{.cpp}
-     *      Texture T(256,256);          // Create a blank texture 256x256
+     *      TextureBase T(256,256);          // Create a blank texture 256x256
      *      T.a = T.r + T.b;             // Set the alpha channel to be the sum of the red and blue channels
      *
      *      GPUTexture TexGpu = T.toGPU();    // send the texture to the GPU so that it can be used in openGL calls.
@@ -226,7 +226,7 @@ namespace gla {
      * Example #2:
      *
      *   \code{.cpp}
-     *      Texture T(256,256);          // Create a blank texture 256x256
+     *      TextureBase T(256,256);          // Create a blank texture 256x256
      *
      *      // set the red channel of the texture using a lambda function
      *      // The lambda function needs to return a float ranging between 0 and 1 and input a const vec2&
@@ -245,17 +245,17 @@ namespace gla {
      *      GPUTexture TexGpu = T.toGPU();    // send the texture to the GPU so that it can be used in openGL calls.
      *    \endcode
      */
-    class Texture
+    class TextureBase
     {
 
         protected:
 
-            Texture() : mData(0)
+            TextureBase() : mData(0)
             {
 
             }
 
-            Texture( const uvec2 & size, unsigned int components=4) : mData(0)
+            TextureBase( const uvec2 & size, unsigned int components=4) : mData(0)
             {
                 mDim.x = size.x;
                 mDim.y = size.y;
@@ -263,7 +263,7 @@ namespace gla {
                 mData  = new unsigned char[ mDim[0] * mDim[1] * components];
             }
 
-            Texture(uint w, uint h, unsigned int components=4) : mData(0)
+            TextureBase(uint w, uint h, unsigned int components=4) : mData(0)
             {
                 mDim.x = w;
                 mDim.y = h;
@@ -275,7 +275,7 @@ namespace gla {
 
 
 
-            explicit Texture(Texture & T) :  mData(0)
+            explicit TextureBase(TextureBase & T) :  mData(0)
             {
 
                 mDim  = T.mDim;
@@ -285,7 +285,7 @@ namespace gla {
 
             }
 
-            Texture(Texture && T) : mData(0)
+            TextureBase(TextureBase && T) : mData(0)
             {
                 if(mData) clear();
 
@@ -296,12 +296,12 @@ namespace gla {
                 T.mDim  = { 0, 0 };
                 T.mData = 0;
                 T.mComponents = 0;
-                std::cout << " Texture::Move constructor\n";
+                std::cout << " TextureBase::Move constructor\n";
 
             }
 
     public:
-            Texture & operator=(Texture && T)
+            TextureBase & operator=(TextureBase && T)
             {
                 if(mData) clear();
 
@@ -313,15 +313,15 @@ namespace gla {
                 T.mData       = 0;
                 T.mComponents = 0;
 
-                std::cout << " Texture::Move operator\n";
+                std::cout << " TextureBase::Move operator\n";
                 return *this;
             }
 
             /**
              * Frees all memory associated with this texture including GPU
-             * data. The OpenGL Texture id will be freed.
+             * data. The OpenGL TextureBase id will be freed.
              */
-            ~Texture()
+            ~TextureBase()
             {
                 clear();
             }
@@ -377,7 +377,7 @@ namespace gla {
                 int x, y, comp;
 
                 //==========================================================
-                // Load the Texture from an image file.
+                // Load the TextureBase from an image file.
                 //==========================================================
                 unsigned char * img = ImageLoader::GLA_load(path.c_str(), &x, &y, &comp, ForceNumberChannels );
 
@@ -385,7 +385,7 @@ namespace gla {
                 {
                     _handleRawPixels(img, static_cast<unsigned int>( x ), static_cast<unsigned int>( y ) );
                     mComponents = ForceNumberChannels!=0 ? ForceNumberChannels : comp;
-                    std::cout << "Texture loaded with #components = " << mComponents << std::endl;
+                    std::cout << "TextureBase loaded with #components = " << mComponents << std::endl;
 
                 } else {
                     std::cout << "Error loading texture: " << path << std::endl;
@@ -470,7 +470,7 @@ namespace gla {
 
             inline void resize( const uvec2 & newSize)
             {
-                Texture T( newSize.x, newSize.y , mComponents);
+                TextureBase T( newSize.x, newSize.y , mComponents);
                 auto d = T.size();
 
                 for(int j=0; j < d.y; j++)
@@ -515,7 +515,7 @@ namespace gla {
             //=====================================
             // Operators
             //=====================================
-            Texture& operator=(  std::function<gla::ucol4(float,float) > F)
+            TextureBase& operator=(  std::function<gla::ucol4(float,float) > F)
             {
                 uvec2 S = size();
                 float W = 1.0 / (float)S.x;
@@ -533,7 +533,7 @@ namespace gla {
                 return *this;
             }
 
-            Texture& operator=(  std::function<gla::vec4(float,float) > F)
+            TextureBase& operator=(  std::function<gla::vec4(float,float) > F)
             {
                 uvec2 S = size();
                 float W = 1.0 / (float)S.x;
@@ -552,11 +552,11 @@ namespace gla {
             }
 
 
-            inline Texture operator  + ( const Texture & c) const
+            inline TextureBase operator  + ( const TextureBase & c) const
             {
                 uvec2 siz      = glm::min( size(), c.size() );
                 unsigned int C = mComponents;
-                Texture T(    siz.x,siz.y  ,C   );
+                TextureBase T(    siz.x,siz.y  ,C   );
 
                 for(int y=0;y<siz.y;y++)
                 for(int x=0;x<siz.x;x++)
@@ -568,11 +568,11 @@ namespace gla {
                return T;
             };
 
-            inline Texture operator  - ( const Texture & c) const
+            inline TextureBase operator  - ( const TextureBase & c) const
             {
                 uvec2 siz      = glm::min( size(), c.size() );
                 unsigned int C = mComponents;
-                Texture T(    siz.x,siz.y  ,C   );
+                TextureBase T(    siz.x,siz.y  ,C   );
 
                 for(int y=0;y<siz.y;y++)
                 for(int x=0;x<siz.x;x++)
@@ -587,11 +587,11 @@ namespace gla {
 
 
 
-            inline Texture        operator  - ( const float & c) const
+            inline TextureBase        operator  - ( const float & c) const
             {
                uvec2 siz      = size();
                unsigned int C = mComponents;
-               Texture T(    siz.x,siz.y ,C    );
+               TextureBase T(    siz.x,siz.y ,C    );
 
                 //DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }
                 for(int y=0;y<siz.y;y++)
@@ -604,11 +604,11 @@ namespace gla {
                return T;
             };
 
-            inline Texture        operator  + ( const float & c) const
+            inline TextureBase        operator  + ( const float & c) const
             {
                uvec2 siz      = size();
                unsigned int C = mComponents;
-               Texture T(    siz.x,siz.y ,C    );
+               TextureBase T(    siz.x,siz.y ,C    );
 
                 //DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }
                 for(int y=0;y<siz.y;y++)
@@ -621,11 +621,11 @@ namespace gla {
                return T;
             };
 
-            inline Texture        operator  * ( const float & c) const
+            inline TextureBase        operator  * ( const float & c) const
             {
                uvec2 siz      = size();
                unsigned int C = mComponents;
-               Texture T(    siz.x,siz.y ,C    );
+               TextureBase T(    siz.x,siz.y ,C    );
 
                 //DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }
                 for(int y=0;y<siz.y;y++)
@@ -638,11 +638,11 @@ namespace gla {
                return T;
             };
 
-            inline Texture        operator  / ( const float & c) const
+            inline TextureBase        operator  / ( const float & c) const
             {
                uvec2 siz      = size();
                unsigned int C = mComponents;
-               Texture T(    siz.x,siz.y ,C    );
+               TextureBase T(    siz.x,siz.y ,C    );
 
                 //DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }
                 for(int y=0;y<siz.y;y++)
@@ -656,11 +656,11 @@ namespace gla {
             };
 
             #define OPERATOR(OP)                                                 \
-            inline Texture        operator  OP ( const unsigned char & c) const   \
+            inline TextureBase        operator  OP ( const unsigned char & c) const   \
             {                                                                    \
                uvec2 siz      = size();                                          \
                unsigned int C = mComponents;                                     \
-               Texture T(    siz.x,siz.y ,C    );                                \
+               TextureBase T(    siz.x,siz.y ,C    );                                \
                                                                                  \
                 for(int y=0; y<siz.y;y++)                                         \
                 for(int x=0; x<siz.x;x++)                                         \
@@ -699,14 +699,14 @@ namespace gla {
     };
 
 
-    class TextureC;
+    class Texture;
 
     //=====================
 
     class ChannelRef
     {
     public:
-        ChannelRef(Texture * parent, unsigned int comp) : mParent(parent), mComp(comp)
+        ChannelRef(TextureBase * parent, unsigned int comp) : mParent(parent), mComp(comp)
         {
         }
 
@@ -734,13 +734,13 @@ namespace gla {
 
 
 
-        ChannelRef& operator=(const TextureC & other);
+        ChannelRef& operator=(const Texture & other);
 
 
-        TextureC operator+(ChannelRef & other);
-        TextureC operator-(ChannelRef & other);
-        TextureC operator*(ChannelRef & other);
-        TextureC operator/(ChannelRef & other);
+        Texture operator+(ChannelRef & other);
+        Texture operator-(ChannelRef & other);
+        Texture operator*(ChannelRef & other);
+        Texture operator/(ChannelRef & other);
 
 
         ChannelRef& operator=(  std::function<float(float,float) > F)
@@ -759,12 +759,12 @@ namespace gla {
 
 
         unsigned int    mComp;
-        Texture         *mParent;
+        TextureBase         *mParent;
     };
 
 
 
-    class TextureC : public Texture
+    class Texture : public TextureBase
     {
         public:
             ChannelRef r;
@@ -773,33 +773,33 @@ namespace gla {
             ChannelRef a;
 
 
-            TextureC() : r(this,0),g(this,1),b(this,2),a(this,3)
+            Texture() : r(this,0),g(this,1),b(this,2),a(this,3)
             {
 
             }
 
-            TextureC( const uvec2 & size, unsigned int components=4) : r(this,0),g(this,1),b(this,2),a(this,3), Texture(size,components)
+            Texture( const uvec2 & size, unsigned int components=4) : r(this,0),g(this,1),b(this,2),a(this,3), TextureBase(size,components)
             {
             }
 
-            TextureC(uint w, uint h, unsigned int components=4) : r(this,0),g(this,1),b(this,2),a(this,3), Texture(w,h,components)
+            Texture(uint w, uint h, unsigned int components=4) : r(this,0),g(this,1),b(this,2),a(this,3), TextureBase(w,h,components)
             {
             }
 
-            TextureC(const std::string & path, unsigned int ForceNumberChannels=0) : r(this,0),g(this,1),b(this,2),a(this,3)
+            Texture(const std::string & path, unsigned int ForceNumberChannels=0) : r(this,0),g(this,1),b(this,2),a(this,3)
             {
                 loadFromPath(path, ForceNumberChannels);
             }
 
-            explicit TextureC(TextureC & T) : r(this,0),g(this,1),b(this,2),a(this,3),  Texture(T)
+            explicit Texture(Texture & T) : r(this,0),g(this,1),b(this,2),a(this,3),  TextureBase(T)
             {
             }
 
-            TextureC(TextureC && T) :r(this,0),g(this,1),b(this,2),a(this,3),  Texture(T)
+            Texture(Texture && T) :r(this,0),g(this,1),b(this,2),a(this,3),  TextureBase(T)
             {
             }
 
-            TextureC & operator=(TextureC && T)
+            Texture & operator=(Texture && T)
             {
                 *this = std::move(T);
                 return *this;
@@ -807,7 +807,7 @@ namespace gla {
     };
 
 
-    inline ChannelRef& ChannelRef::operator=(const TextureC & other)
+    inline ChannelRef& ChannelRef::operator=(const Texture & other)
     {
         uvec2 S = glm::min( mParent->size(), other.size() );
 
@@ -820,11 +820,11 @@ namespace gla {
     }
 
 
-    inline TextureC ChannelRef::operator+(ChannelRef & other)
+    inline Texture ChannelRef::operator+(ChannelRef & other)
     {
         int c   = other.mComp;
         uvec2 S = glm::min( mParent->size(), other.mParent->size() );
-        TextureC T( S, 1);
+        Texture T( S, 1);
 
 
 
@@ -837,11 +837,11 @@ namespace gla {
         return std::move(T);
     }
 
-    inline TextureC ChannelRef::operator-(ChannelRef & other)
+    inline Texture ChannelRef::operator-(ChannelRef & other)
     {
         int c   = other.mComp;
         uvec2 S = glm::min( mParent->size(), other.mParent->size() );
-        TextureC T( S, 1);
+        Texture T( S, 1);
 
 
 
@@ -854,11 +854,11 @@ namespace gla {
         return std::move(T);
     }
 
-    inline TextureC ChannelRef::operator*(ChannelRef & other)
+    inline Texture ChannelRef::operator*(ChannelRef & other)
     {
         int c   = other.mComp;
         uvec2 S = glm::min( mParent->size(), other.mParent->size() );
-        TextureC T( S, 1);
+        Texture T( S, 1);
 
 
         for(int y =0; y < S.y; y++)
@@ -871,11 +871,11 @@ namespace gla {
         return std::move(T);
     }
 
-    inline TextureC ChannelRef::operator/(ChannelRef & other)
+    inline Texture ChannelRef::operator/(ChannelRef & other)
     {
         int c   = other.mComp;
         uvec2 S = glm::min( mParent->size(), other.mParent->size() );
-        TextureC T( S, 1);
+        Texture T( S, 1);
 
 
         for(int y =0; y < S.y; y++)
@@ -890,11 +890,11 @@ namespace gla {
 
 
 
-    inline TextureC operator / (const ChannelRef & left, const TextureC & right)
+    inline Texture operator / (const ChannelRef & left, const Texture & right)
     {
 
         uvec2 S = glm::min( left.mParent->size(), right.size() );
-        TextureC T( S, 1);
+        Texture T( S, 1);
 
 
         for(int y =0; y < S.y; y++)
@@ -906,11 +906,11 @@ namespace gla {
         return std::move(T);
     }
 
-    inline TextureC operator * (const  ChannelRef & left,  const TextureC & right)
+    inline Texture operator * (const  ChannelRef & left,  const Texture & right)
     {
 
         uvec2 S = glm::min( left.mParent->size(), right.size() );
-        TextureC T( S, 1);
+        Texture T( S, 1);
 
 
         for(int y =0; y < S.y; y++)
@@ -922,16 +922,16 @@ namespace gla {
         return std::move(T);
     }
 
-    inline TextureC operator * ( const TextureC & left,  const ChannelRef & right)
+    inline Texture operator * ( const Texture & left,  const ChannelRef & right)
     {
        return right * left;
     }
 
-    inline TextureC operator + (const  ChannelRef & left,  const TextureC & right)
+    inline Texture operator + (const  ChannelRef & left,  const Texture & right)
     {
 
         uvec2 S = glm::min( left.mParent->size(), right.size() );
-        TextureC T( S, 1);
+        Texture T( S, 1);
 
 
         for(int y =0; y < S.y; y++)
@@ -943,10 +943,10 @@ namespace gla {
         return std::move(T);
     }
 
-    inline TextureC operator - ( const ChannelRef & left,  const TextureC & right)
+    inline Texture operator - ( const ChannelRef & left,  const Texture & right)
     {
         uvec2 S = glm::min( left.mParent->size(), right.size() );
-        TextureC T( S, 1);
+        Texture T( S, 1);
 
 
         for(int y =0; y < S.y; y++)
@@ -959,10 +959,10 @@ namespace gla {
     }
 
 
-    inline TextureC operator - ( const TextureC & left,  const ChannelRef & right)
+    inline Texture operator - ( const Texture & left,  const ChannelRef & right)
     {
         uvec2 S = glm::min( left.size(), right.mParent->size() );
-        TextureC T( S, 1);
+        Texture T( S, 1);
 
 
         for(int y =0; y < S.y; y++)
@@ -975,7 +975,7 @@ namespace gla {
     }
 
 
-    inline void GPUTexture::pasteSubImage( const gla::uvec2 & xy, const Texture & T, int level)
+    inline void GPUTexture::pasteSubImage( const gla::uvec2 & xy, const TextureBase & T, int level)
     {
         if(!mTextureID) return;
 
