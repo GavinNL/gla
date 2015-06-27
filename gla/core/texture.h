@@ -52,7 +52,7 @@ namespace gla {
 
 
 
-            inline bool create(const uvec2 & size, TEXTURECOLOURFORMAT InternalFormat=RGBA, int MipMaps=-1)
+            inline bool Create(const uvec2 & size, TEXTURECOLOURFORMAT InternalFormat=RGBA, int MipMaps=-1)
             {
                 return( create(size, InternalFormat, InternalFormat, UNSIGNED_BYTE, 0, MipMaps) );
             }
@@ -156,6 +156,7 @@ namespace gla {
             void clear()
             {
                 if(mTextureID) glDeleteTextures(1, &mTextureID);
+                mTextureID = 0;
                 mDim = {0,0};
             }
 
@@ -261,6 +262,7 @@ namespace gla {
                 mDim.y = size.y;
                 mComponents = components;
                 mData  = new unsigned char[ mDim[0] * mDim[1] * components];
+                memset(mData,0, mDim[0] * mDim[1] * components);
             }
 
             TextureBase(uint w, uint h, unsigned int components=4) : mData(0)
@@ -270,10 +272,8 @@ namespace gla {
 
                 mComponents = components;
                 mData  = new unsigned char[ mDim[0] * mDim[1] * components];
-
+                memset(mData,0, mDim[0] * mDim[1] * components);
             }
-
-
 
             explicit TextureBase(TextureBase & T) :  mData(0)
             {
@@ -415,6 +415,8 @@ namespace gla {
                     case 4: format = RGBA; break;
                 }
 
+                //GPU.mColourFormat = format;
+                std::cout << "Sending to GPU: #components: " << mComponents << std::endl;
                 if( GPU.create( mDim, format, format, UNSIGNED_BYTE, (void*)mData), MipMaps )
                 {
                     GPU.setFilter(     LINEAR, LINEAR, false );
@@ -437,7 +439,7 @@ namespace gla {
              */
             void clear()
             {
-                if( mData ) delete [] mData;
+                if( mData ) free(mData);
                 mData = 0;
             }
 
@@ -510,7 +512,10 @@ namespace gla {
              * Access pixel data on the CPU. This is unpredictable if you
              * have cleared the CPU data.
              */
-            inline unsigned char & operator ()(int x, int y, int comp) const { return mData[ y*(mDim[0] * mComponents) + x*mComponents + comp ]; }
+            inline unsigned char & operator ()(int x, int y, int comp) const
+            {
+                return mData[ y*(mDim[0] * mComponents) + x*mComponents + comp ];
+            }
 
             //=====================================
             // Operators
@@ -680,7 +685,7 @@ namespace gla {
               OPERATOR( / )
 
 
-        protected:
+        public:
             void _handleRawPixels(unsigned char * buffer, uint width, uint height)
             {
                 clear();
@@ -759,7 +764,7 @@ namespace gla {
 
 
         unsigned int    mComp;
-        TextureBase         *mParent;
+        TextureBase     *mParent;
     };
 
 
@@ -795,14 +800,30 @@ namespace gla {
             {
             }
 
-            Texture(Texture && T) :r(this,0),g(this,1),b(this,2),a(this,3),  TextureBase(T)
+            Texture(Texture && T) : r(this,0),g(this,1),b(this,2),a(this,3),  TextureBase(T)
             {
+                *this = std::move(T);
             }
 
             Texture & operator=(Texture && T)
             {
-                *this = std::move(T);
+                //*this = std::move(T);
+
+                if(mData) clear();
+
+                mData       = T.mData;
+                mDim        = T.mDim;
+                mComponents = T.mComponents;
+
+                T.mDim        = {0,0};
+                T.mData       = 0;
+                T.mComponents = 0;
+
+                std::cout << " Texture::Move operator\n";
+                //return *this;
+
                 return *this;
+
             }
     };
 
@@ -974,7 +995,7 @@ namespace gla {
         return std::move(T);
     }
 
-
+//, GL_RGB, GL_RGBA, GL_LUMINANCE, and .
     inline void GPUTexture::pasteSubImage( const gla::uvec2 & xy, const TextureBase & T, int level)
     {
         if(!mTextureID) return;
@@ -984,12 +1005,16 @@ namespace gla {
 
         //have a bigger image bigImage and the
         // subImage sub
-        std::cout << "Copying subimage over\n";
+       // std::cout << "Copying subimage over\n";
         glBindTexture(GL_TEXTURE_2D,   mTextureID);
 
         // Note, i/j might have the origin int he bottom left corner instead of top left.
-        GLenum Format[] = {GL_RED, GL_RG, GL_RGB, GL_RGBA};
+        GLenum Format[] = {GL_RED, GL_LUMINANCE_ALPHA, GL_RGB, GL_RGBA};
+       // std::cout << "PASTING SUB IMAGE: " << T.getChannels()-1 <<std::endl;
         glTexSubImage2D(GL_TEXTURE_2D, level, xy.x, xy.y, T.size().x, T.size().y, Format[T.getChannels()-1], GL_UNSIGNED_BYTE, d );
+
+      //  std::cout << "Error code: " << glGetError() << std::endl;
+
     }
 
 }

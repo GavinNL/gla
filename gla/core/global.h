@@ -22,41 +22,11 @@ namespace gla
     template <typename T>
     struct TBox
     {
+        TBox() : pos(0), dim(0) {};
         T pos;
         T dim;
     };
 
-
-//    struct Vertex_PNCUBI
-//    {
-//        vec3 p; // position
-//        vec3 n; // normal
-//        col4 c; // colour
-//        vec2 u; // uv coords
-//        vec4 b; // bone weights
-//        uint i; // bone index
-//    };
-
-//    struct Vertex_PNCU
-//    {
-//        vec3 p; // position
-//        vec3 n; // normal
-//        col4 c; // colour
-//        vec2 u; // uv coords
-//    };
-
-//    struct Vertex_PNU
-//    {
-//        vec3 p;  // position
-//        vec3 n;  // normal
-//        vec3 u;  // UV
-//    };
-
-//    struct Vertex_PC
-//    {
-//        vec3 p; // position
-//        col4 c; // colour
-//    };
 
 
     // Keep track of the texture that is currently bound

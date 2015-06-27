@@ -16,7 +16,6 @@ class FrameBufferObject;
 
 
 
-
 typedef enum {
     NEAREST                = GL_NEAREST,
     LINEAR                 = GL_LINEAR,
@@ -94,9 +93,15 @@ enum BUFFER_ELEMENT_TYPE
     uS1, uS2, uS3, uS4
 };
 
+
+typedef glm::bvec2  bvec2;
+typedef glm::bvec3  bvec3;
+typedef glm::bvec4  bvec4;
+
 typedef glm::vec2   vec2;
 typedef glm::vec3   vec3;
 typedef glm::vec4   vec4;
+
 typedef glm::uvec4  uvec4;
 typedef glm::uvec3  uvec3;
 typedef glm::uvec2  uvec2;

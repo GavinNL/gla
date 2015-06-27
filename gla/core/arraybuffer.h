@@ -478,6 +478,11 @@ public:
     };
 
 
+    virtual uint size() const
+    {
+        return (uint)(mVector.size()  );
+    };
+
     /**
      * Gets the number of values per vertex. If representing a vertex in 3d spaces, this value
      * will be 3.

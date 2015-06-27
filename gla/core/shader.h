@@ -126,14 +126,14 @@ class ShaderProgram
 
         inline void DeleteShader()
         {
-            glDeleteProgram(mProgram);
+            if(mProgram) glDeleteProgram(mProgram);
             mUniformLocations.clear();
         }
 
         inline GLuint getUniformLocation(const GLchar *name)
         {
             auto x = glGetUniformLocation(mProgram, name);
-            //std::cout << "Uniform locatiom("<<mProgram<<"):,  " << name << ": " <<  x << std::endl;
+            std::cout << "Uniform locatiom("<<mProgram<<"):,  " << name << ": " <<  x << std::endl;
             return x;
         }
 
@@ -174,13 +174,21 @@ class ShaderProgram
                 glUseProgram (shader);
 
                 mProgram = shader;
-                std::cout << "Shader Program created: "  << shader << std::endl;
+
+
+
 
                 // ============ Get number of uniform locations ==================
                 int N = GetNumUniforms();
                 mUniformLocations.clear();
                 mUniformLocations.assign(N,-1);
                 // ============ Get number of uniform locations ==================
+
+                std::cout << "Shader Program created: "  << shader << std::endl;
+                std::cout << "     Number of Uniforms: " << N << std::endl;
+                for(int i=0;i<N;i++)
+                std::cout << "          Uniform(" << i << "): " << GetUniformName(i) << std::endl;
+
 
                 return shader;
             } else {
@@ -249,6 +257,18 @@ class ShaderProgram
             }
         }
 
+        inline void sendUniform(GLuint location, const char *name, const gla::GPUTexture & V)
+        {
+            switch( mUniformLocations[location] )
+            {
+                case -1:
+                    mUniformLocations[location] = getUniformLocation(name);
+                    std::cout << "Location found: " << mUniformLocations[location] << std::endl;
+                default:
+                    glUniform1i( mUniformLocations[location], V.getID() );
+            }
+        }
+
         inline void sendUniform(GLuint location, const char *name, const gla::vec3 & V, uint count=1 )
         {
             switch( mUniformLocations[location] )
@@ -293,6 +313,16 @@ class ShaderProgram
             }
         }
 
+        inline void sendUniform(GLuint location, const char *name, const int * V, uint count=1 )
+        {
+            switch( mUniformLocations[location] )
+            {
+                case -1:
+                    mUniformLocations[location] = getUniformLocation(name);
+                default:
+                    glUniform1iv(mUniformLocations[location], count, V);
+            }
+        }
         //
 
     private:
