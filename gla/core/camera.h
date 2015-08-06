@@ -14,7 +14,7 @@ class Camera
 
         }
 
-        inline void perspective(float FOV, float AspectRatio, float zMin, float zMax)
+        inline void perspective(float FOV, float AspectRatio, float zMin=0.5f, float zMax=10000.f)
         {
              mAspectRatio = AspectRatio;
              mFOV         = FOV;

@@ -6,7 +6,7 @@
 #include <locale>
 
 #include <gla/utils/app.h>
-#include <gla/utils/cameracontrol.h>
+#include <gla/engine/cameracontrol.h>
 
 using namespace gla;
 
@@ -21,43 +21,153 @@ using namespace gla;
 
 class TransformSequenceApp : public gla::utils::GLFW_App
 {
-    // RootApp interface
-public:
-    void OnWindowPosition(int x, int y)
-    {
-        std::cout << "Repositioned:  " << x << ", " << y << std::endl;
-    }
-    void OnWindowSize(int width, int height){}
-    void OnFramebufferSize(int width, int height){}
-    void OnClose(){mQuit=true;}
-    void OnRefresh(){ std::cout << "Refreshed\n"; }
-    void OnFocus(int focused){}
-    void OnIconify(int iconified){}
-    void OnMouseButton(int button, int action, int mods){std::cout << button << std::endl;}
-    void OnMousePosition(double x, double y){}
-    void OnMouseEnter(int entered){}
-    void OnScroll(double x, double y){}
-    void OnKey(int key, int scancode, int action, int mods){std::cout << "Key: " << scancode << std::endl;}
-    void OnCharacter(unsigned int codepoint){}
-    void OnCharacterMods(unsigned int codepoint, int mods){}
-    void OnDrop(int count, const char **paths){}
+        // RootApp interface
+    public:
 
-    void run()
-    {
-        while( !mQuit )
+        // Some unused callback functions. We don't really need them.
+        void OnWindowSize(int width, int height){}
+        void OnFramebufferSize(int width, int height){}
+        void OnRefresh(){ }
+        void OnFocus(int focused){}
+        void OnIconify(int iconified){}
+        void OnMouseEnter(int entered){}
+        void OnScroll(double x, double y){}
+        void OnCharacter(unsigned int codepoint){}
+        void OnCharacterMods(unsigned int codepoint, int mods){}
+        void OnDrop(int count, const char **paths){}
+        void OnWindowPosition(int x, int y){}
+
+
+
+
+        void OnClose()
         {
-            PollEvents();
-            SwapBuffers();
+            mQuit=true;
         }
-    }
 
-    TransformSequenceApp() : gla::utils::GLFW_App( WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE)
-    {
-        mQuit = false;
-    }
 
-    bool mQuit;
+        // Send the keyboard/mouse input to the camera controller
+        void OnMouseButton(int button, int action, int mods)
+        {
+            mCamControl.InsertButton(button, action);
+        }
+
+        void OnMousePosition(double x, double y)
+        {
+            mCamControl.InsertMouse( (float)x, (float)y );
+        }
+
+        void OnKey(int key, int scancode, int action, int mods)
+        {
+            mCamControl.InsertKey( key, action );
+        }
+
+        void run()
+        {
+            double t;
+            while( !mQuit )
+            {
+
+                float dt = mTimer.getElapsedTime(); mTimer.reset();
+                t += dt;
+
+                glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+                // The camera controller needs to know how much time has passed since
+                // the last frame. This is for the acceleration calculations and such
+                mCamControl.Calculate( dt );
+
+
+
+                // Activate the line shader
+                LineShader.useShader();
+
+                // Send the Camera Matrix and the Model matrix for the main Axis.
+                LineShader.sendUniform(0, "inCameraMatrix", mCamera.getProjectionMatrix() * mCamera.getMatrix()    );
+                LineShader.sendUniform(1, "inModelMatrix" , glm::scale( mat4(1.0), vec3(10.0,10.0,10.0))  );
+
+                // Render the axis
+                mAxis.Render();
+
+
+                // Compute the transformation matrix from the KeyFrames. We want the transformation sequence
+                // to repeat which is why we fmod the elapsed time with 4.
+                // The getTransformationMatrix will interpolate the keyframes to produce a new matrix
+                // that represents the transformation
+                auto TransformationMatrix = KeyFrame.getTransformationMatrix( (float)fmod(t,4.0f) );
+
+                // Send the model matrix for the secondary axis
+                LineShader.sendUniform(1, "inModelMatrix" , TransformationMatrix );
+
+                // render the axis again.
+                mAxis.Render();
+
+
+
+                PollEvents();
+                SwapBuffers();
+            }
+        }
+
+
+
+
+        TransformSequenceApp() : gla::utils::GLFW_App( WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE)
+        {
+            // Some initial setup
+            mQuit = false;
+            glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+
+            // Set up the camera.
+            mCamera.perspective(45, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT ,0.2f, 1000.0f);
+            mCamera.setPosition( vec3(2.0,  2.0,  3.0) );
+            mCamera.setEuler(    vec3(-15,  0.0 , 0.0) * (3.14159f / 180.0f) );
+
+            // attack the camera to the camera controller
+            mCamControl.attachCamera(mCamera);
+
+            // compile the shader
+            LineShader.linkProgram( VertexShader("shaders/Line_PC.v"),  FragmentShader("shaders/Line_PC.f") );
+
+
+            // Set the Key Frames. The first parameter is the time and the second paramter is the value the key should be.
+            KeyFrame.setScaleKey(    0.0f, {1.0,1.0,1.0 });
+            KeyFrame.setScaleKey(    3.0f, {3.0,3.0,3.0 });
+            KeyFrame.setScaleKey(    4.0f, {1.0,1.0,1.0 });
+
+            KeyFrame.setPositionKey( 0.0f, {2.0,0.0,2.0} );
+            KeyFrame.setPositionKey( 2.0f, {4.0,0.0,2.0} );
+            KeyFrame.setPositionKey( 3.0f, {0.0,0.0,4.0} );
+            KeyFrame.setPositionKey( 4.0f, {2.0,0.0,2.0} );
+
+            KeyFrame.setRotKey( 0.0f, quat( vec3(0, 0,0) ) );         // pitch,yaw,roll = 0
+            KeyFrame.setRotKey( 2.0f, quat( vec3(0, 3.14159,0 )) );   // face 180 degrees
+            KeyFrame.setRotKey( 4.0f, quat( vec3(0, 2*3.14159,0 )) ); // face 360 degrees
+
+            mAxis  = gla::Solids::createAxes().toGPU();
+        }
+
+        bool                      mQuit;
+        gla::CameraControl<GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, GLFW_MOUSE_BUTTON_RIGHT> mCamControl;
+        gla::Camera               mCamera;
+        gla::Timer_T<double>      mTimer;
+
+
+        TransformSequence         KeyFrame;
+
+
+
+        //--------------- Shaders -----------------------------
+        ShaderProgram LineShader;
+
+
+        //--------------- GPU Objects -------------------------
+        GPUArrayObject mAxis;
+
+
 };
+
 
 
 int main()
@@ -66,105 +176,6 @@ int main()
 
     MyApp.run();
 
-    return 0;
-
-/*
-    //===========================================================================
-    // This line create the window and initializes GLFW and also
-    // creates handles the callbacks.
-    //===========================================================================
-    gla::utils::RootApp::Initialize( WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
-
-    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-    //===========================================================================
-    // GLA code.
-    //===========================================================================
-    Timer_T<double> Time;
-
-    // TransformationTimeLine  KeyFrame;
-    // KeyFrame.insert(0000, Transformation( {2.0f,0.0f,2.0f}, quat() ) );
-    // KeyFrame.insert(2000, Transformation( {2.0f,0.0f,2.0f}, glm::rotate( quat(), 3.0f*3.14159f/2.0f, vec3(0.0,1.0,0.0)) ) );
-    // KeyFrame.insert(3000, Transformation( {2.0f,0.0f,2.0f}, quat() ) );
-
-    TransformSequence KeyFrame;
-    KeyFrame.setScaleKey(    0.0f, {1.0,1.0,1.0 });
-    KeyFrame.setScaleKey(    3.0f, {1.0,1.0,10.0});
-    KeyFrame.setScaleKey(    4.0f, {1.0,1.0,1.0 });
-
-    KeyFrame.setPositionKey( 0.0f, {2.0,0.0,2.0} );
-    KeyFrame.setPositionKey( 2.0f, {4.0,0.0,2.0} );
-    KeyFrame.setPositionKey( 3.0f, {0.0,0.0,4.0} );
-    KeyFrame.setPositionKey( 4.0f, {2.0,0.0,2.0} );
-
-    Camera Cam;
-    Cam.perspective(45, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT ,0.2f, 1000.0f);
-    Cam.setPosition( vec3(2.0,  2.0,  3.0) );
-    Cam.setEuler(    vec3(-15,  0.0 , 0.0) * (3.14159f / 180.0f) );
-
-    Transformation Tm;
-
-    // The utils:CameraControl class handles all the
-    gla::utils::CameraControl CamController( &Cam );
-
-
-    auto Axis  = gla::Solids::createAxes().toGPU();
-
-
-    //---------------------------------------------------------------------------
-    //    Create a shader
-    //---------------------------------------------------------------------------
-    // Create the two shaders. The second argument is set to true because we are
-    // compiling the shaders straight from a string. If we were compiling from a file
-    // we'd just do:  VertexShader vs(Path_to_file);
-    ShaderProgram LineShader(  VertexShader("shaders/Line_PC.v"),  FragmentShader("shaders/Line_PC.f")  );
-    GLuint LineShaderCamMatrixId   = LineShader.getUniformLocation("inCameraMatrix");
-    GLuint LineShaderModelMatrixID = LineShader.getUniformLocation("inModelMatrix");
-
-    //==========================================================
-
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_BLEND_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glDepthFunc(GL_LESS);
-
-    Timer_T<float> Tf;
-    Tf.reset();
-
-    vec3 yrp;
-    while ( gla::utils::RootApp::isRunning() )
-    {
-        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-        //yrp.y += 3.14159f/10.0f * Tf.getElapsedTime();
-
-        // Can use any one of the following to render the triangle, they are all equivelant.
-        // as long as both buffers have the same number of items in it. In our case 3.
-        LineShader.useShader();
-            LineShader.sendUniform_mat4(LineShaderCamMatrixId,   Cam.getProjectionMatrix() * Cam.getMatrix() * Tm.getMatrix()   );
-            LineShader.sendUniform_mat4(LineShaderModelMatrixID, glm::scale( mat4(1.0), vec3(10.0,10.0,10.0)) );
-        Axis.Render();
-
-       // plane.Render();
-       // std::cout << (float)fmod(Time.getElapsedTime(), 3.0)  << std::endl;
-        LineShader.sendUniform_mat4(LineShaderCamMatrixId,   Cam.getProjectionMatrix() * Cam.getMatrix()   );
-        LineShader.sendUniform_mat4(LineShaderModelMatrixID, KeyFrame.getTransformationMatrix( (float)fmod(Time.getElapsedTime(),4.0f)) );
-        //LineShader.sendUniform_mat4(LineShaderModelMatrixID, KeyFrame.get(  static_cast<unsigned int>(Time.getElapsedTime()*1000)%3000).getMatrix() );
-        Axis.Render();
-
-
-        glfwSwapBuffers( gla::utils::RootApp::mWindow );
-    }
-
-    // Clear the VAO
-    // Since we had flagged the array buffers for deletion ,they will now be
-    // cleared as well since they are no longer bound to any VAOs
-    Axis.clear();
-    LineShader.DeleteShader();
-
-    gla::utils::RootApp::terminate();
-    */
     return 0;
 
 }
