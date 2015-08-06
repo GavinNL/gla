@@ -60,7 +60,7 @@ class ArrayBuffer
                 mGPUBufferSize = cpuBufferSize();
                 mGPUByteSize   = cpuByteSize();
             }
-            std::cout << "Array Buffer sent to GPU. ID: " << mGLID << "\n ";
+            //std::cout << "Array Buffer sent to GPU. ID: " << mGLID << "\n ";
 
         };
 
@@ -399,7 +399,7 @@ public:
 
     ArrayBuffer_T()
     {
-        #define SET_BUFFER_ELEMENT(T2, E1) if( std::is_same<T, T2>::value )  { mBufferElementType = E1; printf("ArrayBuffer created with Type: %d\n", (int)E1); }
+        #define SET_BUFFER_ELEMENT(T2, E1) if( std::is_same<T, T2>::value )  { mBufferElementType = E1; /*printf("ArrayBuffer created with Type: %d\n", (int)E1);*/ }
 
         SET_BUFFER_ELEMENT(float, F1);
         SET_BUFFER_ELEMENT(vec2,  F2);

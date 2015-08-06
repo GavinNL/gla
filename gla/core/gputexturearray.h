@@ -52,7 +52,9 @@ public:
 
         if( T.getChannels() != mComponents )
         {
-            throw gla::GLA_EXCEPTION("ERROR: Texture channels do not match the number of channels in the TextureArray");
+            char msg[256];
+            sprintf(msg, "ERROR: Texture and TextureArray have missmatched components, Texture = %d   Texture Array = %d", mComponents, T.getChannels() );
+            throw gla::GLA_EXCEPTION(msg);
         }
 
         GLuint format[4] = {GL_RED, GL_RG, GL_RGB, GL_RGBA};
@@ -65,7 +67,7 @@ public:
                           T.size().x,             // width
                           T.size().y,             // height
                           1,                      // depth
-                          format[T.getChannels()],  // format
+                          format[T.getChannels()-1],  // format
                           GL_UNSIGNED_BYTE,       // type
                           T.getRawData()          // image data
                        );
@@ -78,7 +80,7 @@ public:
     {
         if(mID)   glDeleteTextures(1, &mID);
 
-        mSize          = {0,0};
+        mSize          = {0,0,0};
         mMipLevelCount = 0;
     };
 
@@ -147,7 +149,7 @@ inline void GPUTextureArray::create(uvec2 size, unsigned int depth, int MipMapCo
     glGenTextures(1, &mID);
 
     GetGLError();
-
+    printf("Generated textures\n");
     if( !mID )
     {
         throw gla::GLA_EXCEPTION("ERROR: error generating textures for TextureArray2D");
@@ -156,14 +158,15 @@ inline void GPUTextureArray::create(uvec2 size, unsigned int depth, int MipMapCo
     bind();
 
     GLuint format[4] = {GL_R8, GL_RG8, GL_RGB8, GL_RGBA8};
-    glTexStorage3D( GL_TEXTURE_2D_ARRAY, MipMapCount, format[components], size.x, size.y, depth);
+    //glTexStorage3D( GL_TEXTURE_2D_ARRAY, MipMapCount, format[components], size.x, size.y, depth);
+    glTexStorage3D( GL_TEXTURE_2D_ARRAY, MipMapCount, format[components-1], size.x, size.y, depth);
 
     GetGLError();
-
+    printf("glTexStorage complete\n");
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S    , GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T    , GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S    , GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T    , GL_REPEAT);
 
     GetGLError();
 

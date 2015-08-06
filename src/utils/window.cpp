@@ -3,12 +3,12 @@
 //#include "gla/utils/event.h"
 //#include <iostream>
 
-std::map<std::string, std::function<void(gla::utils::InputEvent&)> >gla::utils::RootApp::InputEvents = std::map<std::string, std::function<void(InputEvent&)> >();
-gla::Timer_T<float>    gla::utils::RootApp::mTimer      = Timer_T<float>();
-std::map<int,int>      gla::utils::RootApp::KEY         = std::map<int,int>();
-std::map<int,int>      gla::utils::RootApp::BUTTON      = std::map<int,int>();
-
-GLFWwindow * gla::utils::RootApp::mWindow = NULL;
+// std::map<std::string, std::function<void(gla::utils::InputEvent&)> >gla::utils::RootApp::InputEvents = std::map<std::string, std::function<void(InputEvent&)> >();
+// gla::Timer_T<float>    gla::utils::RootApp::mTimer      = Timer_T<float>();
+// std::map<int,int>      gla::utils::RootApp::KEY         = std::map<int,int>();
+// std::map<int,int>      gla::utils::RootApp::BUTTON      = std::map<int,int>();
+//
+// GLFWwindow * gla::utils::RootApp::mWindow = NULL;
 // namespace gla  {
 // namespace utils {
 

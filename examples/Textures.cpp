@@ -29,59 +29,45 @@ int main()
     //---------------------------------------------------------------------------
     // Create two buffers on the CPU to hold position and colour information
     //---------------------------------------------------------------------------
-    v3ArrayBuffer cpuPositions;
-    v2ArrayBuffer cpuTexCoords;
+    // v3ArrayBuffer cpuPositions;
+    // v2ArrayBuffer cpuTexCoords;
+    VertexArrayObject cpuVAO;
+
+
+    // Create two buffers, they will return the position
+    // of the buffer. Eg, position will be the 0'th attribute in the shader
+    // colour will be the 1'st attribute
+    int positionIndex = cpuVAO.createBuffer<vec3>();  // this will be 0
+    int texIndex      = cpuVAO.createBuffer<vec2>();  // this will be 1
+
 
     // Also create an index buffer.
     u4ArrayBuffer cpuIndex;
 
-    cpuPositions.insert( vec3(-1.0f, -1.0f, 0.f));
-    cpuPositions.insert( vec3( 1.0f ,-1.0f, 0.f));
-    cpuPositions.insert( vec3( 1.0f , 1.0f, 0.f));
-    cpuPositions.insert( vec3(-1.0f , 1.0f, 0.f));
+    cpuVAO.insert(positionIndex, vec3(-1.0f, -1.0f, 0.f));
+    cpuVAO.insert(positionIndex, vec3( 1.0f ,-1.0f, 0.f));
+    cpuVAO.insert(positionIndex, vec3( 1.0f , 1.0f, 0.f));
+    cpuVAO.insert(positionIndex, vec3(-1.0f , 1.0f, 0.f));
 
-    cpuTexCoords.insert( vec2( 0.f, 0.f ) );
-    cpuTexCoords.insert( vec2( 1.f, 0.f ) );
-    cpuTexCoords.insert( vec2( 1.f, 1.f ) );
-    cpuTexCoords.insert( vec2( 0.f, 1.f ) );
+    cpuVAO.insert(texIndex, vec2( 0.f, 0.f ) );
+    cpuVAO.insert(texIndex, vec2( 1.f, 0.f ) );
+    cpuVAO.insert(texIndex, vec2( 1.f, 1.f ) );
+    cpuVAO.insert(texIndex, vec2( 0.f, 1.f ) );
 
-    cpuIndex.insert( uvec4(0,1,2,3) );
-
-    // Copy the CPU buffers to the GPU.
-    GPUArrayBuffer gpuPositions = cpuPositions.toGPU(ARRAY_BUFFER);   // same as GL_ARRAY_BUFFER, but placed in a enum
-    GPUArrayBuffer gpuTexCoords = cpuTexCoords.toGPU(ARRAY_BUFFER);   // same as GL_ARRAY_BUFFER, but placed in a enum
-    GPUArrayBuffer gpuIndex     =     cpuIndex.toGPU(ELEMENT_ARRAY_BUFFER);   // same as GL_ARRAY_BUFFER, but placed in a enum
-
-    // The data in the CPU buffers are no longer needed. We can clear their memory
-    cpuPositions.clear();
-    cpuTexCoords.clear();
-    cpuIndex.clear();
-
-    // Create a VertexArrayObject with Positions as the first attribute, colours as the second attribute
-    // Use the gpuIndex as the index buffer
-    // and use TRIANGLES as the render method.
-    GPUArrayObject VAO(  QUADS,
-                        {gpuPositions, gpuTexCoords},
-                         gpuIndex);
+    cpuVAO.insertElement( uvec4(0,1,2,3) );
 
 
-    /* NOTE: We can also create a VAO without a Index buffer, simple call
-     * GPUArrayObject VAO( TRIANGLES, {gpuPositions, gpuColours}); */
+    auto VAO = cpuVAO.toGPU();
 
 
-    // GPUArrayBuffers are bound to the VAO now, we can clear the buffers, but they wont
-    // be removed from GPU memory until we clear the VOA
-    gpuPositions.clear();
-    cpuTexCoords.clear();
-    gpuIndex.clear();
-
-    //---------------------------------------------------------------------------
-    // Load a texture
-    //---------------------------------------------------------------------------
-    Texture cpuTex ("resources/rocks1024.jpg", 3 );
+    // Load some textures
+    Texture cpuTex1("resources/rocks1024.jpg", 3 );
     Texture cpuTex2("resources/rocks1024.jpg", 3 );
 
-    cpuTex.g = cpuTex.r*cpuTex.b*cpuTex.b*cpuTex.b*cpuTex.b;
+    // Do some manipulation on them using their individual channels;
+    cpuTex1.g = cpuTex1.r*cpuTex1.b;
+
+
     // resize the texture
     cpuTex2.resize( {512,512} );
 
@@ -89,27 +75,25 @@ int main()
     //---------------------------------------------------------------------------
     // Do some texture manipulation for fun.
     //---------------------------------------------------------------------------
-    // cpuTex.r = cpuTex.g;   // copy the green channel into the red channel
-    // cpuTex.g = 0;          // set the green channel to zero;
-
     // Set the values of the blue channel based on the position of the
     // pixel values.  the input arguments const vec2 & x ranges from 0..1
     // and the lambda must return a float between 0 and 1
-    cpuTex.b = [] (float x, float y) { return (float)(0.5f * glm::perlin( glm::vec2(x,y)*4.0f ) + 0.5);  };
-    cpuTex.r = [] (float x, float y) { return (float)(0.5f * glm::perlin( glm::vec2(x,y)*8.0f ) + 0.5);  };
+    cpuTex1.b = [] (float x, float y) { return (float)(0.5f * glm::perlin( glm::vec2(x,y)*4.0f ) + 0.5);  };
+    cpuTex1.r = [] (float x, float y) { return (float)(0.5f * glm::perlin( glm::vec2(x,y)*8.0f ) + 0.5);  };
 
 
-    // Set the green channel to be the difference of the red channel and the blue channel
-    //cpuTex.g = cpuTex.r - cpuTex.b;
+    // Send Texture 1 to the GPU.
+    GPUTexture gpuTex = cpuTex1.toGPU();
 
 
-    //---------------------------------------------------------------------------
-    // Finally send the texture to the GPU
-    //---------------------------------------------------------------------------
-    GPUTexture gpuTex = cpuTex.toGPU();
+    // Paste Tex2 into Tex1 with an offset
     gpuTex.pasteSubImage( {25,25}, cpuTex2);
+
+
     // we dont need the cpu texture anymore, so we can clear it.
-    cpuTex.clear();
+    cpuTex1.clear();
+    cpuTex2.clear();
+
 
 
     //---------------------------------------------------------------------------
@@ -132,10 +116,19 @@ int main()
         // Set the GPu as the current texture 0;
         gpuTex.setActiveTexture(0);
 
-        VAO.bind();
-            TriangleShader.sendUniform_Sampler2D( SamplerLocation ,0 ); // the uniform to the shader
-        VAO.Render(QUADS);
+        //VAO.bind();
 
+        // Here we send Uniform data to the shader
+        //  The first argument is an user defined index. Depending on the number of uniforms you have, you should always
+        //  start at 0 and then increase sequentially.
+        //  The second parameter is the name of the  uniform in the shader
+        //  And the third parameter is the value we want to send. In our case we want to send 0, because we set our texture to be in texture unit 0.
+        //
+        //  sendUniform will only query the shader the first time and then store the shader uniform location in an array at index 0 (the first parameter)
+        //  the next time we call sendUniform(0, "uSampler", X), it will use the cached value.
+        TriangleShader.sendUniform(0, "uSampler", 0);
+
+        VAO.Render(QUADS);
 
 
         glfwSwapBuffers(gMainWindow);

@@ -70,6 +70,8 @@ DISTFILES +=                           \
     Doxygen.cfg                        \
     shaders/PNU_TextureArray.f         \
     shaders/PNU_TextureArray.v         \
+    shaders/TextureArray.f             \
+    shaders/TextureArray.v             \
     shaders/PNU_TriPlanar.f            \
     shaders/PNU_TriPlanar.v            \
     shaders/HelloTriangle.f            \

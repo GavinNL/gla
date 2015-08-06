@@ -19,9 +19,56 @@ using namespace gla;
 #define WINDOW_TITLE "TransformSequence"
 
 
+class TransformSequenceApp : public gla::utils::GLFW_App
+{
+    // RootApp interface
+public:
+    void OnWindowPosition(int x, int y)
+    {
+        std::cout << "Repositioned:  " << x << ", " << y << std::endl;
+    }
+    void OnWindowSize(int width, int height){}
+    void OnFramebufferSize(int width, int height){}
+    void OnClose(){mQuit=true;}
+    void OnRefresh(){ std::cout << "Refreshed\n"; }
+    void OnFocus(int focused){}
+    void OnIconify(int iconified){}
+    void OnMouseButton(int button, int action, int mods){std::cout << button << std::endl;}
+    void OnMousePosition(double x, double y){}
+    void OnMouseEnter(int entered){}
+    void OnScroll(double x, double y){}
+    void OnKey(int key, int scancode, int action, int mods){std::cout << "Key: " << scancode << std::endl;}
+    void OnCharacter(unsigned int codepoint){}
+    void OnCharacterMods(unsigned int codepoint, int mods){}
+    void OnDrop(int count, const char **paths){}
+
+    void run()
+    {
+        while( !mQuit )
+        {
+            PollEvents();
+            SwapBuffers();
+        }
+    }
+
+    TransformSequenceApp() : gla::utils::GLFW_App( WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE)
+    {
+        mQuit = false;
+    }
+
+    bool mQuit;
+};
+
+
 int main()
 {
+    TransformSequenceApp MyApp;
 
+    MyApp.run();
+
+    return 0;
+
+/*
     //===========================================================================
     // This line create the window and initializes GLFW and also
     // creates handles the callbacks.
@@ -117,5 +164,7 @@ int main()
     LineShader.DeleteShader();
 
     gla::utils::RootApp::terminate();
+    */
     return 0;
+
 }

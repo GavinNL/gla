@@ -29,26 +29,26 @@ int main()
     //---------------------------------------------------------------------------
     // Create two buffers on the CPU to hold position and colour information
     //---------------------------------------------------------------------------
-    v3ArrayBuffer cpuPositions;
-    v4ArrayBuffer cpuColours;
+    v3ArrayBuffer cpuPos;
+    v4ArrayBuffer cpuCol;
 
 
     //---------------------------------------------------------------------------
     // Populate the buffers with the appropriate data.
     //---------------------------------------------------------------------------
-    cpuPositions.insert( vec3(-1.0f, -1.0f, 0.f));
-    cpuPositions.insert( vec3( 1.0f ,-1.0f, 0.f));
-    cpuPositions.insert( vec3( 0.0f , 1.0f, 0.f));
+    cpuPos.insert( vec3(-1.0f, -1.0f, 0.f));
+    cpuPos.insert( vec3( 1.0f ,-1.0f, 0.f));
+    cpuPos.insert( vec3( 0.0f , 1.0f, 0.f));
 
-    cpuColours.insert( vec4(1.f, 0.f, 0.f, 1.0f) );
-    cpuColours.insert( vec4(0.f, 1.f, 0.f, 1.0f) );
-    cpuColours.insert( vec4(0.f, 0.f, 1.f, 1.0f) );
+    cpuCol.insert( vec4(1.f, 0.f, 0.f, 1.0f) );
+    cpuCol.insert( vec4(0.f, 1.f, 0.f, 1.0f) );
+    cpuCol.insert( vec4(0.f, 0.f, 1.f, 1.0f) );
 
     //---------------------------------------------------------------------------
     // Copy the CPU buffers to the GPU.
     //---------------------------------------------------------------------------
-    GPUArrayBuffer gpuPositions = cpuPositions.toGPU(ARRAY_BUFFER);   // same as GL_ARRAY_BUFFER, but placed in a enum
-    GPUArrayBuffer gpuColours   =   cpuColours.toGPU(ARRAY_BUFFER);   // same as GL_ARRAY_BUFFER, but placed in a enum
+    GPUArrayBuffer gpuPos   = cpuPos.toGPU(ARRAY_BUFFER);   // same as GL_ARRAY_BUFFER, but placed in a enum
+    GPUArrayBuffer gpuCol   = cpuCol.toGPU(ARRAY_BUFFER);   // same as GL_ARRAY_BUFFER, but placed in a enum
     /* NOTE:
      *    All objects on the GPU (GPUArrayBuffers, GPUArrayObjects, GPUTexture, GPUTextureArray are copyable assignable.
      * These objects do not automatically free the GPU data when their destructor is called. YOU must explicitally call
@@ -58,8 +58,8 @@ int main()
 
 
     // The data in the CPU buffers are no longer needed. We can clear their memory
-    cpuPositions.clear();
-    cpuColours.clear();
+    cpuPos.clear();
+    cpuCol.clear();
 
     //---------------------------------------------------------------------------
     // Create a shader
@@ -77,14 +77,18 @@ int main()
     while (!glfwWindowShouldClose(gMainWindow) )
     {
 
+        // Set the triangle shader to be the one that we will use
+        TriangleShader.useShader();
+
         // Enable the two buffers as attributes 0 and 1 and draw the arrays
         // The buffers will automatically bind.
-        gpuPositions.EnableAttribute(0);
-        gpuColours   .EnableAttribute(1);
+        gpuPos.EnableAttribute(0);
+        gpuCol.EnableAttribute(1);
 
         // Can use any one of the following to render the triangle, they are all equivelant.
         // as long as both buffers have the same number of items in it. In our case 3.
-        gpuColours.Render(TRIANGLES);
+        gpuPos.Render(TRIANGLES);
+
         // or: gpuColours.Render(TRIANGLES);
         // or  gpuColours.Render(TRIANGLES, 3);
         // or  gpuColours.Render(TRIANGLES, 0, 3);
@@ -95,8 +99,8 @@ int main()
     }
 
     // We should probably clear the memory from the GPU to be safe.
-    gpuPositions.clear();
-    gpuColours.clear();
+    gpuPos.clear();
+    gpuCol.clear();
 
 
     glfwDestroyWindow(gMainWindow);

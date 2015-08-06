@@ -21,7 +21,7 @@ using namespace gla;
 
 int main()
 {
-
+/*
     //===========================================================================
     // This line create the window and initializes GLFW and also
     // creates handles the callbacks.
@@ -116,5 +116,7 @@ int main()
     LineShader.DeleteShader();
 
     gla::utils::RootApp::terminate();
+    */
+
     return 0;
 }

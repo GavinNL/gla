@@ -257,17 +257,17 @@ class ShaderProgram
             }
         }
 
-        inline void sendUniform(GLuint location, const char *name, const gla::GPUTexture & V)
-        {
-            switch( mUniformLocations[location] )
-            {
-                case -1:
-                    mUniformLocations[location] = getUniformLocation(name);
-                    std::cout << "Location found: " << mUniformLocations[location] << std::endl;
-                default:
-                    glUniform1i( mUniformLocations[location], V.getID() );
-            }
-        }
+        //inline void sendUniform(GLuint location, const char *name, const gla::GPUTexture & V)
+        //{
+        //    switch( mUniformLocations[location] )
+        //    {
+        //        case -1:
+        //            mUniformLocations[location] = getUniformLocation(name);
+        //            std::cout << "Location found: " << mUniformLocations[location] << std::endl;
+        //        default:
+        //            glUniform1i( mUniformLocations[location], V.getID() );
+        //    }
+        //}
 
         inline void sendUniform(GLuint location, const char *name, const gla::vec3 & V, uint count=1 )
         {
@@ -323,7 +323,18 @@ class ShaderProgram
                     glUniform1iv(mUniformLocations[location], count, V);
             }
         }
-        //
+
+        inline void sendUniform(GLuint location, const char *name, const int V )
+        {
+            switch( mUniformLocations[location] )
+            {
+                case -1:
+                    mUniformLocations[location] = getUniformLocation(name);
+                default:
+                    glUniform1i(mUniformLocations[location], V);
+            }
+        }
+
 
     private:
         std::vector<int> mUniformLocations;

@@ -107,8 +107,9 @@ namespace gla
             }
 
 
-            void print()
+            void print1()
             {
+
                 std::cout << "============VOA Created============" << std::endl;
                 std::cout << "  ID       : " << _VAO       << std::endl;
                 std::cout << "  size     : " << _size      << std::endl;
@@ -116,7 +117,7 @@ namespace gla
                 switch(_PrimitaveType )
                 {
                     case UNKNOWN_PRIMITAVE: std::cout << "elementtype: UNKNOWN"   << std::endl; break;
-                    case LINES: std::cout             << "elementtype: LINES"   << std::endl; break;
+                    case LINES: std::cout             << "elementtype: LINES"     << std::endl; break;
                     case TRIANGLES: std::cout         << "elementtype: TRIANGLES" << std::endl; break;
                     case QUADS: std::cout             << "elementtype: QUADS"     << std::endl; break;
                 }
@@ -475,19 +476,19 @@ namespace gla
                 glBindVertexArray(0);
 
 
-                std::cout << "============VOA Created============" << std::endl;
-                std::cout << "  ID       : " << GPU._VAO       << std::endl;
-                std::cout << "  size     : " << GPU._size      << std::endl;
-                std::cout << "  isindexed: " << GPU._isIndexed << std::endl;
-                switch(GPU._PrimitaveType )
-                {
-                    case UNKNOWN_PRIMITAVE: std::cout << "elementtype: UNKNOWN"   << std::endl; break;
-                    case LINES: std::cout             << "elementtype: UNKNOWN"   << std::endl; break;
-                    case TRIANGLES: std::cout         << "elementtype: TRIANGLES" << std::endl; break;
-                    case QUADS: std::cout             << "elementtype: QUADS"     << std::endl; break;
-                }
+                //std::cout << "============VOA Created============" << std::endl;
+                //std::cout << "  ID       : " << GPU._VAO       << std::endl;
+                //std::cout << "  size     : " << GPU._size      << std::endl;
+                //std::cout << "  isindexed: " << GPU._isIndexed << std::endl;
+                //switch(GPU._PrimitaveType )
+                //{
+                //    case UNKNOWN_PRIMITAVE: std::cout << "elementtype: UNKNOWN"   << std::endl; break;
+                //    case LINES: std::cout             << "elementtype: UNKNOWN"   << std::endl; break;
+                //    case TRIANGLES: std::cout         << "elementtype: TRIANGLES" << std::endl; break;
+                //    case QUADS: std::cout             << "elementtype: QUADS"     << std::endl; break;
+                //}
 
-                std::cout << "===================================" << std::endl;
+                //std::cout << "===================================" << std::endl;
 
 
                 /* NOTE
@@ -570,6 +571,15 @@ namespace gla
                 }
 
                 return false;
+            }
+
+            void eraseBuffer(int BufferNumber)
+            {
+                mBuffers.erase( mBuffers.begin()+BufferNumber );
+            }
+            void eraseIndexBuffer()
+            {
+                mIndexBuffer.reset();
             }
 
             void insertBuffer(std::shared_ptr<ArrayBuffer_b> B)
