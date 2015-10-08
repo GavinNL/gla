@@ -33,7 +33,9 @@ HEADERS +=  gla/gla.h                          \
             gla/engine/node.h                  \
             gla/engine/engine.h                \
             gla/engine/material.h              \
-            gla/stb/stb_image.h
+            gla/stb/stb_image.h \
+    gla/core/uniformbuffer.h \
+    gla/core/opengl.h
 
 SOURCES +=  main.cpp                                     \
             src/core/texture.cpp                         \
@@ -50,6 +52,7 @@ SOURCES +=  main.cpp                                     \
             examples/HelloTriangle.cpp                            \
             examples/HelloTriangleVAO.cpp                         \
             examples/Textures.cpp                                 \
+            examples/UniformBuffer.cpp                                 \
             examples/TransformSequence.cpp                        \
             examples/HelloTriangleEncapsulatedVAO.cpp             \
             test.cpp
@@ -70,6 +73,8 @@ DISTFILES +=                           \
     Doxygen.cfg                        \
     shaders/PNU_TextureArray.f         \
     shaders/PNU_TextureArray.v         \
+    shaders/UniformBuffer.f            \
+    shaders/UniformBuffer.v            \
     shaders/TextureArray.f             \
     shaders/TextureArray.v             \
     shaders/PNU_TriPlanar.f            \
@@ -78,5 +83,6 @@ DISTFILES +=                           \
     shaders/HelloTriangle.v            \
     shaders/Textures.f                 \
     shaders/Textures.v
+
 
 

@@ -2,6 +2,7 @@
 #define GLA_MATERIAL_H
 
 #include <gla/core/shader.h>
+#include <gla/core/vertexarrayobject.h>
 
 namespace gla {
 

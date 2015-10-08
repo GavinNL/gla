@@ -112,6 +112,10 @@ target_link_libraries (Textures ${LIBS_CORE})
                        examples/TransformSequence.cpp)
 target_link_libraries (TransformSequence ${LIBS_FULL})
 
+        add_executable(UniformBuffer
+              examples/UniformBuffer.cpp)
+target_link_libraries (UniformBuffer ${LIBS_FULL})
+
 
 add_executable(test test.cpp)
 target_link_libraries (test ${LIBS_FULL})

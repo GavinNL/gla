@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string.h>
 #include <functional>
+#include <memory>
 
 #ifdef GLA_IMAGE_USE_STB
     #include <stb/stb_image.h>
@@ -26,6 +27,11 @@ namespace gla {
 
     class ChannelRef;
     class TextureBase;
+
+    class GPUTextureInfo
+    {
+        int temp;
+    };
 
     //===========================================================================
     // GPUTexture
@@ -96,6 +102,9 @@ namespace gla {
                                 InternalFormat == BGRA? 5 :
                                 InternalFormat == DEPTH_COMPONENT  ? 6 : 7;
 
+
+                auto id = mTextureID;
+                mInfo = std::shared_ptr<GPUTextureInfo>( new GPUTextureInfo, [=](GPUTextureInfo* a){ delete a; glDeleteTextures(1, &id); std::cout << "Deleting GPUTexture: " << id << std::endl; } );
                 return true;
             }
 
@@ -199,6 +208,8 @@ namespace gla {
             unsigned char mColourFormat;
             unsigned char mFundamentalType;
 
+            std::shared_ptr<GPUTextureInfo> mInfo;
+
        friend class FrameBufferObject;
     };
 
@@ -296,7 +307,7 @@ namespace gla {
                 T.mDim  = { 0, 0 };
                 T.mData = 0;
                 T.mComponents = 0;
-                std::cout << " TextureBase::Move constructor\n";
+                //std::cout << " TextureBase::Move constructor\n";
 
             }
 
@@ -313,7 +324,7 @@ namespace gla {
                 T.mData       = 0;
                 T.mComponents = 0;
 
-                std::cout << " TextureBase::Move operator\n";
+                //std::cout << " TextureBase::Move operator\n";
                 return *this;
             }
 
@@ -416,7 +427,7 @@ namespace gla {
                 }
 
                 //GPU.mColourFormat = format;
-                std::cout << "Sending to GPU: #components: " << mComponents << std::endl;
+               // std::cout << "Sending to GPU: #components: " << mComponents << std::endl;
                 if( GPU.create( mDim, format, format, UNSIGNED_BYTE, (void*)mData), MipMaps )
                 {
                     GPU.setFilter(     LINEAR, LINEAR, false );
@@ -819,7 +830,7 @@ namespace gla {
                 T.mData       = 0;
                 T.mComponents = 0;
 
-                std::cout << " Texture::Move operator\n";
+                //std::cout << " Texture::Move operator\n";
                 //return *this;
 
                 return *this;

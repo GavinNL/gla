@@ -1,7 +1,8 @@
 #ifndef GLA_TRANSFORMSEQUENCE_H
 #define GLA_TRANSFORMSEQUENCE_H
 
-#include <gla/core/global.h>
+#include <gla/core/types.h>
+#include <gla/core/transformation.h>
 #include <functional>
 #include <algorithm>
 

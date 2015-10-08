@@ -1,7 +1,9 @@
 #ifndef GLA_BONE_H
 #define GLA_BONE_H
 
-#include <gla/core/global.h>
+#include <gla/core/types.h>
+#include <string>
+#include <vector>
 
 namespace gla {
 

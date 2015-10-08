@@ -1,8 +1,8 @@
 #ifndef GLA_MODELLOADER_H
 #define GLA_MODELLOADER_H
 
-#include <gla/core/global.h>
-
+#include <gla/core/types.h>
+#include <gla/core/vertexarrayobject.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>

@@ -70,9 +70,9 @@ int main()
 
     // GPUArrayBuffers are bound to the VAO now, we can clear the buffers, but they wont
     // be removed from GPU memory until we clear the VOA
-    gpuPos.clear();
-    gpuCol.clear();
-    gpuInd.clear();
+    //gpuPos.clear();
+    //gpuCol.clear();
+    //gpuInd.clear();
 
     //---------------------------------------------------------------------------
     // Create a shader

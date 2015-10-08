@@ -20,5 +20,38 @@ namespace gla
     {
     };
 
+
+    inline void GetGLError()
+    {
+        auto err = glGetError();
+        switch(err)
+        {
+            case GL_INVALID_OPERATION:
+                throw gla::GLA_EXCEPTION("ERROR: GL_INVALID_OPERATION\n");
+                break;
+            case GL_INVALID_ENUM:
+                throw gla::GLA_EXCEPTION("ERROR: GL_INVALID_ENUM\n");
+                break;
+            case GL_INVALID_VALUE:
+                throw gla::GLA_EXCEPTION("ERROR: GL_INVALID_VALUE\n");
+                break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION:
+                throw gla::GLA_EXCEPTION("ERROR: GL_INVALID_FRAMEBUFFER_OPERATION\n");
+                break;
+            case GL_OUT_OF_MEMORY:
+                throw gla::GLA_EXCEPTION("ERROR: GL_OUT_OF_MEMORY\n");
+                break;
+            case GL_STACK_UNDERFLOW:
+                throw gla::GLA_EXCEPTION("ERROR: GL_INVALID_FRAMEBUFFER_OPERATION\n");
+                break;
+            case GL_STACK_OVERFLOW:
+                throw gla::GLA_EXCEPTION("ERROR: GL_INVALID_FRAMEBUFFER_OPERATION\n");
+                break;
+
+            default:
+                break;
+        }
+    }
+
 }
 #endif // EXCEPTIONS_H

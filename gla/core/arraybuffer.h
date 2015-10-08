@@ -10,6 +10,7 @@
 
 #include <gla/core/exceptions.h>
 #include <gla/core/types.h>
+#include <memory>
 
 namespace gla {
 
@@ -174,7 +175,11 @@ class ArrayBuffer
 
 namespace gla {
 
-
+struct ArrayBufferInfo
+{
+    BUFFER_ELEMENT_TYPE    mBufferType;
+    unsigned int           mNumberOfItems;
+};
 
 class GPUArrayBuffer
 {
@@ -262,7 +267,10 @@ class GPUArrayBuffer
          */
         void clear()
         {
-            glDeleteBuffers(1, &mGLID);
+           // glDeleteBuffers(1, &mGLID);
+            mGLID = 0;
+            mNumberOfItems = 0;
+            mInfo = 0; // The shared pointer will automatically delete the buffer off the GPU
         }
 
         /**
@@ -317,6 +325,8 @@ class GPUArrayBuffer
         GLuint                 mGLID;             // The GL ID associated with it.
         BUFFER_ELEMENT_TYPE    mBufferType;
         unsigned int           mNumberOfItems;
+
+        std::shared_ptr<ArrayBufferInfo> mInfo;
 };
 
 class ArrayBuffer_b
@@ -337,6 +347,8 @@ class ArrayBuffer_b
                          GL_STATIC_DRAW);
 
 
+            int id = B.mGLID;
+            B.mInfo = std::shared_ptr<ArrayBufferInfo>( new ArrayBufferInfo, [=](ArrayBufferInfo* a){ delete a; glDeleteProgram(id); std::cout << "Deleting ArrayBuffer: " << id << std::endl; } );
 
             auto err = glGetError();
             if(err != 0)
@@ -546,6 +558,14 @@ public:
 
 };
 
+
+typedef gla::ArrayBuffer_T<vec2>  v2ArrayBuffer;
+typedef gla::ArrayBuffer_T<vec3>  v3ArrayBuffer;
+typedef gla::ArrayBuffer_T<vec4>  v4ArrayBuffer;
+
+typedef gla::ArrayBuffer_T<uvec2> u2ArrayBuffer;
+typedef gla::ArrayBuffer_T<uvec3> u3ArrayBuffer;
+typedef gla::ArrayBuffer_T<uvec4> u4ArrayBuffer;
 
 }
 

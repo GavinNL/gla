@@ -1,17 +1,17 @@
 #ifndef GLA_GLOBAL_H
 #define GLA_GLOBAL_H
 
-#include <GL/glew.h>
-#include <GL/glext.h>
-#include <GL/gl.h>
-
-#define GLM_FORCE_RADIANS
-#include <glm/glm.hpp>
-#define GLM_FORCE_RADIANS
-#include <glm/gtc/quaternion.hpp>
-#define GLM_FORCE_RADIANS
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/noise.hpp>
+//#include <GL/glew.h>
+//#include <GL/glext.h>
+//#include <GL/gl.h>
+//
+//#define GLM_FORCE_RADIANS
+//#include <glm/glm.hpp>
+//#define GLM_FORCE_RADIANS
+//#include <glm/gtc/quaternion.hpp>
+//#define GLM_FORCE_RADIANS
+//#include <glm/gtc/matrix_transform.hpp>
+//#include <glm/gtc/noise.hpp>
 
 #include <gla/core/types.h>
 
@@ -42,25 +42,28 @@ namespace gla
         return _Current;
     }
 
+
+
+
 }
 
-#include <gla/core/transformation.h>
-#include <gla/core/vertexarrayobject.h>
-#include <gla/core/texture.h>
+// #include <gla/core/transformation.h>
+// #include <gla/core/vertexarrayobject.h>
+// #include <gla/core/texture.h>
 
 namespace gla
 {
     // Array Buffers
-    typedef gla::ArrayBuffer_T<vec2>  v2ArrayBuffer;
-    typedef gla::ArrayBuffer_T<vec3>  v3ArrayBuffer;
-    typedef gla::ArrayBuffer_T<vec4>  v4ArrayBuffer;
-
-    typedef gla::ArrayBuffer_T<uvec2> u2ArrayBuffer;
-    typedef gla::ArrayBuffer_T<uvec3> u3ArrayBuffer;
-    typedef gla::ArrayBuffer_T<uvec4> u4ArrayBuffer;
-
-
-    typedef gla::VertexArrayObject_N VertexArrayObject;
+    // typedef gla::ArrayBuffer_T<vec2>  v2ArrayBuffer;
+    // typedef gla::ArrayBuffer_T<vec3>  v3ArrayBuffer;
+    // typedef gla::ArrayBuffer_T<vec4>  v4ArrayBuffer;
+    //
+    // typedef gla::ArrayBuffer_T<uvec2> u2ArrayBuffer;
+    // typedef gla::ArrayBuffer_T<uvec3> u3ArrayBuffer;
+    // typedef gla::ArrayBuffer_T<uvec4> u4ArrayBuffer;
+    //
+    //
+    //typedef gla::VertexArrayObject_N VertexArrayObject;
     // Indexed Meshs
     //                                       VertexType         IndexType   ElementType      VertexAttributeTypes
     //typedef gla::IndexedVertexArrayObject< gla::Vertex_PNCU,   gla::uvec3, TRIANGLES,       F3, F3, F4, F2        >   iTriMesh_PNCU;
@@ -89,39 +92,9 @@ namespace gla
 
     /* Shared Pointer stuff*/
 
-    typedef std::shared_ptr<ArrayBuffer_b> spArrayBuffer;
+    //typedef std::shared_ptr<ArrayBuffer_b> spArrayBuffer;
 
-    inline void GetGLError()
-    {
-        auto err = glGetError();
-        switch(err)
-        {
-            case GL_INVALID_OPERATION:
-                throw gla::GLA_EXCEPTION("ERROR: GL_INVALID_OPERATION\n");
-                break;
-            case GL_INVALID_ENUM:
-                throw gla::GLA_EXCEPTION("ERROR: GL_INVALID_ENUM\n");
-                break;
-            case GL_INVALID_VALUE:
-                throw gla::GLA_EXCEPTION("ERROR: GL_INVALID_VALUE\n");
-                break;
-            case GL_INVALID_FRAMEBUFFER_OPERATION:
-                throw gla::GLA_EXCEPTION("ERROR: GL_INVALID_FRAMEBUFFER_OPERATION\n");
-                break;
-            case GL_OUT_OF_MEMORY:
-                throw gla::GLA_EXCEPTION("ERROR: GL_OUT_OF_MEMORY\n");
-                break;
-            case GL_STACK_UNDERFLOW:
-                throw gla::GLA_EXCEPTION("ERROR: GL_INVALID_FRAMEBUFFER_OPERATION\n");
-                break;
-            case GL_STACK_OVERFLOW:
-                throw gla::GLA_EXCEPTION("ERROR: GL_INVALID_FRAMEBUFFER_OPERATION\n");
-                break;
 
-            default:
-                break;
-        }
-    }
 
 
 }

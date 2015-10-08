@@ -108,7 +108,7 @@ class GLFW_App
             glfwTerminate();
         }
 
-private:
+protected:
             GLFWwindow * mWindow;
 
 };

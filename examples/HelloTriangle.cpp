@@ -49,11 +49,13 @@ int main()
     //---------------------------------------------------------------------------
     GPUArrayBuffer gpuPos   = cpuPos.toGPU(ARRAY_BUFFER);   // same as GL_ARRAY_BUFFER, but placed in a enum
     GPUArrayBuffer gpuCol   = cpuCol.toGPU(ARRAY_BUFFER);   // same as GL_ARRAY_BUFFER, but placed in a enum
+
+
     /* NOTE:
      *    All objects on the GPU (GPUArrayBuffers, GPUArrayObjects, GPUTexture, GPUTextureArray are copyable assignable.
-     * These objects do not automatically free the GPU data when their destructor is called. YOU must explicitally call
-     * GPUArrayBuffer.clear(). If you have copied a buffer, by GPUBufferB = GPUBufferA, then clearing GPUBufferA,
-     * will also clear GPUBufferB.
+     * They are also self-destroying, so they will unallocate any memory on the GPU when they go out of scope. Memory
+     * will only be freed from the GPU once all objects have gone out of scope.
+     *
      */
 
 
@@ -98,10 +100,18 @@ int main()
         glfwPollEvents();
     }
 
-    // We should probably clear the memory from the GPU to be safe.
-    gpuPos.clear();
-    gpuCol.clear();
 
+
+
+    {
+        auto x = gpuPos;
+        auto y = gpuCol;
+
+        // Clearing the two buffers will not do anything because x and y
+        // still exist. Once x and y go out of scope, then only the memory will be freed
+        gpuPos.clear();
+        gpuCol.clear();
+    }
 
     glfwDestroyWindow(gMainWindow);
     glfwTerminate();

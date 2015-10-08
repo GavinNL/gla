@@ -6,7 +6,7 @@
 #include <locale>
 
 #include <gla/utils/app.h>
-#include <gla/utils/cameracontrol.h>
+#include <gla/engine/cameracontrol.h>
 
 using namespace gla;
 
@@ -18,6 +18,8 @@ using namespace gla;
 #define WINDOW_HEIGHT 1024
 #define WINDOW_TITLE "TransformSequence"
 
+static int x=3;
+static int x=3;
 
 int main()
 {

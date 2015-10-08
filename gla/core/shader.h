@@ -1,10 +1,14 @@
 #ifndef GLA_SHADER_H
 #define GLA_SHADER_H
 
-#include <gla/core/global.h>
+#include <gla/core/types.h>
+#include <gla/core/uniformbuffer.h>
 #include <iostream>
 #include <fstream>
 #include <streambuf>
+#include <vector>
+#include <memory>
+#include <map>
 
 namespace gla
 {
@@ -103,6 +107,14 @@ typedef gla::ShaderUnit<GL_FRAGMENT_SHADER> FragmentShader;
 typedef gla::ShaderUnit<GL_GEOMETRY_SHADER> GeometryShader;
 
 
+struct ShaderInfo
+{
+    std::map<std::string, int> UniformLocations;
+    std::map<std::string, int> UniformBlockLocations;
+    int NumberOfUniforms;
+    int NumberOfUniformBlocks;
+};
+
 class ShaderProgram
 {
     public:
@@ -130,10 +142,11 @@ class ShaderProgram
             mUniformLocations.clear();
         }
 
+
         inline GLuint getUniformLocation(const GLchar *name)
         {
             auto x = glGetUniformLocation(mProgram, name);
-            std::cout << "Uniform locatiom("<<mProgram<<"):,  " << name << ": " <<  x << std::endl;
+            //std::cout << "Uniform locatiom("<<mProgram<<"):,  " << name << ": " <<  x << std::endl;
             return x;
         }
 
@@ -176,7 +189,7 @@ class ShaderProgram
                 mProgram = shader;
 
 
-
+                Info = std::shared_ptr<ShaderInfo>( new ShaderInfo, [=](ShaderInfo* a){ delete a; glDeleteProgram(mProgram); std::cout << "Deleting Program: " << mProgram << std::endl; } );
 
                 // ============ Get number of uniform locations ==================
                 int N = GetNumUniforms();
@@ -184,10 +197,15 @@ class ShaderProgram
                 mUniformLocations.assign(N,-1);
                 // ============ Get number of uniform locations ==================
 
+
                 std::cout << "Shader Program created: "  << shader << std::endl;
                 std::cout << "     Number of Uniforms: " << N << std::endl;
                 for(int i=0;i<N;i++)
-                std::cout << "          Uniform(" << i << "): " << GetUniformName(i) << std::endl;
+                {
+                    auto name = GetUniformName(i);
+                    Info->UniformLocations[ GetUniformName(i) ] = getUniformLocation(name.c_str());
+                    std::cout << "          Uniform(" << i << "): " << GetUniformName(i) << std::endl;
+                }
 
 
                 return shader;
@@ -230,6 +248,22 @@ class ShaderProgram
             glUniform3fv(location, count, &V[0]);
         }
 
+        inline unsigned int GetUniformBlockIndex(const char * name)
+        {
+          unsigned int block_index = glGetUniformBlockIndex(mProgram, name);
+          return block_index;
+        }
+
+
+
+
+
+        inline void BindUniformBuffer(GPUUniformBuffer & buffer, GLuint BlockIndex, GLuint BindPoint)
+        {
+            glUniformBlockBinding(mProgram, BlockIndex, BindPoint);
+            buffer.BindBase(BindPoint);
+        }
+
 
         /**
          * @brief sendUniform
@@ -257,17 +291,6 @@ class ShaderProgram
             }
         }
 
-        //inline void sendUniform(GLuint location, const char *name, const gla::GPUTexture & V)
-        //{
-        //    switch( mUniformLocations[location] )
-        //    {
-        //        case -1:
-        //            mUniformLocations[location] = getUniformLocation(name);
-        //            std::cout << "Location found: " << mUniformLocations[location] << std::endl;
-        //        default:
-        //            glUniform1i( mUniformLocations[location], V.getID() );
-        //    }
-        //}
 
         inline void sendUniform(GLuint location, const char *name, const gla::vec3 & V, uint count=1 )
         {
@@ -338,7 +361,9 @@ class ShaderProgram
 
     private:
         std::vector<int> mUniformLocations;
+        std::vector<int> mUniformBlockLocations;
         GLuint mProgram;
+        std::shared_ptr<ShaderInfo> Info;
 
 };
 

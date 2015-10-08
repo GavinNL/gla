@@ -105,49 +105,71 @@ int main()
 
     //---------------------------------------------------------------------------
     // Create a shader
+    //
+    // This shader is the same as the shader from TextureArray.f
+    // But instead of sending the time parameter as a uniform, we will
+    // bind a uniform buffer
     //---------------------------------------------------------------------------
 
     // Create the two shaders. The second argument is set to true because we are
     // compiling the shaders straight from a string. If we were compiling from a file
     // we'd just do:  VertexShader vs(Path_to_file);
-    ShaderProgram TextureArrayShader;
-    TextureArrayShader.linkProgram(  VertexShader("shaders/TextureArray.v"),  FragmentShader("shaders/TextureArray.f")  );
+    ShaderProgram UniformBufferShader;
+    UniformBufferShader.linkProgram(  VertexShader("shaders/UniformBuffer.v"),  FragmentShader("shaders/UniformBuffer.f")  );
 
    //==========================================================
 
     Timer_T<float> Timer;
 
 
-
-//    UniformBuffer<Uniform140> X;
-    GPUUniformBuffer X(sizeof(Uniform140));
-
-    struct asdf {
-        vec3 x;
-        vec3 y;
+    // This is the structure that we will create a buffer for
+    // Note: the alignment of structs and the alignment of uniform blocks in the shader
+    // are NOT the same. vec3 are
+    struct UniformBufferStruct140 {
+        vec3 Dir_Speed;          // x,y = direction, z = speed
+        unsigned char padding1;  // we need this padding because vec3 in the shader is aligned to vec4, that is the amount of space
+        vec4 colour;
     };
+    UniformBufferStruct140 UniformData; // allocate the memory on the CPU
 
-    std::cout << "SDFSDFDS: " << sizeof(asdf) << std::endl;
-    Uniform140 Udata;
 
-    auto BlockIndex = TextureArrayShader.GetUniformBlockIndex("Uniform140");
-    std::cout << "Block Index: " << BlockIndex << std::endl;
+    // Here we create a uniform buffer on the gpu, we pass the size of the struct
+    // into the input parameter.
+    GPUUniformBuffer MyGPUUniformBuffer(sizeof(UniformBufferStruct140));
+
+
+    // We first need to get the block index of the "Uniform140" block in the shader.
+    auto BlockIndex = UniformBufferShader.GetUniformBlockIndex("Uniform140");
+
+    std::cout << "Block Index           : " << BlockIndex << std::endl;
     std::cout << "Max Buffer Bind Points: " << GPUUniformBuffer::Get_MAX_UNIFORM_BUFFER_BINDINGS() << std::endl;
-    std::cout << "Max Buffer block size : " << GPUUniformBuffer::Get_GL_MAX_UNIFORM_BLOCK_SIZE() << std::endl;
+    std::cout << "Max Buffer block size : " << GPUUniformBuffer::Get_GL_MAX_UNIFORM_BLOCK_SIZE()   << std::endl;
 
-    TextureArrayShader.BindUniformBuffer(X, BlockIndex, 1);
+
+    //--------------------------------------------------------------------
+    // Bind the GPUUniformBuffer to the UniformBlock in the shader.
+    // The third argument is the BindPoint we want to bind to and has
+    // to be between 0 and GPUUniformBuffer::GetGet_MAX_UNIFORM_BUFFER_BINDINGS()
+    // We are going to bind it to 1.
+    //--------------------------------------------------------------------
+    UniformBufferShader.BindUniformBuffer(MyGPUUniformBuffer, BlockIndex, 1);
+    //--------------------------------------------------------------------
 
     while (!glfwWindowShouldClose(gMainWindow) )
     {
 
-        // Set the GPu as the current texture 0;
-        GPUTArray.setActiveTexture(0);
 
-        vec2 Speed = Timer.getElapsedTime() * vec2(0.7,1.2);
+        // Set the GPU as the current texture 0;
+        int TextureIndex = 0;
+        GPUTArray.setActiveTexture(TextureIndex);
 
-        Udata.x = { Speed.x, Speed.y ,0,0};
+        auto t = Timer.getElapsedTime();
 
-        X.CopyData(Udata);
+        UniformData.Dir_Speed = { cos(t), sin(t), cos(t)*sin(t) };
+        UniformData.colour    = { cos(t)*cos(t), 0,0,1};
+
+        MyGPUUniformBuffer.CopyData(UniformData);
+        //X.CopyData(Udata);
         //X.GetData().x.x = Speed.x;
         //X.GetData().x.y = Speed.y;
         //X.UpdateBuffer();
@@ -161,8 +183,7 @@ int main()
         //
         //  sendUniform will only query the shader the first time and then store the shader uniform location in an array at index 0 (the first parameter)
         //  the next time we call sendUniform(0, "uSampler", X), it will use the cached value.
-        TextureArrayShader.sendUniform(0, "uTextureArray", 0);
-        //TextureArrayShader.sendUniform(1, "uSpeed", Speed);
+        UniformBufferShader.sendUniform(0, "uTextureArray", TextureIndex);
 
         VAO.Render(QUADS);
 

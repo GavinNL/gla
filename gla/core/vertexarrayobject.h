@@ -2,7 +2,7 @@
 #define VERTEXARRAYOBJECT_H
 
 #include <gla/core/global.h>
-#include <GLFW/glfw3.h>
+//#include <GLFW/glfw3.h>
 #include <vector>
 #include <tuple>
 #include <array>
@@ -25,6 +25,16 @@ namespace gla
      * scope. You MUST call clear() before it goes out of scope.
      */
 
+    struct GPUArrayObjectInfo
+    {
+        std::shared_ptr<std::vector< GPUArrayBuffer > > Buffers;
+
+        PRIMITAVE _PrimitaveType;
+        int       _size;                    // Either the number of indices if the GPUArrayObject is indexed
+                                            // Or the number of vertices if the GPUArrayObject is not indexed.
+        bool      _isIndexed;
+
+    };
 
     class GPUArrayObject
     {
@@ -47,7 +57,7 @@ namespace gla
 
                 auto GPU = Create( ArrayBuffers );
                 GPU.bind();
-
+                GPU.mInfo->Buffers->push_back(mIndexBuffer);
                 mIndexBuffer.bind(ELEMENT_ARRAY_BUFFER);
                 GPU._isIndexed     = true;
                 GPU._size          = mIndexBuffer.NumberOfItems() * mIndexBuffer.ElementsPerItem();//mIndexBuffer->getVertexCount() * mIndexBuffer->getValuesPerVertex();
@@ -65,6 +75,7 @@ namespace gla
                 _PrimitaveType = other._PrimitaveType;
                 _size          = other._size;
                 _isIndexed     = other._isIndexed;
+                mInfo          = other.mInfo;
                 return *this;
             }
 
@@ -76,6 +87,9 @@ namespace gla
             static GPUArrayObject Create(const std::vector<GPUArrayBuffer> & ArrayBuffers)
             {
                 GPUArrayObject GPU;
+
+
+
 
                 if( ArrayBuffers.size() == 0)
                 {
@@ -95,8 +109,13 @@ namespace gla
 
                 if( !GPU._VAO  )  throw gla::GLA_EXCEPTION( "ARRAY OBJECT NOT CREATED" );
 
+                auto id = GPU._VAO;
+                GPU.mInfo = std::shared_ptr<GPUArrayObjectInfo>( new GPUArrayObjectInfo, [=](GPUArrayObjectInfo* a){ auto vao = id; delete a; glDeleteVertexArrays(1, &vao); std::cout << "Deleting ---- VertexArrayObject: " << id << std::endl; } );
+                GPU.mInfo->Buffers = std::make_shared< std::vector<GPUArrayBuffer> >();
+
                 for(int i = 0; i < ArrayBuffers.size();  i++)
                 {
+                    GPU.mInfo->Buffers->push_back(ArrayBuffers[i]);
                     ArrayBuffers[i].EnableAttribute(i);
                 }
                 //===============================
@@ -202,6 +221,8 @@ namespace gla
             int       _size;                    // Either the number of indices if the GPUArrayObject is indexed
                                                 // Or the number of vertices if the GPUArrayObject is not indexed.
             bool      _isIndexed;
+
+            std::shared_ptr<GPUArrayObjectInfo> mInfo;
     };
 
 
@@ -447,12 +468,20 @@ namespace gla
 
                 if( !GPU._VAO  )  throw gla::GLA_EXCEPTION( "ARRAY OBJECT NOT CREATED" );
 
-                std::vector< GPUArrayBuffer > pGPUBuffers;
+                auto id = GPU._VAO;
+                GPU.mInfo = std::shared_ptr<GPUArrayObjectInfo>( new GPUArrayObjectInfo, [=](GPUArrayObjectInfo* a){ auto vao = id; delete a; glDeleteVertexArrays(1, &vao); std::cout << "Deleting VertexArrayObject: " << id << std::endl; } );
+
+                GPU.mInfo->Buffers = std::make_shared< std::vector<GPUArrayBuffer> > ();
+
+               // std::vector< GPUArrayBuffer > & pGPUBuffers = GPU.mInfo->Buffers.get();
 
                 for(int i = 0; i < mBuffers.size();  i++)
                 {
-                    pGPUBuffers.push_back( mBuffers[i]->toGPU(ARRAY_BUFFER) );  // creates the GPU Array buffer and binds it
-                    pGPUBuffers[ pGPUBuffers.size()-1 ].EnableAttribute(i);
+                    auto g = mBuffers[i]->toGPU(ARRAY_BUFFER);
+                    g.EnableAttribute(i);
+                    GPU.mInfo->Buffers->push_back(g);
+                    //pGPUBuffers.push_back(  );  // creates the GPU Array buffer and binds it
+                    //pGPUBuffers[ pGPUBuffers.size()-1 ].EnableAttribute(i);
                 }
 
                 //===============================
@@ -476,17 +505,17 @@ namespace gla
                 glBindVertexArray(0);
 
 
-                //std::cout << "============VOA Created============" << std::endl;
-                //std::cout << "  ID       : " << GPU._VAO       << std::endl;
-                //std::cout << "  size     : " << GPU._size      << std::endl;
-                //std::cout << "  isindexed: " << GPU._isIndexed << std::endl;
-                //switch(GPU._PrimitaveType )
-                //{
-                //    case UNKNOWN_PRIMITAVE: std::cout << "elementtype: UNKNOWN"   << std::endl; break;
-                //    case LINES: std::cout             << "elementtype: UNKNOWN"   << std::endl; break;
-                //    case TRIANGLES: std::cout         << "elementtype: TRIANGLES" << std::endl; break;
-                //    case QUADS: std::cout             << "elementtype: QUADS"     << std::endl; break;
-                //}
+                std::cout << "============VOA Created============" << std::endl;
+                std::cout << "  ID       : " << GPU._VAO       << std::endl;
+                std::cout << "  size     : " << GPU._size      << std::endl;
+                std::cout << "  isindexed: " << GPU._isIndexed << std::endl;
+                switch(GPU._PrimitaveType )
+                {
+                    case UNKNOWN_PRIMITAVE: std::cout << "elementtype: UNKNOWN"   << std::endl; break;
+                    case LINES: std::cout             << "elementtype: UNKNOWN"   << std::endl; break;
+                    case TRIANGLES: std::cout         << "elementtype: TRIANGLES" << std::endl; break;
+                    case QUADS: std::cout             << "elementtype: QUADS"     << std::endl; break;
+                }
 
                 //std::cout << "===================================" << std::endl;
 
@@ -682,6 +711,7 @@ namespace gla
             PRIMITAVE                                        mDefaultPrimitave;
     };
 
+    typedef gla::VertexArrayObject_N VertexArrayObject;
 }
 
 #endif // VERTEXARRAYOBJECT_H

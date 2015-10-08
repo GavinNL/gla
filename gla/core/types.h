@@ -6,7 +6,14 @@
 #include <GL/glext.h>
 #include <GL/gl.h>
 
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
+#define GLM_FORCE_RADIANS
+#include <glm/gtc/quaternion.hpp>
+#define GLM_FORCE_RADIANS
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/noise.hpp>
+
 
 namespace gla {
 
@@ -92,6 +99,10 @@ enum BUFFER_ELEMENT_TYPE
     uB1, uB2, uB3, uB4,
     uS1, uS2, uS3, uS4
 };
+
+
+
+
 
 
 typedef glm::bvec2  bvec2;

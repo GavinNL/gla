@@ -1,9 +1,18 @@
 #ifndef GLA_GPUTEXTUREARRAY_H
 #define GLA_GPUTEXTUREARRAY_H
 
-#include <gla/core/global.h>
+#include <gla/core/types.h>
+#include <memory>
 
 namespace gla {
+
+
+struct GPUTextureArrayInfo
+{
+    uvec3        size;
+    int          mipmaps;
+    unsigned int channels;
+};
 
 //===========================================================================
 // GPUTextureArray
@@ -15,7 +24,7 @@ class GPUTextureArray
 public:
     GPUTextureArray(){};
 
-    GPUTextureArray(uint width, uint height, uint depth, uint comp) : mID(0), mSize(0,0,0), mMipLevelCount(1) , mComponents(comp) {};
+    //GPUTextureArray(uint width, uint height, uint depth, uint comp) : mID(0), mSize(0,0,0), mMipLevelCount(1) , mComponents(comp) {};
 
     GPUTextureArray(uvec3 size){}
     ~GPUTextureArray(){};
@@ -39,6 +48,9 @@ public:
     void SetLayer(const Texture & T, uint Layer, const uvec2 & pOffset=uvec2(0,0))
     {
         bind();
+
+        auto mSize       = mInfo->size;
+        auto mComponents = mInfo->channels;
 
         if( Layer >= mSize.z)
         {
@@ -78,10 +90,12 @@ public:
 
     void clear()
     {
-        if(mID)   glDeleteTextures(1, &mID);
-
-        mSize          = {0,0,0};
-        mMipLevelCount = 0;
+        mInfo = 0;
+        mID   = 0;
+        //if(mID)   glDeleteTextures(1, &mID);
+        //
+        //mSize          = {0,0,0};
+        //mMipLevelCount = 0;
     };
 
     inline void setActiveTexture(unsigned int unit=0)
@@ -97,8 +111,9 @@ public:
     }
 
     inline GLuint getID() const { return mID;   };
-    inline uvec3  size()  const { return mSize; };
+    //inline uvec3  size()  const { mInfo!=0 ? mInfo->size : 0; };
 
+    inline const GPUTextureArrayInfo Info() { return mInfo!=0 ? *mInfo.get() : GPUTextureArrayInfo(); }
     //=============================================================
 
     /**
@@ -107,7 +122,9 @@ public:
      */
     static GLuint get_MAX_ARRAY_TEXTURE_LAYERS()
     {
-        GLint max_layers;
+        static GLint max_layers=0;
+        if(max_layers) return max_layers;
+
         glGetIntegerv (GL_MAX_ARRAY_TEXTURE_LAYERS, &max_layers);
         return max_layers;
     }
@@ -118,7 +135,10 @@ public:
      */
     static GLuint get_MAX_TEXTURE_SIZE()
     {
-        GLint max;
+        GLint max=0;
+
+        if(max) return max;
+
         glGetIntegerv (GL_MAX_TEXTURE_SIZE, &max);
         return max;
     }
@@ -126,9 +146,11 @@ public:
 
     private:
         GLuint  mID;
-        uvec3   mSize;
-        unsigned int mComponents;
-        GLsizei mMipLevelCount;
+//        uvec3   mSize;
+//        unsigned int mComponents;
+//        GLsizei mMipLevelCount;
+
+        std::shared_ptr<GPUTextureArrayInfo> mInfo;
 };
 
 
@@ -170,8 +192,15 @@ inline void GPUTextureArray::create(uvec2 size, unsigned int depth, int MipMapCo
 
     GetGLError();
 
-    mSize = uvec3(size.x, size.y, depth);
-    mComponents = components;
+    //mSize       = uvec3(size.x, size.y, depth);
+    //mComponents = components;
+
+    auto id = mID;
+    mInfo = std::shared_ptr<GPUTextureArrayInfo>( new GPUTextureArrayInfo, [=](GPUTextureArrayInfo* a){ delete a; glDeleteTextures(1, &id); std::cout << "Deleting Texture Array: " << id << std::endl; } );
+    mInfo->channels = components;
+    mInfo->size     = uvec3(size.x,size.y,depth);
+    mInfo->mipmaps  = MipMapCount;
+
 };
 
 
