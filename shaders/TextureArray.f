@@ -7,17 +7,11 @@ out vec4 OutColour;
 uniform sampler2DArray uTextureArray;
 uniform vec2           uSpeed;
 
-layout (std140) uniform Uniform140
-{
-    vec4 x;
-};
-
 
 
 void main()
 {
-    //float t = texture( uTextureArray, vec3(outTexCoord0+uSpeed,2) ).r;
-    float t = texture( uTextureArray, vec3(outTexCoord0+x.xy,2) ).r;
+    float t = texture( uTextureArray, vec3(outTexCoord0+uSpeed,2) ).r;
 
 
     vec4 c1 = texture( uTextureArray, vec3(outTexCoord0, 0 ) );

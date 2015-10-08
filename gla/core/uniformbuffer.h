@@ -92,11 +92,19 @@ public:
         return x;
     }
 
-    static GLuint Get_GL_MAX_UNIFORM_BLOCK_SIZE()
+    static GLuint Get_MAX_UNIFORM_BLOCK_SIZE()
     {
         static GLint x = 0;
         if( x ) return x;
         glGetIntegerv (GL_MAX_UNIFORM_BLOCK_SIZE, &x);
+        return x;
+    }
+
+    static GLuint Get_MAX_COMBINED_UNIFORM_BLOCKS()
+    {
+        static GLint x = 0;
+        if( x ) return x;
+        glGetIntegerv (GL_MAX_COMBINED_UNIFORM_BLOCKS, &x);
         return x;
     }
 

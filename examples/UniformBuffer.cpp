@@ -141,10 +141,10 @@ int main()
     // We first need to get the block index of the "Uniform140" block in the shader.
     auto BlockIndex = UniformBufferShader.GetUniformBlockIndex("Uniform140");
 
-    std::cout << "Block Index           : " << BlockIndex << std::endl;
-    std::cout << "Max Buffer Bind Points: " << GPUUniformBuffer::Get_MAX_UNIFORM_BUFFER_BINDINGS() << std::endl;
-    std::cout << "Max Buffer block size : " << GPUUniformBuffer::Get_GL_MAX_UNIFORM_BLOCK_SIZE()   << std::endl;
-
+    std::cout << "Block Index                     : " << BlockIndex << std::endl;
+    std::cout << "Max Buffer Bind Points          : " << GPUUniformBuffer::Get_MAX_UNIFORM_BUFFER_BINDINGS() << std::endl;
+    std::cout << "Max Buffer block size           : " << GPUUniformBuffer::Get_MAX_UNIFORM_BLOCK_SIZE()   << std::endl;
+    std::cout << "Max Combined Uniform block size : " << GPUUniformBuffer::Get_MAX_COMBINED_UNIFORM_BLOCKS()   << std::endl;
 
     //--------------------------------------------------------------------
     // Bind the GPUUniformBuffer to the UniformBlock in the shader.

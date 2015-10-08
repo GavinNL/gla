@@ -119,24 +119,6 @@ int main()
 
 
 
-//    UniformBuffer<Uniform140> X;
-    GPUUniformBuffer X(sizeof(Uniform140));
-
-    struct asdf {
-        vec3 x;
-        vec3 y;
-    };
-
-    std::cout << "SDFSDFDS: " << sizeof(asdf) << std::endl;
-    Uniform140 Udata;
-
-    auto BlockIndex = TextureArrayShader.GetUniformBlockIndex("Uniform140");
-    std::cout << "Block Index: " << BlockIndex << std::endl;
-    std::cout << "Max Buffer Bind Points: " << GPUUniformBuffer::Get_MAX_UNIFORM_BUFFER_BINDINGS() << std::endl;
-    std::cout << "Max Buffer block size : " << GPUUniformBuffer::Get_GL_MAX_UNIFORM_BLOCK_SIZE() << std::endl;
-
-    TextureArrayShader.BindUniformBuffer(X, BlockIndex, 1);
-
     while (!glfwWindowShouldClose(gMainWindow) )
     {
 
@@ -144,13 +126,6 @@ int main()
         GPUTArray.setActiveTexture(0);
 
         vec2 Speed = Timer.getElapsedTime() * vec2(0.7,1.2);
-
-        Udata.x = { Speed.x, Speed.y ,0,0};
-
-        X.CopyData(Udata);
-        //X.GetData().x.x = Speed.x;
-        //X.GetData().x.y = Speed.y;
-        //X.UpdateBuffer();
 
 
         // Here we send Uniform data to the shader
@@ -162,7 +137,7 @@ int main()
         //  sendUniform will only query the shader the first time and then store the shader uniform location in an array at index 0 (the first parameter)
         //  the next time we call sendUniform(0, "uSampler", X), it will use the cached value.
         TextureArrayShader.sendUniform(0, "uTextureArray", 0);
-        //TextureArrayShader.sendUniform(1, "uSpeed", Speed);
+        TextureArrayShader.sendUniform(1, "uSpeed", Speed);
 
         VAO.Render(QUADS);
 
