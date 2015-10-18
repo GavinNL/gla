@@ -56,7 +56,8 @@ class Material
         virtual void sendUniforms( GPUArrayObject & pEntity /*, ScenenNode & pSceneNode*/){};
 
     protected:
-        ShaderProgram mShader;
+        ShaderProgram   mShader;
+
 };
 
 }

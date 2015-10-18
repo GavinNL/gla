@@ -35,7 +35,9 @@ HEADERS +=  gla/gla.h                          \
             gla/engine/material.h              \
             gla/stb/stb_image.h \
     gla/core/uniformbuffer.h \
-    gla/core/opengl.h
+    gla/core/opengl.h \
+    gla/engine/frustrum.h \
+    gla/engine/entityengine.h
 
 SOURCES +=  main.cpp                                     \
             src/core/texture.cpp                         \
@@ -47,6 +49,7 @@ SOURCES +=  main.cpp                                     \
             src/engine/scene.cpp                         \
             src/engine/node.cpp                          \
             src/engine/material.cpp                      \
+            src/engine/entityengine.cpp                  \
             src/utils/window.cpp                         \
             examples/TextureArray.cpp                             \
             examples/HelloTriangle.cpp                            \
@@ -55,7 +58,9 @@ SOURCES +=  main.cpp                                     \
             examples/UniformBuffer.cpp                                 \
             examples/TransformSequence.cpp                        \
             examples/HelloTriangleEncapsulatedVAO.cpp             \
-            test.cpp
+            examples/engine.cpp             \
+            test.cpp \
+            gla/engine/entityengine.cpp
 
 INCLUDEPATH += ./ 
 
@@ -82,7 +87,9 @@ DISTFILES +=                           \
     shaders/HelloTriangle.f            \
     shaders/HelloTriangle.v            \
     shaders/Textures.f                 \
-    shaders/Textures.v
+    shaders/Textures.v                 \
+    shaders/Standard_PUN.f            \
+    shaders/Standard_PUN.v            \
 
 
 

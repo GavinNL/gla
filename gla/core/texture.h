@@ -197,7 +197,8 @@ namespace gla {
              */
             static GLuint get_MAX_TEXTURE_SIZE()
             {
-                GLint  max;
+                static GLint  max = 0;
+                if(max!=0) return max;
                 glGetIntegerv (GL_MAX_TEXTURE_SIZE, &max);
                 return max;
             }

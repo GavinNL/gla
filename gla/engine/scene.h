@@ -27,8 +27,8 @@ class Scene
         Camera& getCamera() { return mCamera; };
 
     protected:
-        Node    mRootNode;
-        Camera  mCamera;
+        SceneNode    mRootNode;
+        Camera       mCamera;
 };
 
 };

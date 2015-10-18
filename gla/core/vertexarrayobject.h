@@ -226,9 +226,7 @@ namespace gla
     };
 
 
-    /*
-     * A templated class for non-indexed meshs, (ie: mesh that do not need a separate index buffer)
-     */
+/*
     template <class VertexType,                         // The type of vertex to use
               PRIMITAVE DefaultRenderPrimitave,         // The default render primitative (LINES/TRIANGLES/QUADS)
               BUFFER_ELEMENT_TYPE N,                         // The first variable type in the Vertex (see declaration of TypeSizeIndex)
@@ -248,7 +246,7 @@ namespace gla
             }
 
 
-            /* will create a NEW GPU object*/
+
             GPUArrayObject toGPU()
             {
                 GPUArrayObject GPU;
@@ -427,7 +425,7 @@ namespace gla
     };
 
 
-
+    */
     //====================================================================
     //  New VAO
     //====================================================================

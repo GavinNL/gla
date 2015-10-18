@@ -75,6 +75,8 @@ class Transformation
             out.mOrientation = glm::slerp( in1.mOrientation, in2.mOrientation, t);
         }
 
+
+
     public:
         gla::quat    mOrientation;
         gla::vec3    mPosition;
@@ -83,6 +85,26 @@ class Transformation
         //gla::vec3    mEulerAngles; //pitch,roll,yaw
 
 };
+
+
+inline Transformation operator * (const Transformation & ps, const Transformation & ls)
+{
+    Transformation w;
+    w.mPosition    = ps.mPosition  + ps.mOrientation * (ps.mScale * ls.mPosition);
+    w.mOrientation = ps.mOrientation * ls.mOrientation;
+    w.mScale       = ps.mScale * (ps.mOrientation * ls.mScale);
+
+    return w;
+
+}
+
+inline Transformation& operator *= ( Transformation & ps, const Transformation & ls)
+{
+    ps = ps * ls;
+
+    return ps;
+
+}
 
 };
 

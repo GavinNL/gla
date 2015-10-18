@@ -32,40 +32,41 @@ namespace gla
                     VertexArrayObject Box(QUADS);
 
                     Box.createBuffer<vec3>();
-                    Box.createBuffer<vec3>();
                     Box.createBuffer<vec2>();
+                    Box.createBuffer<vec3>();
 
-                    Box.insert(0, vec3(0.0,0.0,s.z) ); Box.insert(1, vec3(0.0,  0.0, 1.0) ); Box.insert(2, vec2(0.0,0.0) );
-                    Box.insert(0, vec3(s.x,0.0,s.z) ); Box.insert(1, vec3(0.0,  0.0, 1.0) ); Box.insert(2, vec2(1.0,0.0) );
-                    Box.insert(0, vec3(s.x,s.y,s.z) ); Box.insert(1, vec3(0.0,  0.0, 1.0) ); Box.insert(2, vec2(1.0,1.0) );
-                    Box.insert(0, vec3(0.0,s.y,s.z) ); Box.insert(1, vec3(0.0,  0.0, 1.0) ); Box.insert(2, vec2(1.0,1.0) );
-
-                    Box.insert(0, vec3(0.0,s.y,0.0) ); Box.insert(1, vec3(0.0,  0.0, -1.0) ); Box.insert(2, vec2(1.0,1.0) );
-                    Box.insert(0, vec3(s.x,s.y,0.0) ); Box.insert(1, vec3(0.0,  0.0, -1.0) ); Box.insert(2, vec2(1.0,1.0) );
-                    Box.insert(0, vec3(s.x,0.0,0.0) ); Box.insert(1, vec3(0.0,  0.0, -1.0) ); Box.insert(2, vec2(1.0,0.0) );
-                    Box.insert(0, vec3(0.0,0.0,0.0) ); Box.insert(1, vec3(0.0,  0.0, -1.0) ); Box.insert(2, vec2(0.0,0.0) );
+                    Box.insert(0, vec3(0.0,0.0,s.z) ); Box.insert(2, vec3(0.0,  0.0, 1.0) );  Box.insert(1, vec2(0.0,0.0) );
+                    Box.insert(0, vec3(s.x,0.0,s.z) ); Box.insert(2, vec3(0.0,  0.0, 1.0) );  Box.insert(1, vec2(1.0,0.0) );
+                    Box.insert(0, vec3(s.x,s.y,s.z) ); Box.insert(2, vec3(0.0,  0.0, 1.0) );  Box.insert(1, vec2(1.0,1.0) );
+                    Box.insert(0, vec3(0.0,s.y,s.z) ); Box.insert(2, vec3(0.0,  0.0, 1.0) );  Box.insert(1, vec2(0.0,1.0) );
 
 
-                    Box.insert(0, vec3(0.0,0.0,0.0) ); Box.insert(1, vec3(-1.0f, 0.0, 0.0) ); Box.insert(2, vec2(0.0,0.0) );
-                    Box.insert(0, vec3(0.0,0.0,s.z) ); Box.insert(1, vec3(-1.0f, 0.0, 0.0) ); Box.insert(2, vec2(0.0,1.0) );
-                    Box.insert(0, vec3(0.0,s.y,s.z) ); Box.insert(1, vec3(-1.0f, 0.0, 0.0) ); Box.insert(2, vec2(1.0,1.0) );
-                    Box.insert(0, vec3(0.0,s.y,0.0) ); Box.insert(1, vec3(-1.0f, 0.0, 0.0) ); Box.insert(2, vec2(1.0,1.0) );
-
-                    Box.insert(0, vec3(s.x,s.y,0.0) ); Box.insert(1, vec3(1.0f, 0.0, 0.0) ); Box.insert(2, vec2(1.0,1.0) );
-                    Box.insert(0, vec3(s.x,s.y,s.z) ); Box.insert(1, vec3(1.0f, 0.0, 0.0) ); Box.insert(2, vec2(1.0,1.0) );
-                    Box.insert(0, vec3(s.x,0.0,s.z) ); Box.insert(1, vec3(1.0f, 0.0, 0.0) ); Box.insert(2, vec2(0.0,1.0) );
-                    Box.insert(0, vec3(s.x,0.0,0.0) ); Box.insert(1, vec3(1.0f, 0.0, 0.0) ); Box.insert(2, vec2(0.0,0.0) );
+                    Box.insert(0, vec3(0.0,s.y,0.0) ); Box.insert(2, vec3(0.0,  0.0, -1.0) ); Box.insert(1, vec2(0.0,1.0) );
+                    Box.insert(0, vec3(s.x,s.y,0.0) ); Box.insert(2, vec3(0.0,  0.0, -1.0) ); Box.insert(1, vec2(1.0,1.0) );
+                    Box.insert(0, vec3(s.x,0.0,0.0) ); Box.insert(2, vec3(0.0,  0.0, -1.0) ); Box.insert(1, vec2(1.0,0.0) );
+                    Box.insert(0, vec3(0.0,0.0,0.0) ); Box.insert(2, vec3(0.0,  0.0, -1.0) ); Box.insert(1, vec2(0.0,0.0) );
 
 
-                    Box.insert(0, vec3(0.0,0.0,0.0) ); Box.insert(1, vec3(0.0f,-1.0, 0.0) ); Box.insert(2, vec2(0.0,0.0) );
-                    Box.insert(0, vec3(s.x,0.0,0.0) ); Box.insert(1, vec3(0.0f,-1.0, 0.0) ); Box.insert(2, vec2(1.0,0.0) );
-                    Box.insert(0, vec3(s.x,0.0,s.z) ); Box.insert(1, vec3(0.0f,-1.0, 0.0) ); Box.insert(2, vec2(1.0,1.0) );
-                    Box.insert(0, vec3(0.0,0.0,s.z) ); Box.insert(1, vec3(0.0f,-1.0, 0.0) ); Box.insert(2, vec2(1.0,1.0) );
+                    Box.insert(0, vec3(0.0,0.0,0.0) ); Box.insert(2, vec3(-1.0f, 0.0, 0.0) ); Box.insert(1, vec2(0.0,0.0) );
+                    Box.insert(0, vec3(0.0,0.0,s.z) ); Box.insert(2, vec3(-1.0f, 0.0, 0.0) ); Box.insert(1, vec2(1.0,0.0) );
+                    Box.insert(0, vec3(0.0,s.y,s.z) ); Box.insert(2, vec3(-1.0f, 0.0, 0.0) ); Box.insert(1, vec2(1.0,1.0) );
+                    Box.insert(0, vec3(0.0,s.y,0.0) ); Box.insert(2, vec3(-1.0f, 0.0, 0.0) ); Box.insert(1, vec2(0.0,1.0) );
 
-                    Box.insert(0, vec3(0.0,s.y,s.z) ); Box.insert(1, vec3(0.0f, 1.0, 0.0) ); Box.insert(2, vec2(1.0,1.0) );
-                    Box.insert(0, vec3(s.x,s.y,s.z) ); Box.insert(1, vec3(0.0f, 1.0, 0.0) ); Box.insert(2, vec2(1.0,1.0) );
-                    Box.insert(0, vec3(s.x,s.y,0.0) ); Box.insert(1, vec3(0.0f, 1.0, 0.0) ); Box.insert(2, vec2(1.0,0.0) );
-                    Box.insert(0, vec3(0.0,s.y,0.0) ); Box.insert(1, vec3(0.0f, 1.0, 0.0) ); Box.insert(2, vec2(0.0,0.0) );
+
+                    Box.insert(0, vec3(s.x,s.y,0.0) ); Box.insert(2, vec3(1.0f, 0.0, 0.0) ); Box.insert(1, vec2(0.0,1.0) );
+                    Box.insert(0, vec3(s.x,s.y,s.z) ); Box.insert(2, vec3(1.0f, 0.0, 0.0) ); Box.insert(1, vec2(1.0,1.0) );
+                    Box.insert(0, vec3(s.x,0.0,s.z) ); Box.insert(2, vec3(1.0f, 0.0, 0.0) ); Box.insert(1, vec2(1.0,0.0) );
+                    Box.insert(0, vec3(s.x,0.0,0.0) ); Box.insert(2, vec3(1.0f, 0.0, 0.0) ); Box.insert(1, vec2(0.0,0.0) );
+
+                    Box.insert(0, vec3(0.0,0.0,0.0) ); Box.insert(2, vec3(0.0f,-1.0, 0.0) );  Box.insert(1, vec2(0.0,0.0) );
+                    Box.insert(0, vec3(s.x,0.0,0.0) ); Box.insert(2, vec3(0.0f,-1.0, 0.0) );  Box.insert(1, vec2(1.0,0.0) );
+                    Box.insert(0, vec3(s.x,0.0,s.z) ); Box.insert(2, vec3(0.0f,-1.0, 0.0) );  Box.insert(1, vec2(1.0,1.0) );
+                    Box.insert(0, vec3(0.0,0.0,s.z) ); Box.insert(2, vec3(0.0f,-1.0, 0.0) );  Box.insert(1, vec2(0.0,1.0) );
+
+                    Box.insert(0, vec3(0.0,s.y,s.z) ); Box.insert(2, vec3(0.0f, 1.0, 0.0) );  Box.insert(1, vec2(0.0,1.0) );
+                    Box.insert(0, vec3(s.x,s.y,s.z) ); Box.insert(2, vec3(0.0f, 1.0, 0.0) );  Box.insert(1, vec2(1.0,1.0) );
+                    Box.insert(0, vec3(s.x,s.y,0.0) ); Box.insert(2, vec3(0.0f, 1.0, 0.0) );  Box.insert(1, vec2(1.0,0.0) );
+                    Box.insert(0, vec3(0.0,s.y,0.0) ); Box.insert(2, vec3(0.0f, 1.0, 0.0) );  Box.insert(1, vec2(0.0,0.0) );
 
 
                     Box.getBuffer<vec3>(0).addOffset( -s*0.5f);

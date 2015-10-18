@@ -12,8 +12,9 @@
 #include <gla/core/types.h>
 #include <memory>
 
-namespace gla {
 
+/*
+namespace gla {
 
 template<class T, GLenum GL_ARRAY_TARGET>
 class ArrayBuffer
@@ -31,11 +32,7 @@ class ArrayBuffer
             std::cout << "Array buffer deleted\n";
         }
 
-        /**
-         *  Sends the array buffer to the GPU. Once this is
-         *  complete, you can clear the buffer from the CPU
-         *
-         */
+
         void sendToGPU()
         {
             if( mVector.size() == 0) return;
@@ -66,56 +63,37 @@ class ArrayBuffer
         };
 
 
-        /**
-         *  Gets the number of items in the array buffer.
-         *
-         */
+
         inline std::size_t cpuBufferSize() const
         {
             return( mVector.size() );
         }
 
-        /**
-         *  Gets the number of items in the buffer on the GPU.
-         *
-         */
+
         inline std::size_t gpuBufferSize() const
         {
             return( mGPUBufferSize );
         }
 
-        /**
-         *  Gets the total number of bytes in the buffer
-         *
-         */
+
         inline std::size_t cpuByteSize() const
         {
             return( mVector.size() * sizeof(T) );
         }
 
-        /**
-         *  Gets the total number of bytes in the buffer
-         *
-         */
+
         inline std::size_t gpuByteSize() const
         {
             return( mGPUByteSize );
         }
 
-        /**
-         *  Inserts an item the back of the buffer.
-         *
-         */
+
         void insert(const T & v)
         {
             mVector.push_back(v);
         }
 
-        /**
-         *  Clears the buffer from the GPU. This does not automatically
-         * clear the buffer from the CPU.
-         *
-         */
+
         void clearGPU()
         {
             if(mGLID) glDeleteBuffers(1, &mGLID);
@@ -123,41 +101,26 @@ class ArrayBuffer
             mGPUBufferSize = mGPUByteSize = 0;
         }
 
-        /**
-         *  Clears the buffer from the CPU leaving the GPU intact
-         *
-         */
+
         void clearCPU()
         {
             mVector.clear();
         }
 
-        /**
-         *  Binds the current buffer.
-         *
-         */
+
         inline void bind()
         {
             glBindBuffer(GL_ARRAY_TARGET, mGLID);
         };
 
 
-        /**
-         *  Access an element on the CPU buffer.
-         *
-         */
+
         T & operator[](int i){return mVector[i];}
 
-        /**
-         *  Gets the OpenGL id for the buffer.
-         *
-         */
+
         inline GLuint getID() { return mGLID; };
 
-        /**
-         *  Gets the reference to the CPU buffer.
-         *
-         */
+
         std::vector<T> & getBuffer() { return mVector; };
 
     public:
@@ -168,7 +131,7 @@ class ArrayBuffer
         uint           mGPUByteSize;
 };
 
-}
+*/
 
 
 //===================================================================================

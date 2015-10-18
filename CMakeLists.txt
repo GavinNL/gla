@@ -116,6 +116,9 @@ target_link_libraries (TransformSequence ${LIBS_FULL})
               examples/UniformBuffer.cpp)
 target_link_libraries (UniformBuffer ${LIBS_FULL})
 
+        add_executable(engine
+              examples/engine.cpp)
+target_link_libraries (engine ${LIBS_FULL})
 
 add_executable(test test.cpp)
 target_link_libraries (test ${LIBS_FULL})
