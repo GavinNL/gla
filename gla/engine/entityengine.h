@@ -1,12 +1,18 @@
 #ifndef _GLA_ENTITYENGINE_H
 #define _GLA_ENTITYENGINE_H
 
+//#include <gla/core/framebufferobject.h>
+#include <gla/core/vertexarrayobject.h>
 
-#include <gla/core/framebufferobject.h>
+namespace gla {
+namespace engine {
 
-namespace gla
-{
-
+/**
+ * @brief The Entity class
+ *
+ * The entity class is a way to hold a drawable object. It can either be
+ * a full GPUVertexArrayObject, or part of one
+ */
 class Entity
 {
 
@@ -22,5 +28,6 @@ class EntityEngine
 
 };
 
+};
 
 #endif // ENTITYENGINE_H

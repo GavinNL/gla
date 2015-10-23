@@ -1,8 +1,8 @@
 #ifndef GLA_SHADER_H
 #define GLA_SHADER_H
 
-#include <gla/core/types.h>
-#include <gla/core/uniformbuffer.h>
+#include <gla/types.h>
+#include <gla/uniformbuffer.h>
 #include <iostream>
 #include <fstream>
 #include <streambuf>

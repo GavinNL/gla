@@ -5,7 +5,7 @@
 #ifndef TRANSFORMATION_H
 #define TRANSFORMATION_H
 
-#include <gla/core/types.h>
+#include <gla/types.h>
 
 namespace gla
 {
@@ -17,7 +17,7 @@ namespace gla
 class Transformation
 {
     public:
-        Transformation() : mScale(1.0,1.0,1.0)
+        Transformation() : mScale(1.0,1.0,1.0), mPosition(0,0,0), mOrientation(1,0,0,0)
         {
         }
 
@@ -29,6 +29,10 @@ class Transformation
         {
         }
 
+        Transformation(const vec3 & position) : mPosition(position), mScale(1,1,1), mOrientation(1,0,0,0)
+        {
+
+        }
 
         // positional transformations
         inline virtual void translate(const vec3 & T)  { mPosition += T; };
@@ -86,6 +90,23 @@ class Transformation
 
 };
 
+//Transform operator*(const Transform& ps, const Transform& ls)
+//{
+//	Transform ws;
+
+//	ws.position    = ps.position + ps.orientation * (ps.scale * ls.position);
+//	ws.orientation = ps.orientation * ls.orientation;
+//	ws.scale       = ps.scale * (ps.orientation * ls.scale);
+
+//	return ws;
+//}
+
+//Transform& operator*=(Transform& ps, const Transform& ls)
+//{
+//	ps = ps * ls;
+
+//	return ps;
+//}
 
 inline Transformation operator * (const Transformation & ps, const Transformation & ls)
 {
@@ -104,6 +125,22 @@ inline Transformation& operator *= ( Transformation & ps, const Transformation &
 
     return ps;
 
+}
+
+
+inline Transformation operator/(const Transformation& ws, const Transformation& ps)
+{
+    Transformation ls;
+
+    const quat psConjugate( -ps.mOrientation.x, -ps.mOrientation.y, -ps.mOrientation.z, ps.mOrientation.w);
+
+    //const quat psConjugate(); ps.mOrientation. conjugate(ps.orientation);
+
+    ls.mPosition    = (psConjugate * (ws.mPosition - ps.mPosition)) / ps.mScale;
+    ls.mOrientation = psConjugate * ws.mOrientation;
+    ls.mScale       = psConjugate * (ws.mScale / ps.mScale);
+
+    return ls;
 }
 
 };

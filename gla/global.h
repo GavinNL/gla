@@ -13,7 +13,7 @@
 //#include <glm/gtc/matrix_transform.hpp>
 //#include <glm/gtc/noise.hpp>
 
-#include <gla/core/types.h>
+#include <gla/types.h>
 
 
 namespace gla
@@ -26,23 +26,6 @@ namespace gla
         T pos;
         T dim;
     };
-
-
-
-    // Keep track of the texture that is currently bound
-    inline GLuint BindTexture(GLuint tex)
-    {
-        static GLuint _Current=0;
-        if( _Current != tex)
-        {
-            glBindTexture(GL_TEXTURE_2D,  tex);
-            _Current = tex;
-            return _Current;
-        }
-        return _Current;
-    }
-
-
 
 
 }

@@ -1,7 +1,7 @@
 #ifndef GLA_UTILS_APP_H
 #define GLA_UTILS_APP_H
 
-#include "gla/core/timer.h"
+#include "gla/timer.h"
 #include <map>
 #include <functional>
 

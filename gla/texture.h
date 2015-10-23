@@ -1,20 +1,21 @@
 #ifndef GLA_TEXTURE_H
 #define GLA_TEXTURE_H
 
-#include <gla/core/global.h>
-#include <gla/core/types.h>
-#include <gla/core/exceptions.h>
+#include <gla/global.h>
+#include <gla/types.h>
+#include <gla/exceptions.h>
 #include <iostream>
 #include <string.h>
 #include <functional>
 #include <memory>
+#include <vector>
 
 #ifdef GLA_IMAGE_USE_STB
     #include <stb/stb_image.h>
 #elif GLA_IMAGE_USE_FREEIMAGE
     #include <freeimage.h>
 #else
-    #include <gla/core/stb_image_headeronly.h>
+    #include <gla/stb_image_headeronly.h>
 #endif
 
 
@@ -143,19 +144,30 @@ namespace gla {
                 glBindTexture(GL_TEXTURE_2D, mTextureID);
             };
 
-
-            /**
-             *  Sets this texture to be the active texture for
-             *  the.
-             *
-             *  @param unit The texture unit to set it as, usually between 0-32, but this is HW dependant. Default is 0.
-             *
-             */
-            inline void setActiveTexture(unsigned int unit=0) const
+             // Keep track of the texture that is currently bound
+            static GLuint BindTexture(const GPUTexture & T, bool force = false)
             {
-                glActiveTexture(GL_TEXTURE0 + unit);
-                //glBindTexture(GL_TEXTURE_2D, mTextureID);
-                gla::BindTexture(mTextureID);
+
+                static GLuint _Current=0;
+                if( force || _Current != T.getID() )
+                {
+                    glBindTexture(GL_TEXTURE_2D,  T.getID());
+                    _Current = T.getID();
+                    return _Current;
+                }
+                return _Current;
+            }
+
+            static void SetActiveTexture( GPUTexture & T, unsigned int unit)
+            {
+                static unsigned int CurrentlyBoundTextureUnits[128] = {0};
+
+                if( CurrentlyBoundTextureUnits[unit] != T.getID() )
+                {
+                    glActiveTexture(GL_TEXTURE0+unit);
+                    BindTexture(T, true);
+                    CurrentlyBoundTextureUnits[unit] = T.getID();
+                }
             }
 
             /**
@@ -200,6 +212,15 @@ namespace gla {
                 static GLint  max = 0;
                 if(max!=0) return max;
                 glGetIntegerv (GL_MAX_TEXTURE_SIZE, &max);
+                return max;
+            }
+
+            static GLuint get_MAX_TEXTURE_IMAGE_UNITS()
+            {
+                static GLint  max = 0;
+                if(max!=0) return max;
+                //glGetIntegerv (GL_MAX_TEXTURE_SIZE, &max);
+                glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max);
                 return max;
             }
 

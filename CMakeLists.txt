@@ -1,10 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
 project(gla)
-aux_source_directory(./src         SRC_LIST)
-aux_source_directory(./src/core    CORE_SRC_LIST)
-aux_source_directory(./src/engine  ENGINE_SRC_LIST)
-aux_source_directory(./src/utils   ENGINE_SRC_LIST)
-
 aux_source_directory(./gla         INC_LIST)
 
 set(MYLIB_VERSION_MAJOR 0)
@@ -51,21 +46,21 @@ SET( TEST   ${GLFW_INCLUDE_DIRS})
 
 FIND_PACKAGE(OpenGL REQUIRED)
 
-IF(MAKE_SHARED)
-    add_library(${PROJECT_NAME} SHARED ${SRC_LIST})
-ELSE(MAKE_SHARED)
-    add_library(${PROJECT_NAME}engine STATIC ${ENGINE_SRC_LIST})
-ENDIF(MAKE_SHARED)
+#IF(MAKE_SHARED)
+#    add_library(${PROJECT_NAME} SHARED ${SRC_LIST})
+#ELSE(MAKE_SHARED)
+#    add_library(${PROJECT_NAME}engine STATIC ${ENGINE_SRC_LIST})
+#ENDIF(MAKE_SHARED)
 
 
-set(LIBS_FULL     ${PROJECT_NAME}engine assimp       ${GLFW_STATIC_LIBRARIES} ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES}   )
-set(LIBS_TEST     ${PROJECT_NAME}engine z assimp      ${GLFW_STATIC_LIBRARIES} ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES}   )
-set(LIBS_CORE     ${PROJECT_NAME}engine ${GLFW_STATIC_LIBRARIES} ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES} )
+set(LIBS_FULL assimp       ${GLFW_STATIC_LIBRARIES} ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES}   )
+set(LIBS_TEST z assimp      ${GLFW_STATIC_LIBRARIES} ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES}   )
+set(LIBS_CORE ${GLFW_STATIC_LIBRARIES} ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES} )
 
 #set_target_properties(${PROJECT_NAME}core     PROPERTIES VERSION ${MYLIB_VERSION_STRING}
 #                                               SOVERSION ${MYLIB_VERSION_MAJOR})
-set_target_properties(${PROJECT_NAME}engine   PROPERTIES VERSION ${MYLIB_VERSION_STRING}
-                                               SOVERSION ${MYLIB_VERSION_MAJOR})
+#set_target_properties(${PROJECT_NAME}engine   PROPERTIES VERSION ${MYLIB_VERSION_STRING}
+#                                               SOVERSION ${MYLIB_VERSION_MAJOR})
 
 INSTALL( DIRECTORY gla DESTINATION include )
 
@@ -75,11 +70,11 @@ INSTALL( DIRECTORY gla DESTINATION include )
 #     ARCHIVE DESTINATION lib
 #)
 
-install(TARGETS glaengine
-     RUNTIME DESTINATION bin
-     LIBRARY DESTINATION lib
-     ARCHIVE DESTINATION lib
-)
+#install(TARGETS gla
+#     RUNTIME DESTINATION bin
+#     LIBRARY DESTINATION lib
+#     ARCHIVE DESTINATION lib
+#)
 
 #file(COPY resources/testskin.zip   DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 #file(COPY resources/example.xml    DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
@@ -108,17 +103,14 @@ target_link_libraries (HelloTriangleEncapsulatedVAO ${LIBS_CORE})
                        examples/Textures.cpp)
 target_link_libraries (Textures ${LIBS_CORE})
 
-        add_executable(TransformSequence
-                       examples/TransformSequence.cpp)
-target_link_libraries (TransformSequence ${LIBS_FULL})
+#        add_executable(TransformSequence
+#                       examples/TransformSequence.cpp)
+#target_link_libraries (TransformSequence ${LIBS_FULL})
 
         add_executable(UniformBuffer
               examples/UniformBuffer.cpp)
 target_link_libraries (UniformBuffer ${LIBS_FULL})
 
-        add_executable(engine
-              examples/engine.cpp)
-target_link_libraries (engine ${LIBS_FULL})
 
 add_executable(test test.cpp)
 target_link_libraries (test ${LIBS_FULL})

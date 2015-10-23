@@ -16,9 +16,9 @@ namespace gla {
 class Material
 {
     public:
-        Material();
+        Material(){};
 
-        ~Material();
+        virtual ~Material(){};
 
         /**
          * @brief init
@@ -30,33 +30,16 @@ class Material
 
         }
 
-        virtual void use(){};
-
         /**
-         * @brief onApply
-         * @param pEntity
+         * @brief use
          *
-         * This method will be called
+         * override this method and use it to send uniform data to the shader
          */
-        virtual void onApply( GPUArrayObject & pEntity)
+        virtual void use()
         {
 
-        }
+        };
 
-        /**
-         * @brief sendUniforms Sends uniforms to the shader
-         * @param pEntity A reference to the entity that is to be drawn
-         *
-         * A virtual method that must be overrideen to make use of. The input paramters
-         * pEntity and pSceneNode can be use to get various information about the object
-         * such as transformations, etc.
-         *
-         * This will be sent just before the object is rendered.
-         */
-        virtual void sendUniforms( GPUArrayObject & pEntity /*, ScenenNode & pSceneNode*/){};
-
-    protected:
-        ShaderProgram   mShader;
 
 };
 

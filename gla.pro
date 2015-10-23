@@ -6,51 +6,25 @@ CONFIG -= qt
 LIBS += -lGLEW -lGL -lGLU -lSDL2
 
 HEADERS +=  gla/gla.h                          \
-            gla/core/shader.h                  \
-            gla/core/global.h                  \
-            gla/core/camera.h                  \
-            gla/core/transformation.h          \
-            gla/core/arraybuffer.h             \
-            gla/core/vertexarrayobject.h       \
-            gla/core/exceptions.h              \
-            gla/core/texture.h                 \
-            gla/core/types.h                   \
-            gla/core/gputexturearray.h         \
-            gla/core/timer.h                   \
-            gla/core/framebufferobject.h       \
-            gla/core/solids.h                  \
-            gla/engine/skeleton.h              \
-            gla/engine/transformsequence.h     \
-            gla/engine/bone.h                  \
-            gla/engine/modelloader.h           \
-\
-            gla/utils/window.h                 \
-            gla/utils/app.h                    \
-            gla/utils/utils.h                  \
-\
-            gla/engine/scene.h                 \
-            gla/engine/cameracontrol.h          \
-            gla/engine/node.h                  \
-            gla/engine/engine.h                \
-            gla/engine/material.h              \
-            gla/stb/stb_image.h \
-    gla/core/uniformbuffer.h \
-    gla/core/opengl.h \
-    gla/engine/frustrum.h \
-    gla/engine/entityengine.h
+            gla/shader.h                  \
+            gla/global.h                  \
+            gla/camera.h                  \
+            gla/transformation.h          \
+            gla/arraybuffer.h             \
+            gla/vertexarrayobject.h       \
+            gla/exceptions.h              \
+            gla/texture.h                 \
+            gla/types.h                   \
+            gla/gputexturearray.h         \
+            gla/timer.h                   \
+            gla/framebufferobject.h       \
+            gla/uniformbuffer.h       \
+            gla/solids.h \
+            gla/utils/app.h \
+            gla/utils/cameracontrol.h
+
 
 SOURCES +=  main.cpp                                     \
-            src/core/texture.cpp                         \
-            src/core/solids.cpp                          \
-            src/engine/transformsequence.cpp             \
-            src/engine/skeleton.cpp                      \
-            src/engine/bone.cpp                          \
-            src/engine/modelloader.cpp                   \
-            src/engine/scene.cpp                         \
-            src/engine/node.cpp                          \
-            src/engine/material.cpp                      \
-            src/engine/entityengine.cpp                  \
-            src/utils/window.cpp                         \
             examples/TextureArray.cpp                             \
             examples/HelloTriangle.cpp                            \
             examples/HelloTriangleVAO.cpp                         \
@@ -59,8 +33,7 @@ SOURCES +=  main.cpp                                     \
             examples/TransformSequence.cpp                        \
             examples/HelloTriangleEncapsulatedVAO.cpp             \
             examples/engine.cpp             \
-            test.cpp \
-            gla/engine/entityengine.cpp
+            test.cpp
 
 INCLUDEPATH += ./ 
 

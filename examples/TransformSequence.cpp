@@ -6,7 +6,7 @@
 #include <locale>
 
 #include <gla/utils/app.h>
-#include <gla/engine/cameracontrol.h>
+#include <gla/utils/cameracontrol.h>
 
 using namespace gla;
 

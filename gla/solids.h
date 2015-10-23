@@ -1,8 +1,8 @@
 #ifndef SOLIDS_H
 #define SOLIDS_H
 
-#include <gla/core/global.h>
-#include <gla/core/vertexarrayobject.h>
+#include <gla/global.h>
+#include <gla/vertexarrayobject.h>
 
 namespace gla
 {
@@ -27,7 +27,8 @@ namespace gla
 
             static VertexArrayObject_N createBox( const vec3 & s = vec3(1.0,1.0,1.0), bool UseQuadsInstead = true )
             {
-                if( UseQuadsInstead )
+                // always use quads for the time being
+                if( true )
                 {
                     VertexArrayObject Box(QUADS);
 

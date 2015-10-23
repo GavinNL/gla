@@ -1,7 +1,7 @@
 #ifndef UNIFORMBUFFER_H
 #define UNIFORMBUFFER_H
 
-#include <gla/core/types.h>
+#include <gla/types.h>
 #include <iostream>
 
 namespace gla

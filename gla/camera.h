@@ -1,8 +1,8 @@
 #ifndef GLA_CAMERA_H
 #define GLA_CAMERA_H
 
-#include <gla/core/global.h>
-#include <gla/core/transformation.h>
+#include <gla/global.h>
+#include <gla/transformation.h>
 
 namespace gla {
 

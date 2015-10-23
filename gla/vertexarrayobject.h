@@ -1,12 +1,11 @@
 #ifndef VERTEXARRAYOBJECT_H
 #define VERTEXARRAYOBJECT_H
 
-#include <gla/core/global.h>
-//#include <GLFW/glfw3.h>
+#include <gla/global.h>
 #include <vector>
 #include <tuple>
 #include <array>
-#include <gla/core/arraybuffer.h>
+#include <gla/arraybuffer.h>
 #include <memory>
 
 namespace gla
@@ -492,7 +491,7 @@ namespace gla
                     GPU._size          = mIndexBuffer->getVertexCount() * mIndexBuffer->getValuesPerVertex();
 
                     const PRIMITAVE P[5] = {UNKNOWN_PRIMITAVE, UNKNOWN_PRIMITAVE, LINES, TRIANGLES, QUADS};
-                    GPU._PrimitaveType = P[mIndexBuffer->getValuesPerVertex()];
+                    GPU._PrimitaveType   = P[mIndexBuffer->getValuesPerVertex()];
 
                 } else {
                     GPU._isIndexed     = false;

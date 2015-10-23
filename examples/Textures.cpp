@@ -114,7 +114,7 @@ int main()
     {
 
         // Set the GPu as the current texture 0;
-        gpuTex.setActiveTexture(0);
+        GPUTexture::SetActiveTexture(gpuTex, 0);
 
         //VAO.bind();
 

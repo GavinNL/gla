@@ -3,7 +3,7 @@
 
 
 #include <gla/gla.h>
-#include <gla/engine/node.h>
+#include <gla/engine/scenenode.h>
 
 
 namespace gla {
@@ -26,6 +26,9 @@ class Scene
 
         Camera& getCamera() { return mCamera; };
 
+        virtual void draw();
+
+        SceneNode * GetRootNode() { return &mRootNode; };
     protected:
         SceneNode    mRootNode;
         Camera       mCamera;

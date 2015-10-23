@@ -1,7 +1,7 @@
 #ifndef GLA_GPUTEXTUREARRAY_H
 #define GLA_GPUTEXTUREARRAY_H
 
-#include <gla/core/types.h>
+#include <gla/types.h>
 #include <memory>
 
 namespace gla {
