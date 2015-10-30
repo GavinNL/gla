@@ -14,9 +14,67 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/noise.hpp>
 
+#include <iostream>
+#include <tuple>
+
+static inline std::ostream& operator <<(std::ostream & out, const glm::vec3 & v)
+{
+    out << "{" << v[0] << "," << v[1] << "," << v[2] << "}";
+    return out;
+}
+
+static inline std::ostream& operator <<(std::ostream & out, const glm::vec4 & v)
+{
+    out << "{" << v[0] << "," << v[1] << "," << v[2] << "," << v[3] << "}";
+    return out;
+}
+
+static inline std::ostream& operator <<(std::ostream & out, const glm::mat4 & v)
+{
+    out << v[0] << std::endl;
+    out << v[1] << std::endl;
+    out << v[2] << std::endl;
+    out << v[3] << std::endl;
+
+    return out;
+}
+
+static inline std::ostream& operator <<(std::ostream & out, const glm::mat3 & v)
+{
+    out << v[0] << std::endl;
+    out << v[1] << std::endl;
+    out << v[2] << std::endl;
+
+    return out;
+}
 
 namespace gla {
 
+/*
+
+template<std::size_t> struct int_{};
+
+template <class Tuple, size_t Pos>
+std::ostream& print_tuple(std::ostream& out, const Tuple& t, int_<Pos> )
+{
+  out << std::get< std::tuple_size<Tuple>::value-Pos >(t) << ',';
+  return print_tuple(out, t, int_<Pos-1>());
+}
+
+template <class Tuple>
+std::ostream& print_tuple(std::ostream& out, const Tuple& t, int_<1> )
+{
+  return out << std::get<std::tuple_size<Tuple>::value-1>(t);
+}
+
+template <class... Args>
+ostream& operator<<(ostream& out, const std::tuple<Args...>& t)
+{
+  out << '(';
+  print_tuple(out, t, int_<sizeof...(Args)>());
+  return out << ')';
+}
+*/
 
 class GPUTexture;
 class FrameBufferObject;
@@ -97,10 +155,10 @@ enum BUFFER_ELEMENT_TYPE
     B1, B2, B3, B4,  // unsigned byte
     S1, S2, S3, S4,  // unsigned short
     uB1, uB2, uB3, uB4,
-    uS1, uS2, uS3, uS4
+    uS1, uS2, uS3, uS4,
+
+    UNKNOWN_ELEMENT_TYPE
 };
-
-
 
 
 
@@ -117,10 +175,13 @@ typedef glm::uvec4  uvec4;
 typedef glm::uvec3  uvec3;
 typedef glm::uvec2  uvec2;
 
+
 typedef glm::ivec2  ivec2;
 typedef glm::ivec3  ivec3;
 typedef glm::ivec4  ivec4;
 
+typedef glm::mat2   mat2;
+typedef glm::mat3   mat3;
 typedef glm::mat4   mat4;
 typedef glm::quat   quat;
 
@@ -129,10 +190,14 @@ typedef glm::u8vec3 ucol3;
 typedef glm::u8vec2 ucol2;
 typedef glm::u8vec1 ucol1;
 
-typedef glm::vec4    col4;
-typedef glm::vec3    col3;
+typedef glm::vec4     col4;
+typedef glm::vec3     col3;
+typedef glm::vec2     col2;
 
 
 }
+
+
+
 #endif // ENUMS_H
 

@@ -4,9 +4,8 @@
 
 #include <gla/gla.h>
 #include <locale>
-
-#include <gla/utils/app.h>
-
+#include <tuple>
+#include <gla/types.h>
 
 using namespace gla;
 
@@ -14,111 +13,231 @@ using namespace gla;
 //=================================================================================
 // Global Variables and Function Prototypes
 //=================================================================================
-#define WINDOW_WIDTH  1280
-#define WINDOW_HEIGHT 1024
-#define WINDOW_TITLE "TransformSequence"
+#define WINDOW_WIDTH  640
+#define WINDOW_HEIGHT 480
+GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
+//=================================================================================
 
-static int x=3;
+struct Uniform140
+{
+    vec4 x;
+};
+
+
+
+
+
+
+
+
+template< std::size_t I, typename... Types >
+inline typename std::tuple_element<I, std::tuple<Types...> >::type&
+    attr( MemoryAlignedTuple<Types...>& t )
+    {
+        using element = typename std::tuple_element<I, std::tuple<Types...> >::type;
+
+        return *reinterpret_cast<element*>(t.data + tupleoffset<I, Types...>());
+    }
 
 
 int main()
 {
-/*
-    //===========================================================================
-    // This line create the window and initializes GLFW and also
-    // creates handles the callbacks.
-    //===========================================================================
-    gla::utils::RootApp::Initialize( WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
 
+
+    MemoryAlignedTuple<vec2, float , double> X;
+
+    gla::Timer_T<double> Tm;
+
+    std::cout << sizeof(X) << std::endl;
+    std::cout << sizeof( std::tuple<vec2, float, double>) << std::endl;
+    std::cout << (sizeof(vec2)+sizeof(float)+sizeof(double)) << std::endl;
+    std::cout << "=====" << std::endl;
+    std::cout << tupleoffset<0, vec2, float, double>() << std::endl;
+    std::cout << tupleoffset<1, vec2, float, double>() << std::endl;
+    std::cout << tupleoffset<2, vec2, float, double>() << std::endl;
+
+    std::cout << "Total size: " << tuplesize<2, vec2, float, double>() << std::endl;
+    std::cout << "Total size: " << sizeof(X) << std::endl;
+
+    std::cout << Tm.getElapsedTime() << std::endl;
+   // return 0;
+    //std::cout << &X << "   " << &X[0][0] << "   " << &X[0] << std::endl;
+    //return 0;
+    GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
 
     //===========================================================================
     // GLA code.
     //===========================================================================
-    Timer_T<double> Time;
 
-    // TransformationTimeLine  KeyFrame;
-    // KeyFrame.insert(0000, Transformation( {2.0f,0.0f,2.0f}, quat() ) );
-    // KeyFrame.insert(2000, Transformation( {2.0f,0.0f,2.0f}, glm::rotate( quat(), 3.0f*3.14159f/2.0f, vec3(0.0,1.0,0.0)) ) );
-    // KeyFrame.insert(3000, Transformation( {2.0f,0.0f,2.0f}, quat() ) );
+    //---------------------------------------------------------------------------
+    // Create two buffers on the CPU to hold position and colour information
+    //---------------------------------------------------------------------------
+    VertexArrayObject cpuVAO;
 
-    TransformSequence KeyFrame;
-    KeyFrame.setScaleKey(0.0f, {1.0,1.0,1.0});
-    KeyFrame.setScaleKey(3.0f, {1.0,1.0,10.0});
-    KeyFrame.setScaleKey(4.0f, {1.0,1.0,1.0});
 
-    KeyFrame.setPositionKey( 0.0f, {2.0,0.0,2.0} );
-    KeyFrame.setPositionKey( 2.0f, {4.0,0.0,2.0} );
-    KeyFrame.setPositionKey( 3.0f, {0.0,0.0,4.0} );
-    KeyFrame.setPositionKey( 4.0f, {2.0,0.0,2.0} );
+    // Create two buffers, they will return the position
+    // of the buffer. Eg, position will be the 0'th attribute in the shader
+    // colour will be the 1'st attribute
+    int positionIndex = cpuVAO.createBuffer<vec3>();  // this will be 0
+    int texIndex      = cpuVAO.createBuffer<vec2>();  // this will be 1
 
-    Camera Cam;
-    Cam.perspective(45, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT ,0.2f, 1000.0f);
-    Cam.setPosition( vec3(2.0,  2.0,  3.0) );
-    Cam.setEuler(    vec3(-15,  0.0 , 0.0) * (3.14159f / 180.0f) );
 
-    Transformation Tm;
+    // Also create an index buffer.
+    u4ArrayBuffer cpuIndex;
 
-    // The utils:CameraControl class handles all the
-    gla::utils::CameraControl CamController( &Cam );
+    cpuVAO.insert(positionIndex, vec3(-1.0f, -1.0f, 0.f));
+    cpuVAO.insert(positionIndex, vec3( 1.0f ,-1.0f, 0.f));
+    cpuVAO.insert(positionIndex, vec3( 1.0f , 1.0f, 0.f));
+    cpuVAO.insert(positionIndex, vec3(-1.0f , 1.0f, 0.f));
 
-    auto Axis  = gla::Solids::createAxes().toGPU();
+    cpuVAO.insert(texIndex, vec2( 0.f, 0.f ) );
+    cpuVAO.insert(texIndex, vec2( 1.f, 0.f ) );
+    cpuVAO.insert(texIndex, vec2( 1.f, 1.f ) );
+    cpuVAO.insert(texIndex, vec2( 0.f, 1.f ) );
 
+    cpuVAO.insertElement( uvec4(0,1,2,3) );
+
+
+    auto VAO = cpuVAO.toGPU();
+
+    // Load some textures. And force using 3 components (r,g,b)
+    Texture cpuTex1("resources/moss1024.jpg", 3 );
+    Texture cpuTex2("resources/rocks1024.jpg", 3 );
+    Texture cpuTex3(256,256, 3);
+
+
+
+    //=========================================================================================
+    // Create the Texture array on the GPU.
+    //   Note: Any objects that start with GPU mean they are initialized on the GPU
+    //=========================================================================================
+    GPUTextureArray GPUTArray;
+
+    // Create the GPUTexture array with 3 layers that hold 256x256 images with 3 components each, and 2 mipmaps.
+    GPUTArray.create( uvec2(256,256), 3, 2 , 3);
+
+    // Set the red channel using a lambda function
+    cpuTex3.r = [] (float x, float y) {  return glm::perlin( vec2(x,y) * 2.0f, vec2(2.0,2.0) )*0.5 + 0.5f;  };
+
+    // Resize the textures so they match the TextureArray. This will throw an exception if
+    // the sizes do not match.
+    cpuTex1.resize( uvec2(256,256) );
+    cpuTex2.resize( uvec2(256,256) );
+
+
+    // Copy the textures into the appropriate layer. This will throw an exception if
+    // the number of colour channels in the TextureArray does not match what's on the Texture
+    GPUTArray.SetLayer( cpuTex1 , 0);
+    GPUTArray.SetLayer( cpuTex2 , 1);
+    GPUTArray.SetLayer( cpuTex3 , 2);
+
+    //===============================================================
+
+
+    // we dont need the cpu texture anymore, so we can clear it.
+    cpuTex1.clear();
+    cpuTex2.clear();
+    cpuTex3.clear();
+
+
+
+//    gla::ArrayBuffer_T< std::tuple<vec3, vec2> > Buf;
+    gla::InterleavedVAO<vec3, vec2> Buf;
+
+
+    Buf.insertVertex( vec3(-1.0f, -1.0f, 0.f), vec2( 0.f, 0.f )  );
+    Buf.insertVertex( vec3( 1.0f ,-1.0f, 0.f), vec2( 1.f, 0.f )  );
+    Buf.insertVertex( vec3( 1.0f , 1.0f, 0.f), vec2( 1.f, 1.f )  );
+    Buf.insertVertex( vec3(-1.0f , 1.0f, 0.f), vec2( 0.f, 1.f )  );
+
+//    cpuVAO.insert(texIndex, vec2( 0.f, 0.f ) );
+//    cpuVAO.insert(texIndex, vec2( 1.f, 0.f ) );
+//    cpuVAO.insert(texIndex, vec2( 1.f, 1.f ) );
+//    cpuVAO.insert(texIndex, vec2( 0.f, 1.f ) );
+
+    VAO = Buf.toGPU();
     //---------------------------------------------------------------------------
     // Create a shader
     //---------------------------------------------------------------------------
+
     // Create the two shaders. The second argument is set to true because we are
     // compiling the shaders straight from a string. If we were compiling from a file
     // we'd just do:  VertexShader vs(Path_to_file);
-    ShaderProgram LineShader(  VertexShader("shaders/Line_PC.v"),  FragmentShader("shaders/Line_PC.f")  );
-    GLuint LineShaderCamMatrixId   = LineShader.getUniformLocation("inCameraMatrix");
-    GLuint LineShaderModelMatrixID = LineShader.getUniformLocation("inModelMatrix");
+    ShaderProgram TextureArrayShader;
+    TextureArrayShader.linkProgram(  VertexShader("shaders/TextureArray.v"),  FragmentShader("shaders/TextureArray.f")  );
 
-    //==========================================================
+   //==========================================================
 
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_BLEND_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glDepthFunc(GL_LESS);
+    Timer_T<float> Timer;
 
-    Timer_T<float> Tf;
-    Tf.reset();
 
-    vec3 yrp;
 
-    while ( gla::utils::RootApp::isRunning() )
+    while (!glfwWindowShouldClose(gMainWindow) )
     {
-        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-        //yrp.y += 3.14159f/10.0f * Tf.getElapsedTime();
+        // Set the GPu as the current texture 0;
+        GPUTArray.setActiveTexture(0);
 
-        // Can use any one of the following to render the triangle, they are all equivelant.
-        // as long as both buffers have the same number of items in it. In our case 3.
-        LineShader.useShader();
-            LineShader.sendUniform_mat4(LineShaderCamMatrixId,   Cam.getProjectionMatrix() * Cam.getMatrix() * Tm.getMatrix()   );
-            LineShader.sendUniform_mat4(LineShaderModelMatrixID, glm::scale( mat4(1.0), vec3(10.0,10.0,10.0)) );
-        Axis.Render();
-
-       // plane.Render();
-       // std::cout << (float)fmod(Time.getElapsedTime(), 3.0)  << std::endl;
-        LineShader.sendUniform_mat4(LineShaderCamMatrixId,   Cam.getProjectionMatrix() * Cam.getMatrix()   );
-        LineShader.sendUniform_mat4(LineShaderModelMatrixID, KeyFrame.getTransformationMatrix( (float)fmod(Time.getElapsedTime(),4.0f)) );
-        //LineShader.sendUniform_mat4(LineShaderModelMatrixID, KeyFrame.get(  static_cast<unsigned int>(Time.getElapsedTime()*1000)%3000).getMatrix() );
-        Axis.Render();
+        vec2 Speed = Timer.getElapsedTime() * vec2(0.7,1.2);
 
 
-        glfwSwapBuffers( gla::utils::RootApp::mWindow );
+        // Here we send Uniform data to the shader
+        //  The first argument is an user defined index. Depending on the number of uniforms you have, you should always
+        //  start at 0 and then increase sequentially.
+        //  The second parameter is the name of the  uniform in the shader
+        //  And the third parameter is the value we want to send. In our case we want to send 0, because we set our texture to be in texture unit 0.
+        //
+        //  sendUniform will only query the shader the first time and then store the shader uniform location in an array at index 0 (the first parameter)
+        //  the next time we call sendUniform(0, "uSampler", X), it will use the cached value.
+        //TextureArrayShader.sendUniform(0, "uTextureArray", 0);
+        //TextureArrayShader.sendUniform(1, "uSpeed", Speed);
+        TextureArrayShader.UniformData( ShaderProgram::Hash("uTextureArray"), 0);
+        TextureArrayShader.UniformData( ShaderProgram::Hash("uSpeed"),        Speed);
+
+        VAO.Render(QUADS);
+
+        glfwSwapBuffers(gMainWindow);
+        glfwPollEvents();
     }
 
     // Clear the VAO
     // Since we had flagged the array buffers for deletion ,they will now be
     // cleared as well since they are no longer bound to any VAOs
-    Axis.clear();
-    LineShader.DeleteShader();
+    VAO.clear();
 
-    gla::utils::RootApp::terminate();
-    */
 
+    glfwDestroyWindow(gMainWindow);
+    glfwTerminate();
     return 0;
 }
+
+
+
+//=============================================================================
+// Set up GLFW and GLEW
+//=============================================================================
+GLFWwindow* SetupOpenGLLibrariesAndCreateWindow()
+{
+    glewExperimental = GL_TRUE;
+    if (!glfwInit())
+        exit(EXIT_FAILURE);
+
+    auto gMainWindow = glfwCreateWindow(640, 480, "Hello Triangle", NULL, NULL);
+
+    if (!gMainWindow)
+    {
+        glfwTerminate();
+        exit(EXIT_FAILURE);
+    }
+    glfwMakeContextCurrent(gMainWindow);
+
+    int width, height;
+    glfwGetFramebufferSize(gMainWindow, &width, &height);
+    GLenum err = glewInit();
+
+    return(gMainWindow);
+
+}
+//=============================================================================

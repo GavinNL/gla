@@ -7,6 +7,8 @@
 #include <array>
 #include <gla/arraybuffer.h>
 #include <memory>
+#include <typeindex>
+#include <gla/memoryalignedtuple.h>
 
 namespace gla
 {
@@ -213,6 +215,8 @@ namespace gla
                 return _size;
             }
 
+            inline int GetNumIndices()    const { return _isIndexed ? _size : 0; }
+
             inline GLint getID() { return _VAO; }
 
             GLuint    _VAO;
@@ -220,6 +224,8 @@ namespace gla
             int       _size;                    // Either the number of indices if the GPUArrayObject is indexed
                                                 // Or the number of vertices if the GPUArrayObject is not indexed.
             bool      _isIndexed;
+
+            std::vector<BUFFER_ELEMENT_TYPE> _attachedBuffers;
 
             std::shared_ptr<GPUArrayObjectInfo> mInfo;
     };
@@ -318,64 +324,114 @@ namespace gla
 
     };
 
+*/
 
 
-    template <class VertexType,                         // The type of vertex to use
-              class ElementType,                        // The vector type to use for the index buffer (uvec2/uvec3/uvec4 for lines/triangles/quads)
-              PRIMITAVE DefaultRenderPrimitave,         // The default render primitative (LINES/TRIANGLES/QUADS)
-              BUFFER_ELEMENT_TYPE N,                         // The first variable type in the Vertex (see declaration of TypeSizeIndex)
-              BUFFER_ELEMENT_TYPE... Rest>                   // The rest of the variable types in the Vertex (see declaration of TypeSizeIndex)
-    class IndexedVertexArrayObject
+    template <typename... attrb>
+    class InterleavedVAO
     {
 
         public:
-            typedef ArrayBuffer<VertexType , GL_ARRAY_BUFFER>         VertexBufferType;
-            typedef ArrayBuffer<ElementType, GL_ELEMENT_ARRAY_BUFFER> IndexBufferType;
+            using VertexType       =  MemoryAlignedTuple<attrb...>;
+            using VertexBufferType =  ArrayBuffer_T< VertexType >;
+            //typedef ArrayBuffer_T< std::tuple<attrb...> >         VertexBufferType;
 
-            IndexedVertexArrayObject() {};
+            InterleavedVAO() {};
 
 
-            inline void insertVertex(const VertexType & T)
+
+            template<class... U>
+            void insertVertex(const U&&... u)
             {
-                mVertexBuffer.insert(T);
+                VertexType T;
+                T.set( std::forward<const U>(u)... );
+                mVertexBuffer.insert( T );
             }
 
-            inline void insertElement(const ElementType & T)
-            {
-                IndicesPerElement = T.length();
-                mIndexBuffer.insert(T);
-            }
 
             GPUArrayObject toGPU()
             {
                 GPUArrayObject GPU;
 
-                std::cout << "Sending Model to GPU:\n";
-                std::cout << " #vertices: " << mVertexBuffer.cpuBufferSize()  << std::endl;
-                std::cout << " #indices : " <<  mIndexBuffer.cpuBufferSize()  << std::endl;
+                if( mVertexBuffer.size() == 0)
+                {
+                    throw std::runtime_error( "ERROR: Buffer does not contain any vertices.");
+                }
+
 
                 //===============================
+
                 glGenVertexArrays(1, &GPU._VAO);
                 glBindVertexArray(    GPU._VAO);
 
-                mVertexBuffer.sendToGPU();
-                _EnableVertexAttribArray<N, Rest...>( 0, 0 );
-                mIndexBuffer.sendToGPU();
-                glBindVertexArray( 0 );
+                if( !GPU._VAO  )  throw std::runtime_error( "Interleaved VAO NOT CREATED" );
+
+                auto id = GPU._VAO;
+                GPU.mInfo = std::shared_ptr<GPUArrayObjectInfo>( new GPUArrayObjectInfo, [=](GPUArrayObjectInfo* a){ auto vao = id; delete a; glDeleteVertexArrays(1, &vao); std::cout << "Deleting VertexArrayObject: " << id << std::endl; } );
+
+                GPU.mInfo->Buffers = std::make_shared< std::vector<GPUArrayBuffer> > ();
+
+                auto g = mVertexBuffer.toGPU(ARRAY_BUFFER);
+
+                EnableVertexAttribArray<attrb...>(g);
+
+                GPU.mInfo->Buffers->push_back(g);
+
+
                 //===============================
 
-                GPU._size          = mIndexBuffer.cpuBufferSize() * IndicesPerElement;
-                GPU._isIndexed     = true;
-                GPU._PrimitaveType = DefaultRenderPrimitave;
+//                GPU._isIndexed     = false;
+//                if( mIndexBuffer.get() )
+//                {
+//                    mIndexBuffer->toGPU( ELEMENT_ARRAY_BUFFER );
+//                    GPU._isIndexed     = true;
+//                    GPU._size          = mIndexBuffer->getVertexCount() * mIndexBuffer->getValuesPerVertex();
+
+//                    const PRIMITAVE P[5] = {UNKNOWN_PRIMITAVE, UNKNOWN_PRIMITAVE, LINES, TRIANGLES, QUADS};
+//                    GPU._PrimitaveType   = P[mIndexBuffer->getValuesPerVertex()];
+
+//                } else {
+//                    GPU._isIndexed     = false;
+//                    GPU._size          = mBuffers[0]->getVertexCount();
+//                    GPU._PrimitaveType = mDefaultPrimitave;
+//                }
+
+                GPU._isIndexed     = false;
+                GPU._size          = mVertexBuffer.getVertexCount();
+                GPU._PrimitaveType = TRIANGLES;
+
+                glBindVertexArray(0);
+
+
+                std::cout << "============VOA Created============" << std::endl;
+                std::cout << "  ID       : " << GPU._VAO       << std::endl;
+                std::cout << "  size     : " << GPU._size      << std::endl;
+                std::cout << "  isindexed: " << GPU._isIndexed << std::endl;
+                std::cout << "  SizePerV: "  << GPU._size      << std::endl;
+                switch(GPU._PrimitaveType )
+                {
+                    case UNKNOWN_PRIMITAVE: std::cout << "elementtype: UNKNOWN"   << std::endl; break;
+                    case LINES: std::cout             << "elementtype: LINES"   << std::endl; break;
+                    case TRIANGLES: std::cout         << "elementtype: TRIANGLES" << std::endl; break;
+                    case QUADS: std::cout             << "elementtype: QUADS"     << std::endl; break;
+                }
+
+                //std::cout << "===================================" << std::endl;
+
+
+                /* NOTE
+                 *
+                 * We must check that all buffers have the same length, otherwise throw an exception.
+                 *
+                 * */
 
                 return GPU;
 
             }
 
-
             void clear()
             {
-                 mIndexBuffer.clearCPU();
+                 //mIndexBuffer.clearCPU();
                 mVertexBuffer.clearCPU();
             };
 
@@ -385,30 +441,151 @@ namespace gla
             //===========================================================
     private:
 
-            template <int First>
-            void _EnableVertexAttribArray( int index, long offset )
+//            template <typename First>
+//            void _EnableVertexAttribArray( int index, long offset )
+//            {
+
+//              const uint ElementsPerAttribute[] = {1,2,3,4, 1,2,3,4, 1,2,3,4};
+//              const uint ElementType[]          = {GL_FLOAT,GL_FLOAT,GL_FLOAT,GL_FLOAT, GL_INT,GL_INT,GL_INT,GL_INT, GL_UNSIGNED_INT, GL_UNSIGNED_INT,GL_UNSIGNED_INT,GL_UNSIGNED_INT};
+//              const uint ElementStride[]        = {4,8,12,16,4,8,12,16,4,8,12,16};
+
+//              glEnableVertexAttribArray( index );
+//              glVertexAttribPointer(index, ElementsPerAttribute[First], ElementType[First], GL_FALSE, sizeof(VertexType), (void*)offset);
+//            }
+
+
+            template <typename First>
+            void _EnableVertexAttribArray( int index=0, long offset=0 )
             {
 
-              const uint ElementsPerAttribute[] = {1,2,3,4, 1,2,3,4, 1,2,3,4};
-              const uint ElementType[]          = {GL_FLOAT,GL_FLOAT,GL_FLOAT,GL_FLOAT, GL_INT,GL_INT,GL_INT,GL_INT, GL_UNSIGNED_INT, GL_UNSIGNED_INT,GL_UNSIGNED_INT,GL_UNSIGNED_INT};
-              const uint ElementStride[]        = {4,8,12,16,4,8,12,16,4,8,12,16};
+
+              uint ElementType;
+              uint ElementsPerAttribute = 1;
+              GLboolean IsNormalized = GL_FALSE;
+
+              if( std::is_same<First, ivec4>::value ||
+                  std::is_same<First, uvec4>::value ||
+                  std::is_same<First,  vec4>::value  ||
+                  std::is_same<First, ucol4>::value ) ElementsPerAttribute = 4;
+              if( std::is_same<First, ivec3>::value ||
+                  std::is_same<First, uvec3>::value ||
+                  std::is_same<First,  vec3>::value  ||
+                  std::is_same<First, ucol3>::value ) ElementsPerAttribute = 3;
+              if( std::is_same<First, ivec2>::value ||
+                  std::is_same<First, ucol2>::value ||
+                  std::is_same<First,  vec2>::value ||
+                  std::is_same<First, ucol2>::value ) ElementsPerAttribute = 2;
+
+
+              if( std::is_same<First, ivec4>::value ||
+                  std::is_same<First, ivec3>::value ||
+                  std::is_same<First, ivec2>::value ||
+                  std::is_same<First, int  >::value    )
+              {
+                  ElementType = GL_INT;
+                  std::cout << "Element Type: GL_INT" << std::endl;
+              }
+              if( std::is_same<First, ucol4>::value ||
+                  std::is_same<First, ucol3>::value ||
+                  std::is_same<First, ucol2>::value ||
+                  std::is_same<First, unsigned char>::value ||
+                  std::is_same<First, ucol1  >::value    )
+              {
+                  ElementType = GL_UNSIGNED_BYTE;
+                  std::cout << "Element Type: GL_UNSIGNED_BYTE" << std::endl;
+              }
+              if( std::is_same<First, uvec4>::value ||
+                  std::is_same<First, uvec3>::value ||
+                  std::is_same<First, uvec2>::value ||
+                  std::is_same<First, unsigned int  >::value    )
+              {
+                  ElementType = GL_UNSIGNED_INT;
+                  std::cout << "Element Type: GL_UNSIGNED_INT" << std::endl;
+              }
+              if( std::is_same<First, vec4>::value ||
+                  std::is_same<First, vec3>::value ||
+                  std::is_same<First, vec2>::value ||
+                  std::is_same<First, float>::value    )
+              {
+                  ElementType = GL_FLOAT;
+                  std::cout << "Element Type: GL_FLOAT" << std::endl;
+              }
+
 
               glEnableVertexAttribArray( index );
-              glVertexAttribPointer(index, ElementsPerAttribute[First], ElementType[First], GL_FALSE, sizeof(VertexType), (void*)offset);
+              std::cout << "EnableVertexAttributeArray(" << index << ");" << std::endl;
+              glVertexAttribPointer(index, ElementsPerAttribute, ElementType, IsNormalized, sizeof(VertexType), (void*)offset);
+              std::cout <<  "   size  : " << ElementsPerAttribute << std::endl;
+              std::cout <<  "   Stride: " << sizeof(VertexType)   << std::endl;
+              std::cout <<  "   offset: " << offset               << std::endl;
+             // _EnableVertexAttribArray<Second, AllTheRest...>( index+1, offset+sizeof(First) );
             }
 
-            template <int First, int Second, int... AllTheRest>
-            void _EnableVertexAttribArray( int index, long offset )
+            template <typename First, typename Second, typename... AllTheRest>
+            void _EnableVertexAttribArray( int index=0, long offset=0 )
             {
 
-              const uint ElementsPerAttribute[] = {1,2,3,4,1,2,3,4,1,2,3,4};
-              const uint ElementType[]          = {GL_FLOAT,GL_FLOAT,GL_FLOAT,GL_FLOAT, GL_INT,GL_INT,GL_INT,GL_INT, GL_UNSIGNED_INT, GL_UNSIGNED_INT,GL_UNSIGNED_INT,GL_UNSIGNED_INT};
-              const uint ElementStride[]        = {4,8,12,16,4,8,12,16,4,8,12,16};
+                uint ElementType;
+                uint ElementsPerAttribute = 1;
+                GLboolean IsNormalized = GL_FALSE;
+
+                if( std::is_same<First, ivec4>::value ||
+                    std::is_same<First, uvec4>::value ||
+                    std::is_same<First,  vec4>::value  ||
+                    std::is_same<First, ucol4>::value ) ElementsPerAttribute = 4;
+                if( std::is_same<First, ivec3>::value ||
+                    std::is_same<First, uvec3>::value ||
+                    std::is_same<First,  vec3>::value  ||
+                    std::is_same<First, ucol3>::value ) ElementsPerAttribute = 3;
+                if( std::is_same<First, ivec2>::value ||
+                    std::is_same<First, ucol2>::value ||
+                    std::is_same<First,  vec2>::value ||
+                    std::is_same<First, ucol2>::value ) ElementsPerAttribute = 2;
+
+
+                if( std::is_same<First, ivec4>::value ||
+                    std::is_same<First, ivec3>::value ||
+                    std::is_same<First, ivec2>::value ||
+                    std::is_same<First, int  >::value    )
+                {
+                    ElementType = GL_INT;
+                    std::cout << "Element Type: GL_INT" << std::endl;
+                }
+                if( std::is_same<First, ucol4>::value ||
+                    std::is_same<First, ucol3>::value ||
+                    std::is_same<First, ucol2>::value ||
+                    std::is_same<First, unsigned char>::value ||
+                    std::is_same<First, ucol1  >::value    )
+                {
+                    ElementType = GL_UNSIGNED_BYTE;
+                    std::cout << "Element Type: GL_UNSIGNED_BYTE" << std::endl;
+                }
+                if( std::is_same<First, uvec4>::value ||
+                    std::is_same<First, uvec3>::value ||
+                    std::is_same<First, uvec2>::value ||
+                    std::is_same<First, unsigned int  >::value    )
+                {
+                    ElementType = GL_UNSIGNED_INT;
+                    std::cout << "Element Type: GL_UNSIGNED_INT" << std::endl;
+                }
+                if( std::is_same<First, vec4>::value ||
+                    std::is_same<First, vec3>::value ||
+                    std::is_same<First, vec2>::value ||
+                    std::is_same<First, float>::value    )
+                {
+                    ElementType = GL_FLOAT;
+                    std::cout << "Element Type: GL_FLOAT" << std::endl;
+                }
+
 
               glEnableVertexAttribArray( index );
-              glVertexAttribPointer(index, ElementsPerAttribute[First], ElementType[First], GL_FALSE, sizeof(VertexType), (void*)offset);
+              std::cout << "EnableVertexAttributeArray(" << index << ");" << std::endl;
+              glVertexAttribPointer(index, ElementsPerAttribute, ElementType, IsNormalized, sizeof(VertexType), (void*)offset);
+              std::cout <<  "   size  : " << ElementsPerAttribute << std::endl;
+              std::cout <<  "   Stride: " << sizeof(VertexType) << std::endl;
+              std::cout <<  "   offset: " << offset << std::endl;
 
-              _EnableVertexAttribArray<Second, AllTheRest...>( index+1, offset+ElementStride[First] );
+              _EnableVertexAttribArray<Second, AllTheRest...>( index+1, offset+sizeof(First) );
             }
 
             //===========================================================
@@ -416,15 +593,13 @@ namespace gla
 
         public:
 
-            uint   IndicesPerElement;
-
-            IndexBufferType  mIndexBuffer;
+            uint             IndicesPerElement;
             VertexBufferType mVertexBuffer;
 
     };
 
 
-    */
+
     //====================================================================
     //  New VAO
     //====================================================================
@@ -477,8 +652,9 @@ namespace gla
                     auto g = mBuffers[i]->toGPU(ARRAY_BUFFER);
                     g.EnableAttribute(i);
                     GPU.mInfo->Buffers->push_back(g);
-                    //pGPUBuffers.push_back(  );  // creates the GPU Array buffer and binds it
-                    //pGPUBuffers[ pGPUBuffers.size()-1 ].EnableAttribute(i);
+
+                    GPU._attachedBuffers.push_back( g.GetElementType() );
+
                 }
 
                 //===============================
@@ -712,3 +888,4 @@ namespace gla
 }
 
 #endif // VERTEXARRAYOBJECT_H
+

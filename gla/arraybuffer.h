@@ -11,7 +11,7 @@
 #include <gla/exceptions.h>
 #include <gla/types.h>
 #include <memory>
-
+#include <gla/memoryalignedtuple.h>
 
 /*
 namespace gla {
@@ -142,6 +142,7 @@ struct ArrayBufferInfo
 {
     BUFFER_ELEMENT_TYPE    mBufferType;
     unsigned int           mNumberOfItems;
+    unsigned int           mByteSize;
 };
 
 class GPUArrayBuffer
@@ -151,13 +152,13 @@ class GPUArrayBuffer
          * @brief bind binds the buffer as the current buffer on the GPU
          * @param type The type of buffer to bind it as, either ARRAY_BUFFER or ELEMENT_ARRAY_BUFFER
          */
-        inline void      bind(ARRAY_TYPE type) const { glBindBuffer(type, mGLID); } ;
+        inline void      bind(ARRAY_TYPE type) const { glBindBuffer(type, mGLID); }
 
         /**
          * @brief getID
          * @return The openGL id for the array buffer.
          */
-        inline GLuint    getID()       { return mGLID;        };
+        inline GLuint    getID()       { return mGLID;        }
 
 
         /**
@@ -166,7 +167,8 @@ class GPUArrayBuffer
          */
         inline uint   getByteSize()
         {
-           // return mSizeInBytes;
+
+            return mInfo->mByteSize;
 
             int size=0;
             switch( IntegralType() )
@@ -215,6 +217,18 @@ class GPUArrayBuffer
                                   0); // buffer offset
         }
 
+
+        //=======================================================
+
+        template<typename ...args>
+        void EnableAttributeArray()
+        {
+            std::tuple<args...> X;
+        }
+
+
+
+        //=======================================================
         /**
          * @brief DisableAttribute
          * @param index the index number to disable
@@ -285,9 +299,13 @@ class GPUArrayBuffer
             return( IntegralType[(int)mBufferType/7] );
         }
 
+        BUFFER_ELEMENT_TYPE  GetElementType() const { return mBufferType; }
+
         GLuint                 mGLID;             // The GL ID associated with it.
         BUFFER_ELEMENT_TYPE    mBufferType;
         unsigned int           mNumberOfItems;
+        unsigned int           mByteSize;
+        unsigned int           mVertexSize; // number of bytes per vertex
 
         std::shared_ptr<ArrayBufferInfo> mInfo;
 };
@@ -322,18 +340,20 @@ class ArrayBuffer_b
 
             //B.mSizeInBytes = this->getByteSize();
             B.mNumberOfItems = getVertexCount();
-            B.mBufferType  = mBufferElementType;
-            //B.mArrayType   = TY;
+            B.mBufferType    = mBufferElementType;
+            B.mByteSize      = this->getByteSize();
+            B.mVertexSize    = this->getVertexSize();
+            B.mInfo->mByteSize = this->getByteSize();
 
 
-#ifdef GLA_VERBOSE_BUFFERS
+//#ifdef GLA_VERBOSE_BUFFERS
             std::cout << "================Buffer created=================\n";
             std::cout << "ID        : " << B.mGLID <<  std::endl;
-            std::cout << "bytesize  : " << B.getByteSize() <<  std::endl;
+            std::cout << "bytesize  : " << B.mByteSize <<  std::endl;
             std::cout << "vertcount : " << this->getVertexCount() <<  std::endl;
-            std::cout << "val/ver   : " << this->getValuesPerVertex() <<  std::endl;
+            //std::cout << "val/ver   : " << this->getValuesPerVertex() <<  std::endl;
             std::cout << "====================S===========================\n";
-#endif
+//#endif
             return B;
         }
 
@@ -344,6 +364,7 @@ class ArrayBuffer_b
         virtual uint             getByteSize()        const = 0;
         virtual uint             getVertexCount()     const = 0;
         virtual uint             getValuesPerVertex() const = 0;
+        virtual uint             getVertexSize()      const = 0;
 
         /**
          * Determines if two buffers are of the same type. Two buffers are of the same type if
@@ -374,7 +395,7 @@ public:
 
     ArrayBuffer_T()
     {
-        #define SET_BUFFER_ELEMENT(T2, E1) if( std::is_same<T, T2>::value )  { mBufferElementType = E1; /*printf("ArrayBuffer created with Type: %d\n", (int)E1);*/ }
+        #define SET_BUFFER_ELEMENT(T2, E1) if( std::is_same<T, T2>::value )  { mBufferElementType = E1; return; /*printf("ArrayBuffer created with Type: %d\n", (int)E1);*/ }
 
         SET_BUFFER_ELEMENT(float, F1);
         SET_BUFFER_ELEMENT(vec2,  F2);
@@ -398,6 +419,7 @@ public:
 
         #undef SET_BUFFER_ELEMENT
 
+        mBufferElementType = UNKNOWN_ELEMENT_TYPE;
         //printf("ArrayBuffer created with Type: %d\n", (int)E1);
     }
 
@@ -424,6 +446,8 @@ public:
         CHECK_BUFFER_ELEMENT(ucol3,           uB3);
         CHECK_BUFFER_ELEMENT(ucol4,           uB4);
         #undef CHECK_BUFFER_ELEMENT
+
+        return UNKNOWN_ELEMENT_TYPE;
     }
 
     inline T & operator[](int i)
@@ -442,6 +466,7 @@ public:
      */
     virtual void* getData()        const { return (void*)mVector.data(); };
 
+    virtual unsigned int  getVertexSize() const { return sizeof(T); }
 
     /**
      * Gets the number of bytes in the raw buffer. This is different
@@ -492,12 +517,12 @@ public:
      *
      * @param v the vertex to insert.
      */
-    void insert(const T & v) { mVector.push_back(v);  };
+    void insert(const T & v) { mVector.push_back(v);  }
 
     /**
      * Clears the buffer data
      */
-    void clear() { mVector.clear(); };
+    void clear() { mVector.clear(); }
 
     /**
      * Adds an offset to all the vertices in the buffer.
@@ -514,12 +539,163 @@ public:
      *
      * @param i the index value.
      */
-    T & getVertex(int i) { return mVector[i]; };
+    T & getVertex(int i) { return mVector[i]; }
 
     private:
         std::vector<T> mVector;
 
 };
+
+
+
+
+template <int VertexSize, typename First>
+inline static void EnableVertexAttribArray( int index=0, long offset=0)
+{
+
+
+  uint ElementType;
+  uint ElementsPerAttribute = 1;
+  GLboolean IsNormalized = GL_FALSE;
+
+  if( std::is_same<First, ivec4>::value ||
+      std::is_same<First, uvec4>::value ||
+      std::is_same<First,  vec4>::value  ||
+      std::is_same<First, ucol4>::value ) ElementsPerAttribute = 4;
+  if( std::is_same<First, ivec3>::value ||
+      std::is_same<First, uvec3>::value ||
+      std::is_same<First,  vec3>::value  ||
+      std::is_same<First, ucol3>::value ) ElementsPerAttribute = 3;
+  if( std::is_same<First, ivec2>::value ||
+      std::is_same<First, ucol2>::value ||
+      std::is_same<First,  vec2>::value ||
+      std::is_same<First, ucol2>::value ) ElementsPerAttribute = 2;
+
+
+  if( std::is_same<First, ivec4>::value ||
+      std::is_same<First, ivec3>::value ||
+      std::is_same<First, ivec2>::value ||
+      std::is_same<First, int  >::value    )
+  {
+      ElementType = GL_INT;
+      std::cout << "Element Type: GL_INT" << std::endl;
+  }
+  if( std::is_same<First, ucol4>::value ||
+      std::is_same<First, ucol3>::value ||
+      std::is_same<First, ucol2>::value ||
+      std::is_same<First, unsigned char>::value ||
+      std::is_same<First, ucol1  >::value    )
+  {
+      ElementType = GL_UNSIGNED_BYTE;
+      std::cout << "Element Type: GL_UNSIGNED_BYTE" << std::endl;
+  }
+  if( std::is_same<First, uvec4>::value ||
+      std::is_same<First, uvec3>::value ||
+      std::is_same<First, uvec2>::value ||
+      std::is_same<First, unsigned int  >::value    )
+  {
+      ElementType = GL_UNSIGNED_INT;
+      std::cout << "Element Type: GL_UNSIGNED_INT" << std::endl;
+  }
+  if( std::is_same<First, vec4>::value ||
+      std::is_same<First, vec3>::value ||
+      std::is_same<First, vec2>::value ||
+      std::is_same<First, float>::value    )
+  {
+      ElementType = GL_FLOAT;
+      std::cout << "Element Type: GL_FLOAT" << std::endl;
+  }
+
+
+  glEnableVertexAttribArray(index );
+  std::cout << "EnableVertexAttributeArray(" << (index) << ");" << std::endl;
+  glVertexAttribPointer(index, ElementsPerAttribute, ElementType, IsNormalized, VertexSize, (void*)offset);
+  std::cout <<  "   size  : " << ElementsPerAttribute << std::endl;
+  std::cout <<  "   Stride: " << VertexSize << std::endl;
+  std::cout <<  "   offset: " << offset << std::endl;
+
+}
+
+template <int VertexSize, typename First, typename Second, typename... AllTheRest>
+inline static void EnableVertexAttribArray( int index=0, long offset=0 )
+{
+
+    uint ElementType;
+    uint ElementsPerAttribute = 1;
+    GLboolean IsNormalized = GL_FALSE;
+
+    if( std::is_same<First, ivec4>::value ||
+        std::is_same<First, uvec4>::value ||
+        std::is_same<First,  vec4>::value  ||
+        std::is_same<First, ucol4>::value ) ElementsPerAttribute = 4;
+    if( std::is_same<First, ivec3>::value ||
+        std::is_same<First, uvec3>::value ||
+        std::is_same<First,  vec3>::value  ||
+        std::is_same<First, ucol3>::value ) ElementsPerAttribute = 3;
+    if( std::is_same<First, ivec2>::value ||
+        std::is_same<First, ucol2>::value ||
+        std::is_same<First,  vec2>::value ||
+        std::is_same<First, ucol2>::value ) ElementsPerAttribute = 2;
+
+
+    if( std::is_same<First, ivec4>::value ||
+        std::is_same<First, ivec3>::value ||
+        std::is_same<First, ivec2>::value ||
+        std::is_same<First, int  >::value    )
+    {
+        ElementType = GL_INT;
+        std::cout << "Element Type: GL_INT" << std::endl;
+    }
+    if( std::is_same<First, ucol4>::value ||
+        std::is_same<First, ucol3>::value ||
+        std::is_same<First, ucol2>::value ||
+        std::is_same<First, unsigned char>::value ||
+        std::is_same<First, ucol1  >::value    )
+    {
+        ElementType = GL_UNSIGNED_BYTE;
+        std::cout << "Element Type: GL_UNSIGNED_BYTE" << std::endl;
+    }
+    if( std::is_same<First, uvec4>::value ||
+        std::is_same<First, uvec3>::value ||
+        std::is_same<First, uvec2>::value ||
+        std::is_same<First, unsigned int  >::value    )
+    {
+        ElementType = GL_UNSIGNED_INT;
+        std::cout << "Element Type: GL_UNSIGNED_INT" << std::endl;
+    }
+    if( std::is_same<First, vec4>::value ||
+        std::is_same<First, vec3>::value ||
+        std::is_same<First, vec2>::value ||
+        std::is_same<First, float>::value    )
+    {
+        ElementType = GL_FLOAT;
+        std::cout << "Element Type: GL_FLOAT" << std::endl;
+    }
+
+
+  glEnableVertexAttribArray( index );
+  std::cout << "EnableVertexAttributeArray(" << (index) << ");" << std::endl;
+  glVertexAttribPointer(index, ElementsPerAttribute, ElementType, IsNormalized, VertexSize, (void*)offset);
+  std::cout <<  "   size  : " << ElementsPerAttribute << std::endl;
+  std::cout <<  "   Stride: " << VertexSize << std::endl;
+  std::cout <<  "   offset: " << offset << std::endl;
+
+  EnableVertexAttribArray<VertexSize, Second, AllTheRest...>( index+1, offset+sizeof(First) );
+}
+
+template <typename... AllTheRest>
+inline static void EnableVertexAttribArray()
+{
+
+    EnableVertexAttribArray< sizeof(MemoryAlignedTuple<AllTheRest...> ), AllTheRest...>( (int)0, (long)0 );
+}
+
+template <typename... AllTheRest>
+inline static void EnableVertexAttribArray(gla::GPUArrayBuffer & B)
+{
+    B.bind(ARRAY_BUFFER);
+    EnableVertexAttribArray< sizeof(MemoryAlignedTuple<AllTheRest...> ), AllTheRest...>( (int)0, (long)0 );
+}
 
 
 typedef gla::ArrayBuffer_T<vec2>  v2ArrayBuffer;

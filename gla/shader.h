@@ -9,6 +9,7 @@
 #include <vector>
 #include <memory>
 #include <map>
+#include <unordered_map>
 
 namespace gla
 {
@@ -203,8 +204,13 @@ class ShaderProgram
                 for(int i=0;i<N;i++)
                 {
                     auto name = GetUniformName(i);
-                    Info->UniformLocations[ GetUniformName(i) ] = getUniformLocation(name.c_str());
-                    std::cout << "          Uniform(" << i << "): " << GetUniformName(i) << std::endl;
+                    auto loc  = getUniformLocation(name.c_str());
+
+                    Info->UniformLocations[ name ] = loc;
+                    std::cout << "          Uniform(" << i << "): " << GetUniformName(i) << " HashKey: " << Hash(name.c_str()) << std::endl;
+
+                    mUniformMap[ Hash(name.c_str()) ] = loc;
+                    //std::cout << "          Uniform(" << i << "): " << GetUniformName(i) << std::endl;
                 }
 
 
@@ -256,14 +262,88 @@ class ShaderProgram
 
 
 
-
-
         inline void BindUniformBuffer(GPUUniformBuffer & buffer, GLuint BlockIndex, GLuint BindPoint)
         {
             glUniformBlockBinding(mProgram, BlockIndex, BindPoint);
             buffer.BindBase(BindPoint);
         }
 
+
+        using HashKey = size_t;
+
+        static constexpr HashKey Hash(const char * UniformName, HashKey k=0)
+        {
+            return *UniformName==0 ? k : Hash(UniformName+1, *UniformName * 101 + *UniformName);
+        }
+
+        /*
+        template<typename T>
+        inline void UniformData(HashKey UniformNameHash, const T & V, uint count=1)
+        {
+            if( std::is_same<T, const gla::mat4&>::value)  glUniformMatrix3fv(mUniformMap[UniformNameHash], count, GL_FALSE, static_cast<const float*>(&V) );
+            if( std::is_same<T, const gla::mat3&>::value)  glUniformMatrix2fv(mUniformMap[UniformNameHash], count, GL_FALSE, static_cast<const float*>(&V) );
+            if( std::is_same<T, const gla::mat2&>::value)  glUniform3fv(mUniformMap[UniformNameHash], count, (void*)&V );
+
+            if( std::is_same<T, const gla::vec4&>::value)  glUniform4fv(mUniformMap[UniformNameHash], count, (void*)&V );
+            if( std::is_same<T, const gla::vec3&>::value)  glUniform3fv(mUniformMap[UniformNameHash], count, (void*)&V );
+            if( std::is_same<T, const gla::vec2&>::value)  glUniform2iv(mUniformMap[UniformNameHash], count, (void*)&V );
+
+            if( std::is_same<T, const gla::ivec4&>::value) glUniform4iv(mUniformMap[UniformNameHash], count, (void*)&V );
+            if( std::is_same<T, const gla::ivec3&>::value) glUniform3iv(mUniformMap[UniformNameHash], count, (void*)&V );
+            if( std::is_same<T, const gla::ivec2&>::value) glUniform2fv(mUniformMap[UniformNameHash], count, (void*)&V );
+
+            if( std::is_same<T, const float&>::value)      glUniform1iv(mUniformMap[UniformNameHash], count, (void*)&V );
+            if( std::is_same<T, const int&>::value)        glUniform1iv(mUniformMap[UniformNameHash], count, (void*)&V );
+        }
+        */
+
+
+        inline void UniformData(HashKey UniformNameHash, const gla::mat4 & V, uint count=1)
+        {
+            glUniformMatrix4fv(mUniformMap[UniformNameHash], count, GL_FALSE, &V[0][0] );
+        }
+        inline void UniformData(HashKey UniformNameHash, const gla::mat3 & V, uint count=1)
+        {
+            glUniformMatrix3fv(mUniformMap[UniformNameHash], count, GL_FALSE, &V[0][0] );
+        }
+        inline void UniformData(HashKey UniformNameHash, const gla::mat2 & V, uint count=1)
+        {
+            glUniformMatrix2fv(mUniformMap[UniformNameHash], count, GL_FALSE, &V[0][0] );
+        }
+        inline void UniformData(HashKey UniformNameHash, const gla::vec4 & V, uint count=1)
+        {
+            glUniform4fv(mUniformMap[UniformNameHash], count, &V[0] );
+        }
+        inline void UniformData(HashKey UniformNameHash, const gla::vec3 & V, uint count=1)
+        {
+            glUniform3fv(mUniformMap[UniformNameHash], count, &V[0] );
+        }
+        inline void UniformData(HashKey UniformNameHash, const gla::vec2 & V, uint count=1)
+        {
+            glUniform2fv(mUniformMap[UniformNameHash], count, &V[0] );
+        }
+
+        inline void UniformData(HashKey UniformNameHash, const gla::ivec4 & V, uint count=1)
+        {
+            glUniform4iv(mUniformMap[UniformNameHash], count, &V[0] );
+        }
+        inline void UniformData(HashKey UniformNameHash, const gla::ivec3 & V, uint count=1)
+        {
+            glUniform3iv(mUniformMap[UniformNameHash], count, &V[0] );
+        }
+        inline void UniformData(HashKey UniformNameHash, const gla::ivec2 & V, uint count=1)
+        {
+            glUniform2iv(mUniformMap[UniformNameHash], count, &V[0] );
+        }
+
+        inline void UniformData(HashKey UniformNameHash, const float & V, uint count=1)
+        {
+            glUniform1f(mUniformMap[UniformNameHash], V );
+        }
+        inline void UniformData(HashKey UniformNameHash, const int & V, uint count=1)
+        {
+            glUniform1i(mUniformMap[UniformNameHash], V );
+        }
 
         /**
          * @brief sendUniform
@@ -279,6 +359,7 @@ class ShaderProgram
          * sendUniformLocation(1, "ModelMatrix", model);
          * sendUniformLocation(3, "ModelMatrix", model);  // this shouldn't be done, use 2 instead of 3. Must go sequentally
          */
+
         inline void sendUniform(GLuint location, const char *name, const gla::mat4 & V, uint count=1 )
         {
             switch( mUniformLocations[location] )
@@ -360,8 +441,12 @@ class ShaderProgram
 
 
     private:
-        std::vector<int> mUniformLocations;
-        std::vector<int> mUniformBlockLocations;
+        std::vector<int> mUniformLocations;         // TODO(Gavin): To be removed later
+        std::vector<int> mUniformBlockLocations;    // TODO(Gavin): To be removed later
+
+        std::unordered_map<HashKey, GLuint> mUniformMap;
+        std::unordered_map<HashKey, GLuint> mBlockMap;
+
         GLuint mProgram;
         std::shared_ptr<ShaderInfo> Info;
 
@@ -382,6 +467,10 @@ inline ShaderProgram::~ShaderProgram()
 //    #warning "TODO: Figure out what to do about unloading shaders."
 }
 
+inline ShaderProgram::HashKey operator "" _h(const char* c, size_t)
+{
+    return ShaderProgram::Hash(c);
+}
 
 }
 #endif // SHADER_H

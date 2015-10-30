@@ -421,7 +421,8 @@ namespace gla {
                     std::cout << "TextureBase loaded with #components = " << mComponents << std::endl;
 
                 } else {
-                    std::cout << "Error loading texture: " << path << std::endl;
+                    //std::cout << "Error loading texture: " << path << std::endl;
+                    throw std::runtime_error( std::string("Error loading texture: ") + path);
                 }
 
             }
@@ -505,6 +506,7 @@ namespace gla {
 
             inline void resize( const uvec2 & newSize)
             {
+                //std::cout << "Resizing from " << mDim.x << ", " << mDim.y << " to " << newSize.x << "," << newSize.y << std::endl;
                 TextureBase T( newSize.x, newSize.y , mComponents);
                 auto d = T.size();
 
@@ -516,10 +518,12 @@ namespace gla {
                         float x = (float)i / (float)d.x;
                         float y = (float)j / (float)d.y;
 
+
                         // Find the index on the main texture
                         int X = static_cast<int>(x * mDim.x);
                         int Y = static_cast<int>(y * mDim.y);
 
+                        //assert( X<=1024 );
                         // sample the 4 locations
                         float f00 = float( (*this)(X,Y    , z ) );
                         float f01 = float( (*this)(X,Y+1  , z ) );
@@ -533,9 +537,11 @@ namespace gla {
                         s = s-floor(s);
                         t = t-floor(t);
 
-                        T(i,j,z) =f00 * (1-s)*(1-t) + f10*s*(1-t) + f01*(1-s)*t + f11*s*t;
+                        T(i,j,z) = f00 * (1-s)*(1-t) + f10*s*(1-t) + f01*(1-s)*t + f11*s*t;
 
                     }
+
+                //std::cout << "Resizing complete" << std::endl;
 
                 *this = std::move(T);
             }

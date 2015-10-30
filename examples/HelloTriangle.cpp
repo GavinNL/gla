@@ -47,8 +47,8 @@ int main()
     //---------------------------------------------------------------------------
     // Copy the CPU buffers to the GPU.
     //---------------------------------------------------------------------------
-    GPUArrayBuffer gpuPos   = cpuPos.toGPU(ARRAY_BUFFER);   // same as GL_ARRAY_BUFFER, but placed in a enum
-    GPUArrayBuffer gpuCol   = cpuCol.toGPU(ARRAY_BUFFER);   // same as GL_ARRAY_BUFFER, but placed in a enum
+    //GPUArrayBuffer gpuPos   = cpuPos.toGPU(ARRAY_BUFFER);   // same as GL_ARRAY_BUFFER, but placed in a enum
+    //GPUArrayBuffer gpuCol   = cpuCol.toGPU(ARRAY_BUFFER);   // same as GL_ARRAY_BUFFER, but placed in a enum
 
 
     /* NOTE:
@@ -60,8 +60,20 @@ int main()
 
 
     // The data in the CPU buffers are no longer needed. We can clear their memory
-    cpuPos.clear();
-    cpuCol.clear();
+    //cpuPos.clear();
+    //cpuCol.clear();
+
+    using MyVertex       = gla::MemoryAlignedTuple<vec3, vec4>;
+    using MyVertexBuffer = gla::ArrayBuffer_T< MyVertex >;
+    MyVertexBuffer Buf;
+
+
+    Buf.insert(  MyVertex(vec3(-1.0f, -1.0f, 0.f), vec4(1.f, 0.f, 0.f, 1.0f) ) );
+    Buf.insert(  MyVertex(vec3( 1.0f ,-1.0f, 0.f), vec4(0.f, 1.f, 0.f, 1.0f) ) );
+    Buf.insert(  MyVertex(vec3( 0.0f , 1.0f, 0.f), vec4(0.f, 0.f, 1.f, 1.0f) ) );
+
+    auto G = Buf.toGPU(ARRAY_BUFFER);
+
 
     //---------------------------------------------------------------------------
     // Create a shader
@@ -74,6 +86,8 @@ int main()
     TriangleShader.linkProgram(  VertexShader("shaders/HelloTriangle.v"),  FragmentShader("shaders/HelloTriangle.f")  );
 
 
+    G.bind(ARRAY_BUFFER);
+    gla::EnableVertexAttribArray<vec3, vec4>();
     //==========================================================
 
     while (!glfwWindowShouldClose(gMainWindow) )
@@ -84,13 +98,13 @@ int main()
 
         // Enable the two buffers as attributes 0 and 1 and draw the arrays
         // The buffers will automatically bind.
-        gpuPos.EnableAttribute(0);
-        gpuCol.EnableAttribute(1);
+        //gpuPos.EnableAttribute(0);
+        //gpuCol.EnableAttribute(1);
 
         // Can use any one of the following to render the triangle, they are all equivelant.
         // as long as both buffers have the same number of items in it. In our case 3.
-        gpuPos.Render(TRIANGLES);
-
+//        gpuPos.Render(TRIANGLES);
+        G.Render(TRIANGLES);
         // or: gpuColours.Render(TRIANGLES);
         // or  gpuColours.Render(TRIANGLES, 3);
         // or  gpuColours.Render(TRIANGLES, 0, 3);
@@ -103,15 +117,15 @@ int main()
 
 
 
-    {
-        auto x = gpuPos;
-        auto y = gpuCol;
-
-        // Clearing the two buffers will not do anything because x and y
-        // still exist. Once x and y go out of scope, then only the memory will be freed
-        gpuPos.clear();
-        gpuCol.clear();
-    }
+//    {
+//        auto x = gpuPos;
+//        auto y = gpuCol;
+//
+//        // Clearing the two buffers will not do anything because x and y
+//        // still exist. Once x and y go out of scope, then only the memory will be freed
+//        gpuPos.clear();
+//        gpuCol.clear();
+//    }
 
     glfwDestroyWindow(gMainWindow);
     glfwTerminate();
@@ -146,3 +160,4 @@ GLFWwindow* SetupOpenGLLibrariesAndCreateWindow()
 
 }
 //=============================================================================
+

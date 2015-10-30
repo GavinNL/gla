@@ -21,7 +21,8 @@ HEADERS +=  gla/gla.h                          \
             gla/uniformbuffer.h       \
             gla/solids.h \
             gla/utils/app.h \
-            gla/utils/cameracontrol.h
+            gla/utils/cameracontrol.h \
+    gla/memoryalignedtuple.h
 
 
 SOURCES +=  main.cpp                                     \

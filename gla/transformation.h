@@ -2,8 +2,8 @@
  * A transformation class represents a spatial position and an
  * orientation.
  */
-#ifndef TRANSFORMATION_H
-#define TRANSFORMATION_H
+#ifndef GLA_TRANSFORMATION_H
+#define GLA_TRANSFORMATION_H
 
 #include <gla/types.h>
 

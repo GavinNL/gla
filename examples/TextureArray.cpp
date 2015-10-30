@@ -21,8 +21,12 @@ struct Uniform140
     vec4 x;
 };
 
+mat4 X;
+
 int main()
 {
+    //std::cout << &X << "   " << &X[0][0] << "   " << &X[0] << std::endl;
+    //return 0;
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
@@ -136,8 +140,10 @@ int main()
         //
         //  sendUniform will only query the shader the first time and then store the shader uniform location in an array at index 0 (the first parameter)
         //  the next time we call sendUniform(0, "uSampler", X), it will use the cached value.
-        TextureArrayShader.sendUniform(0, "uTextureArray", 0);
-        TextureArrayShader.sendUniform(1, "uSpeed", Speed);
+        //TextureArrayShader.sendUniform(0, "uTextureArray", 0);
+        //TextureArrayShader.sendUniform(1, "uSpeed", Speed);
+        TextureArrayShader.UniformData( ShaderProgram::Hash("uTextureArray"), 0);
+        TextureArrayShader.UniformData( ShaderProgram::Hash("uSpeed"),        Speed);
 
         VAO.Render(QUADS);
 

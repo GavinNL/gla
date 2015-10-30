@@ -3,6 +3,7 @@
 
 #include <gla/types.h>
 #include <memory>
+#include <gla/texture.h>
 
 namespace gla {
 
@@ -66,7 +67,7 @@ public:
         {
             char msg[256];
             sprintf(msg, "ERROR: Texture and TextureArray have missmatched components, Texture = %d   Texture Array = %d", mComponents, T.getChannels() );
-            throw gla::GLA_EXCEPTION(msg);
+            throw std::runtime_error(std::string(msg) );
         }
 
         GLuint format[4] = {GL_RED, GL_RG, GL_RGB, GL_RGBA};
@@ -98,10 +99,18 @@ public:
         //mMipLevelCount = 0;
     };
 
+    uvec3 size() const
+    {
+        if( mInfo ) return mInfo->size;
+
+        return uvec3(0,0,0);
+    }
+
     inline void setActiveTexture(unsigned int unit=0)
     {
         glActiveTexture(GL_TEXTURE0 + unit);
         glBindTexture(GL_TEXTURE_2D_ARRAY, mID);
+
     }
 
     inline void bindToUnit(unsigned int unit=0)
@@ -145,11 +154,7 @@ public:
 
 
     private:
-        GLuint  mID;
-//        uvec3   mSize;
-//        unsigned int mComponents;
-//        GLsizei mMipLevelCount;
-
+        GLuint  mID = 0;
         std::shared_ptr<GPUTextureArrayInfo> mInfo;
 };
 
