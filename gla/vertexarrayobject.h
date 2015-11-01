@@ -8,7 +8,7 @@
 #include <gla/arraybuffer.h>
 #include <memory>
 #include <typeindex>
-#include <gla/memoryalignedtuple.h>
+
 
 namespace gla
 {
@@ -332,7 +332,7 @@ namespace gla
     {
 
         public:
-            using VertexType       =  MemoryAlignedTuple<attrb...>;
+            using VertexType       =  std::tuple<attrb...>;
             using VertexBufferType =  ArrayBuffer_T< VertexType >;
             //typedef ArrayBuffer_T< std::tuple<attrb...> >         VertexBufferType;
 
@@ -343,11 +343,34 @@ namespace gla
             template<class... U>
             void insertVertex(const U&&... u)
             {
-                VertexType T;
-                T.set( std::forward<const U>(u)... );
-                mVertexBuffer.insert( T );
+                //VertexType T;
+                //T.set( std::forward<const U>(u)... );
+                mVertexBuffer.insert( std::make_tuple( std::forward<const U>(u)... ) );
             }
 
+            template<class V>
+            bool insertElement(const V & item)
+            {
+                if( !mIndexBuffer )
+                {
+                    mIndexBuffer = std::make_shared< ArrayBuffer_T<V> >();
+                }
+
+                auto b = std::dynamic_pointer_cast< ArrayBuffer_T<V> >( mIndexBuffer );
+
+                if(b)
+                {
+                   b->insert( item );
+                   return true;
+                }
+
+                return false;
+            }
+
+            VertexType & operator[](int i)
+            {
+                return mVertexBuffer[i];
+            }
 
             GPUArrayObject toGPU()
             {
@@ -373,32 +396,33 @@ namespace gla
 
                 auto g = mVertexBuffer.toGPU(ARRAY_BUFFER);
 
-                EnableVertexAttribArray<attrb...>(g);
-
+                //EnableVertexAttribArray<attrb...>(g);
+                EnableVertexAttribArrayFromTuple<0, VertexType>();
                 GPU.mInfo->Buffers->push_back(g);
 
 
                 //===============================
 
-//                GPU._isIndexed     = false;
-//                if( mIndexBuffer.get() )
-//                {
-//                    mIndexBuffer->toGPU( ELEMENT_ARRAY_BUFFER );
-//                    GPU._isIndexed     = true;
-//                    GPU._size          = mIndexBuffer->getVertexCount() * mIndexBuffer->getValuesPerVertex();
-
-//                    const PRIMITAVE P[5] = {UNKNOWN_PRIMITAVE, UNKNOWN_PRIMITAVE, LINES, TRIANGLES, QUADS};
-//                    GPU._PrimitaveType   = P[mIndexBuffer->getValuesPerVertex()];
-
-//                } else {
-//                    GPU._isIndexed     = false;
-//                    GPU._size          = mBuffers[0]->getVertexCount();
-//                    GPU._PrimitaveType = mDefaultPrimitave;
-//                }
-
                 GPU._isIndexed     = false;
-                GPU._size          = mVertexBuffer.getVertexCount();
-                GPU._PrimitaveType = TRIANGLES;
+                if( mIndexBuffer.get() )
+                {
+                    auto ind = mIndexBuffer->toGPU( ELEMENT_ARRAY_BUFFER );
+                    GPU.mInfo->Buffers->push_back(g);
+                    GPU._isIndexed     = true;
+                    GPU._size          = mIndexBuffer->getVertexCount() * mIndexBuffer->getValuesPerVertex();
+
+                    const PRIMITAVE P[5] = {UNKNOWN_PRIMITAVE, UNKNOWN_PRIMITAVE, LINES, TRIANGLES, QUADS};
+                    GPU._PrimitaveType   = P[mIndexBuffer->getValuesPerVertex()];
+
+                } else {
+                    GPU._isIndexed     = false;
+                    GPU._size          = mVertexBuffer.getVertexCount();
+                    GPU._PrimitaveType = TRIANGLES;
+                }
+
+                //GPU._isIndexed     = false;
+                //GPU._size          = mVertexBuffer.getVertexCount();
+                //GPU._PrimitaveType = TRIANGLES;
 
                 glBindVertexArray(0);
 
@@ -431,7 +455,6 @@ namespace gla
 
             void clear()
             {
-                 //mIndexBuffer.clearCPU();
                 mVertexBuffer.clearCPU();
             };
 
@@ -441,160 +464,14 @@ namespace gla
             //===========================================================
     private:
 
-//            template <typename First>
-//            void _EnableVertexAttribArray( int index, long offset )
-//            {
-
-//              const uint ElementsPerAttribute[] = {1,2,3,4, 1,2,3,4, 1,2,3,4};
-//              const uint ElementType[]          = {GL_FLOAT,GL_FLOAT,GL_FLOAT,GL_FLOAT, GL_INT,GL_INT,GL_INT,GL_INT, GL_UNSIGNED_INT, GL_UNSIGNED_INT,GL_UNSIGNED_INT,GL_UNSIGNED_INT};
-//              const uint ElementStride[]        = {4,8,12,16,4,8,12,16,4,8,12,16};
-
-//              glEnableVertexAttribArray( index );
-//              glVertexAttribPointer(index, ElementsPerAttribute[First], ElementType[First], GL_FALSE, sizeof(VertexType), (void*)offset);
-//            }
-
-
-            template <typename First>
-            void _EnableVertexAttribArray( int index=0, long offset=0 )
-            {
-
-
-              uint ElementType;
-              uint ElementsPerAttribute = 1;
-              GLboolean IsNormalized = GL_FALSE;
-
-              if( std::is_same<First, ivec4>::value ||
-                  std::is_same<First, uvec4>::value ||
-                  std::is_same<First,  vec4>::value  ||
-                  std::is_same<First, ucol4>::value ) ElementsPerAttribute = 4;
-              if( std::is_same<First, ivec3>::value ||
-                  std::is_same<First, uvec3>::value ||
-                  std::is_same<First,  vec3>::value  ||
-                  std::is_same<First, ucol3>::value ) ElementsPerAttribute = 3;
-              if( std::is_same<First, ivec2>::value ||
-                  std::is_same<First, ucol2>::value ||
-                  std::is_same<First,  vec2>::value ||
-                  std::is_same<First, ucol2>::value ) ElementsPerAttribute = 2;
-
-
-              if( std::is_same<First, ivec4>::value ||
-                  std::is_same<First, ivec3>::value ||
-                  std::is_same<First, ivec2>::value ||
-                  std::is_same<First, int  >::value    )
-              {
-                  ElementType = GL_INT;
-                  std::cout << "Element Type: GL_INT" << std::endl;
-              }
-              if( std::is_same<First, ucol4>::value ||
-                  std::is_same<First, ucol3>::value ||
-                  std::is_same<First, ucol2>::value ||
-                  std::is_same<First, unsigned char>::value ||
-                  std::is_same<First, ucol1  >::value    )
-              {
-                  ElementType = GL_UNSIGNED_BYTE;
-                  std::cout << "Element Type: GL_UNSIGNED_BYTE" << std::endl;
-              }
-              if( std::is_same<First, uvec4>::value ||
-                  std::is_same<First, uvec3>::value ||
-                  std::is_same<First, uvec2>::value ||
-                  std::is_same<First, unsigned int  >::value    )
-              {
-                  ElementType = GL_UNSIGNED_INT;
-                  std::cout << "Element Type: GL_UNSIGNED_INT" << std::endl;
-              }
-              if( std::is_same<First, vec4>::value ||
-                  std::is_same<First, vec3>::value ||
-                  std::is_same<First, vec2>::value ||
-                  std::is_same<First, float>::value    )
-              {
-                  ElementType = GL_FLOAT;
-                  std::cout << "Element Type: GL_FLOAT" << std::endl;
-              }
-
-
-              glEnableVertexAttribArray( index );
-              std::cout << "EnableVertexAttributeArray(" << index << ");" << std::endl;
-              glVertexAttribPointer(index, ElementsPerAttribute, ElementType, IsNormalized, sizeof(VertexType), (void*)offset);
-              std::cout <<  "   size  : " << ElementsPerAttribute << std::endl;
-              std::cout <<  "   Stride: " << sizeof(VertexType)   << std::endl;
-              std::cout <<  "   offset: " << offset               << std::endl;
-             // _EnableVertexAttribArray<Second, AllTheRest...>( index+1, offset+sizeof(First) );
-            }
-
-            template <typename First, typename Second, typename... AllTheRest>
-            void _EnableVertexAttribArray( int index=0, long offset=0 )
-            {
-
-                uint ElementType;
-                uint ElementsPerAttribute = 1;
-                GLboolean IsNormalized = GL_FALSE;
-
-                if( std::is_same<First, ivec4>::value ||
-                    std::is_same<First, uvec4>::value ||
-                    std::is_same<First,  vec4>::value  ||
-                    std::is_same<First, ucol4>::value ) ElementsPerAttribute = 4;
-                if( std::is_same<First, ivec3>::value ||
-                    std::is_same<First, uvec3>::value ||
-                    std::is_same<First,  vec3>::value  ||
-                    std::is_same<First, ucol3>::value ) ElementsPerAttribute = 3;
-                if( std::is_same<First, ivec2>::value ||
-                    std::is_same<First, ucol2>::value ||
-                    std::is_same<First,  vec2>::value ||
-                    std::is_same<First, ucol2>::value ) ElementsPerAttribute = 2;
-
-
-                if( std::is_same<First, ivec4>::value ||
-                    std::is_same<First, ivec3>::value ||
-                    std::is_same<First, ivec2>::value ||
-                    std::is_same<First, int  >::value    )
-                {
-                    ElementType = GL_INT;
-                    std::cout << "Element Type: GL_INT" << std::endl;
-                }
-                if( std::is_same<First, ucol4>::value ||
-                    std::is_same<First, ucol3>::value ||
-                    std::is_same<First, ucol2>::value ||
-                    std::is_same<First, unsigned char>::value ||
-                    std::is_same<First, ucol1  >::value    )
-                {
-                    ElementType = GL_UNSIGNED_BYTE;
-                    std::cout << "Element Type: GL_UNSIGNED_BYTE" << std::endl;
-                }
-                if( std::is_same<First, uvec4>::value ||
-                    std::is_same<First, uvec3>::value ||
-                    std::is_same<First, uvec2>::value ||
-                    std::is_same<First, unsigned int  >::value    )
-                {
-                    ElementType = GL_UNSIGNED_INT;
-                    std::cout << "Element Type: GL_UNSIGNED_INT" << std::endl;
-                }
-                if( std::is_same<First, vec4>::value ||
-                    std::is_same<First, vec3>::value ||
-                    std::is_same<First, vec2>::value ||
-                    std::is_same<First, float>::value    )
-                {
-                    ElementType = GL_FLOAT;
-                    std::cout << "Element Type: GL_FLOAT" << std::endl;
-                }
-
-
-              glEnableVertexAttribArray( index );
-              std::cout << "EnableVertexAttributeArray(" << index << ");" << std::endl;
-              glVertexAttribPointer(index, ElementsPerAttribute, ElementType, IsNormalized, sizeof(VertexType), (void*)offset);
-              std::cout <<  "   size  : " << ElementsPerAttribute << std::endl;
-              std::cout <<  "   Stride: " << sizeof(VertexType) << std::endl;
-              std::cout <<  "   offset: " << offset << std::endl;
-
-              _EnableVertexAttribArray<Second, AllTheRest...>( index+1, offset+sizeof(First) );
-            }
-
-            //===========================================================
 
 
         public:
 
-            uint             IndicesPerElement;
-            VertexBufferType mVertexBuffer;
+            uint                           IndicesPerElement;
+            VertexBufferType               mVertexBuffer;
+            std::shared_ptr<ArrayBuffer_b> mIndexBuffer;
+
 
     };
 

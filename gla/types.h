@@ -17,6 +17,10 @@
 #include <iostream>
 #include <tuple>
 
+
+#define IS_SAME(First, Second) std::is_same<First, Second>::value
+
+
 static inline std::ostream& operator <<(std::ostream & out, const glm::vec3 & v)
 {
     out << "{" << v[0] << "," << v[1] << "," << v[2] << "}";

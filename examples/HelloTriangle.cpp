@@ -63,14 +63,14 @@ int main()
     //cpuPos.clear();
     //cpuCol.clear();
 
-    using MyVertex       = gla::MemoryAlignedTuple<vec3, vec4>;
+    using MyVertex       = std::tuple<vec3, vec4>;
     using MyVertexBuffer = gla::ArrayBuffer_T< MyVertex >;
     MyVertexBuffer Buf;
 
 
-    Buf.insert(  MyVertex(vec3(-1.0f, -1.0f, 0.f), vec4(1.f, 0.f, 0.f, 1.0f) ) );
-    Buf.insert(  MyVertex(vec3( 1.0f ,-1.0f, 0.f), vec4(0.f, 1.f, 0.f, 1.0f) ) );
-    Buf.insert(  MyVertex(vec3( 0.0f , 1.0f, 0.f), vec4(0.f, 0.f, 1.f, 1.0f) ) );
+    Buf.insert(  std::make_tuple(vec3(-1.0f, -1.0f, 0.f), vec4(1.f, 0.f, 0.f, 1.0f)  )  );
+    Buf.insert(  std::make_tuple(vec3( 1.0f ,-1.0f, 0.f), vec4(0.f, 1.f, 0.f, 1.0f)  )  );
+    Buf.insert(  std::make_tuple(vec3( 0.0f , 1.0f, 0.f), vec4(0.f, 0.f, 1.f, 1.0f)  )  );
 
     auto G = Buf.toGPU(ARRAY_BUFFER);
 
