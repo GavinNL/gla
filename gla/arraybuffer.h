@@ -10,129 +10,8 @@
 
 #include <gla/exceptions.h>
 #include <gla/types.h>
+#include <gla/handle.h>
 #include <memory>
-
-
-/*
-namespace gla {
-
-template<class T, GLenum GL_ARRAY_TARGET>
-class ArrayBuffer
-{
-    public:
-        ArrayBuffer() : mGLID(0), mGPUBufferSize(0), mGPUByteSize(0)
-        {
-
-        }
-
-        ~ArrayBuffer()
-        {
-            clearGPU();
-            clearCPU();
-            std::cout << "Array buffer deleted\n";
-        }
-
-
-        void sendToGPU()
-        {
-            if( mVector.size() == 0) return;
-
-            glGenBuffers(1, &mGLID);
-
-            //if(!mGLID) throw glre::GPU_OUT_OF_MEMORY();
-
-            glBindBuffer(GL_ARRAY_TARGET, mGLID);
-
-            glBufferData(GL_ARRAY_TARGET,
-                         cpuByteSize(),
-                         &(mVector[0]),
-                         GL_STATIC_DRAW);
-
-            auto err = glGetError();
-
-            if(err != 0)
-            {
-                throw gla::GLA_EXCEPTION("Error sending ArrayBuffer to the GPU. Did you create an OpenGL rendering context fist?");
-
-            } else {
-                mGPUBufferSize = cpuBufferSize();
-                mGPUByteSize   = cpuByteSize();
-            }
-            //std::cout << "Array Buffer sent to GPU. ID: " << mGLID << "\n ";
-
-        };
-
-
-
-        inline std::size_t cpuBufferSize() const
-        {
-            return( mVector.size() );
-        }
-
-
-        inline std::size_t gpuBufferSize() const
-        {
-            return( mGPUBufferSize );
-        }
-
-
-        inline std::size_t cpuByteSize() const
-        {
-            return( mVector.size() * sizeof(T) );
-        }
-
-
-        inline std::size_t gpuByteSize() const
-        {
-            return( mGPUByteSize );
-        }
-
-
-        void insert(const T & v)
-        {
-            mVector.push_back(v);
-        }
-
-
-        void clearGPU()
-        {
-            if(mGLID) glDeleteBuffers(1, &mGLID);
-            mGLID = 0;
-            mGPUBufferSize = mGPUByteSize = 0;
-        }
-
-
-        void clearCPU()
-        {
-            mVector.clear();
-        }
-
-
-        inline void bind()
-        {
-            glBindBuffer(GL_ARRAY_TARGET, mGLID);
-        };
-
-
-
-        T & operator[](int i){return mVector[i];}
-
-
-        inline GLuint getID() { return mGLID; };
-
-
-        std::vector<T> & getBuffer() { return mVector; };
-
-    public:
-        std::vector<T> mVector;
-        GLuint         mGLID;
-
-        uint           mGPUBufferSize;
-        uint           mGPUByteSize;
-};
-
-*/
-
 
 //===================================================================================
 
@@ -145,7 +24,106 @@ struct ArrayBufferInfo
     unsigned int           mByteSize;
 };
 
+struct ArrayBufferInfo_new
+{
+    unsigned int UseCount       = 0;
+    unsigned int ByteSize       = 0;
+    unsigned int NumVertices    = 0;
+    unsigned int VertexByteSize = 0;
+    ArrayBufferUsage Usage      = ArrayBufferUsage::STATIC_DRAW;
+
+};
+
+template<ArrayType AType>
+struct ArrayBufferHandler
+{
+    inline static void Create  (GLuint & h) { glGenBuffers(1, &h); }
+    inline static void Release (GLuint & h) { glDeleteBuffers(1, &h); }
+    inline static void Bind    (GLuint & h) { glBindBuffer((GLenum)AType, h); }
+    inline static void Unbind  (GLuint & h) { glBindBuffer((GLenum)AType, 0);  }
+};
+
+template<ArrayType AType>
 class GPUArrayBuffer
+{
+public:
+    using HandleType = Handle<GLuint, ArrayBufferHandler<AType>, ArrayBufferInfo_new >;
+
+private:
+
+
+public:
+    HandleType m_Handle;
+
+    void Bind()     { m_Handle.Bind();    }
+    void Unbind()   { m_Handle.Unbind();  }
+    void Release()  { m_Handle.Release(); }
+
+    void Create(void *data, unsigned int ByteSize, unsigned int VertexSize, ArrayBufferUsage usage = ArrayBufferUsage::STATIC_DRAW)
+    {
+        m_Handle.Create();
+        m_Handle.Bind();
+
+        glBufferData( (GLenum)AType,
+                     ByteSize,
+                     data,
+                     (GLenum)usage);
+
+        auto & In = m_Handle.__GetInfo(   );
+        In.ByteSize        = ByteSize;
+        In.Usage           = usage;
+        In.NumVertices     = ByteSize / VertexSize;
+        In.VertexByteSize  = VertexSize;
+    }
+
+
+    inline void Render(Primitave p, int start, int numberofitems)
+    {
+       m_Handle.Bind();
+       glDrawArrays( (GLenum)p, start,  numberofitems );
+    }
+
+    const ArrayBufferInfo_new & GetInfo() const
+    {
+        return m_Handle.GetInfo();
+    }
+
+
+
+
+};
+
+
+
+using GPUVertexBuffer  = GPUArrayBuffer<ArrayType::ARRAY_BUFFER>;
+using GPUElementBuffer = GPUArrayBuffer<ArrayType::ELEMENT_ARRAY_BUFFER>;
+
+template<typename __Type>
+class ArrayBuffer
+{
+public:
+    using VertexType = __Type;
+
+    template<ArrayType AType=ArrayType::ARRAY_BUFFER>
+    GPUArrayBuffer<AType> ToGPU()
+    {
+        GPUArrayBuffer<AType> B;
+        B.Create( (void*)Data.data(), sizeof(VertexType) * Data.size(), sizeof(VertexType) );
+        return B;
+    }
+
+    void Insert(const VertexType & Vertex)
+    {
+        Data.push_back(Vertex);
+    }
+
+    std::vector<VertexType> Data;
+};
+
+
+
+#ifdef TEST
+class GPUArrayBuffer_old
 {
     public:
     /**
@@ -310,23 +288,33 @@ class ArrayBuffer_b
         {
             GPUArrayBuffer   B;
 
+
+            B.mGLID = 0;
             glGenBuffers(1, &B.mGLID);
             glBindBuffer(TY, B.mGLID);
+
             glBufferData(TY,
                          this->getByteSize(),
                          this->getData(),
                          GL_STATIC_DRAW);
-
+            std::cout << TY << std::endl;
+            std::cout << this->getByteSize() << std::endl;
+            std::cout << this->getData()     << std::endl;
 
             int id = B.mGLID;
-            B.mInfo = std::shared_ptr<ArrayBufferInfo>( new ArrayBufferInfo, [=](ArrayBufferInfo* a){ delete a; glDeleteProgram(id); std::cout << "Deleting ArrayBuffer: " << id << std::endl; } );
+            B.mInfo = std::shared_ptr<ArrayBufferInfo>( new ArrayBufferInfo, [=](ArrayBufferInfo* a){ delete a ; GLuint i = id; glDeleteBuffers(1, &i) /*glDeleteProgram(id)*/; std::cout << "Deleting ArrayBuffer: " << id << std::endl; } );
 
             auto err = glGetError();
+            std::cout << "GL ID: " << id << std::endl;
+            //std::cout << "Error: " << err<< std::endl;
+
             if(err != 0)
             {
-                throw gla::GLA_EXCEPTION("Error sending ArrayBuffer to the GPU. Did you create an OpenGL rendering context fist?");
+               // throw gla::GLA_EXCEPTION("Error sending ArrayBuffer to the GPU. Did you create an OpenGL rendering context fist?");
 
             }
+
+
 
             //B.mSizeInBytes = this->getByteSize();
             B.mNumberOfItems = getVertexCount();
@@ -337,12 +325,12 @@ class ArrayBuffer_b
 
 
 //#ifdef GLA_VERBOSE_BUFFERS
-            std::cout << "================Buffer created=================\n";
-            std::cout << "ID        : " << B.mGLID <<  std::endl;
-            std::cout << "bytesize  : " << B.mByteSize <<  std::endl;
-            std::cout << "vertcount : " << this->getVertexCount() <<  std::endl;
-            //std::cout << "val/ver   : " << this->getValuesPerVertex() <<  std::endl;
-            std::cout << "====================S===========================\n";
+            // std::cout << "================Buffer created=================\n";
+            // std::cout << "ID        : " << B.mGLID <<  std::endl;
+            // std::cout << "bytesize  : " << B.mByteSize <<  std::endl;
+            // std::cout << "vertcount : " << this->getVertexCount() <<  std::endl;
+            // //std::cout << "val/ver   : " << this->getValuesPerVertex() <<  std::endl;
+            // std::cout << "====================S===========================\n";
 //#endif
             return B;
         }
@@ -537,8 +525,7 @@ public:
 };
 
 
-
-
+#endif
 
 //==============================================================
 template<size_t Idx,class T>
@@ -601,15 +588,13 @@ EnableVertexAttribArrayFromTuple()
 
 
 
-    //std::cout << I << std::endl;
-    //std::cout << tuple_element_offset<I, TupleType>() << std::endl;
-    std::cout << "EnableVertexAttributeArray(" << (I) << ");" << std::endl;
+    //std::cout << "EnableVertexAttributeArray(" << (I) << ");" << std::endl;
     glEnableVertexAttribArray( I );
     glVertexAttribPointer(I, ElementsPerAttribute, ElementType, IsNormalized, sizeof(TupleType), (void*)tuple_element_offset<I, TupleType>());
-    std::cout <<  "   size  : " << ElementsPerAttribute << std::endl;
-    std::cout <<  "   Stride: " << sizeof(TupleType) << std::endl;
-    std::cout <<  "   Type  : " << elemtype << std::endl;
-    std::cout <<  "   offset: " << tuple_element_offset<I, TupleType>() << std::endl;
+    //std::cout <<  "   size  : " << ElementsPerAttribute << std::endl;
+    //std::cout <<  "   Stride: " << sizeof(TupleType) << std::endl;
+    //std::cout <<  "   Type  : " << elemtype << std::endl;
+    //std::cout <<  "   offset: " << tuple_element_offset<I, TupleType>() << std::endl;
 
     EnableVertexAttribArrayFromTuple<I+1, TupleType>();
 }
@@ -623,24 +608,32 @@ inline static void EnableVertexAttribArray()
     EnableVertexAttribArrayFromTuple< 0, std::tuple<AllTheRest...> >();
 }
 
+//template <typename... AllTheRest>
+//inline static void EnableVertexAttribArray(gla::GPUArrayBuffer & B)
+//{
+//    B.bind(ARRAY_BUFFER);
+//    EnableVertexAttribArrayFromTuple< 0, std::tuple<AllTheRest...> >();
+//    //glEnableVertexAttribArrayFromTuple< sizeof(MemoryAlignedTuple<AllTheRest...> ), AllTheRest...>( (int)0, (long)0 );
+//}
+//
+
 template <typename... AllTheRest>
-inline static void EnableVertexAttribArray(gla::GPUArrayBuffer & B)
+inline static void EnableVertexAttribute(gla::GPUArrayBuffer<ArrayType::ARRAY_BUFFER> & B)
 {
-    B.bind(ARRAY_BUFFER);
+    B.Bind();
     EnableVertexAttribArrayFromTuple< 0, std::tuple<AllTheRest...> >();
-    //glEnableVertexAttribArrayFromTuple< sizeof(MemoryAlignedTuple<AllTheRest...> ), AllTheRest...>( (int)0, (long)0 );
 }
 
 
 //==============================================================
 
-typedef gla::ArrayBuffer_T<vec2>  v2ArrayBuffer;
-typedef gla::ArrayBuffer_T<vec3>  v3ArrayBuffer;
-typedef gla::ArrayBuffer_T<vec4>  v4ArrayBuffer;
+typedef gla::ArrayBuffer<vec2>  v2ArrayBuffer;
+typedef gla::ArrayBuffer<vec3>  v3ArrayBuffer;
+typedef gla::ArrayBuffer<vec4>  v4ArrayBuffer;
 
-typedef gla::ArrayBuffer_T<uvec2> u2ArrayBuffer;
-typedef gla::ArrayBuffer_T<uvec3> u3ArrayBuffer;
-typedef gla::ArrayBuffer_T<uvec4> u4ArrayBuffer;
+typedef gla::ArrayBuffer<uvec2> u2ArrayBuffer;
+typedef gla::ArrayBuffer<uvec3> u3ArrayBuffer;
+typedef gla::ArrayBuffer<uvec4> u4ArrayBuffer;
 
 
 }

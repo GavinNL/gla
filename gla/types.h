@@ -17,9 +17,13 @@
 #include <iostream>
 #include <tuple>
 
-
 #define IS_SAME(First, Second) std::is_same<First, Second>::value
 
+static inline std::ostream& operator <<(std::ostream & out, const glm::vec2 & v)
+{
+    out << "{" << v[0] << "," << v[1] << "}";
+    return out;
+}
 
 static inline std::ostream& operator <<(std::ostream & out, const glm::vec3 & v)
 {
@@ -95,10 +99,25 @@ typedef enum {
 } TEXTUREFILTERTYPE;
 
 
+enum class TexFilter {
+    NEAREST                = GL_NEAREST,
+    LINEAR                 = GL_LINEAR,
+    NEAREST_MIPMAP_NEAREST = GL_NEAREST_MIPMAP_NEAREST,
+    LINEAR_MIPMAP_NEAREST  = GL_LINEAR_MIPMAP_NEAREST,
+    NEAREST_MIPMAP_LINEAR  = GL_NEAREST_MIPMAP_LINEAR,
+    LINEAR_MIPMAP_LINEAR   = GL_LINEAR_MIPMAP_LINEAR
+};
+
+
 typedef enum {
     CLAMP                  = GL_CLAMP,
     REPEAT                 = GL_REPEAT
 } TEXTUREWRAPTYPE;
+
+enum class TexWrap {
+    CLAMP                  = GL_CLAMP,
+    REPEAT                 = GL_REPEAT
+};
 
 
 typedef enum
@@ -112,6 +131,18 @@ typedef enum
     DEPTH_COMPONENT= GL_DEPTH_COMPONENT,
     DEPTH_STENCIL  = GL_DEPTH_STENCIL
 } TEXTURECOLOURFORMAT;
+
+enum class TexColourFormat
+{
+    RED            = GL_RED,
+    RG             = GL_RG,
+    RGB            = GL_RGB,
+    BGR            = GL_BGR,
+    RGBA           = GL_RGBA,
+    BGRA           = GL_BGRA,
+    DEPTH_COMPONENT= GL_DEPTH_COMPONENT,
+    DEPTH_STENCIL  = GL_DEPTH_STENCIL
+};
 
 enum PRIMITAVE
 {
@@ -130,6 +161,36 @@ enum PRIMITAVE
 
 };
 
+enum class Primitave
+{
+    UNKNOWN_PRIMITAVE       = -1,
+    LINES                   = GL_LINES,
+    LINE_LOOP               = GL_LINE_LOOP,
+    POINT_BIT               = GL_POINT_BIT,
+    CLIENT_VERTEX_ARRAY_BIT = GL_CLIENT_VERTEX_ARRAY_BIT,
+    LINE_STRIP              = GL_LINE_STRIP,
+    LINE_BIT                = GL_LINE_BIT,
+    TRIANGLES               = GL_TRIANGLES,
+    TRIANGLE_STRIP          = GL_TRIANGLE_STRIP,
+    TRIANGLE_FAN            = GL_TRIANGLE_FAN,
+    QUADS                   = GL_QUADS,
+    QUAD_STRIP              = GL_QUAD_STRIP
+
+};
+
+
+enum class ArrayBufferUsage
+{
+    STATIC_DRAW  = GL_STATIC_DRAW,
+    DYNAMIC_DRAW = GL_DYNAMIC_DRAW,
+    STREAM_DRAW  = GL_STREAM_DRAW
+};
+
+enum class ArrayType
+{
+    ARRAY_BUFFER            = GL_ARRAY_BUFFER,
+    ELEMENT_ARRAY_BUFFER    = GL_ELEMENT_ARRAY_BUFFER
+};
 
 enum ARRAY_TYPE
 {
@@ -139,6 +200,19 @@ enum ARRAY_TYPE
 
 enum FUNDAMENTAL_TYPE {
 
+    BYTE           = GL_BYTE ,
+    UNSIGNED_BYTE  = GL_UNSIGNED_BYTE ,
+    SHORT          = GL_SHORT ,
+    UNSIGNED_SHORT = GL_UNSIGNED_SHORT ,
+    INT            = GL_INT ,
+    UNSIGNED_INT   = GL_UNSIGNED_INT ,
+    FLOAT          = GL_FLOAT ,
+    DOUBLE         = GL_DOUBLE
+
+};
+
+enum class DataType {
+    UNKNOWN        = -1,
     BYTE           = GL_BYTE ,
     UNSIGNED_BYTE  = GL_UNSIGNED_BYTE ,
     SHORT          = GL_SHORT ,
@@ -162,6 +236,17 @@ enum BUFFER_ELEMENT_TYPE
     uS1, uS2, uS3, uS4,
 
     UNKNOWN_ELEMENT_TYPE
+};
+
+enum class VertexType
+{
+    F1, F2, F3 ,F4,  // floating point 1d, 2d, 3d, 4d vectors (float, vec2, vec3, vec4)
+    I1, I2, I3, I4,  // integer 1d, 2d, 3d, 4d vectors (int, ivec2, ivec3, ivec4)
+    U1, U2, U3, U4,  // unsigned integer 1d, 2d, 3d, 4d vectors (uint, uvec2, uvec3, uvec4)
+    B1, B2, B3, B4,  // unsigned byte
+    S1, S2, S3, S4,  // unsigned short
+    uB1, uB2, uB3, uB4,
+    uS1, uS2, uS3, uS4
 };
 
 
@@ -197,6 +282,9 @@ typedef glm::u8vec1 ucol1;
 typedef glm::vec4     col4;
 typedef glm::vec3     col3;
 typedef glm::vec2     col2;
+
+
+
 
 
 }

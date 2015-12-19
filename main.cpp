@@ -6,6 +6,7 @@
 #include <locale>
 #include <tuple>
 #include <gla/types.h>
+#include <gla/handle.h>
 
 using namespace gla;
 
@@ -19,13 +20,38 @@ GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
 
+
+std::function<void(void)> F;
+
 int main()
 {
+
 
 
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
+    {
+
+        gla::Timer_T<double> TT;
+
+        auto f = [] { glBindTexture(GL_TEXTURE_2D, 0); };
+        for(int i=0; i < 1e7; ++i)
+            f();
+
+        std::cout << "Total time: " << TT.getElapsedTime() << std::endl;
+    }
+
+    {
+
+        gla::Timer_T<double> TT;
+
+       // F = [] { glBindTexture(GL_TEXTURE_2D, 0); };
+        for(int i=0; i < 1e7; ++i)
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+        std::cout << "Total time: " << TT.getElapsedTime() << std::endl;
+    }
 
     //===========================================================================
     // GLA code.
@@ -104,7 +130,7 @@ int main()
     {
 
         // Set the GPu as the current texture 0;
-        GPUTArray.setActiveTexture(0);
+        GPUTArray.SetActive(0);
 
         vec2 Speed = Timer.getElapsedTime() * vec2(0.7,1.2);
 

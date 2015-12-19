@@ -3,16 +3,15 @@
 
 #include <gla/types.h>
 #include <gla/texture.h>
+#include <gla/renderbufferobject.h>
 #include <vector>
 
 namespace gla {
 
-class RenderBuffer
-{
-};
 
 
-enum class FrameBufferAttachment
+
+enum class FBOAttachment
 {
     COLOR_ATTACHMENT0  = GL_COLOR_ATTACHMENT0,
     COLOR_ATTACHMENT1  = GL_COLOR_ATTACHMENT1,
@@ -36,20 +35,19 @@ enum class FrameBufferAttachment
 
 struct FrameBufferObjectInfo
 {
-    std::vector<FrameBufferAttachment> mBuffers;
+    std::vector<FBOAttachment> mBuffers;
 };
 
 class FrameBufferObject
 {
     public:
-        FrameBufferObject( const uvec2 & size)
+        FrameBufferObject()
         {
-            create(size);
         }
 
-        FrameBufferObject(){};
         ~FrameBufferObject(){};
 
+        FrameBufferObject& Create( );
 
         /**
          * @brief create Creates a framebuffer
@@ -57,37 +55,57 @@ class FrameBufferObject
          *
          * Creates a FrameBufferObject with colour component and depth component.
          */
-        void create(const uvec2 & size);
+       // void create(const uvec2 & size);
 
-        void attachTexture( GPUTexture & tex, FrameBufferAttachment attch=FrameBufferAttachment::COLOR_ATTACHMENT0);
+        FrameBufferObject& AttachTexture(      GPUTexture & tex, FBOAttachment attch=FBOAttachment::COLOR_ATTACHMENT0);
+        FrameBufferObject& AttachRenderBuffer( RenderBufferObject & rbo, FBOAttachment attch=FBOAttachment::COLOR_ATTACHMENT0);
 
         inline void         bind()   { glBindFramebuffer(GL_FRAMEBUFFER, mID); }
         inline void         unbind() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
 
         inline GLuint       getID() const { return mID; }
-        inline uvec2        size(){ return mGPUTexture.size(); }
-        inline GPUTexture & getRenderTexture() { return mGPUTexture; }
+        //inline uvec2        size(){ return mGPUTexture.size(); }
+        //inline GPUTexture & getRenderTexture() { return mGPUTexture; }
 
         GLuint     mID;
-        GPUTexture mGPUTexture;
-        GLuint     mDepthRenderBuffer;
+        //GPUTexture mGPUTexture;
+        //GLuint     mDepthRenderBuffer;
 
 };
 
-
-
-inline void FrameBufferObject::attachTexture( GPUTexture & tex, FrameBufferAttachment attch)
+inline FrameBufferObject& FrameBufferObject::Create()
 {
+    glGenFramebuffers(1,             &mID);
+    glBindFramebuffer(GL_FRAMEBUFFER, mID);
+}
 
-    glFramebufferTexture(GL_FRAMEBUFFER, static_cast<unsigned int>(attch), tex.getID(), 0);
+inline FrameBufferObject& FrameBufferObject::AttachRenderBuffer( RenderBufferObject & rbo, FBOAttachment attch)
+{
+    if( mID == 0 ) return *this;
+
+    bind();
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, (GLuint)attch, GL_RENDERBUFFER, rbo.m_ID);
+
+    return *this;
+}
+
+
+inline FrameBufferObject& FrameBufferObject::AttachTexture( GPUTexture & tex, FBOAttachment attch)
+{
+    if( mID == 0) return *this;
+
+    bind();
+    glFramebufferTexture(GL_FRAMEBUFFER, static_cast<unsigned int>(attch), tex.m_Handle.GetID(), 0);
 
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
         throw gla::GLA_EXCEPTION("Framebuffer status was not complete.");
     }
+
+    return *this;
 }
 
-
+/*
 inline void FrameBufferObject::create(const uvec2 & size)
 {
 
@@ -137,7 +155,7 @@ inline void FrameBufferObject::create(const uvec2 & size)
     glBindFramebuffer(GL_FRAMEBUFFER, mID);
 }
 
-
+*/
 
 }
 #endif // FRAMEBUFFEROBJECT_H

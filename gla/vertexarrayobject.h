@@ -28,122 +28,131 @@ namespace gla
 
     struct GPUArrayObjectInfo
     {
-        std::shared_ptr<std::vector< GPUArrayBuffer > > Buffers;
+        unsigned int UseCount = 0;
+        //std::shared_ptr<std::vector< GPUArrayBuffer > > Buffers;
 
-        PRIMITAVE _PrimitaveType;
+        std::vector<GPUVertexBuffer> VertexBuffer;
+        GPUElementBuffer             ElementBuffer;
+
         int       _size;                    // Either the number of indices if the GPUArrayObject is indexed
                                             // Or the number of vertices if the GPUArrayObject is not indexed.
         bool      _isIndexed;
 
     };
 
+    struct GPUArrayObjectHandler
+    {
+        inline static void Create  (GLuint & h) { glGenVertexArrays(1, &h); }
+        inline static void Release (GLuint & h) { glDeleteVertexArrays(1, &h); }
+        inline static void Bind    (GLuint & h) { glBindVertexArray(    h); }
+        inline static void Unbind  (GLuint & h) { glBindVertexArray(    0);  }
+    };
+
     class GPUArrayObject
     {
+
+        public:
+            using HandleType = gla::Handle<GLuint, GPUArrayObjectHandler ,GPUArrayObjectInfo>;
+
+            HandleType   m_Handle;
+            unsigned int _size; // If this is indexed, _size = Number of Indices, else _size = number of vertices
+            Primitave    _PrimitaveType;
+            bool         _indexed;
+
         public:
 
-            GPUArrayObject() : _VAO(0), _size(0), _isIndexed(0)
+            void Bind()     { m_Handle.Bind();    }
+            void Unbind()   { m_Handle.Unbind();  }
+            void Release()  { m_Handle.Release(); }
+             /**
+             * @brief Create
+             * @param V
+             * @param p
+             *
+             * Create a VAO on the GPU from a GPUVertexBuffer and a primitave
+             */
+            template<typename... BufferVertexTypes>
+            void Create(GPUVertexBuffer V, Primitave p)
             {
+                m_Handle.Create();
+                m_Handle.Bind();
 
-            }
+                auto & In = m_Handle.__GetInfo( );
 
+                EnableVertexAttribute<BufferVertexTypes...>( V );
 
-            GPUArrayObject( const std::vector<GPUArrayBuffer> & ArrayBuffers ) : _VAO(0), _size(0), _isIndexed(0)
-            {
-                 *this =  Create( ArrayBuffers );
-                _PrimitaveType = UNKNOWN_PRIMITAVE;
-            }
+                m_Handle.Unbind();
 
-            GPUArrayObject( PRIMITAVE PrimitaveType, const std::vector<GPUArrayBuffer> & ArrayBuffers, const GPUArrayBuffer & mIndexBuffer ) : _VAO(0), _size(0), _isIndexed(0)
-            {
+                In.VertexBuffer.push_back( V );
+                _size = V.m_Handle.GetInfo().NumVertices;//V.GetInfo().ByteSize / V.GetInfo().NumVertices;//sizeof( std::tuple<BufferVertexTypes...> );
+                _indexed = false;
+                _PrimitaveType = p;
 
-                auto GPU = Create( ArrayBuffers );
-                GPU.bind();
-                GPU.mInfo->Buffers->push_back(mIndexBuffer);
-                mIndexBuffer.bind(ELEMENT_ARRAY_BUFFER);
-                GPU._isIndexed     = true;
-                GPU._size          = mIndexBuffer.NumberOfItems() * mIndexBuffer.ElementsPerItem();//mIndexBuffer->getVertexCount() * mIndexBuffer->getValuesPerVertex();
-                GPU._PrimitaveType = PrimitaveType;
-
-                glBindVertexArray(0);
-
-                *this = GPU;
-
-            }
-
-            GPUArrayObject& operator=(const GPUArrayObject & other)
-            {
-                _VAO           = other._VAO;
-                _PrimitaveType = other._PrimitaveType;
-                _size          = other._size;
-                _isIndexed     = other._isIndexed;
-                mInfo          = other.mInfo;
-                return *this;
             }
 
             /**
-             * @brief Create Creates a GPUArrayObject from a vector of GPUArrayBuffers
-             * @param ArrayBuffers
-             * @return
+             * @brief Create
+             * @param V - vertex buffer
+             * @param E - The element index buffer
+             * @param p - primative type when rendering
+             *
+             * Creates a VAO on the gpu using a vertexbuffer and a element buffer
              */
-            static GPUArrayObject Create(const std::vector<GPUArrayBuffer> & ArrayBuffers)
+            template<typename... BufferVertexTypes>
+            void Create(GPUVertexBuffer V, GPUElementBuffer E, Primitave p)
             {
-                GPUArrayObject GPU;
+                m_Handle.Create();
+                m_Handle.Bind();
+
+                auto & In = m_Handle.__GetInfo( );
+
+                EnableVertexAttribute<BufferVertexTypes...>( V );
+
+                E.Bind();
+
+                In.VertexBuffer.push_back( V );
+                In.ElementBuffer = E;
+                _indexed = true;
+                _PrimitaveType = p;
+                _size = E.m_Handle.GetInfo().NumVertices;//V.GetInfo().ByteSize / V.GetInfo().NumVertices;//sizeof( std::tuple<BufferVertexTypes...> );
+
+                m_Handle.Unbind();
+            }
+
+            /**
+             * @brief ClearBuffers
+             */
+            void ClearBuffers()
+            {
+                m_Handle.Bind();
+
+                auto & In = m_Handle.__GetInfo();
+                In.VertexBuffer.clear();
+                In.ElementBuffer.Release();
+            }
+
+            inline virtual void Render( )
+            {
+                    m_Handle.Bind();
+                    _indexed ?
+                         glDrawElementsBaseVertex((GLenum)_PrimitaveType, _size, GL_UNSIGNED_INT, 0,0) :
+                         glDrawArrays( (GLenum)_PrimitaveType, 0, _size);
+                    m_Handle.Unbind();
+            }
+
+            inline virtual void Render(Primitave PrimitaveType )
+            {
+                    m_Handle.Bind();
+                    _indexed ?
+                                glDrawElementsBaseVertex((GLenum)PrimitaveType, _size, GL_UNSIGNED_INT, 0,0) :
+                                glDrawArrays( (GLenum)PrimitaveType, 0, _size);
 
 
-
-
-                if( ArrayBuffers.size() == 0)
-                {
-                    throw gla::GLA_EXCEPTION( "ERROR: Does not contain any buffers.");
-                }
-
-                for(int i=0; i < ArrayBuffers.size() ; i++)
-                {
-                    if( ArrayBuffers[0].NumberOfItems() != ArrayBuffers[i].NumberOfItems() )
-                        throw gla::GLA_EXCEPTION( "ERROR: All buffers in the VAO must be the same size before creating a GPUArrayObject");
-                }
-
-                //===============================
-
-                glGenVertexArrays(1, &GPU._VAO);
-                glBindVertexArray(    GPU._VAO);
-
-                if( !GPU._VAO  )  throw gla::GLA_EXCEPTION( "ARRAY OBJECT NOT CREATED" );
-
-                auto id = GPU._VAO;
-                GPU.mInfo = std::shared_ptr<GPUArrayObjectInfo>( new GPUArrayObjectInfo, [=](GPUArrayObjectInfo* a){ auto vao = id; delete a; glDeleteVertexArrays(1, &vao); std::cout << "Deleting ---- VertexArrayObject: " << id << std::endl; } );
-                GPU.mInfo->Buffers = std::make_shared< std::vector<GPUArrayBuffer> >();
-
-                for(int i = 0; i < ArrayBuffers.size();  i++)
-                {
-                    GPU.mInfo->Buffers->push_back(ArrayBuffers[i]);
-                    ArrayBuffers[i].EnableAttribute(i);
-                }
-                //===============================
-
-                glBindVertexArray(0);
-
-                return GPU;
+                    m_Handle.Unbind();
             }
 
 
-            void print1()
-            {
-
-                std::cout << "============VOA Created============" << std::endl;
-                std::cout << "  ID       : " << _VAO       << std::endl;
-                std::cout << "  size     : " << _size      << std::endl;
-                std::cout << "  isindexed: " << _isIndexed << std::endl;
-                switch(_PrimitaveType )
-                {
-                    case UNKNOWN_PRIMITAVE: std::cout << "elementtype: UNKNOWN"   << std::endl; break;
-                    case LINES: std::cout             << "elementtype: LINES"     << std::endl; break;
-                    case TRIANGLES: std::cout         << "elementtype: TRIANGLES" << std::endl; break;
-                    case QUADS: std::cout             << "elementtype: QUADS"     << std::endl; break;
-                }
-                std::cout << "===================================" << std::endl;
-            }
-
+#ifdef TEST
             /**
              * Renders the ArrayObject as a partuclar type (triangle, quads ,etc)
              *
@@ -151,7 +160,7 @@ namespace gla
              */
             inline virtual void Render(PRIMITAVE PrimitaveType)
             {
-                    //std::cout << "Render: " << _size << " : " << _VAO << std::endl;
+                  //  std::cout << "Render: " << _size << " : " << _isIndexed << std::endl;
                     glBindVertexArray( _VAO );
                         _isIndexed ? glDrawElementsBaseVertex(PrimitaveType, _size, GL_UNSIGNED_INT, 0,0) : glDrawArrays(PrimitaveType, 0, _size);
                     glBindVertexArray(0);
@@ -177,6 +186,7 @@ namespace gla
              */
             inline virtual void Render()
             {
+               // std::cout << "REndering: " << _PrimitaveType << std::endl;
                     Render( _PrimitaveType );
             }
 
@@ -191,140 +201,21 @@ namespace gla
             }
 
             /**
-             * Binds the VertexArrayObject.
-             *
-             */
-            inline void bind()
-            {
-                glBindVertexArray( _VAO );
-            }
-
-            /**
              * Clears the VertexArrayObject from the GPU. If there are any buffers associated with it they will be
              * cleared if they are not used by another VAO.
              *
              */
-            inline void clear()
-            {
-                if( _VAO ) glDeleteVertexArrays(1, &_VAO);
-                _VAO = 0;
-            }
 
-            inline int size()
-            {
-                return _size;
-            }
-
-            inline int GetNumIndices()    const { return _isIndexed ? _size : 0; }
-
-            inline GLint getID() { return _VAO; }
-
-            GLuint    _VAO;
-            PRIMITAVE _PrimitaveType;
-            int       _size;                    // Either the number of indices if the GPUArrayObject is indexed
+            GLuint    _VAO           = 0;
+            PRIMITAVE _PrimitaveType = UNKNOWN_PRIMITAVE;
+            int       _size          = 0;                    // Either the number of indices if the GPUArrayObject is indexed
                                                 // Or the number of vertices if the GPUArrayObject is not indexed.
-            bool      _isIndexed;
+            bool      _isIndexed     = false;
 
-            std::vector<BUFFER_ELEMENT_TYPE> _attachedBuffers;
-
+            std::vector<BUFFER_ELEMENT_TYPE>    _attachedBuffers;
             std::shared_ptr<GPUArrayObjectInfo> mInfo;
+#endif
     };
-
-
-/*
-    template <class VertexType,                         // The type of vertex to use
-              PRIMITAVE DefaultRenderPrimitave,         // The default render primitative (LINES/TRIANGLES/QUADS)
-              BUFFER_ELEMENT_TYPE N,                         // The first variable type in the Vertex (see declaration of TypeSizeIndex)
-              BUFFER_ELEMENT_TYPE... Rest>                   // The rest of the variable types in the Vertex (see declaration of TypeSizeIndex)
-    class VertexArrayObject_old
-    {
-        public:
-            VertexArrayObject_old()
-            {
-
-            };
-
-
-            inline void insertVertex(const VertexType & T)
-            {
-                mVertexBuffer.insert(T);
-            }
-
-
-
-            GPUArrayObject toGPU()
-            {
-                GPUArrayObject GPU;
-
-                std::cout << "Sending Model to GPU:\n";
-                std::cout << " #vertices: " <<  mVertexBuffer.cpuBufferSize() << std::endl;
-
-                //===============================
-                glGenVertexArrays(1, &GPU._VAO );
-                glBindVertexArray(    GPU._VAO );
-
-                mVertexBuffer.sendToGPU();
-                _EnableVertexAttribArray<N, Rest...>( 0, 0 );
-
-                glBindVertexArray( 0 );
-                //===============================
-
-                GPU._size          = mVertexBuffer.gpuBufferSize();
-                GPU._isIndexed     = false;
-                GPU._PrimitaveType = DefaultRenderPrimitave;
-
-                return GPU;
-
-            }
-
-            void clear()
-            {
-                mVertexBuffer.clearCPU();
-            };
-
-            //===========================================================
-            // An attempt to loop through all Buffers in the tuple
-            //===========================================================
-    private:
-
-            template <int First>
-            void _EnableVertexAttribArray( int index, long offset )
-            {
-
-              const uint ElementsPerAttribute[] = {1,2,3,4, 1,2,3,4, 1,2,3,4};
-              const uint ElementType[]          = {GL_FLOAT,GL_FLOAT,GL_FLOAT,GL_FLOAT, GL_INT,GL_INT,GL_INT,GL_INT, GL_UNSIGNED_INT, GL_UNSIGNED_INT,GL_UNSIGNED_INT,GL_UNSIGNED_INT};
-              const uint ElementStride[]        = {4,8,12,16,4,8,12,16,4,8,12,16};
-
-              glEnableVertexAttribArray( index );
-              glVertexAttribPointer(index, ElementsPerAttribute[First], ElementType[First], GL_FALSE, sizeof(VertexType), (void*)offset);
-            }
-
-            template <int First, int Second, int... AllTheRest>
-            void _EnableVertexAttribArray( int index, long offset )
-            {
-
-              const uint ElementsPerAttribute[] = {1,2,3,4,1,2,3,4,1,2,3,4};
-              const uint ElementType[]          = {GL_FLOAT,GL_FLOAT,GL_FLOAT,GL_FLOAT, GL_INT,GL_INT,GL_INT,GL_INT, GL_UNSIGNED_INT, GL_UNSIGNED_INT,GL_UNSIGNED_INT,GL_UNSIGNED_INT};
-              const uint ElementStride[]        = {4,8,12,16,4,8,12,16,4,8,12,16};
-
-              glEnableVertexAttribArray( index );
-              glVertexAttribPointer(index, ElementsPerAttribute[First], ElementType[First], GL_FALSE, sizeof(VertexType), (void*)offset);
-
-              _EnableVertexAttribArray<Second, AllTheRest...>( index+1, offset+ElementStride[First] );
-            }
-
-            //===========================================================
-
-
-        public:
-
-            uint   IndicesPerElement;
-            ArrayBuffer<VertexType ,GL_ARRAY_BUFFER>         mVertexBuffer;
-
-
-    };
-
-*/
 
 
     template <typename... attrb>
@@ -332,151 +223,197 @@ namespace gla
     {
 
         public:
-            using VertexType       =  std::tuple<attrb...>;
-            using VertexBufferType =  ArrayBuffer_T< VertexType >;
+            using VertexType        =  std::tuple<attrb...>;
+            using VertexBufferType  =  ArrayBuffer< VertexType >;
+            using ElementBufferType =  ArrayBuffer< unsigned int >;
+
             //typedef ArrayBuffer_T< std::tuple<attrb...> >         VertexBufferType;
 
-            InterleavedVAO() {};
-
+            InterleavedVAO(Primitave defaultPrim = Primitave::TRIANGLES) { mDefaultPrim = defaultPrim; }
 
 
             template<class... U>
-            void insertVertex(const U&&... u)
+            void InsertVertex(const U&... u)
             {
-                //VertexType T;
-                //T.set( std::forward<const U>(u)... );
-                mVertexBuffer.insert( std::make_tuple( std::forward<const U>(u)... ) );
+                mVertexBuffer.Insert( std::make_tuple( std::forward<const U>(u)... ) );
             }
 
-            template<class V>
-            bool insertElement(const V & item)
+            template<class... U>
+            void InsertVertex(const U&&... u)
             {
-                if( !mIndexBuffer )
-                {
-                    mIndexBuffer = std::make_shared< ArrayBuffer_T<V> >();
-                }
-
-                auto b = std::dynamic_pointer_cast< ArrayBuffer_T<V> >( mIndexBuffer );
-
-                if(b)
-                {
-                   b->insert( item );
-                   return true;
-                }
-
-                return false;
+                mVertexBuffer.Insert( std::make_tuple( std::forward<const U>(u)... ) );
             }
+
+
+            void InsertElement(const uvec2 & lines)
+            {
+
+                    mElementBuffer.Insert(lines.x);
+                    mElementBuffer.Insert(lines.y);
+                    mDefaultPrim = Primitave::LINES;
+
+            }
+
+            void InsertElement(const uvec3 & tri)
+            {
+
+                    mElementBuffer.Insert(tri.x);
+                    mElementBuffer.Insert(tri.y);
+                    mElementBuffer.Insert(tri.z);
+                    mDefaultPrim = Primitave::TRIANGLES;
+
+            }
+
+            void InsertElement(const uvec4 & quad)
+            {
+
+                mElementBuffer.Insert(quad.x);
+                mElementBuffer.Insert(quad.y);
+                mElementBuffer.Insert(quad.z);
+                mElementBuffer.Insert(quad.w);
+                mDefaultPrim = Primitave::QUADS;
+            }
+
+            //template<class V>
+            //bool InsertElement(const V & item)
+            //{
+            //    if( !mIndexBuffer )
+            //    {
+            //        mIndexBuffer = std::make_shared< ArrayBuffer<V> >();
+            //    }
+            //
+            //    auto b = std::dynamic_pointer_cast< ArrayBuffer<V> >( mIndexBuffer );
+            //
+            //    if(b)
+            //    {
+            //       b->Insert( item );
+            //       return true;
+            //    }
+            //
+            //    return false;
+            //}
+
 
             VertexType & operator[](int i)
             {
                 return mVertexBuffer[i];
             }
 
-            GPUArrayObject toGPU()
+            GPUArrayObject ToGPU()
             {
                 GPUArrayObject GPU;
 
-                if( mVertexBuffer.size() == 0)
-                {
-                    throw std::runtime_error( "ERROR: Buffer does not contain any vertices.");
-                }
+                //if( mVertexBuffer..size() == 0)
+                //{
+                //    throw std::runtime_error( "ERROR: Buffer does not contain any vertices.");
+                //}
 
 
                 //===============================
-
-                glGenVertexArrays(1, &GPU._VAO);
-                glBindVertexArray(    GPU._VAO);
-
-                if( !GPU._VAO  )  throw std::runtime_error( "Interleaved VAO NOT CREATED" );
-
-                auto id = GPU._VAO;
-                GPU.mInfo = std::shared_ptr<GPUArrayObjectInfo>( new GPUArrayObjectInfo, [=](GPUArrayObjectInfo* a){ auto vao = id; delete a; glDeleteVertexArrays(1, &vao); std::cout << "Deleting VertexArrayObject: " << id << std::endl; } );
-
-                GPU.mInfo->Buffers = std::make_shared< std::vector<GPUArrayBuffer> > ();
-
-                auto g = mVertexBuffer.toGPU(ARRAY_BUFFER);
-
-                //EnableVertexAttribArray<attrb...>(g);
-                EnableVertexAttribArrayFromTuple<0, VertexType>();
-                GPU.mInfo->Buffers->push_back(g);
+                //GPU.Create( mVertexBuffer.ToGPU());
+                auto V = mVertexBuffer.ToGPU();
 
 
-                //===============================
-
-                GPU._isIndexed     = false;
-                if( mIndexBuffer.get() )
+                if( mElementBuffer.Data.size() )
                 {
-                    auto ind = mIndexBuffer->toGPU( ELEMENT_ARRAY_BUFFER );
-                    GPU.mInfo->Buffers->push_back(g);
-                    GPU._isIndexed     = true;
-                    GPU._size          = mIndexBuffer->getVertexCount() * mIndexBuffer->getValuesPerVertex();
-
-                    const PRIMITAVE P[5] = {UNKNOWN_PRIMITAVE, UNKNOWN_PRIMITAVE, LINES, TRIANGLES, QUADS};
-                    GPU._PrimitaveType   = P[mIndexBuffer->getValuesPerVertex()];
-
+                    GPU.Create<attrb...>( V, mElementBuffer.ToGPU<ArrayType::ELEMENT_ARRAY_BUFFER>(), mDefaultPrim);
                 } else {
-                    GPU._isIndexed     = false;
-                    GPU._size          = mVertexBuffer.getVertexCount();
-                    GPU._PrimitaveType = TRIANGLES;
+                    GPU.Create<attrb...>( V, mDefaultPrim );
                 }
 
-                //GPU._isIndexed     = false;
-                //GPU._size          = mVertexBuffer.getVertexCount();
-                //GPU._PrimitaveType = TRIANGLES;
+                //glGenVertexArrays(1, &GPU._VAO);
+                //glBindVertexArray(    GPU._VAO);
 
-                glBindVertexArray(0);
-
-
-                std::cout << "============VOA Created============" << std::endl;
-                std::cout << "  ID       : " << GPU._VAO       << std::endl;
-                std::cout << "  size     : " << GPU._size      << std::endl;
-                std::cout << "  isindexed: " << GPU._isIndexed << std::endl;
-                std::cout << "  SizePerV: "  << GPU._size      << std::endl;
-                switch(GPU._PrimitaveType )
-                {
-                    case UNKNOWN_PRIMITAVE: std::cout << "elementtype: UNKNOWN"   << std::endl; break;
-                    case LINES: std::cout             << "elementtype: LINES"   << std::endl; break;
-                    case TRIANGLES: std::cout         << "elementtype: TRIANGLES" << std::endl; break;
-                    case QUADS: std::cout             << "elementtype: QUADS"     << std::endl; break;
-                }
-
-                //std::cout << "===================================" << std::endl;
+                if( !GPU.m_Handle.GetID() )
+                    throw std::runtime_error( "Interleaved VAO NOT CREATED" );
 
 
-                /* NOTE
-                 *
-                 * We must check that all buffers have the same length, otherwise throw an exception.
-                 *
-                 * */
-
+                return GPU;
+//                //auto id = GPU._VAO;
+//                //GPU.mInfo = std::shared_ptr<GPUArrayObjectInfo>( new GPUArrayObjectInfo, [=](GPUArrayObjectInfo* a){ auto vao = id; delete a; glDeleteVertexArrays(1, &vao); std::cout << "Deleting VertexArrayObject: " << id << std::endl; } );
+//
+//                auto & In =
+//                GPU.mInfo->Buffers = std::make_shared< std::vector<GPUArrayBuffer> > ();
+//
+//                auto g = mVertexBuffer.toGPU(ARRAY_BUFFER);
+//
+//                //EnableVertexAttribArray<attrb...>(g);
+//                EnableVertexAttribArrayFromTuple<0, VertexType>();
+//                GPU.mInfo->Buffers->push_back(g);
+//
+//
+//                //===============================
+//
+//                GPU._isIndexed     = false;
+//                if( mIndexBuffer.get() )
+//                {
+//                    auto ind = mIndexBuffer->toGPU( ELEMENT_ARRAY_BUFFER );
+//                    GPU.mInfo->Buffers->push_back(ind);
+//                    GPU._isIndexed     = true;
+//                    GPU._size          = mIndexBuffer->getVertexCount() * mIndexBuffer->getValuesPerVertex();
+//
+//                    const PRIMITAVE P[5] = {UNKNOWN_PRIMITAVE, UNKNOWN_PRIMITAVE, LINES, TRIANGLES, QUADS};
+//                    GPU._PrimitaveType   = P[mIndexBuffer->getValuesPerVertex()];
+//
+//                } else {
+//                    GPU._isIndexed     = false;
+//                    GPU._size          = mVertexBuffer.getVertexCount();
+//                    GPU._PrimitaveType = mDefaultPrim;
+//                }
+//
+//                //GPU._isIndexed     = false;
+//                //GPU._size          = mVertexBuffer.getVertexCount();
+//                //GPU._PrimitaveType = TRIANGLES;
+//
+//                glBindVertexArray(0);
+//
+//
+//                //std::cout << "============VOA Created============" << std::endl;
+//                //std::cout << "  ID       : " << GPU._VAO       << std::endl;
+//                //std::cout << "  size     : " << GPU._size      << std::endl;
+//                //std::cout << "  isindexed: " << GPU._isIndexed << std::endl;
+//                //std::cout << "  SizePerV: "  << GPU._size      << std::endl;
+//                //switch(GPU._PrimitaveType )
+//                //{
+//                //    case UNKNOWN_PRIMITAVE: std::cout << "elementtype: UNKNOWN"   << std::endl; break;
+//                //    case LINES: std::cout             << "elementtype: LINES"   << std::endl; break;
+//                //    case TRIANGLES: std::cout         << "elementtype: TRIANGLES" << std::endl; break;
+//                //    case QUADS: std::cout             << "elementtype: QUADS"     << std::endl; break;
+//                //}
+//
+//                //std::cout << "===================================" << std::endl;
+//
+//
+//                /* NOTE
+//                 *
+//                 * We must check that all buffers have the same length, otherwise throw an exception.
+//                 *
+//                 * */
+//
                 return GPU;
 
             }
 
-            void clear()
-            {
-                mVertexBuffer.clearCPU();
-            };
+            //void clear()
+            //{
+            //    mVertexBuffer.clearCPU();
+            //};
 
-
-            //===========================================================
-            // An attempt to loop through all Buffers in the tuple
-            //===========================================================
-    private:
 
 
 
         public:
-
-            uint                           IndicesPerElement;
-            VertexBufferType               mVertexBuffer;
-            std::shared_ptr<ArrayBuffer_b> mIndexBuffer;
+            //uint                           IndicesPerElement;
+            Primitave                        mDefaultPrim;
+            VertexBufferType                 mVertexBuffer;
+            ElementBufferType                mElementBuffer;
+            //std::shared_ptr<ArrayBuffer>     mIndexBuffer;
 
 
     };
 
 
-
+#if 0
     //====================================================================
     //  New VAO
     //====================================================================
@@ -539,13 +476,14 @@ namespace gla
                 GPU._isIndexed     = false;
                 if( mIndexBuffer.get() )
                 {
-                    mIndexBuffer->toGPU( ELEMENT_ARRAY_BUFFER );
+                    auto g = mIndexBuffer->toGPU( ELEMENT_ARRAY_BUFFER );
                     GPU._isIndexed     = true;
                     GPU._size          = mIndexBuffer->getVertexCount() * mIndexBuffer->getValuesPerVertex();
 
                     const PRIMITAVE P[5] = {UNKNOWN_PRIMITAVE, UNKNOWN_PRIMITAVE, LINES, TRIANGLES, QUADS};
                     GPU._PrimitaveType   = P[mIndexBuffer->getValuesPerVertex()];
 
+                    GPU.mInfo->Buffers->push_back(g);
                 } else {
                     GPU._isIndexed     = false;
                     GPU._size          = mBuffers[0]->getVertexCount();
@@ -761,7 +699,8 @@ namespace gla
             PRIMITAVE                                        mDefaultPrimitave;
     };
 
-    typedef gla::VertexArrayObject_N VertexArrayObject;
+#endif
+//    typedef gla::VertexArrayObject_N VertexArrayObject;
 }
 
 #endif // VERTEXARRAYOBJECT_H

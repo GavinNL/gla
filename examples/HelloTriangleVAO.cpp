@@ -2,7 +2,18 @@
 #include <GLFW/glfw3.h> // GLFW helper library
 #include <stdio.h>
 
-#include <gla/gla.h>
+
+#include <gla/global.h>
+#include <gla/camera.h>
+//#include <gla/texture.h>
+#include <gla/timer.h>
+#include <gla/shader.h>
+//#include <gla/gputexturearray.h>
+#include <gla/vertexarrayobject.h>
+//#include <gla/framebufferobject.h>
+//#include <gla/solids.h>
+//#include <gla/uniformbuffer.h>
+//#include <gla/arraybuffer.h>
 #include <locale>
 
 using namespace gla;
@@ -26,78 +37,43 @@ int main()
     // GLA code.
     //===========================================================================
 
-    //---------------------------------------------------------------------------
-    // Create two buffers on the CPU to hold position and colour information
-    //---------------------------------------------------------------------------
-    v3ArrayBuffer cpuPos;
-    v4ArrayBuffer cpuCol;
 
-    // Also create an index buffer.
-    u3ArrayBuffer cpuInd;
+    InterleavedVAO<vec3, vec4> tri;
 
-    // Three positions
-    cpuPos.insert( vec3(-1.0f, -1.0f, 0.f));
-    cpuPos.insert( vec3( 1.0f ,-1.0f, 0.f));
-    cpuPos.insert( vec3( 0.0f , 1.0f, 0.f));
+    tri.InsertVertex( vec3(-1.0f, -1.0f, 0.f), vec4(1.f, 0.f, 0.f, 1.0f) );
+    tri.InsertVertex( vec3( 1.0f ,-1.0f, 0.f), vec4(0.f, 1.f, 0.f, 1.0f) );
+    tri.InsertVertex( vec3( 0.0f , 1.0f, 0.f), vec4(0.f, 0.f, 1.f, 1.0f) );
 
-    // Three Colours
-    cpuCol.insert( vec4(1.f, 0.f, 0.f, 1.0f) );
-    cpuCol.insert( vec4(0.f, 1.f, 0.f, 1.0f) );
-    cpuCol.insert( vec4(0.f, 0.f, 1.f, 1.0f) );
-
-    // Only one triangle for now.
-    cpuInd.insert( uvec3(0,1,2) );
-
-    // Copy the CPU buffers to the GPU.
-    GPUArrayBuffer gpuPos     =   cpuPos.toGPU(ARRAY_BUFFER);           // same as GL_ARRAY_BUFFER, but placed in a enum
-    GPUArrayBuffer gpuCol     =   cpuCol.toGPU(ARRAY_BUFFER);           // same as GL_ARRAY_BUFFER, but placed in a enum
-    GPUArrayBuffer gpuInd     =   cpuInd.toGPU(ELEMENT_ARRAY_BUFFER);   // same as GL_ARRAY_BUFFER, but placed in a enum
-
-    // The data in the CPU buffers are no longer needed. We can clear their memory
-    cpuPos.clear();
-    cpuCol.clear();
-    cpuInd.clear();
-
-    // Create a VertexArrayObject with Positions as the first attribute, colours as the second attribute
-    // Use the gpuIndex as the index buffer
-    // and use TRIANGLES as the render method.
-    GPUArrayObject VAO(  TRIANGLES,  {gpuPos, gpuCol}, gpuInd);
-
-
-    /* NOTE: We can also create a VAO without a Index buffer, simple call
-     * GPUArrayObject VAO( TRIANGLES, {gpuPositions, gpuColours}); */
-
-
-    // GPUArrayBuffers are bound to the VAO now, we can clear the buffers, but they wont
-    // be removed from GPU memory until we clear the VOA
-    //gpuPos.clear();
-    //gpuCol.clear();
-    //gpuInd.clear();
-
-    //---------------------------------------------------------------------------
-    // Create a shader
-    //---------------------------------------------------------------------------
+    tri.InsertElement( {0,1} );
+    tri.InsertElement( {1,2} );
+    tri.InsertElement( {2,0} );
+    auto VAO = tri.ToGPU();
 
     // Create the two shaders. The second argument is set to true because we are
     // compiling the shaders straight from a string. If we were compiling from a file
     // we'd just do:  VertexShader vs(Path_to_file);
     ShaderProgram TriangleShader;
-    TriangleShader.linkProgram(  VertexShader("shaders/HelloTriangle.v"),  FragmentShader("shaders/HelloTriangle.f")  );
+    std::cout << "attaching shaders: " << std::endl;
+    TriangleShader.AttachShaders(  VertexShader("shaders/HelloTriangle.v"),  FragmentShader("shaders/HelloTriangle.f")  );
 
 
+    auto vao = VAO;
+    VAO.Release();
     //==========================================================
-
+    std::cout << "Starting" << std::endl;
     while (!glfwWindowShouldClose(gMainWindow) )
     {
 
+        //auto VAO2 = VAO;
+        //std::cout << VAO2._size << std::endl;
         // Set the triangle shader to be the one that we will use
-        TriangleShader.useShader();
+        TriangleShader.Bind();
 
         // Bind the VAO so it can be used next.
-        VAO.bind();
+       // VAO2.Bind();
 
         // renders the VAO as triangles (assume triangles since our Index buffer is uvec3, if it was uvec4, it would assume quads
-        VAO.Render();
+        vao.Render();
 
         // To specify exactly what primitave you want. Use the following.
         //  VAO.Render(TRIANGLES);  // Can also use this.
@@ -109,7 +85,7 @@ int main()
     // Clear the VAO
     // Since we had flagged the array buffers for deletion ,they will now be
     // cleared as well since they are no longer bound to any VAOs
-    VAO.clear();
+    //VAO.clear();
 
 
     glfwDestroyWindow(gMainWindow);

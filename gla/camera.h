@@ -38,7 +38,7 @@ class Camera
              mTransform.setEuler(PitchYawRoll);
         }
 
-        mat4 & getProjectionMatrix() { return mProj; };
+        mat4 & getProjectionMatrix() { return mProj; }
 
         inline mat4 getMatrix()
         {
@@ -49,8 +49,21 @@ class Camera
             return mView;
         }
 
+        vec3 GetDirection()
+        {
+            auto mLook = mTransform.getOrientation() * vec3(0, 0,-1);// + mTransform.getPosition();
+            return mLook;
+        }
+
+        vec3 GetPosition()
+        {
+            return mTransform.getPosition();
+        }
+
+
+
         float getFOV() {return mFOV;}
-        float getAspectRatio() { return mAspectRatio; };
+        float getAspectRatio() { return mAspectRatio; }
         float getZMin() { return mZMin;}
         float getZMax() { return mZMax;}
 
@@ -59,7 +72,7 @@ class Camera
         void  setZMax(float zmax)     { perspective(mFOV, mAspectRatio, mZMin, zmax); }
         void  setZMin(float zmin)     { perspective(mFOV, mAspectRatio, zmin, mZMax); }
 
-        Transformation & getTransform() { return mTransform; };
+        Transformation & getTransform() { return mTransform; }
 
     private:
             mat4  mProj;

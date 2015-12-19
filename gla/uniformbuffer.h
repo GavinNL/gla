@@ -1,16 +1,39 @@
-#ifndef UNIFORMBUFFER_H
-#define UNIFORMBUFFER_H
+#ifndef GLA_UNIFORMBUFFER_H
+#define GLA_UNIFORMBUFFER_H
 
 #include <gla/types.h>
 #include <iostream>
+#include <gla/handle.h>
 
 namespace gla
 {
 
 
+struct UniformBufferHandler
+{
+    inline static void Create  (GLuint & h) { glGenBuffers(1, &h); }
+    inline static void Release (GLuint & h) { glDeleteBuffers(1, &h); }
+    inline static void Bind    (GLuint & h) { glBindBuffer(GL_UNIFORM_BUFFER, h); }
+    inline static void Unbind  (GLuint & h) { glBindBuffer(GL_UNIFORM_BUFFER, 0);  }
+};
+
+struct UniformBufferInfo
+{
+    int               Size;
+};
+
+
+class GPUUniformBuffer_new : gla::Handle<GLuint, UniformBufferHandler, UniformBufferInfo >
+
+{
+
+};
+
+
 class GPUUniformBuffer
 {
 public:
+
 
     GPUUniformBuffer(unsigned int bytes=0)
     {
@@ -35,11 +58,17 @@ public:
 
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
+        size = bytes;
         std::cout << "Uniform Bufer created" << std::endl;
         std::cout << "  size: " << size << std::endl;
         std::cout << "   ubo: " << mUBO << std::endl;
+        if( mUBO == -1)
+        {
+            throw std::runtime_error("Uniform Buffer not created\n");
+        } else {
 
-        size = bytes;
+        }
+
 
 
     }
@@ -76,12 +105,12 @@ public:
     /**
      * @brief BindBase
      * @param BindPoint - The index in the GPU to bind the buffer to. It must be
-     *                    between 0 and
+     *                    between 0 and Get_MAX_UNIFORM_BUFFER_BINDINGS()
      */
     inline void BindBase(GLuint BindPoint)
     {
         bind();
-        glBindBufferBase(GL_UNIFORM_BUFFER,BindPoint, mUBO);
+        glBindBufferBase(GL_UNIFORM_BUFFER, BindPoint, mUBO);
     }
 
     static GLuint Get_MAX_UNIFORM_BUFFER_BINDINGS()
@@ -109,7 +138,7 @@ public:
     }
 
 
-    GLuint mUBO=0;
+    GLuint       mUBO=0;
     unsigned int size=0;
 };
 

@@ -1,17 +1,6 @@
 #ifndef GLA_GLOBAL_H
 #define GLA_GLOBAL_H
 
-//#include <GL/glew.h>
-//#include <GL/glext.h>
-//#include <GL/gl.h>
-//
-//#define GLM_FORCE_RADIANS
-//#include <glm/glm.hpp>
-//#define GLM_FORCE_RADIANS
-//#include <glm/gtc/quaternion.hpp>
-//#define GLM_FORCE_RADIANS
-//#include <glm/gtc/matrix_transform.hpp>
-//#include <glm/gtc/noise.hpp>
 
 #include <gla/types.h>
 

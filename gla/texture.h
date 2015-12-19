@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include <gla/handle.h>
 #ifdef GLA_IMAGE_USE_STB
     #include <stb/stb_image.h>
 #elif GLA_IMAGE_USE_FREEIMAGE
@@ -34,14 +35,206 @@ namespace gla {
         int temp;
     };
 
+    inline std::vector<unsigned int> & GetActiveTextures()
+    {
+        static auto s = std::make_shared< std::vector<unsigned int> > ();
+        static bool init = false;
+        if(!init)
+        {
+            s->resize(128);
+            init = true;
+        }
+        return *s;
+    }
+
     //===========================================================================
     // GPUTexture
     //   - A 2D texture stored on the GPU
     //===========================================================================
+    struct TextureHandler
+    {
+        inline static void Create  (GLuint & h) { glGenTextures(1, &h); }
+        inline static void Release (GLuint & h) { glDeleteTextures(1, &h);  }
+        inline static void Bind    (GLuint & h) { glBindTexture(GL_TEXTURE_2D, h); }
+        inline static void Unbind  (GLuint & h) { glBindTexture(GL_TEXTURE_2D, 0);  }
+    };
+
+    struct TextureInfo
+    {
+        unsigned int     UseCount = 0;
+        uvec2            Size = {0,0};
+        TexColourFormat  Format;
+        bool             MipMaps;
+        TexFilter        MinFilter;
+        TexFilter        MagFilter;
+        TexWrap          S_Wrap;
+        TexWrap          T_Wrap;
+        DataType         Type;
+    };
+
+
+    class GPUTexture
+    {
+    public:
+        using HandleType = gla::Handle<GLuint, TextureHandler, TextureInfo >;
+
+        HandleType m_Handle;
+
+
+    public:
+
+        void Bind()     { m_Handle.Bind();    }
+        void Unbind()   { m_Handle.Unbind();  }
+        void Release()  { m_Handle.Release(); }
+       // using Base = gla::Handle<GLuint, TextureHandler, TextureInfo >;
+
+        /**
+         * @brief GPUTexture
+         * @param size size of the texture to create on the GPU.
+         */
+        //GPUTexture_New() : Base()
+        //{
+        //
+        //}
+        //
+        //GPUTexture_New( const uvec2 & size)
+        //{
+        //    Create(size, TexColourFormat::RGBA, true);
+        //}
+
+
+
+        inline bool Create(const uvec2 & size,
+                           TexColourFormat InternalFormat=TexColourFormat::RGBA,
+                           bool MipMaps=true)
+        {
+            return( Create(size, InternalFormat, InternalFormat, DataType::UNSIGNED_BYTE, 0, MipMaps) );
+        }
+
+        /**
+         * @brief create Creates a blank texture
+         * @param size The size of the texture to create on the GPU.
+         */
+        inline bool Create(const uvec2                         &size,
+                           TexColourFormat     InternalFormat =  TexColourFormat::RGBA,
+                           TexColourFormat     Format         =  TexColourFormat::RGBA,
+                           DataType            Type           =  DataType::UNSIGNED_BYTE,
+                           void*               Data           =  0,
+                           bool                MipMaps        =  true)
+        {
+            m_Handle.Create();
+            m_Handle.Bind();
+
+            if( !m_Handle.GetID() )
+            {
+                return false;
+            }
+
+            auto & I = m_Handle.__GetInfo( );
+
+            glTexImage2D(GL_TEXTURE_2D, 0, (GLuint)InternalFormat, size.x, size.y, 0, (GLuint)Format, (GLuint)Type, Data);
+            if(MipMaps)
+            {
+                glGenerateMipmap(GL_TEXTURE_2D);
+            }
+
+            I.Format  = Format;
+            I.MipMaps = MipMaps;
+            I.Size    = size;
+            I.Type    = Type;
+
+            SetTextureWrap( TexWrap::REPEAT, TexWrap::REPEAT);
+            SetFilter(TexFilter::LINEAR_MIPMAP_LINEAR, TexFilter::LINEAR_MIPMAP_LINEAR);
+
+            m_Handle.Unbind();
+            return true;
+        }
+
+        void PasteSubImage( const gla::uvec2 & xy, const TextureBase & T, int level=0);
+
+
+        /**
+         *  Sets the Min and Mag filter for this texture
+         *
+         * @param Min The MIN filter to use
+         * @param Mag The MAG filter to use
+         */
+        inline void SetFilter( TexFilter Min, TexFilter Mag)
+        {
+            m_Handle.Bind();
+
+            auto & I = m_Handle.__GetInfo();
+
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLuint)Min);
+
+            if( Mag == TexFilter::LINEAR_MIPMAP_LINEAR)  Mag = TexFilter::LINEAR;
+            if( Mag == TexFilter::LINEAR_MIPMAP_NEAREST) Mag = TexFilter::NEAREST;
+
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLuint)Mag);
+
+            I.MagFilter = Mag;
+            I.MinFilter = Mag;
+
+            m_Handle.Unbind();
+        }
+
+        inline void SetTextureWrap( TexWrap S_direction, TexWrap T_direction)
+        {
+            m_Handle.Bind();
+            auto & I = m_Handle.__GetInfo();
+
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLuint)S_direction);
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLuint)T_direction);
+
+            I.S_Wrap = S_direction;
+            I.T_Wrap = T_direction;
+
+            m_Handle.Unbind();
+        }
+
+        void SetActive( unsigned int unit)
+        {
+            //static unsigned int CurrentlyBoundTextureUnits[128] = {0};
+            auto CurrentlyBoundTextureUnits = gla::GetActiveTextures();
+
+            if( CurrentlyBoundTextureUnits[unit] != m_Handle.GetID() )
+            {
+                glActiveTexture(GL_TEXTURE0+unit);
+                m_Handle.Bind();
+                CurrentlyBoundTextureUnits[unit] = m_Handle.GetID();
+            }
+        }
+
+        //=============================================================
+        /**
+         * @brief get_MAX_TEXTURE_SIZE
+         * @return the maximum dimension of the textures.
+         */
+        static GLuint get_MAX_TEXTURE_SIZE()
+        {
+            static GLint  max = 0;
+            if(max!=0) return max;
+            glGetIntegerv (GL_MAX_TEXTURE_SIZE, &max);
+            return max;
+        }
+
+        static GLuint get_MAX_TEXTURE_IMAGE_UNITS()
+        {
+            static GLint  max = 0;
+            if(max!=0) return max;
+            //glGetIntegerv (GL_MAX_TEXTURE_SIZE, &max);
+            glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max);
+            return max;
+        }
+
+        friend class FrameBufferObject;
+
+    };
+
+#if 0
     class GPUTexture
     {
         public:
-
 
             GPUTexture() : mDim(0,0), mTextureID(0)
             {
@@ -148,27 +341,42 @@ namespace gla {
             static GLuint BindTexture(const GPUTexture & T, bool force = false)
             {
 
-                static GLuint _Current=0;
-                if( force || _Current != T.getID() )
-                {
+               // static GLuint _Current=0;
+               // if( force || _Current != T.getID() )
+               // {
                     glBindTexture(GL_TEXTURE_2D,  T.getID());
-                    _Current = T.getID();
-                    return _Current;
-                }
-                return _Current;
+               //     _Current = T.getID();
+               //     return _Current;
+               // }
+                return T.getID();//_Current;
             }
 
-            static void SetActiveTexture( GPUTexture & T, unsigned int unit)
-            {
-                static unsigned int CurrentlyBoundTextureUnits[128] = {0};
 
-                if( CurrentlyBoundTextureUnits[unit] != T.getID() )
+            void SetActive( unsigned int unit)
+            {
+                //static unsigned int CurrentlyBoundTextureUnits[128] = {0};
+                auto CurrentlyBoundTextureUnits = gla::GetActiveTextures();
+
+                if( CurrentlyBoundTextureUnits[unit] != getID() )
                 {
                     glActiveTexture(GL_TEXTURE0+unit);
-                    BindTexture(T, true);
-                    CurrentlyBoundTextureUnits[unit] = T.getID();
+                    bind();
+                    CurrentlyBoundTextureUnits[unit] = getID();
                 }
             }
+
+//            static void SetActiveTexture( GPUTexture & T, unsigned int unit)
+//            {
+//                //static unsigned int CurrentlyBoundTextureUnits[128] = {0};
+//                auto CurrentlyBoundTextureUnits = gla::GetActiveTextures();
+
+//                if( CurrentlyBoundTextureUnits[unit] != T.getID() )
+//                {
+//                    glActiveTexture(GL_TEXTURE0+unit);
+//                    BindTexture(T, true);
+//                    CurrentlyBoundTextureUnits[unit] = T.getID();
+//                }
+//            }
 
             /**
              *  Clears the TextureBase from the GPU. This is not done automatically when the destructor is called.
@@ -234,8 +442,7 @@ namespace gla {
 
        friend class FrameBufferObject;
     };
-
-
+#endif
     //=========================================================================
 
 
@@ -368,6 +575,7 @@ namespace gla {
             {
                 GLint max;
                 glGetIntegerv (GL_MAX_TEXTURE_SIZE, &max);
+
                 return max;
             }
 
@@ -435,6 +643,32 @@ namespace gla {
              *
              * @return A GPUTexture
              */
+            GPUTexture ToGPU(bool MipMaps=true)
+            {
+                GPUTexture GPU;
+
+                TexColourFormat format;
+
+                switch( mComponents )
+                {
+                    case 1: format = TexColourFormat::RED;  break;
+                    case 2: format = TexColourFormat::RG;   break;
+                    case 3: format = TexColourFormat::RGB;  break;
+                    case 4: format = TexColourFormat::RGBA; break;
+                }
+
+                if( GPU.Create( mDim, format, format, DataType::UNSIGNED_BYTE, (void*)mData), MipMaps )
+                {
+                    GPU.SetFilter(     TexFilter::LINEAR, TexFilter::LINEAR);
+                    GPU.SetTextureWrap(TexWrap::REPEAT, TexWrap::REPEAT);
+
+                    return GPU;
+                }
+
+                return GPU;
+            }
+
+#if 0
             GPUTexture toGPU(int MipMaps=-1)
             {
                 GPUTexture GPU;
@@ -462,7 +696,7 @@ namespace gla {
                 return GPU;
             }
 
-
+#endif
             inline unsigned int getChannels() const
             {
                 return mComponents;
@@ -1035,7 +1269,8 @@ namespace gla {
     }
 
 //, GL_RGB, GL_RGBA, GL_LUMINANCE, and .
-    inline void GPUTexture::pasteSubImage( const gla::uvec2 & xy, const TextureBase & T, int level)
+#if 0
+    inline void GPUTexture::PasteSubImage( const gla::uvec2 & xy, const TextureBase & T, int level)
     {
         if(!mTextureID) return;
 
@@ -1051,6 +1286,35 @@ namespace gla {
         GLenum Format[] = {GL_RED, GL_LUMINANCE_ALPHA, GL_RGB, GL_RGBA};
        // std::cout << "PASTING SUB IMAGE: " << T.getChannels()-1 <<std::endl;
         glTexSubImage2D(GL_TEXTURE_2D, level, xy.x, xy.y, T.size().x, T.size().y, Format[T.getChannels()-1], GL_UNSIGNED_BYTE, d );
+
+      //  std::cout << "Error code: " << glGetError() << std::endl;
+
+    }
+#endif
+
+    inline void GPUTexture::PasteSubImage( const gla::uvec2 & xy, const TextureBase & T, int level)
+    {
+        if(!m_Handle.GetID()) return;
+
+        auto d = T.getRawData();
+        if(!d) return;
+
+        //have a bigger image bigImage and the
+        // subImage sub
+       // std::cout << "Copying subimage over\n";
+        Bind();
+
+        // Note, i/j might have the origin int he bottom left corner instead of top left.
+        GLenum Format[] = {GL_RED, GL_LUMINANCE_ALPHA, GL_RGB, GL_RGBA};
+       // std::cout << "PASTING SUB IMAGE: " << T.getChannels()-1 <<std::endl;
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        level,
+                        xy.x, xy.y,
+                        T.size().x,
+                        T.size().y,
+                        Format[T.getChannels()-1],
+                        (GLenum)m_Handle.GetInfo().Type,
+                        d );
 
       //  std::cout << "Error code: " << glGetError() << std::endl;
 

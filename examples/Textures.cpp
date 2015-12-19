@@ -2,7 +2,17 @@
 #include <GLFW/glfw3.h> // GLFW helper library
 #include <stdio.h>
 
-#include <gla/gla.h>
+#include <gla/global.h>
+#include <gla/camera.h>
+#include <gla/texture.h>
+#include <gla/timer.h>
+#include <gla/shader.h>
+//#include <gla/gputexturearray.h>
+#include <gla/vertexarrayobject.h>
+//#include <gla/framebufferobject.h>
+//#include <gla/solids.h>
+//#include <gla/uniformbuffer.h>
+//#include <gla/arraybuffer.h>
 #include <locale>
 
 using namespace gla;
@@ -26,38 +36,17 @@ int main()
     // GLA code.
     //===========================================================================
 
-    //---------------------------------------------------------------------------
-    // Create two buffers on the CPU to hold position and colour information
-    //---------------------------------------------------------------------------
-    // v3ArrayBuffer cpuPositions;
-    // v2ArrayBuffer cpuTexCoords;
-    VertexArrayObject cpuVAO;
+    InterleavedVAO<vec3,vec2> cpuVAO;
+
+    cpuVAO.InsertVertex( vec3(-1.0f, -1.0f, 0.f), vec2( 0.f, 0.f ));
+    cpuVAO.InsertVertex( vec3( 1.0f ,-1.0f, 0.f), vec2( 1.f, 0.f ));
+    cpuVAO.InsertVertex( vec3( 1.0f , 1.0f, 0.f), vec2( 1.f, 1.f ));
+    cpuVAO.InsertVertex( vec3(-1.0f , 1.0f, 0.f), vec2( 0.f, 1.f ));
+
+    cpuVAO.InsertElement( uvec4(0,1,2,3) );
 
 
-    // Create two buffers, they will return the position
-    // of the buffer. Eg, position will be the 0'th attribute in the shader
-    // colour will be the 1'st attribute
-    int positionIndex = cpuVAO.createBuffer<vec3>();  // this will be 0
-    int texIndex      = cpuVAO.createBuffer<vec2>();  // this will be 1
-
-
-    // Also create an index buffer.
-    u4ArrayBuffer cpuIndex;
-
-    cpuVAO.insert(positionIndex, vec3(-1.0f, -1.0f, 0.f));
-    cpuVAO.insert(positionIndex, vec3( 1.0f ,-1.0f, 0.f));
-    cpuVAO.insert(positionIndex, vec3( 1.0f , 1.0f, 0.f));
-    cpuVAO.insert(positionIndex, vec3(-1.0f , 1.0f, 0.f));
-
-    cpuVAO.insert(texIndex, vec2( 0.f, 0.f ) );
-    cpuVAO.insert(texIndex, vec2( 1.f, 0.f ) );
-    cpuVAO.insert(texIndex, vec2( 1.f, 1.f ) );
-    cpuVAO.insert(texIndex, vec2( 0.f, 1.f ) );
-
-    cpuVAO.insertElement( uvec4(0,1,2,3) );
-
-
-    auto VAO = cpuVAO.toGPU();
+    auto VAO = cpuVAO.ToGPU();
 
 
     // Load some textures
@@ -83,11 +72,13 @@ int main()
 
 
     // Send Texture 1 to the GPU.
-    GPUTexture gpuTex = cpuTex1.toGPU();
+    //GPUTexture gpuTex = cpuTex1.toGPU();
+    GPUTexture gpuTex = cpuTex1.ToGPU();
 
 
     // Paste Tex2 into Tex1 with an offset
-    gpuTex.pasteSubImage( {25,25}, cpuTex2);
+    //gpuTex.pasteSubImage( {25,25}, cpuTex2);
+    gpuTex.PasteSubImage( {25,25}, cpuTex2);
 
 
     // we dont need the cpu texture anymore, so we can clear it.
@@ -104,17 +95,18 @@ int main()
     // compiling the shaders straight from a string. If we were compiling from a file
     // we'd just do:  VertexShader vs(Path_to_file);
     ShaderProgram TriangleShader;
-    TriangleShader.linkProgram(  VertexShader("shaders/Textures.v"),  FragmentShader("shaders/Textures.f")  );
+    TriangleShader.AttachShaders( VertexShader("shaders/Textures.v"),  FragmentShader("shaders/Textures.f") );
+    //TriangleShader.linkProgram(  VertexShader("shaders/Textures.v"),  FragmentShader("shaders/Textures.f")  );
 
     // get the uniform location ID
-    int SamplerLocation = TriangleShader.getUniformLocation("uSampler");
+    int SamplerLocation = TriangleShader.GetUniformLocation("uSampler");
     //==========================================================
 
     while (!glfwWindowShouldClose(gMainWindow) )
     {
 
         // Set the GPu as the current texture 0;
-        GPUTexture::SetActiveTexture(gpuTex, 0);
+        gpuTex.SetActive( 0);
 
         //VAO.bind();
 
@@ -129,7 +121,7 @@ int main()
         //TriangleShader.sendUniform(0, "uSampler", 0);
         TriangleShader.UniformData("uSampler"_h, 0);
 
-        VAO.Render(QUADS);
+        VAO.Render();
 
 
         glfwSwapBuffers(gMainWindow);
@@ -139,8 +131,8 @@ int main()
     // Clear the VAO
     // Since we had flagged the array buffers for deletion ,they will now be
     // cleared as well since they are no longer bound to any VAOs
-    VAO.clear();
-
+    VAO.Release();
+    std::cout << "Released:" << std::endl;
 
     glfwDestroyWindow(gMainWindow);
     glfwTerminate();

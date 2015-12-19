@@ -2,7 +2,19 @@
 #include <GLFW/glfw3.h> // GLFW helper library
 #include <stdio.h>
 
-#include <gla/gla.h>
+#include <gla/global.h>
+#include <gla/camera.h>
+#include <gla/texture.h>
+#include <gla/timer.h>
+#include <gla/shader.h>
+#include <gla/gputexturearray.h>
+#include <gla/vertexarrayobject.h>
+//#include <gla/framebufferobject.h>
+//#include <gla/solids.h>
+//#include <gla/uniformbuffer.h>
+//#include <gla/arraybuffer.h>
+#include <locale>
+
 #include <locale>
 
 using namespace gla;
@@ -38,33 +50,18 @@ int main()
     //---------------------------------------------------------------------------
     // Create two buffers on the CPU to hold position and colour information
     //---------------------------------------------------------------------------
-    VertexArrayObject cpuVAO;
-
-
-    // Create two buffers, they will return the position
-    // of the buffer. Eg, position will be the 0'th attribute in the shader
-    // colour will be the 1'st attribute
-    int positionIndex = cpuVAO.createBuffer<vec3>();  // this will be 0
-    int texIndex      = cpuVAO.createBuffer<vec2>();  // this will be 1
-
-
     // Also create an index buffer.
-    u4ArrayBuffer cpuIndex;
+    InterleavedVAO<vec3,vec2> cpuVAO;
 
-    cpuVAO.insert(positionIndex, vec3(-1.0f, -1.0f, 0.f));
-    cpuVAO.insert(positionIndex, vec3( 1.0f ,-1.0f, 0.f));
-    cpuVAO.insert(positionIndex, vec3( 1.0f , 1.0f, 0.f));
-    cpuVAO.insert(positionIndex, vec3(-1.0f , 1.0f, 0.f));
+    cpuVAO.InsertVertex( vec3(-1.0f, -1.0f, 0.f), vec2( 0.f, 0.f ));
+    cpuVAO.InsertVertex( vec3( 1.0f ,-1.0f, 0.f), vec2( 1.f, 0.f ));
+    cpuVAO.InsertVertex( vec3( 1.0f , 1.0f, 0.f), vec2( 1.f, 1.f ));
+    cpuVAO.InsertVertex( vec3(-1.0f , 1.0f, 0.f), vec2( 0.f, 1.f ));
 
-    cpuVAO.insert(texIndex, vec2( 0.f, 0.f ) );
-    cpuVAO.insert(texIndex, vec2( 1.f, 0.f ) );
-    cpuVAO.insert(texIndex, vec2( 1.f, 1.f ) );
-    cpuVAO.insert(texIndex, vec2( 0.f, 1.f ) );
-
-    cpuVAO.insertElement( uvec4(0,1,2,3) );
+    cpuVAO.InsertElement( uvec4(0,1,2,3) );
 
 
-    auto VAO = cpuVAO.toGPU();
+    auto VAO = cpuVAO.ToGPU();
 
     // Load some textures. And force using 3 components (r,g,b)
     Texture cpuTex1("resources/moss1024.jpg", 3 );
@@ -80,7 +77,7 @@ int main()
     GPUTextureArray GPUTArray;
 
     // Create the GPUTexture array with 3 layers that hold 256x256 images with 3 components each, and 2 mipmaps.
-    GPUTArray.create( uvec2(256,256), 3, 2 , 3);
+    GPUTArray.Create( uvec2(256,256), 3, 3 , 2);
 
     // Set the red channel using a lambda function
     cpuTex3.r = [] (float x, float y) {  return glm::perlin( vec2(x,y) * 2.0f, vec2(2.0,2.0) )*0.5 + 0.5f;  };
@@ -115,7 +112,8 @@ int main()
     // compiling the shaders straight from a string. If we were compiling from a file
     // we'd just do:  VertexShader vs(Path_to_file);
     ShaderProgram TextureArrayShader;
-    TextureArrayShader.linkProgram(  VertexShader("shaders/TextureArray.v"),  FragmentShader("shaders/TextureArray.f")  );
+    TextureArrayShader.AttachShaders(  VertexShader("shaders/TextureArray.v"),  FragmentShader("shaders/TextureArray.f")  );
+    //TextureArrayShader.linkProgram(  VertexShader("shaders/TextureArray.v"),  FragmentShader("shaders/TextureArray.f")  );
 
    //==========================================================
 
@@ -127,7 +125,7 @@ int main()
     {
 
         // Set the GPu as the current texture 0;
-        GPUTArray.setActiveTexture(0);
+        GPUTArray.SetActive(0);
 
         vec2 Speed = Timer.getElapsedTime() * vec2(0.7,1.2);
 
@@ -145,7 +143,7 @@ int main()
         TextureArrayShader.UniformData( ShaderProgram::Hash("uTextureArray"), 0);
         TextureArrayShader.UniformData( ShaderProgram::Hash("uSpeed"),        Speed);
 
-        VAO.Render(QUADS);
+        VAO.Render();
 
         glfwSwapBuffers(gMainWindow);
         glfwPollEvents();
@@ -154,7 +152,7 @@ int main()
     // Clear the VAO
     // Since we had flagged the array buffers for deletion ,they will now be
     // cleared as well since they are no longer bound to any VAOs
-    VAO.clear();
+   // VAO.clear();
 
 
     glfwDestroyWindow(gMainWindow);

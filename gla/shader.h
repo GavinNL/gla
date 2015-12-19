@@ -3,6 +3,7 @@
 
 #include <gla/types.h>
 #include <gla/uniformbuffer.h>
+#include <gla/handle.h>
 #include <iostream>
 #include <fstream>
 #include <streambuf>
@@ -10,6 +11,7 @@
 #include <memory>
 #include <map>
 #include <unordered_map>
+#include <utility>
 
 namespace gla
 {
@@ -108,45 +110,49 @@ typedef gla::ShaderUnit<GL_FRAGMENT_SHADER> FragmentShader;
 typedef gla::ShaderUnit<GL_GEOMETRY_SHADER> GeometryShader;
 
 
-struct ShaderInfo
+struct ShaderProgramInfo
 {
-    std::map<std::string, int> UniformLocations;
-    std::map<std::string, int> UniformBlockLocations;
+    unsigned int UseCount = 0;
+    std::map<std::string, int>          UniformLocations;
+    std::map<std::string, int>          UniformBlockLocations;
+    std::unordered_map<size_t, GLuint>  UniformMap;
+    std::unordered_map<size_t, GLuint>  BlockMap;
+
+
+
     int NumberOfUniforms;
     int NumberOfUniformBlocks;
 };
 
+struct ShaderProgramHandler
+{
+    inline static void Create  (GLuint & h) { h = glCreateProgram(); }
+    inline static void Release (GLuint & h) { glDeleteProgram(h); }
+    inline static void Bind    (GLuint & h) { glUseProgram(h); }
+    inline static void Unbind  (GLuint & h) { glUseProgram(0);  }
+};
+
 class ShaderProgram
 {
-    public:
-         ShaderProgram(const VertexShader & VS, const FragmentShader & FS);
-         ShaderProgram();
-        ~ShaderProgram();
+public:
+    using HandleType = gla::Handle<GLuint, ShaderProgramHandler, ShaderProgramInfo >;
+    using HashKey = size_t;
 
 
-        ShaderProgram(const ShaderProgram & other)
+    HandleType m_Handle;
+
+
+public:
+
+    void Bind()     { m_Handle.Bind();    }
+    void Unbind()   { m_Handle.Unbind();  }
+    void Release()  { m_Handle.Release(); }
+
+
+
+        inline GLuint GetUniformLocation(const GLchar *name)
         {
-            mProgram = other.mProgram;
-            mUniformLocations = other.mUniformLocations;
-        }
-
-        ShaderProgram & operator=(const ShaderProgram & other)
-        {
-            mProgram = other.mProgram;
-            mUniformLocations = other.mUniformLocations;
-            return(*this);
-        }
-
-        inline void DeleteShader()
-        {
-            if(mProgram) glDeleteProgram(mProgram);
-            mUniformLocations.clear();
-        }
-
-
-        inline GLuint getUniformLocation(const GLchar *name)
-        {
-            auto x = glGetUniformLocation(mProgram, name);
+            auto x = glGetUniformLocation(m_Handle.GetID(), name);
             //std::cout << "Uniform locatiom("<<mProgram<<"):,  " << name << ": " <<  x << std::endl;
             return x;
         }
@@ -154,7 +160,7 @@ class ShaderProgram
         inline int GetNumUniforms()
         {
             int total = -1;
-            glGetProgramiv( mProgram, GL_ACTIVE_UNIFORMS, &total );
+            glGetProgramiv( m_Handle.GetID(), GL_ACTIVE_UNIFORMS, &total );
             return total;
         }
 
@@ -166,97 +172,88 @@ class ShaderProgram
 
             char name[100];
 
-            glGetActiveUniform( mProgram, GLuint(i), sizeof(name)-1, &name_len,  &num,  &type,  name );
+            const auto id = m_Handle.GetID();
+            glGetActiveUniform( id , GLuint(i), sizeof(name)-1, &name_len,  &num,  &type,  name );
             name[name_len] = 0;
-            GLuint location = glGetUniformLocation( mProgram, name );
+            GLuint location = glGetUniformLocation( id , name );
 
             return std::string(name);
         }
 
-        GLuint linkProgram(const VertexShader & VS, const FragmentShader & FS)
+
+        //=====================================================================
+        template<std::size_t I = 0, typename... Tp>
+        inline typename std::enable_if<I == sizeof...(Tp), void>::type
+        __AttachShader( const std::tuple<Tp...>& t)
         {
+        }
 
-            GLuint shader=0;
+        template<std::size_t I = 0, typename... Tp>
+        inline typename std::enable_if<I < sizeof...(Tp), void>::type
+        __AttachShader( const std::tuple<Tp...>& t)
+        {
+            glAttachShader( m_Handle.GetID(), std::get<I>(t).mShaderID );
+            __AttachShader<I+1>( t );
+        }
 
-            if( VS.mShaderID && FS.mShaderID )
+
+
+        template<class... U>
+        void AttachShaders(const U&... u)
+        {
+            //GLuint shader = 0;
+            m_Handle.Release();
+
+            //shader   = glCreateProgram();
+            m_Handle.Create();
+            //Create();
+            //mProgram = shader;
+
+            __AttachShader( std::make_tuple( std::forward<const U>(u)... ) );
+
+            glLinkProgram( m_Handle.GetID() );
+
+            m_Handle.Bind(); // <<---- Use Program
+            //glUseProgram(shader);
+
+            //mProgram = shader;
+
+            //auto p = mProgram;
+            //Info   = std::shared_ptr<ShaderInfo>( new ShaderInfo, [=](ShaderInfo* a){ delete a; glDeleteProgram(p); std::cout << "-------------Deleting Program:----------------- " << p << std::endl; } );
+
+            // ============ Get number of uniform locations ==================
+            //auto & M = m_Handle.__GetMap();
+
+            int   N = GetNumUniforms();
+            auto ID = m_Handle.GetID();
+
+            auto & Info = m_Handle.__GetInfo();
+            Info.UniformLocations.clear();
+            //Info.UniformLocations.assign(N,-1);
+            // ============ Get number of uniform locations ==================
+
+
+            std::cout << "Shader Program created: "  << ID << std::endl;
+            std::cout << "     Number of Uniforms: " << N      << std::endl;
+            for(int i=0;i<N;i++)
             {
-                GLuint shader = glCreateProgram();
-                glAttachShader( shader, VS.mShaderID );
-                glAttachShader( shader, FS.mShaderID );
+                auto name = GetUniformName(i);
+                auto loc  = GetUniformLocation(name.c_str());
 
-                glLinkProgram(shader);
-                glUseProgram (shader);
+                Info.UniformLocations[ name ] = loc;
+                std::cout << "          Uniform(" << i << "): " << GetUniformName(i) << " HashKey: " << Hash(name.c_str()) << "  glUniformLoc: " << loc << std::endl;
 
-                mProgram = shader;
-
-
-                Info = std::shared_ptr<ShaderInfo>( new ShaderInfo, [=](ShaderInfo* a){ delete a; glDeleteProgram(mProgram); std::cout << "Deleting Program: " << mProgram << std::endl; } );
-
-                // ============ Get number of uniform locations ==================
-                int N = GetNumUniforms();
-                mUniformLocations.clear();
-                mUniformLocations.assign(N,-1);
-                // ============ Get number of uniform locations ==================
-
-
-                std::cout << "Shader Program created: "  << shader << std::endl;
-                std::cout << "     Number of Uniforms: " << N << std::endl;
-                for(int i=0;i<N;i++)
-                {
-                    auto name = GetUniformName(i);
-                    auto loc  = getUniformLocation(name.c_str());
-
-                    Info->UniformLocations[ name ] = loc;
-                    std::cout << "          Uniform(" << i << "): " << GetUniformName(i) << " HashKey: " << Hash(name.c_str()) << std::endl;
-
-                    mUniformMap[ Hash(name.c_str()) ] = loc;
-                    //std::cout << "          Uniform(" << i << "): " << GetUniformName(i) << std::endl;
-                }
-
-
-                return shader;
-            } else {
-                std::cout << "Unable to link shader. Vertex or Fragment shader is not compiled properly." << std::endl;
-                return shader;
+                Info.UniformMap[ Hash(name.c_str()) ] = loc;
+                //std::cout << "          Uniform(" << i << "): " << GetUniformName(i) << std::endl;
             }
 
-            return shader;
         }
+        //========================================================
 
-        inline void useShader()
-        {
-            static int CurrentlyBoundShader = 0;
-            if(CurrentlyBoundShader==mProgram) return;
-
-            CurrentlyBoundShader = mProgram;
-            glUseProgram(mProgram);
-        }
-
-        // Sending data to the shader
-
-        inline void sendUniform_Sampler2D(GLint location, GLint TextureNumber=0)
-        {
-            glUniform1i(location, TextureNumber);
-        }
-
-        inline void sendUniform_mat4(GLuint location, const mat4 & M, uint count=1 )
-        {
-            glUniformMatrix4fv(location, count, GL_FALSE, &M[0][0] );
-        }
-
-        inline void sendUniform_vec4(GLuint location, const vec4 & V, uint count=1 )
-        {
-            glUniform4fv(location, count, &V[0]);
-        }
-
-        inline void sendUniform_vec3(GLuint location, const vec3 & V, uint count=1 )
-        {
-            glUniform3fv(location, count, &V[0]);
-        }
 
         inline unsigned int GetUniformBlockIndex(const char * name)
         {
-          unsigned int block_index = glGetUniformBlockIndex(mProgram, name);
+          unsigned int block_index = glGetUniformBlockIndex( m_Handle.GetID(), name);
           return block_index;
         }
 
@@ -264,213 +261,142 @@ class ShaderProgram
 
         inline void BindUniformBuffer(GPUUniformBuffer & buffer, GLuint BlockIndex, GLuint BindPoint)
         {
-            glUniformBlockBinding(mProgram, BlockIndex, BindPoint);
+            glUniformBlockBinding(m_Handle.GetID(), BlockIndex, BindPoint);
             buffer.BindBase(BindPoint);
         }
 
 
-        using HashKey = size_t;
+        //========================================================================================
+        inline void Uniform(GLint UniformID, const gla::mat4 & V, uint count=1)
+        {
+            glUniformMatrix4fv(UniformID, count, GL_FALSE, &V[0][0] );
+        }
+        inline void Uniform(GLint UniformID, const gla::mat3 & V, uint count=1)
+        {
+            glUniformMatrix3fv(UniformID, count, GL_FALSE, &V[0][0] );
+        }
+        inline void Uniform(GLint UniformID, const gla::mat2 & V, uint count=1)
+        {
+            glUniformMatrix2fv(UniformID, count, GL_FALSE, &V[0][0] );
+        }
+        inline void Uniform(GLint UniformID, const gla::vec4 & V, uint count=1)
+        {
+            glUniform4fv(UniformID, count, &V[0] );
+        }
+        inline void Uniform(GLint UniformID, const gla::vec3 & V, uint count=1)
+        {
+            glUniform3fv(UniformID, count, &V[0] );
+        }
+        inline void Uniform(GLint UniformID, const gla::vec2 & V, uint count=1)
+        {
+            glUniform2fv(UniformID, count, &V[0] );
+        }
+        inline void Uniform(GLint UniformID, const gla::ivec4 & V, uint count=1)
+        {
+            glUniform4iv(UniformID, count, &V[0] );
+        }
+        inline void Uniform(GLint UniformID, const gla::ivec3 & V, uint count=1)
+        {
+            glUniform3iv(UniformID, count, &V[0] );
+        }
+        inline void Uniform(GLint UniformID, const gla::ivec2 & V, uint count=1)
+        {
+            glUniform2iv(UniformID, count, &V[0] );
+        }
+
+        inline void Uniform(GLint UniformID, const float & V, uint count=1)
+        {
+            glUniform1f(UniformID, V );
+        }
+        inline void Uniform(GLint UniformID, const int & V, uint count=1)
+        {
+            glUniform1i(UniformID, V );
+        }
+        inline void Uniform(GLint UniformID, int * V, uint count=1)
+        {
+            glUniform1iv( UniformID, count, V);
+        }
+        //===============================================================================================
+
 
         static constexpr HashKey Hash(const char * UniformName, HashKey k=0)
         {
-            return *UniformName==0 ? k : Hash(UniformName+1, *UniformName * 101 + *UniformName);
+            return *UniformName==0 ? k : k^Hash(UniformName+1, *UniformName * 101 + *UniformName);
         }
-
-        /*
-        template<typename T>
-        inline void UniformData(HashKey UniformNameHash, const T & V, uint count=1)
-        {
-            if( std::is_same<T, const gla::mat4&>::value)  glUniformMatrix3fv(mUniformMap[UniformNameHash], count, GL_FALSE, static_cast<const float*>(&V) );
-            if( std::is_same<T, const gla::mat3&>::value)  glUniformMatrix2fv(mUniformMap[UniformNameHash], count, GL_FALSE, static_cast<const float*>(&V) );
-            if( std::is_same<T, const gla::mat2&>::value)  glUniform3fv(mUniformMap[UniformNameHash], count, (void*)&V );
-
-            if( std::is_same<T, const gla::vec4&>::value)  glUniform4fv(mUniformMap[UniformNameHash], count, (void*)&V );
-            if( std::is_same<T, const gla::vec3&>::value)  glUniform3fv(mUniformMap[UniformNameHash], count, (void*)&V );
-            if( std::is_same<T, const gla::vec2&>::value)  glUniform2iv(mUniformMap[UniformNameHash], count, (void*)&V );
-
-            if( std::is_same<T, const gla::ivec4&>::value) glUniform4iv(mUniformMap[UniformNameHash], count, (void*)&V );
-            if( std::is_same<T, const gla::ivec3&>::value) glUniform3iv(mUniformMap[UniformNameHash], count, (void*)&V );
-            if( std::is_same<T, const gla::ivec2&>::value) glUniform2fv(mUniformMap[UniformNameHash], count, (void*)&V );
-
-            if( std::is_same<T, const float&>::value)      glUniform1iv(mUniformMap[UniformNameHash], count, (void*)&V );
-            if( std::is_same<T, const int&>::value)        glUniform1iv(mUniformMap[UniformNameHash], count, (void*)&V );
-        }
-        */
 
 
         inline void UniformData(HashKey UniformNameHash, const gla::mat4 & V, uint count=1)
         {
-            glUniformMatrix4fv(mUniformMap[UniformNameHash], count, GL_FALSE, &V[0][0] );
+            glUniformMatrix4fv(m_Handle.GetInfo().UniformMap.at(UniformNameHash), count, GL_FALSE, &V[0][0] );
         }
         inline void UniformData(HashKey UniformNameHash, const gla::mat3 & V, uint count=1)
         {
-            glUniformMatrix3fv(mUniformMap[UniformNameHash], count, GL_FALSE, &V[0][0] );
+            glUniformMatrix3fv( m_Handle.GetInfo().UniformMap.at(UniformNameHash), count, GL_FALSE, &V[0][0] );
         }
         inline void UniformData(HashKey UniformNameHash, const gla::mat2 & V, uint count=1)
         {
-            glUniformMatrix2fv(mUniformMap[UniformNameHash], count, GL_FALSE, &V[0][0] );
+            glUniformMatrix2fv( m_Handle.GetInfo().UniformMap.at(UniformNameHash), count, GL_FALSE, &V[0][0] );
         }
         inline void UniformData(HashKey UniformNameHash, const gla::vec4 & V, uint count=1)
         {
-            glUniform4fv(mUniformMap[UniformNameHash], count, &V[0] );
+            glUniform4fv( m_Handle.GetInfo().UniformMap.at(UniformNameHash), count, &V[0] );
         }
         inline void UniformData(HashKey UniformNameHash, const gla::vec3 & V, uint count=1)
         {
-            glUniform3fv(mUniformMap[UniformNameHash], count, &V[0] );
+            glUniform3fv( m_Handle.GetInfo().UniformMap.at(UniformNameHash), count, &V[0] );
         }
         inline void UniformData(HashKey UniformNameHash, const gla::vec2 & V, uint count=1)
         {
-            glUniform2fv(mUniformMap[UniformNameHash], count, &V[0] );
+            glUniform2fv( m_Handle.GetInfo().UniformMap.at(UniformNameHash), count, &V[0] );
         }
-
         inline void UniformData(HashKey UniformNameHash, const gla::ivec4 & V, uint count=1)
         {
-            glUniform4iv(mUniformMap[UniformNameHash], count, &V[0] );
+            glUniform4iv( m_Handle.GetInfo().UniformMap.at(UniformNameHash), count, &V[0] );
         }
         inline void UniformData(HashKey UniformNameHash, const gla::ivec3 & V, uint count=1)
         {
-            glUniform3iv(mUniformMap[UniformNameHash], count, &V[0] );
+            glUniform3iv( m_Handle.GetInfo().UniformMap.at(UniformNameHash), count, &V[0] );
         }
         inline void UniformData(HashKey UniformNameHash, const gla::ivec2 & V, uint count=1)
         {
-            glUniform2iv(mUniformMap[UniformNameHash], count, &V[0] );
+            glUniform2iv( m_Handle.GetInfo().UniformMap.at(UniformNameHash), count, &V[0] );
         }
 
         inline void UniformData(HashKey UniformNameHash, const float & V, uint count=1)
         {
-            glUniform1f(mUniformMap[UniformNameHash], V );
+            glUniform1f( m_Handle.GetInfo().UniformMap.at(UniformNameHash), V );
         }
         inline void UniformData(HashKey UniformNameHash, const int & V, uint count=1)
         {
-            glUniform1i(mUniformMap[UniformNameHash], V );
+            glUniform1i(m_Handle.GetInfo().UniformMap.at(UniformNameHash), V );
         }
-
-        /**
-         * @brief sendUniform
-         * @param location - a unique index in the array to store the uniform locations. Start at 0 and increment for each new uniform you are going to send
-         * @param name - the name of the uniform in the shader
-         * @param V
-         * @param count - number of elements to send, default is 1
-         *
-         * This method combines finding the uniform location and sending the uniform into one. This is a specialized function that will only find
-         * the uniform location once, then store it in an array.  For example:
-         *
-         * sendUniformLocation(0, "projectionMatrix", proj);
-         * sendUniformLocation(1, "ModelMatrix", model);
-         * sendUniformLocation(3, "ModelMatrix", model);  // this shouldn't be done, use 2 instead of 3. Must go sequentally
-         */
-
-        inline void sendUniform(GLuint location, const char *name, const gla::mat4 & V, uint count=1 )
+        inline void UniformData(HashKey UniformNameHash, const int * V, uint count=1)
         {
-            switch( mUniformLocations[location] )
-            {
-                case -1:
-                    mUniformLocations[location] = getUniformLocation(name);
-                    std::cout << "Location found: " << mUniformLocations[location] << std::endl;
-                default:
-                    glUniformMatrix4fv(mUniformLocations[location], count, GL_FALSE, &V[0][0] );
-            }
+            glUniform1iv( m_Handle.GetInfo().UniformMap.at(UniformNameHash) , count, V);
         }
 
-
-        inline void sendUniform(GLuint location, const char *name, const gla::vec3 & V, uint count=1 )
-        {
-            switch( mUniformLocations[location] )
-            {
-                case -1:
-                    mUniformLocations[location] = getUniformLocation(name);
-                default:
-                    glUniform3fv(mUniformLocations[location], count, &V[0]);
-            }
-        }
-
-        inline void sendUniform(GLuint location, const char *name, const gla::vec4 & V, uint count=1 )
-        {
-            switch( mUniformLocations[location] )
-            {
-                case -1:
-                    mUniformLocations[location] = getUniformLocation(name);
-                default:
-                    glUniform4fv(mUniformLocations[location], count, &V[0]);
-            }
-        }
-
-        inline void sendUniform(GLuint location, const char *name, const gla::vec2 & V, uint count=1 )
-        {
-            switch( mUniformLocations[location] )
-            {
-                case -1:
-                    mUniformLocations[location] = getUniformLocation(name);
-                default:
-                    glUniform2fv(mUniformLocations[location], count, &V[0]);
-            }
-        }
-
-        inline void sendUniform(GLuint location, const char *name, const float * V, uint count=1 )
-        {
-            switch( mUniformLocations[location] )
-            {
-                case -1:
-                    mUniformLocations[location] = getUniformLocation(name);
-                default:
-                    glUniform1fv(mUniformLocations[location], count, V);
-            }
-        }
-
-        inline void sendUniform(GLuint location, const char *name, const int * V, uint count=1 )
-        {
-            switch( mUniformLocations[location] )
-            {
-                case -1:
-                    mUniformLocations[location] = getUniformLocation(name);
-                default:
-                    glUniform1iv(mUniformLocations[location], count, V);
-            }
-        }
-
-        inline void sendUniform(GLuint location, const char *name, const int V )
-        {
-            switch( mUniformLocations[location] )
-            {
-                case -1:
-                    mUniformLocations[location] = getUniformLocation(name);
-                default:
-                    glUniform1i(mUniformLocations[location], V);
-            }
-        }
-
-
-    private:
-        std::vector<int> mUniformLocations;         // TODO(Gavin): To be removed later
-        std::vector<int> mUniformBlockLocations;    // TODO(Gavin): To be removed later
-
-        std::unordered_map<HashKey, GLuint> mUniformMap;
-        std::unordered_map<HashKey, GLuint> mBlockMap;
-
-        GLuint mProgram;
-        std::shared_ptr<ShaderInfo> Info;
 
 };
 
-inline ShaderProgram::ShaderProgram(const VertexShader & VS, const FragmentShader & FS) : mProgram(0)
-{
-    linkProgram(VS, FS);
+//inline ShaderProgram::ShaderProgram(const VertexShader & VS, const FragmentShader & FS) : mProgram(0)
+//{
+//    linkProgram(VS, FS);
+//}
+
+//inline ShaderProgram::ShaderProgram() : mProgram(0)
+//{
+//}
+//
+//inline ShaderProgram::~ShaderProgram()
+//{
+//    //glDeleteProgram(mProgram);
+////    #warning "TODO: Figure out what to do about unloading shaders."
+//}
+//
 }
 
-inline ShaderProgram::ShaderProgram() : mProgram(0)
+inline gla::ShaderProgram::HashKey operator "" _h(const char* c, size_t)
 {
-}
-
-inline ShaderProgram::~ShaderProgram()
-{
-    //glDeleteProgram(mProgram);
-//    #warning "TODO: Figure out what to do about unloading shaders."
-}
-
-inline ShaderProgram::HashKey operator "" _h(const char* c, size_t)
-{
-    return ShaderProgram::Hash(c);
-}
-
+    return gla::ShaderProgram::Hash(c);
 }
 #endif // SHADER_H

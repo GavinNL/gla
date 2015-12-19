@@ -35,8 +35,8 @@ class Transformation
         }
 
         // positional transformations
-        inline virtual void translate(const vec3 & T)  { mPosition += T; };
-        inline virtual void setPosition(const vec3 & P){ mPosition  = P; };
+        inline virtual void translate(const vec3 & T)  { mPosition += T; }
+        inline virtual void setPosition(const vec3 & P){ mPosition  = P; }
 
         // scaling transformations
         inline virtual void setScale(const vec3 & scale){mScale = scale;}
@@ -51,7 +51,7 @@ class Transformation
             mOrientation = quat(PitchYawRoll);
         }
 
-        inline gla::mat4 getMatrix()
+        inline gla::mat4 getMatrix() const
         {
             return glm::translate(mat4(1.0f), mPosition) * glm::mat4_cast(mOrientation) * glm::scale( mat4(1.0), mScale);
         }

@@ -18,6 +18,7 @@ GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 
 int main()
 {
+#if 0
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
@@ -148,6 +149,7 @@ int main()
 
     glfwDestroyWindow(gMainWindow);
     glfwTerminate();
+#endif
     return 0;
 }
 
