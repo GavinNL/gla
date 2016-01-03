@@ -111,6 +111,9 @@ target_link_libraries (Textures ${LIBS_CORE})
               examples/UniformBuffer.cpp)
 target_link_libraries (UniformBuffer ${LIBS_FULL})
 
+        add_executable(FrameBufferObject
+              examples/FrameBufferObject.cpp)
+target_link_libraries (FrameBufferObject ${LIBS_FULL})
 
 add_executable(test test.cpp)
 target_link_libraries (test ${LIBS_FULL})

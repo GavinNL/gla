@@ -34,6 +34,7 @@ SOURCES +=  main.cpp                                     \
             examples/UniformBuffer.cpp                                 \
             examples/TransformSequence.cpp                        \
             examples/HelloTriangleEncapsulatedVAO.cpp             \
+            examples/FrameBufferObject.cpp             \
             examples/engine.cpp             \
             test.cpp
 
@@ -65,6 +66,9 @@ DISTFILES +=                           \
     shaders/Textures.v                 \
     shaders/Standard_PUN.f            \
     shaders/Standard_PUN.v            \
-
+    shaders/GBuffer.f            \
+    shaders/GBuffer.v            \
+    shaders/GBuffer_SPass.f            \
+    shaders/GBuffer_SPass.v            \
 
 

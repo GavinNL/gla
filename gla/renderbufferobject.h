@@ -19,45 +19,61 @@ enum class RBOFormat : GLuint
     DEPTH24_STENCIL8  = GL_DEPTH24_STENCIL8
 };
 
+struct RenderBufferHandler
+{
+    inline static void Create  (GLuint & h) { glGenRenderbuffers(1, &h); }
+    inline static void Release (GLuint & h) { glDeleteRenderbuffers(1, &h); }
+    inline static void Bind    (GLuint & h) { glBindRenderbuffer(GL_RENDERBUFFER,    h); }
+    inline static void Unbind  (GLuint & h) { glBindRenderbuffer(GL_RENDERBUFFER,    0);  }
+};
+
+struct RenderBufferInfo
+{
+    RBOFormat format;
+    uvec2     size;
+};
+
 class RenderBufferObject
 {
 public:
-    struct Info
+
+    using HandleType = gla::Handle<GLuint, RenderBufferHandler ,RenderBufferInfo>;
+
+    HandleType   m_Handle;
+
+
+    inline void Bind() { m_Handle.Bind(); }
+    inline void Unbind() { m_Handle.Unbind(); }
+    inline void Release() { m_Handle.Release(); }
+
+
+
+    RenderBufferObject()
     {
-        RBOFormat format;
-        uvec2     size;
-    };
 
+    }
 
-    RenderBufferObject() {}
+    RenderBufferObject(const uvec2 & size, RBOFormat format)
+    {
+        Create(size, format);
+    }
 
-    RenderBufferObject & Create(const uvec2 & size , RBOFormat format );
-    RenderBufferObject & Destroy();
+    RenderBufferObject & Create(const uvec2 & size, RBOFormat format)
+    {
+        m_Handle.Create();
+        m_Handle.Bind();
 
-    void bind()   { glBindRenderbuffer(GL_RENDERBUFFER, m_ID); }
-    void unbind() { glBindRenderbuffer(GL_RENDERBUFFER, 0); }
+        glRenderbufferStorage(GL_RENDERBUFFER, (GLuint)format, size.x, size.y);
 
-
-
-    GLuint m_ID = 0;
+        m_Handle.__GetInfo().format = format;
+        m_Handle.__GetInfo().size   = size;
+        m_Handle.Unbind();
+        return *this;
+    }
 };
 
 
-inline RenderBufferObject & RenderBufferObject::Create(const uvec2 & size, RBOFormat format)
-{
 
-    glGenRenderbuffers(1, &m_ID);
-    glBindRenderbuffer(GL_RENDERBUFFER, m_ID);
-    glRenderbufferStorage(GL_RENDERBUFFER, (GLuint)format, size.x, size.y);
-
-    return *this;
-}
-
-inline RenderBufferObject & RenderBufferObject::Destroy()
-{
-    glDeleteRenderbuffers(1, &m_ID);
-    return *this;
-}
 
 }
 

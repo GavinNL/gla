@@ -61,15 +61,16 @@ namespace gla {
 
     struct TextureInfo
     {
-        unsigned int     UseCount = 0;
-        uvec2            Size = {0,0};
-        TexColourFormat  Format;
-        bool             MipMaps;
-        TexFilter        MinFilter;
-        TexFilter        MagFilter;
-        TexWrap          S_Wrap;
-        TexWrap          T_Wrap;
-        DataType         Type;
+        unsigned int       UseCount = 0;
+        uvec2              Size = {0,0};
+        TexInternalFormat  InternalFormat;
+        TexFormat          Format;
+        bool               MipMaps;
+        TexFilter          MinFilter;
+        TexFilter          MagFilter;
+        TexWrap            S_Wrap;
+        TexWrap            T_Wrap;
+        DataType           Type;
     };
 
 
@@ -102,13 +103,31 @@ namespace gla {
         //    Create(size, TexColourFormat::RGBA, true);
         //}
 
+        GPUTexture()
+        {
 
+        }
+
+        GPUTexture( const uvec2 & size,
+                    bool              MipMaps=false,
+                    TexInternalFormat InternalFormat=TexInternalFormat::RGBA,
+                    TexFormat         Format=TexFormat::RGBA,
+                    DataType          Type  = DataType::UNSIGNED_BYTE
+                    )
+        {
+            Create(size, MipMaps, InternalFormat, Format, Type);
+        }
 
         inline bool Create(const uvec2 & size,
-                           TexColourFormat InternalFormat=TexColourFormat::RGBA,
-                           bool MipMaps=true)
+                           bool MipMaps=true,
+
+                           TexInternalFormat InternalFormat=TexInternalFormat::RGBA,
+                           TexFormat texformat = TexFormat::RGBA,
+                           DataType datatype = DataType::UNSIGNED_BYTE
+                           )
         {
-            return( Create(size, InternalFormat, InternalFormat, DataType::UNSIGNED_BYTE, 0, MipMaps) );
+
+            return( Create(size, InternalFormat, texformat, datatype, 0, MipMaps) );
         }
 
         /**
@@ -116,8 +135,8 @@ namespace gla {
          * @param size The size of the texture to create on the GPU.
          */
         inline bool Create(const uvec2                         &size,
-                           TexColourFormat     InternalFormat =  TexColourFormat::RGBA,
-                           TexColourFormat     Format         =  TexColourFormat::RGBA,
+                           TexInternalFormat   InternalFormat =  TexInternalFormat::RGBA,
+                           TexFormat           Format         =  TexFormat::RGBA,
                            DataType            Type           =  DataType::UNSIGNED_BYTE,
                            void*               Data           =  0,
                            bool                MipMaps        =  true)
@@ -142,6 +161,7 @@ namespace gla {
             I.MipMaps = MipMaps;
             I.Size    = size;
             I.Type    = Type;
+            I.InternalFormat = InternalFormat;
 
             SetTextureWrap( TexWrap::REPEAT, TexWrap::REPEAT);
             SetFilter(TexFilter::LINEAR_MIPMAP_LINEAR, TexFilter::LINEAR_MIPMAP_LINEAR);
@@ -194,6 +214,9 @@ namespace gla {
 
         void SetActive( unsigned int unit)
         {
+            glActiveTexture(GL_TEXTURE0+unit);
+            m_Handle.Bind();
+            return;
             //static unsigned int CurrentlyBoundTextureUnits[128] = {0};
             auto CurrentlyBoundTextureUnits = gla::GetActiveTextures();
 
@@ -647,17 +670,18 @@ namespace gla {
             {
                 GPUTexture GPU;
 
-                TexColourFormat format;
+                TexFormat format;
+                TexInternalFormat iFormat;
 
                 switch( mComponents )
                 {
-                    case 1: format = TexColourFormat::RED;  break;
-                    case 2: format = TexColourFormat::RG;   break;
-                    case 3: format = TexColourFormat::RGB;  break;
-                    case 4: format = TexColourFormat::RGBA; break;
+                    case 1: iFormat = TexInternalFormat::RED;  format = TexFormat::RED;  break;
+                    case 2: iFormat = TexInternalFormat::RG;   format = TexFormat::RG;   break;
+                    case 3: iFormat = TexInternalFormat::RGB;  format = TexFormat::RGB;  break;
+                    case 4: iFormat = TexInternalFormat::RGBA; format = TexFormat::RGBA; break;
                 }
 
-                if( GPU.Create( mDim, format, format, DataType::UNSIGNED_BYTE, (void*)mData), MipMaps )
+                if( GPU.Create( mDim, iFormat, format, DataType::UNSIGNED_BYTE, (void*)mData), MipMaps )
                 {
                     GPU.SetFilter(     TexFilter::LINEAR, TexFilter::LINEAR);
                     GPU.SetTextureWrap(TexWrap::REPEAT, TexWrap::REPEAT);

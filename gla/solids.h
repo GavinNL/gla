@@ -45,12 +45,14 @@ namespace gla
                 }
 
                 for(r = 0; r < rings-1; r++)
-                for(s = 0; s < sectors-1; s++) {
+                for(s = 0; s < sectors-1; s++)
+                {
                         Sphere.InsertElement( uvec4(
-                        r * sectors + s,
-                        r * sectors + (s+1),
-                        (r+1) * sectors + (s+1),
-                        (r+1) * sectors + s) );
+                                                  (r+1) * sectors + s,
+                                              (r+1) * sectors + (s+1),
+                                              r * sectors + (s+1),
+                                              r * sectors + s)
+                                              );
 
                 }
 
