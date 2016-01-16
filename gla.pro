@@ -35,6 +35,7 @@ SOURCES +=  main.cpp                                     \
             examples/TransformSequence.cpp                        \
             examples/HelloTriangleEncapsulatedVAO.cpp             \
             examples/FrameBufferObject.cpp             \
+            examples/Tesselation.cpp             \
             examples/engine.cpp             \
             test.cpp
 
@@ -70,5 +71,10 @@ DISTFILES +=                           \
     shaders/GBuffer.v            \
     shaders/GBuffer_SPass.f            \
     shaders/GBuffer_SPass.v            \
+    shaders/Tess.v            \
+    shaders/Tess.f            \
+    shaders/Tess.g            \
+    shaders/Tess.te            \
+    shaders/Tess.tc            \
 
 

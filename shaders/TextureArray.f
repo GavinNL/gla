@@ -1,21 +1,10 @@
-#version 330 core
+#version 410 core
 
-in vec2 outTexCoord0;
+layout(location = 0, index = 0) out vec4 fragColor;
 
-out vec4 OutColour;
+//in vec4 color_gs;
 
-uniform sampler2DArray uTextureArray;
-uniform vec2           uSpeed;
-
-
-
-void main()
+void main(void)
 {
-    float t = texture( uTextureArray, vec3(outTexCoord0+uSpeed,2) ).r;
-
-
-    vec4 c1 = texture( uTextureArray, vec3(outTexCoord0, 0 ) );
-    vec4 c2 = texture( uTextureArray, vec3(outTexCoord0, 1 ) );
-
-    OutColour = (1.0-t)*c1 + t*c2;
+        fragColor = vec4(1.0,1.0,1.0,1.0);
 }

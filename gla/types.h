@@ -282,7 +282,8 @@ enum class Primitave
     TRIANGLE_STRIP          = GL_TRIANGLE_STRIP,
     TRIANGLE_FAN            = GL_TRIANGLE_FAN,
     QUADS                   = GL_QUADS,
-    QUAD_STRIP              = GL_QUAD_STRIP
+    QUAD_STRIP              = GL_QUAD_STRIP,
+    PATCHES                 = GL_PATCHES
 
 };
 

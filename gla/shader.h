@@ -108,6 +108,8 @@ class ShaderUnit
 typedef gla::ShaderUnit<GL_VERTEX_SHADER  > VertexShader;
 typedef gla::ShaderUnit<GL_FRAGMENT_SHADER> FragmentShader;
 typedef gla::ShaderUnit<GL_GEOMETRY_SHADER> GeometryShader;
+typedef gla::ShaderUnit<GL_TESS_CONTROL_SHADER> TesselationControlShader;
+typedef gla::ShaderUnit<GL_TESS_EVALUATION_SHADER> TesselationEvaluationShader;
 
 
 struct ShaderProgramInfo
@@ -151,7 +153,7 @@ public:
 
 
         inline GLuint GetUniformLocation(const GLchar *name)
-        {
+        {            
             auto x = glGetUniformLocation(m_Handle.GetID(), name);
             //std::cout << "Uniform locatiom("<<mProgram<<"):,  " << name << ": " <<  x << std::endl;
             return x;
@@ -255,6 +257,35 @@ public:
         {
           unsigned int block_index = glGetUniformBlockIndex( m_Handle.GetID(), name);
           return block_index;
+        }
+
+        inline unsigned int GetUniformBlockSize(const char * name )
+        {
+            auto index = GetUniformBlockIndex(name);
+            GLint params;
+
+            glGetActiveUniformBlockiv(m_Handle.GetID(), index, GL_UNIFORM_BLOCK_DATA_SIZE, &params);
+
+
+            return params;
+
+        }
+
+        inline unsigned int GetUniformOffset(const char * name )
+        {
+            //auto index = GetUniformBlockIndex(name);
+            GLuint index;
+            GLint params;
+            const char * names[] = {name};
+
+            glGetUniformIndices(m_Handle.GetID(), 1, names, &index);
+
+
+            glGetActiveUniformBlockiv(m_Handle.GetID(), index, GL_UNIFORM_OFFSET, &params);
+
+
+            return params;
+
         }
 
 
@@ -362,17 +393,31 @@ public:
             glUniform2iv( m_Handle.GetInfo().UniformMap.at(UniformNameHash), count, &V[0] );
         }
 
-        inline void UniformData(HashKey UniformNameHash, const float & V, uint count=1)
+        //inline void UniformData(HashKey UniformNameHash, const float & V, uint count=1)
+        //{
+        //    glUniform1f( m_Handle.GetInfo().UniformMap.at(UniformNameHash), V );
+        //}
+        //inline void UniformData(HashKey UniformNameHash, const int & V, uint count=1)
+        //{
+        //    glUniform1i(m_Handle.GetInfo().UniformMap.at(UniformNameHash), V );
+        //}
+        inline void UniformData(HashKey UniformNameHash, int V)
         {
-            glUniform1f( m_Handle.GetInfo().UniformMap.at(UniformNameHash), V );
+            glUniform1iv( m_Handle.GetInfo().UniformMap.at(UniformNameHash) , 1, &V);
         }
-        inline void UniformData(HashKey UniformNameHash, const int & V, uint count=1)
+
+        inline void UniformData(HashKey UniformNameHash, float V)
         {
-            glUniform1i(m_Handle.GetInfo().UniformMap.at(UniformNameHash), V );
+            glUniform1fv( m_Handle.GetInfo().UniformMap.at(UniformNameHash) , 1, &V);
         }
+
         inline void UniformData(HashKey UniformNameHash, const int * V, uint count=1)
         {
             glUniform1iv( m_Handle.GetInfo().UniformMap.at(UniformNameHash) , count, V);
+        }
+        inline void UniformData(HashKey UniformNameHash, const float * V, uint count=1)
+        {
+            glUniform1fv( m_Handle.GetInfo().UniformMap.at(UniformNameHash) , count, V);
         }
 
 

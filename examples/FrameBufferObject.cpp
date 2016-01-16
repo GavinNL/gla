@@ -12,7 +12,7 @@
 #include <gla/vertexarrayobject.h>
 #include <gla/framebufferobject.h>
 //#include <gla/solids.h>
-//#include <gla/uniformbuffer.h>
+#include <gla/uniformbuffer.h>
 //#include <gla/arraybuffer.h>
 #include <gla/solids.h>
 #include <locale>
@@ -28,6 +28,27 @@ using namespace gla;
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
+struct Light
+{
+    vec3    Position;
+    float   Linear;
+    vec3    Color;     ////unsigned char padding2[4];
+    float   Quadractic;
+    float   R;
+    float   _p1,p2,p3;
+};
+
+struct LightBlock140
+{
+    Light LightInfo[2];
+    vec3 CameraPosition;
+    float padding;
+};
+
+
+
+LightBlock140 LightBlock;
+
 int main()
 {
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
@@ -39,7 +60,7 @@ int main()
     //===========================================================================
 
 
-    auto Box = gla::Solids::createBox().ToGPU();
+    auto Box = gla::Solids::createPlane(20,20).ToGPU();
 
     // Create the two shaders. The second argument is set to true because we are
     // compiling the shaders straight from a string. If we were compiling from a file
@@ -58,40 +79,13 @@ int main()
     //==========================================================
     FrameBufferObject mFBO;
     mFBO.Create();
-    mFBO.CreateColourAttachment(0, {WINDOW_WIDTH, WINDOW_HEIGHT}, FBOColourFormat::RGB16F);
-    mFBO.CreateColourAttachment(1, {WINDOW_WIDTH, WINDOW_HEIGHT}, FBOColourFormat::RGB16F);
-    mFBO.CreateColourAttachment(2, {WINDOW_WIDTH, WINDOW_HEIGHT}, FBOColourFormat::RGBA);
-    mFBO.CreateDepthAttachment({WINDOW_WIDTH, WINDOW_HEIGHT});
+    mFBO.CreateColourAttachment(0, {WINDOW_WIDTH, WINDOW_HEIGHT }, FBOColourFormat::RGB16F);
+    mFBO.CreateColourAttachment(1, {WINDOW_WIDTH, WINDOW_HEIGHT }, FBOColourFormat::RGB16F);
+    mFBO.CreateColourAttachment(2, {WINDOW_WIDTH, WINDOW_HEIGHT }, FBOColourFormat::RGBA);
+    mFBO.CreateDepthAttachment(    {WINDOW_WIDTH, WINDOW_HEIGHT });
     mFBO.Update();
 
-/*
-    auto position = GPUTexture( {WINDOW_WIDTH, WINDOW_HEIGHT}, false, TexInternalFormat::RGB16F, TexFormat::RGB, DataType::UNSIGNED_BYTE) ;
-    auto normal   = GPUTexture( {WINDOW_WIDTH, WINDOW_HEIGHT}, false, TexInternalFormat::RGB16F, TexFormat::RGB, DataType::UNSIGNED_BYTE) ;
-    auto albedo   = GPUTexture( {WINDOW_WIDTH, WINDOW_HEIGHT}, false, TexInternalFormat::RGBA,   TexFormat::RGBA, DataType::UNSIGNED_BYTE) ;
-    auto depth    = GPUTexture( {WINDOW_WIDTH, WINDOW_HEIGHT}, false, TexInternalFormat::DEPTH_COMPONENT,  TexFormat::DEPTH_COMPONENT,  DataType::UNSIGNED_BYTE) ;
 
-    mFBO.Create();
-    mFBO.Bind();
-
-    position.SetFilter(TexFilter::NEAREST, TexFilter::NEAREST);
-    normal.SetFilter(TexFilter::NEAREST, TexFilter::NEAREST);
-    albedo.SetFilter(TexFilter::NEAREST, TexFilter::NEAREST);
-    depth.SetFilter(TexFilter::NEAREST, TexFilter::NEAREST);
-
-   // mFBO.Create(FBOAttachment::COLOR0, {WINDOW_WIDTH, WINDOW_HEIGHT} );
-    glFramebufferTexture2D(GL_FRAMEBUFFER, (GLuint)FBOAttachment::COLOR0, GL_TEXTURE_2D, position.m_Handle.GetID(), 0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, (GLuint)FBOAttachment::COLOR1, GL_TEXTURE_2D, normal  .m_Handle.GetID(), 0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, (GLuint)FBOAttachment::COLOR2, GL_TEXTURE_2D, albedo  .m_Handle.GetID(), 0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, (GLuint)FBOAttachment::DEPTH,  GL_TEXTURE_2D, depth   .m_Handle.GetID(), 0);
-
-    GLuint attachments[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3};
-    glDrawBuffers(4, attachments);
-
-    if(glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    {
-        throw gla::GLA_EXCEPTION("Framebuffer status was not complete.");
-    }
-*/
     //mFBO.Update();
     //==========================================================
 
@@ -109,27 +103,40 @@ int main()
     auto VAO = cpuVAO.ToGPU();
     //===============================================================
 
-    auto gpuTex1 = Texture("resources/rocks1024.jpg", 3 ).ToGPU();
+    GPUUniformBuffer MyGPUUniformBuffer( sizeof(LightBlock140) );
+    auto BlockIndex = SPass.GetUniformBlockIndex("LightBlock140");
+    SPass.Bind();
+    std::cout << "Block Index: " << BlockIndex << std::endl;
+    std::cout << " Uniform Buffer Size: "<<  SPass.GetUniformBlockSize("LightBlock140") << std::endl;
+    std::cout << " Uniform Struct Size: "<<  sizeof(LightBlock140) << std::endl;
+    std::cout << " Uniform Struct Light: "<< SPass.GetUniformBlockSize("LightBlock142")  << std::endl;
+
+    std::cout << " Position Offset: "<<  SPass.GetUniformOffset("LightInfo[0].Color") << std::endl;
+    SPass.BindUniformBuffer(MyGPUUniformBuffer, BlockIndex, 1);
+
+    //===============================================================
+    auto gpuTex1 = Texture("resources/marble.jpg", 3 ).ToGPU();
     auto gpuTex2 = Texture("resources/grass.jpg", 3 ).ToGPU();
 
     Camera mCamera;
     mCamera.perspective( 90.0f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
     Transformation mTransform;
 
-    mTransform.setPosition( {0,0, -1.5});
-    mTransform.setEuler( vec3(0.5,0.2,-1.2));
+    mTransform.setPosition( {0,-2.0, 0.0});
+    //mTransform.setEuler( vec3(0.5,0.2,-1.2));
     std::cout << "Starting" << std::endl;
     mFBO.Unbind();
 
     gla::Timer_T<float> Tim;
+
     while (!glfwWindowShouldClose(gMainWindow) )
     {
 
         glEnable(GL_DEPTH_TEST);
-        mFBO.Bind();
+         mFBO.Bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        mTransform.rotate( {0.2,1,0}, 0.01);
+        //mTransform.rotate( {0.2,1,0}, 0.01);
 
         GBuffer.Bind();
         gpuTex1.SetActive( 0 );
@@ -143,6 +150,7 @@ int main()
         // renders the VAO as triangles (assume triangles since our Index buffer is uvec3, if it was uvec4, it would assume quads
         Box.Render();
 
+
         if(1)
         {
             mFBO.Unbind();
@@ -150,9 +158,54 @@ int main()
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
             SPass.Bind();
 
-            mFBO.GetAttachment(FBOAttachment::DEPTH).SetActive(0);
+             {
+                 const float linear = 0.0f;
+                 const float quadratic = 2.8f;
+                 vec3 p = -vec3( cos(Tim.getElapsedTime() ) , 0.0f, sin(Tim.getElapsedTime())  )*2.0f;
+
+                 const GLfloat maxBrightness = 1.0f;
+
+                 float radius =  (-linear + sqrt(linear * linear - 4 * quadratic * (1.0f - (256.0 / 5.0) * maxBrightness))) / (2 * quadratic);
+                 //SPass.UniformData( "lights[0].Radius"_h, radius  );
+
+                 LightBlock.LightInfo[0].Linear     = linear;
+                 LightBlock.LightInfo[0].Quadractic = quadratic;
+                 LightBlock.LightInfo[0].Position   = p;
+                 LightBlock.LightInfo[0].Color      = vec3(0,1,0);
+                 LightBlock.LightInfo[0].R          = radius;
+             }
+
+             {
+                 const float linear = 0.00f;
+                 const float quadratic = 2.8f;
+                 vec3 p =  vec3( cos(Tim.getElapsedTime() ) , 0.0f, sin(Tim.getElapsedTime())  )*2.0f;
+
+
+                 const GLfloat maxBrightness = 1.0f;
+
+                 float radius = (-linear + sqrt(linear * linear - 4 * quadratic * (1.0f - (256.0 / 5.0) * maxBrightness))) / (2 * quadratic);
+
+                 LightBlock.LightInfo[1].Linear     = linear;
+                 LightBlock.LightInfo[1].Position   = p;
+                 LightBlock.LightInfo[1].Color      = vec3(0,0,1);
+                 LightBlock.LightInfo[1].Quadractic = quadratic;
+                 LightBlock.LightInfo[1].R          = radius;//vec4(radius);
+
+             }
+
+            LightBlock.CameraPosition = vec3(0.0f);
+            MyGPUUniformBuffer.CopyData(LightBlock);
+            //SPass.UniformData( "lights[0]"_h, (float*)&Lights[0].Position[0], 18u );
+            //SPass.UniformData( "viewPos"_h, vec3(0.0f,0.0f,0.0f)  );
+
+            mFBO.GetAttachment(FBOAttachment::COLOR0).SetActive(0);
+            mFBO.GetAttachment(FBOAttachment::COLOR1).SetActive(1);
+            mFBO.GetAttachment(FBOAttachment::COLOR2).SetActive(2);
+            //mFBO.GetAttachment(FBOAttachment::DEPTH).SetActive(0);
             //gpuTex1.SetActive(0);
-            SPass.UniformData( ShaderProgram::Hash("uSampler"),  0 );
+            SPass.UniformData( ShaderProgram::Hash("gPosition"),   0 );
+            SPass.UniformData( ShaderProgram::Hash("gNormal"),     1 );
+            SPass.UniformData( ShaderProgram::Hash("gAlbedoSpec"), 2 );
 
             // To specify exactly what primitave you want. Use the following.
             VAO.Render();
@@ -173,12 +226,13 @@ int main()
 }
 
 
-
 //=============================================================================
 // Set up GLFW and GLEW
 //=============================================================================
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow()
 {
+//    std::cout << sizeof(TestS) << std::endl;
+//    exit(0);
     glewExperimental = GL_TRUE;
     if (!glfwInit())
         exit(EXIT_FAILURE);

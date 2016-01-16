@@ -129,6 +129,7 @@ int main()
     UniformBufferStruct140 UniformData; // allocate the memory on the CPU
 
 
+
     // Here we create a uniform buffer on the gpu, we pass the size of the struct
     // into the input parameter.
     GPUUniformBuffer MyGPUUniformBuffer(sizeof(UniformBufferStruct140));
@@ -142,6 +143,8 @@ int main()
     std::cout << "Max Buffer block size           : " << GPUUniformBuffer::Get_MAX_UNIFORM_BLOCK_SIZE()   << std::endl;
     std::cout << "Max Combined Uniform block size : " << GPUUniformBuffer::Get_MAX_COMBINED_UNIFORM_BLOCKS()   << std::endl;
 
+    std::cout << "Uniform Block  Size: " << UniformBufferShader.GetUniformBlockSize("Uniform140") << std::endl;
+    std::cout << "Uniform Struct Size: " << sizeof(UniformBufferStruct140) << std::endl;
     //--------------------------------------------------------------------
     // Bind the GPUUniformBuffer to the UniformBlock in the shader.
     // The third argument is the BindPoint we want to bind to and has
@@ -165,11 +168,6 @@ int main()
         UniformData.colour    = { cos(t)*cos(t), 0,0,1};
 
         MyGPUUniformBuffer.CopyData(UniformData);
-        //X.CopyData(Udata);
-        //X.GetData().x.x = Speed.x;
-        //X.GetData().x.y = Speed.y;
-        //X.UpdateBuffer();
-
 
         // Here we send Uniform data to the shader
         //  The first argument is an user defined index. Depending on the number of uniforms you have, you should always

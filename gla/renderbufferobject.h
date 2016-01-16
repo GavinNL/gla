@@ -42,8 +42,8 @@ public:
     HandleType   m_Handle;
 
 
-    inline void Bind() { m_Handle.Bind(); }
-    inline void Unbind() { m_Handle.Unbind(); }
+    inline void Bind()    { m_Handle.Bind();    }
+    inline void Unbind()  { m_Handle.Unbind();  }
     inline void Release() { m_Handle.Release(); }
 
 
@@ -71,6 +71,8 @@ public:
         return *this;
     }
 };
+
+using GPURenderBufferObject = RenderBufferObject;
 
 
 

@@ -36,18 +36,18 @@ enum class FBOAttachment
 
 enum class FBOColourFormat
 {
-//    R8U              =   GL_R8UI,
-//    R16U             =   GL_R16UI,
-//    R32U             =   GL_R32UI,
-//    RG8U             =   GL_RG8UI,
-//    RG16U            =   GL_RG16UI,
-//    RG32U            =   GL_RG32UI,
-//    RGB8U            =   GL_RGB8UI,
-//    RGB16U           =   GL_RGB16UI,
-//    RGB32U           =   GL_RGB32UI,
-//    RGBA8U            =   GL_RGBA8UI,
-//    RGBA16U           =   GL_RGBA16UI,
-//    RGBA32U           =   GL_RGBA32UI,
+//    R8U              =   GL_R8UI,          // These ones dont work
+//    R16U             =   GL_R16UI,         // These ones dont work
+//    R32U             =   GL_R32UI,         // These ones dont work
+//    RG8U             =   GL_RG8UI,         // These ones dont work
+//    RG16U            =   GL_RG16UI,        // These ones dont work
+//    RG32U            =   GL_RG32UI,        // These ones dont work
+//    RGB8U            =   GL_RGB8UI,        // These ones dont work
+//    RGB16U           =   GL_RGB16UI,       // These ones dont work
+//    RGB32U           =   GL_RGB32UI,       // These ones dont work
+//    RGBA8U            =   GL_RGBA8UI,      // These ones dont work
+//    RGBA16U           =   GL_RGBA16UI,     // These ones dont work
+//    RGBA32U           =   GL_RGBA32UI,     // These ones dont work
     R16F             =   GL_R16F,
     R32F             =   GL_R32F,
 
@@ -79,6 +79,7 @@ struct FrameBufferObjectInfo
     std::vector<TexAttachment> mAttachments;
 
     std::map<FBOAttachment, GPUTexture> mAttachment;
+
 };
 
 struct FrameBufferHandler
@@ -117,6 +118,7 @@ class FrameBufferObject
         void CreateColourAttachment(unsigned int Number, const uvec2 & size, FBOColourFormat format)
         {
             if( Number > 15) return;
+            if( m_Handle.GetID() == 0) Create();
 
             auto & A = m_Handle.__GetInfo().mAttachment;
 
@@ -163,6 +165,8 @@ class FrameBufferObject
 
         void CreateDepthAttachment(const uvec2 & size)
         {
+            if( m_Handle.GetID() == 0) Create();
+
             auto & A = m_Handle.__GetInfo().mAttachment;
 
             A[ FBOAttachment::DEPTH ] = GPUTexture( size, false, TexInternalFormat::DEPTH_COMPONENT, TexFormat::DEPTH_COMPONENT, DataType::FLOAT);
@@ -210,8 +214,8 @@ class FrameBufferObject
                 if( (GLuint)a.first != (GLuint)FBOAttachment::DEPTH)
                     attachments.push_back( (GLuint)a.first );
 
-                std::cout << attachments[i] << " ::: " << a.second.m_Handle.GetID()  << std::endl;
-                //a.second.SetFilter(TexFilter::NEAREST, TexFilter::NEAREST);
+//                std::cout << attachments[i] << " ::: " << a.second.m_Handle.GetID()  << std::endl;
+
                 glFramebufferTexture2D(GL_FRAMEBUFFER, (GLuint)a.first, GL_TEXTURE_2D, a.second.m_Handle.GetID(), 0);
             }
 
