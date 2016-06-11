@@ -44,28 +44,28 @@ int main()
     tri.InsertVertex( vec3( 1.0f ,-1.0f, 0.f), vec4(0.f, 1.f, 0.f, 1.0f) );
     tri.InsertVertex( vec3( 0.0f , 1.0f, 0.f), vec4(0.f, 0.f, 1.f, 1.0f) );
 
-    tri.InsertElement( {0,1} );
-    tri.InsertElement( {1,2} );
-    tri.InsertElement( {2,0} );
+    tri.InsertElement( uvec2{0,1} );
+    tri.InsertElement( uvec2{1,2} );
+    tri.InsertElement( uvec2{2,0} );
     auto VAO = tri.ToGPU();
 
     // Create the two shaders. The second argument is set to true because we are
     // compiling the shaders straight from a string. If we were compiling from a file
     // we'd just do:  VertexShader vs(Path_to_file);
     ShaderProgram TriangleShader;
-    std::cout << "attaching shaders: " << std::endl;
+    GLA_DOUT  << "attaching shaders: " << std::endl;
     TriangleShader.AttachShaders(  VertexShader("shaders/HelloTriangle.v"),  FragmentShader("shaders/HelloTriangle.f")  );
 
 
     auto vao = VAO;
     VAO.Release();
     //==========================================================
-    std::cout << "Starting" << std::endl;
+    GLA_DOUT  << "Starting" << std::endl;
     while (!glfwWindowShouldClose(gMainWindow) )
     {
 
         //auto VAO2 = VAO;
-        //std::cout << VAO2._size << std::endl;
+        //GLA_DOUT  << VAO2._size << std::endl;
         // Set the triangle shader to be the one that we will use
         TriangleShader.Bind();
 

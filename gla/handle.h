@@ -2,7 +2,6 @@
 #define GLA_HANDLE_H
 
 #include <gla/types.h>
-//#include <unordered_map>
 #include <map>
 #include <memory>
 
@@ -14,11 +13,14 @@ namespace gla
 
 struct DefaultHandler
 {
-    inline static void Create(unsigned int & handle) {}
+    inline static void Create(unsigned int & handle)  {}
     inline static void Release(unsigned int & handle) {}
-    inline static void Bind(unsigned int   & handle) {}
-    inline static void Unbind(unsigned int & handle) {}
+    inline static void Bind(unsigned int   & handle)  {}
+    inline static void Unbind(unsigned int & handle)  {}
 };
+
+
+
 
 template<typename Type,
          class Handler,
@@ -33,7 +35,7 @@ public:
 
     Handle() : m_ID(0)
     {
-        assert (m_ID==0);
+        assert ( m_ID==0 );
     }
 
     void Create()
@@ -45,13 +47,13 @@ public:
         Handler::Create(id);
 
         m_ID = id;
-        std::cout << "********CREATED***************" << std::endl;
-        std::cout <<  m_ID << std::endl;
+        GLA_DOUT  << "********CREATED***************" << std::endl;
+        GLA_DOUT  <<  m_ID << std::endl;
         m_Shared = std::shared_ptr<HandleInfo>(  new HandleInfo(),
                                                  [ = ] ( HandleInfo * info)
         {
             delete info;
-            std::cout << "Deleting: " << id << std::endl;
+            std::cout  << "Deleting: " << id << std::endl;
             Type i = id;
             Handler::Release(i);
             i = 0;
@@ -96,13 +98,13 @@ public:
 
 
     public:
-        Type m_ID = 0;
+        Type         m_ID = 0;
         SharedObject m_Shared;
 
 
 };
 
-};
+}
 
 #endif // HANDLE_H
 

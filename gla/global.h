@@ -11,7 +11,7 @@ namespace gla
     template <typename T>
     struct TBox
     {
-        TBox() : pos(0), dim(0) {};
+        TBox() : pos(0), dim(0) {}
         T pos;
         T dim;
     };

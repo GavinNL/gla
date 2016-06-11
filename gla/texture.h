@@ -17,6 +17,7 @@
     #include <freeimage.h>
 #else
     #include <gla/stb_image_headeronly.h>
+    #include <gla/stb_image_write_headeronly.h>
 #endif
 
 
@@ -321,7 +322,7 @@ namespace gla {
 
 
                 auto id = mTextureID;
-                mInfo = std::shared_ptr<GPUTextureInfo>( new GPUTextureInfo, [=](GPUTextureInfo* a){ delete a; glDeleteTextures(1, &id); std::cout << "Deleting GPUTexture: " << id << std::endl; } );
+                mInfo = std::shared_ptr<GPUTextureInfo>( new GPUTextureInfo, [=](GPUTextureInfo* a){ delete a; glDeleteTextures(1, &id); GLA_DOUT  << "Deleting GPUTexture: " << id << std::endl; } );
                 return true;
             }
 
@@ -559,7 +560,7 @@ namespace gla {
                 T.mDim  = { 0, 0 };
                 T.mData = 0;
                 T.mComponents = 0;
-                //std::cout << " TextureBase::Move constructor\n";
+                //GLA_DOUT  << " TextureBase::Move constructor\n";
 
             }
 
@@ -576,7 +577,7 @@ namespace gla {
                 T.mData       = 0;
                 T.mComponents = 0;
 
-                //std::cout << " TextureBase::Move operator\n";
+                //GLA_DOUT  << " TextureBase::Move operator\n";
                 return *this;
             }
 
@@ -625,7 +626,7 @@ namespace gla {
                 }
                 else
                 {
-                    std::cout << "from Memory error: " << x << "," << y << "\n";
+                    GLA_DOUT  << "from Memory error: " << x << "," << y << "\n";
                 }
 
             }
@@ -649,14 +650,16 @@ namespace gla {
                 {
                     _handleRawPixels(img, static_cast<unsigned int>( x ), static_cast<unsigned int>( y ) );
                     mComponents = ForceNumberChannels!=0 ? ForceNumberChannels : comp;
-                    std::cout << "TextureBase loaded with #components = " << mComponents << std::endl;
+                    GLA_DOUT  << "TextureBase loaded with #components = " << mComponents << std::endl;
 
                 } else {
-                    //std::cout << "Error loading texture: " << path << std::endl;
+                    //GLA_DOUT  << "Error loading texture: " << path << std::endl;
                     throw std::runtime_error( std::string("Error loading texture: ") + path);
                 }
 
             }
+
+
             //===========================================================================
 
             /**
@@ -708,7 +711,7 @@ namespace gla {
                 }
 
                 //GPU.mColourFormat = format;
-               // std::cout << "Sending to GPU: #components: " << mComponents << std::endl;
+               // GLA_DOUT  << "Sending to GPU: #components: " << mComponents << std::endl;
                 if( GPU.create( mDim, format, format, UNSIGNED_BYTE, (void*)mData), MipMaps )
                 {
                     GPU.setFilter(     LINEAR, LINEAR, false );
@@ -764,7 +767,7 @@ namespace gla {
 
             inline void resize( const uvec2 & newSize)
             {
-                //std::cout << "Resizing from " << mDim.x << ", " << mDim.y << " to " << newSize.x << "," << newSize.y << std::endl;
+                //GLA_DOUT  << "Resizing from " << mDim.x << ", " << mDim.y << " to " << newSize.x << "," << newSize.y << std::endl;
                 TextureBase T( newSize.x, newSize.y , mComponents);
                 auto d = T.size();
 
@@ -799,7 +802,7 @@ namespace gla {
 
                     }
 
-                //std::cout << "Resizing complete" << std::endl;
+                //GLA_DOUT  << "Resizing complete" << std::endl;
 
                 *this = std::move(T);
             }
@@ -1116,7 +1119,7 @@ namespace gla {
                 T.mData       = 0;
                 T.mComponents = 0;
 
-                //std::cout << " Texture::Move operator\n";
+                //GLA_DOUT  << " Texture::Move operator\n";
                 //return *this;
 
                 return *this;
@@ -1303,15 +1306,15 @@ namespace gla {
 
         //have a bigger image bigImage and the
         // subImage sub
-       // std::cout << "Copying subimage over\n";
+       // GLA_DOUT  << "Copying subimage over\n";
         glBindTexture(GL_TEXTURE_2D,   mTextureID);
 
         // Note, i/j might have the origin int he bottom left corner instead of top left.
         GLenum Format[] = {GL_RED, GL_LUMINANCE_ALPHA, GL_RGB, GL_RGBA};
-       // std::cout << "PASTING SUB IMAGE: " << T.getChannels()-1 <<std::endl;
+       // GLA_DOUT  << "PASTING SUB IMAGE: " << T.getChannels()-1 <<std::endl;
         glTexSubImage2D(GL_TEXTURE_2D, level, xy.x, xy.y, T.size().x, T.size().y, Format[T.getChannels()-1], GL_UNSIGNED_BYTE, d );
 
-      //  std::cout << "Error code: " << glGetError() << std::endl;
+      //  GLA_DOUT  << "Error code: " << glGetError() << std::endl;
 
     }
 #endif
@@ -1325,12 +1328,12 @@ namespace gla {
 
         //have a bigger image bigImage and the
         // subImage sub
-       // std::cout << "Copying subimage over\n";
+       // GLA_DOUT  << "Copying subimage over\n";
         Bind();
 
         // Note, i/j might have the origin int he bottom left corner instead of top left.
         GLenum Format[] = {GL_RED, GL_LUMINANCE_ALPHA, GL_RGB, GL_RGBA};
-       // std::cout << "PASTING SUB IMAGE: " << T.getChannels()-1 <<std::endl;
+       // GLA_DOUT  << "PASTING SUB IMAGE: " << T.getChannels()-1 <<std::endl;
         glTexSubImage2D(GL_TEXTURE_2D,
                         level,
                         xy.x, xy.y,
@@ -1340,7 +1343,7 @@ namespace gla {
                         (GLenum)m_Handle.GetInfo().Type,
                         d );
 
-      //  std::cout << "Error code: " << glGetError() << std::endl;
+      //  GLA_DOUT  << "Error code: " << glGetError() << std::endl;
 
     }
 

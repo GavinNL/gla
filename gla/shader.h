@@ -49,8 +49,8 @@ class ShaderUnit
             std::string V( (std::istreambuf_iterator<char>(v)),
                             std::istreambuf_iterator<char>() );
 
-            std::cout << "========================================" << std::endl;
-            std::cout << " Compiling: " << shader_path << std::endl;
+            //GLA_DOUT  << "========================================" << std::endl;
+            //GLA_DOUT  << " Compiling: " << shader_path << std::endl;
 
             compileFromString( V );
         }
@@ -71,7 +71,7 @@ class ShaderUnit
 
             if(check)
             {
-                std::cout << "Shader compiled sucessfully:" << V << std::endl;
+                GLA_DOUT  << "Shader compiled sucessfully:" << V << std::endl;
             }
 
             mShaderID   = V;
@@ -92,7 +92,7 @@ class ShaderUnit
                 char errorLog[maxLength];
                 glGetShaderInfoLog(id, maxLength, &maxLength, &errorLog[0]);
 
-                std::cout << errorLog << std::endl;
+                std::cout   << errorLog << std::endl;
 
                 glDeleteShader(id); //Don't leak the shader.
                 return false;
@@ -101,16 +101,20 @@ class ShaderUnit
             }
         }
 
+        explicit operator bool() const
+        {
+            return mShaderID!=0;
+        }
+
         GLuint      mShaderID;
 
 };
 
-typedef gla::ShaderUnit<GL_VERTEX_SHADER  > VertexShader;
-typedef gla::ShaderUnit<GL_FRAGMENT_SHADER> FragmentShader;
-typedef gla::ShaderUnit<GL_GEOMETRY_SHADER> GeometryShader;
-typedef gla::ShaderUnit<GL_TESS_CONTROL_SHADER> TesselationControlShader;
-typedef gla::ShaderUnit<GL_TESS_EVALUATION_SHADER> TesselationEvaluationShader;
-
+typedef gla::ShaderUnit<GL_VERTEX_SHADER  >        VertexShader;
+typedef gla::ShaderUnit<GL_FRAGMENT_SHADER>        FragmentShader;
+typedef gla::ShaderUnit<GL_GEOMETRY_SHADER>        GeometryShader;
+typedef gla::ShaderUnit<GL_TESS_CONTROL_SHADER>    TessellationControlShader;
+typedef gla::ShaderUnit<GL_TESS_EVALUATION_SHADER> TessellationEvaluationShader;
 
 struct ShaderProgramInfo
 {
@@ -120,18 +124,17 @@ struct ShaderProgramInfo
     std::unordered_map<size_t, GLuint>  UniformMap;
     std::unordered_map<size_t, GLuint>  BlockMap;
 
-
-
     int NumberOfUniforms;
     int NumberOfUniformBlocks;
+
 };
 
 struct ShaderProgramHandler
 {
     inline static void Create  (GLuint & h) { h = glCreateProgram(); }
-    inline static void Release (GLuint & h) { glDeleteProgram(h); }
-    inline static void Bind    (GLuint & h) { glUseProgram(h); }
-    inline static void Unbind  (GLuint & h) { glUseProgram(0);  }
+    inline static void Release (GLuint & h) { glDeleteProgram(h);    }
+    inline static void Bind    (GLuint & h) { glUseProgram(h);       }
+    inline static void Unbind  (GLuint & h) { glUseProgram(0);       }
 };
 
 class ShaderProgram
@@ -151,11 +154,10 @@ public:
     void Release()  { m_Handle.Release(); }
 
 
-
-        inline GLuint GetUniformLocation(const GLchar *name)
+        inline GLint GetUniformLocation(const GLchar *name)
         {            
             auto x = glGetUniformLocation(m_Handle.GetID(), name);
-            //std::cout << "Uniform locatiom("<<mProgram<<"):,  " << name << ": " <<  x << std::endl;
+            //GLA_DOUT  << "Uniform locatiom("<<mProgram<<"):,  " << name << ": " <<  x << std::endl;
             return x;
         }
 
@@ -203,13 +205,11 @@ public:
         template<class... U>
         void AttachShaders(const U&... u)
         {
-            //GLuint shader = 0;
+
             m_Handle.Release();
 
-            //shader   = glCreateProgram();
+
             m_Handle.Create();
-            //Create();
-            //mProgram = shader;
 
             __AttachShader( std::make_tuple( std::forward<const U>(u)... ) );
 
@@ -221,7 +221,7 @@ public:
             //mProgram = shader;
 
             //auto p = mProgram;
-            //Info   = std::shared_ptr<ShaderInfo>( new ShaderInfo, [=](ShaderInfo* a){ delete a; glDeleteProgram(p); std::cout << "-------------Deleting Program:----------------- " << p << std::endl; } );
+            //Info   = std::shared_ptr<ShaderInfo>( new ShaderInfo, [=](ShaderInfo* a){ delete a; glDeleteProgram(p); GLA_DOUT  << "-------------Deleting Program:----------------- " << p << std::endl; } );
 
             // ============ Get number of uniform locations ==================
             //auto & M = m_Handle.__GetMap();
@@ -235,22 +235,24 @@ public:
             // ============ Get number of uniform locations ==================
 
 
-            std::cout << "Shader Program created: "  << ID << std::endl;
-            std::cout << "     Number of Uniforms: " << N      << std::endl;
+            GLA_DOUT  << "Shader Program created: "  << ID << std::endl;
+            GLA_DOUT  << "     Number of Uniforms: " << N      << std::endl;
             for(int i=0;i<N;i++)
             {
                 auto name = GetUniformName(i);
                 auto loc  = GetUniformLocation(name.c_str());
 
                 Info.UniformLocations[ name ] = loc;
-                std::cout << "          Uniform(" << i << "): " << GetUniformName(i) << " HashKey: " << Hash(name.c_str()) << "  glUniformLoc: " << loc << std::endl;
+                //GLA_DOUT  << "          Uniform(" << i << "): " << GetUniformName(i) << " HashKey: " << Hash(name.c_str()) << "  glUniformLoc: " << loc << std::endl;
 
-                Info.UniformMap[ Hash(name.c_str()) ] = loc;
-                //std::cout << "          Uniform(" << i << "): " << GetUniformName(i) << std::endl;
+                //Info.UniformMap[ Hash(name.c_str()) ] = loc;
+
+                GLA_DOUT  << "          Uniform(" << i << "): " << GetUniformName(i) << std::endl;
             }
 
         }
         //========================================================
+
 
 
         inline unsigned int GetUniformBlockIndex(const char * name)
@@ -343,105 +345,25 @@ public:
         {
             glUniform1i(UniformID, V );
         }
-        inline void Uniform(GLint UniformID, int * V, uint count=1)
+        inline void Uniform(GLint UniformID, const int * V, uint count=1)
         {
             glUniform1iv( UniformID, count, V);
+        }
+        inline void Uniform(GLint UniformID, const float * V, uint count=1)
+        {
+            glUniform1fv( UniformID, count, V);
         }
         //===============================================================================================
 
 
-        static constexpr HashKey Hash(const char * UniformName, HashKey k=0)
-        {
-            return *UniformName==0 ? k : k^Hash(UniformName+1, *UniformName * 101 + *UniformName);
-        }
-
-
-        inline void UniformData(HashKey UniformNameHash, const gla::mat4 & V, uint count=1)
-        {
-            glUniformMatrix4fv(m_Handle.GetInfo().UniformMap.at(UniformNameHash), count, GL_FALSE, &V[0][0] );
-        }
-        inline void UniformData(HashKey UniformNameHash, const gla::mat3 & V, uint count=1)
-        {
-            glUniformMatrix3fv( m_Handle.GetInfo().UniformMap.at(UniformNameHash), count, GL_FALSE, &V[0][0] );
-        }
-        inline void UniformData(HashKey UniformNameHash, const gla::mat2 & V, uint count=1)
-        {
-            glUniformMatrix2fv( m_Handle.GetInfo().UniformMap.at(UniformNameHash), count, GL_FALSE, &V[0][0] );
-        }
-        inline void UniformData(HashKey UniformNameHash, const gla::vec4 & V, uint count=1)
-        {
-            glUniform4fv( m_Handle.GetInfo().UniformMap.at(UniformNameHash), count, &V[0] );
-        }
-        inline void UniformData(HashKey UniformNameHash, const gla::vec3 & V, uint count=1)
-        {
-            glUniform3fv( m_Handle.GetInfo().UniformMap.at(UniformNameHash), count, &V[0] );
-        }
-        inline void UniformData(HashKey UniformNameHash, const gla::vec2 & V, uint count=1)
-        {
-            glUniform2fv( m_Handle.GetInfo().UniformMap.at(UniformNameHash), count, &V[0] );
-        }
-        inline void UniformData(HashKey UniformNameHash, const gla::ivec4 & V, uint count=1)
-        {
-            glUniform4iv( m_Handle.GetInfo().UniformMap.at(UniformNameHash), count, &V[0] );
-        }
-        inline void UniformData(HashKey UniformNameHash, const gla::ivec3 & V, uint count=1)
-        {
-            glUniform3iv( m_Handle.GetInfo().UniformMap.at(UniformNameHash), count, &V[0] );
-        }
-        inline void UniformData(HashKey UniformNameHash, const gla::ivec2 & V, uint count=1)
-        {
-            glUniform2iv( m_Handle.GetInfo().UniformMap.at(UniformNameHash), count, &V[0] );
-        }
-
-        //inline void UniformData(HashKey UniformNameHash, const float & V, uint count=1)
-        //{
-        //    glUniform1f( m_Handle.GetInfo().UniformMap.at(UniformNameHash), V );
-        //}
-        //inline void UniformData(HashKey UniformNameHash, const int & V, uint count=1)
-        //{
-        //    glUniform1i(m_Handle.GetInfo().UniformMap.at(UniformNameHash), V );
-        //}
-        inline void UniformData(HashKey UniformNameHash, int V)
-        {
-            glUniform1iv( m_Handle.GetInfo().UniformMap.at(UniformNameHash) , 1, &V);
-        }
-
-        inline void UniformData(HashKey UniformNameHash, float V)
-        {
-            glUniform1fv( m_Handle.GetInfo().UniformMap.at(UniformNameHash) , 1, &V);
-        }
-
-        inline void UniformData(HashKey UniformNameHash, const int * V, uint count=1)
-        {
-            glUniform1iv( m_Handle.GetInfo().UniformMap.at(UniformNameHash) , count, V);
-        }
-        inline void UniformData(HashKey UniformNameHash, const float * V, uint count=1)
-        {
-            glUniform1fv( m_Handle.GetInfo().UniformMap.at(UniformNameHash) , count, V);
-        }
-
-
 };
 
-//inline ShaderProgram::ShaderProgram(const VertexShader & VS, const FragmentShader & FS) : mProgram(0)
-//{
-//    linkProgram(VS, FS);
-//}
 
-//inline ShaderProgram::ShaderProgram() : mProgram(0)
-//{
-//}
-//
-//inline ShaderProgram::~ShaderProgram()
-//{
-//    //glDeleteProgram(mProgram);
-////    #warning "TODO: Figure out what to do about unloading shaders."
-//}
-//
+
 }
 
-inline gla::ShaderProgram::HashKey operator "" _h(const char* c, size_t)
-{
-    return gla::ShaderProgram::Hash(c);
-}
+//inline gla::ShaderProgram::HashKey operator "" _h(const char* c, size_t)
+//{
+//    return gla::ShaderProgram::Hash(c);
+//}
 #endif // SHADER_H

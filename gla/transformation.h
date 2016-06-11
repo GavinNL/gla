@@ -43,7 +43,7 @@ class Transformation
 
         // rotational transformation
         inline virtual void setOrientation(const quat & q) { mOrientation = q; }
-        inline virtual void rotate(const vec3 & axis, float AngleRadians) { mOrientation = glm::rotate( mOrientation, AngleRadians, axis ); };
+        inline virtual void rotate(const vec3 & axis, float AngleRadians) { mOrientation = glm::rotate( mOrientation, AngleRadians, axis ); }
 
 
         inline void setEuler( const vec3 & PitchYawRoll )
@@ -56,11 +56,11 @@ class Transformation
             return glm::translate(mat4(1.0f), mPosition) * glm::mat4_cast(mOrientation) * glm::scale( mat4(1.0), mScale);
         }
 
-        const gla::quat   & getOrientation(){ return mOrientation; };
-        const gla::vec3   & getPosition   (){ return mPosition   ; };
-        const gla::vec3   & getScale      (){ return mScale; };
+        const gla::quat   & getOrientation(){ return mOrientation; }
+        const gla::vec3   & getPosition   (){ return mPosition   ; }
+        const gla::vec3   & getScale      (){ return mScale; }
 
-        quat reverse() const {  return quat(mOrientation.w, -mOrientation.x, -mOrientation.y, -mOrientation.z); };
+        quat reverse() const {  return quat(mOrientation.w, -mOrientation.x, -mOrientation.y, -mOrientation.z); }
 
 
         /**

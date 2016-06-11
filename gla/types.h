@@ -17,6 +17,8 @@
 #include <iostream>
 #include <tuple>
 
+#define GLA_DOUT if(1) std::cout
+
 #define IS_SAME(First, Second) std::is_same<First, Second>::value
 
 static inline std::ostream& operator <<(std::ostream & out, const glm::vec2 & v)
@@ -396,7 +398,7 @@ typedef glm::vec2     col2;
 
 
 
-}
+};
 
 
 

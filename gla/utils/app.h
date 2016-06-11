@@ -49,6 +49,11 @@ class GLFW_App
         static void __OnCharacterMods(GLFWwindow* window,unsigned int codepoint, int mods) { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnCharacterMods(codepoint, mods); }
         static void __OnDrop(GLFWwindow* window,int count, const char** paths)             { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnDrop(count, paths); }
 
+        void SetWindowTitle(const char * title)
+        {
+            glfwSetWindowTitle(mWindow,title);
+        }
+
         GLFW_App(int W=640, int H=480, const char * title = "Window")
         {
             glewExperimental = GL_TRUE;
@@ -57,6 +62,7 @@ class GLFW_App
                 exit(EXIT_FAILURE);
 
             mWindow = glfwCreateWindow(W, H, title, NULL, NULL);
+
 
             if (!mWindow)
             {
@@ -94,9 +100,13 @@ class GLFW_App
             glfwSetDropCallback(           mWindow,  GLFW_App::__OnDrop);
         }
 
-        inline void SwapBuffers() { glfwSwapBuffers(mWindow); };
-        inline void PollEvents() { glfwPollEvents(); };
+        inline void SwapBuffers() { glfwSwapBuffers(mWindow); }
+        inline void PollEvents() { glfwPollEvents(); }
 
+        inline void ShowCursor(bool b)
+        {
+            glfwSetInputMode(mWindow, GLFW_CURSOR, b ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+        }
         ~GLFW_App()
         {
             glfwDestroyWindow(mWindow);

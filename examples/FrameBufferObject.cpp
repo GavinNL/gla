@@ -106,12 +106,12 @@ int main()
     GPUUniformBuffer MyGPUUniformBuffer( sizeof(LightBlock140) );
     auto BlockIndex = SPass.GetUniformBlockIndex("LightBlock140");
     SPass.Bind();
-    std::cout << "Block Index: " << BlockIndex << std::endl;
-    std::cout << " Uniform Buffer Size: "<<  SPass.GetUniformBlockSize("LightBlock140") << std::endl;
-    std::cout << " Uniform Struct Size: "<<  sizeof(LightBlock140) << std::endl;
-    std::cout << " Uniform Struct Light: "<< SPass.GetUniformBlockSize("LightBlock142")  << std::endl;
+    GLA_DOUT  << "Block Index: " << BlockIndex << std::endl;
+    GLA_DOUT  << " Uniform Buffer Size: "<<  SPass.GetUniformBlockSize("LightBlock140") << std::endl;
+    GLA_DOUT  << " Uniform Struct Size: "<<  sizeof(LightBlock140) << std::endl;
+    GLA_DOUT  << " Uniform Struct Light: "<< SPass.GetUniformBlockSize("LightBlock142")  << std::endl;
 
-    std::cout << " Position Offset: "<<  SPass.GetUniformOffset("LightInfo[0].Color") << std::endl;
+    GLA_DOUT  << " Position Offset: "<<  SPass.GetUniformOffset("LightInfo[0].Color") << std::endl;
     SPass.BindUniformBuffer(MyGPUUniformBuffer, BlockIndex, 1);
 
     //===============================================================
@@ -122,9 +122,9 @@ int main()
     mCamera.perspective( 90.0f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
     Transformation mTransform;
 
-    mTransform.setPosition( {0,-2.0, 0.0});
+    mTransform.setPosition( vec3{0,-2.0, 0.0});
     //mTransform.setEuler( vec3(0.5,0.2,-1.2));
-    std::cout << "Starting" << std::endl;
+    GLA_DOUT  << "Starting" << std::endl;
     mFBO.Unbind();
 
     gla::Timer_T<float> Tim;
@@ -231,7 +231,7 @@ int main()
 //=============================================================================
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow()
 {
-//    std::cout << sizeof(TestS) << std::endl;
+//    GLA_DOUT  << sizeof(TestS) << std::endl;
 //    exit(0);
     glewExperimental = GL_TRUE;
     if (!glfwInit())

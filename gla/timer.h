@@ -1,5 +1,5 @@
-#ifndef GLRETIMER_H
-#define GLRETIMER_H
+#ifndef GLA_TIMER_H
+#define GLA_TIMER_H
 
 #include <iostream>
 #include <chrono>
@@ -44,6 +44,6 @@ namespace gla {
             std::chrono::time_point<std::chrono::system_clock> mStart;
     };
 
-};
+}
 
 #endif // TIMER_H

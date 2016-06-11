@@ -18,9 +18,9 @@ include_directories ("${PROJECT_SOURCE_DIR}")
 SET( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules"
                        "${CMAKE_MODULE_PATH}" )
 
-#find_package(SDL2 REQUIRED)
-#include_directories(${SDL2_INCLUDE_DIRS})
-#set(LIBS ${LIBS} ${SDL2_LIBRARIES})
+find_package(SDL2 REQUIRED)
+include_directories(${SDL2_INCLUDE_DIRS})
+set(LIBS ${LIBS} ${SDL2_LIBRARIES})
 
 find_package(GLEW REQUIRED)
 include_directories(${GLEW_INCLUDE_DIRS})
@@ -57,6 +57,8 @@ set(LIBS_FULL assimp       ${GLFW_STATIC_LIBRARIES} ${OPENGL_glu_LIBRARY}  ${OPE
 set(LIBS_TEST z assimp      ${GLFW_STATIC_LIBRARIES} ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES}   )
 set(LIBS_CORE ${GLFW_STATIC_LIBRARIES} ${OPENGL_glu_LIBRARY}  ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARIES} )
 
+set(LIBS_SDL SDL2 )
+
 #set_target_properties(${PROJECT_NAME}core     PROPERTIES VERSION ${MYLIB_VERSION_STRING}
 #                                               SOVERSION ${MYLIB_VERSION_MAJOR})
 #set_target_properties(${PROJECT_NAME}engine   PROPERTIES VERSION ${MYLIB_VERSION_STRING}
@@ -80,7 +82,7 @@ INSTALL( DIRECTORY gla DESTINATION include )
 #file(COPY resources/example.xml    DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(main main.cpp)
-target_link_libraries (main ${LIBS_FULL})
+target_link_libraries (main ${LIBS} ${OPENGL_gl_LIBRARY} ${SDL2_LIBRARY})
 
         add_executable(TextureArray
                        examples/TextureArray.cpp)
@@ -97,7 +99,6 @@ target_link_libraries (HelloTriangleVAO ${LIBS_CORE})
         add_executable(HelloTriangleEncapsulatedVAO
                        examples/HelloTriangleEncapsulatedVAO.cpp)
 target_link_libraries (HelloTriangleEncapsulatedVAO ${LIBS_CORE})
-
 
         add_executable(Textures
                        examples/Textures.cpp)

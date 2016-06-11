@@ -138,13 +138,13 @@ int main()
     // We first need to get the block index of the "Uniform140" block in the shader.
     auto BlockIndex = UniformBufferShader.GetUniformBlockIndex("Uniform140");
 
-    std::cout << "Block Index                     : " << BlockIndex << std::endl;
-    std::cout << "Max Buffer Bind Points          : " << GPUUniformBuffer::Get_MAX_UNIFORM_BUFFER_BINDINGS() << std::endl;
-    std::cout << "Max Buffer block size           : " << GPUUniformBuffer::Get_MAX_UNIFORM_BLOCK_SIZE()   << std::endl;
-    std::cout << "Max Combined Uniform block size : " << GPUUniformBuffer::Get_MAX_COMBINED_UNIFORM_BLOCKS()   << std::endl;
+    GLA_DOUT  << "Block Index                     : " << BlockIndex << std::endl;
+    GLA_DOUT  << "Max Buffer Bind Points          : " << GPUUniformBuffer::Get_MAX_UNIFORM_BUFFER_BINDINGS() << std::endl;
+    GLA_DOUT  << "Max Buffer block size           : " << GPUUniformBuffer::Get_MAX_UNIFORM_BLOCK_SIZE()   << std::endl;
+    GLA_DOUT  << "Max Combined Uniform block size : " << GPUUniformBuffer::Get_MAX_COMBINED_UNIFORM_BLOCKS()   << std::endl;
 
-    std::cout << "Uniform Block  Size: " << UniformBufferShader.GetUniformBlockSize("Uniform140") << std::endl;
-    std::cout << "Uniform Struct Size: " << sizeof(UniformBufferStruct140) << std::endl;
+    GLA_DOUT  << "Uniform Block  Size: " << UniformBufferShader.GetUniformBlockSize("Uniform140") << std::endl;
+    GLA_DOUT  << "Uniform Struct Size: " << sizeof(UniformBufferStruct140) << std::endl;
     //--------------------------------------------------------------------
     // Bind the GPUUniformBuffer to the UniformBlock in the shader.
     // The third argument is the BindPoint we want to bind to and has
@@ -164,8 +164,8 @@ int main()
 
         auto t = Timer.getElapsedTime();
 
-        UniformData.Dir_Speed = { cos(t), sin(t), cos(t)*sin(t) };
-        UniformData.colour    = { cos(t)*cos(t), 0,0,1};
+        UniformData.Dir_Speed = vec3{ cos(t), sin(t), cos(t)*sin(t) };
+        UniformData.colour    = vec4{ cos(t)*cos(t), 0,0,1};
 
         MyGPUUniformBuffer.CopyData(UniformData);
 

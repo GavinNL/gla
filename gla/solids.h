@@ -56,7 +56,7 @@ namespace gla
 
                 }
 
-                std::cout << "Returning from Sphere\n";
+                GLA_DOUT  << "Returning from Sphere\n";
                 return Sphere;
             }
 
@@ -181,9 +181,9 @@ namespace gla
                 Axis.InsertVertex( vec3(0.0, 0.0, 1.0) , col4(0.0, 0.0, 1.0, 1.0));
 
 
-                Axis.InsertElement( {0,1});
-                Axis.InsertElement( {2,3});
-                Axis.InsertElement( {4,5});
+                Axis.InsertElement( uvec2{0,1});
+                Axis.InsertElement( uvec2{2,3});
+                Axis.InsertElement( uvec2{4,5});
                 // Colours
                 ///Colours->insert( col4(1.0, 0.0, 0.0, 1.0) );
                 ///Colours->insert( col4(1.0, 0.0, 0.0, 1.0) );

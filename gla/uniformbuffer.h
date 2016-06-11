@@ -19,15 +19,111 @@ struct UniformBufferHandler
 
 struct UniformBufferInfo
 {
-    int               Size;
+    int  Size;
 };
 
+enum class GL_UniformBufferInfo
+{
+    MAX_UNIFORM_BUFFER_BINDINGS = GL_MAX_UNIFORM_BUFFER_BINDINGS,
+    MAX_UNIFORM_BLOCK_SIZE      = GL_MAX_UNIFORM_BLOCK_SIZE,
+    MAX_COMBINED_UNIFORM_BLOCKS = GL_MAX_COMBINED_UNIFORM_BLOCKS
+};
 
-class GPUUniformBuffer_new : gla::Handle<GLuint, UniformBufferHandler, UniformBufferInfo >
+class GPUUniformBuffer_new
 
 {
+    using HandleType = Handle<GLuint, UniformBufferHandler, UniformBufferInfo>;
 
+    HandleType m_Handle;
+
+
+    inline void Bind()     { m_Handle.Bind();    }
+    inline void Unbind()   { m_Handle.Unbind();  }
+    inline void Release()  { m_Handle.Release(); }
+
+
+    void AllocateMemory(std::size_t bytes)
+    {
+        if( m_Handle.GetID() )
+            m_Handle.Release();
+
+        unsigned char temp[bytes];
+
+        m_Handle.Create();
+        m_Handle.Bind();
+
+
+        glBufferData(GL_UNIFORM_BUFFER, bytes, &temp[0], GL_DYNAMIC_COPY);
+
+        Unbind();
+
+        m_Handle.__GetInfo().Size = bytes;
+
+
+        if( m_Handle.GetID() == -1)
+        {
+            throw std::runtime_error("Uniform Buffer not created\n");
+        } else {
+
+        }
+    }
+
+    template<typename T>
+    void AllocateMemory()
+    {
+        AllocateMemory( sizeof(T) );
+    }
+
+    template<typename T>
+    void AllocateMemory(const T & ProperlyAlignedStruct)
+    {
+        AllocateMemory( sizeof(T) );
+        CopyData<T>(ProperlyAlignedStruct);
+    }
+
+    template<class T>
+    void CopyData(const T & ProperlyAlignedStruct)
+    {
+        m_Handle.Bind();
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, m_Handle.GetInfo().Size, &ProperlyAlignedStruct);
+    }
+
+    inline void BindBase(GLuint BindPoint)
+    {
+        Bind();
+        glBindBufferBase(GL_UNIFORM_BUFFER, BindPoint, m_Handle.GetID() );
+    }
+
+    static GLuint GL_Info( GL_UniformBufferInfo I)
+    {
+        switch(I)
+        {
+            case GL_UniformBufferInfo::MAX_UNIFORM_BUFFER_BINDINGS:
+            {
+                static GLint x = 0;
+                if( x ) return x;
+                glGetIntegerv (GL_MAX_UNIFORM_BUFFER_BINDINGS, &x);
+                return x;
+            }
+
+            case GL_UniformBufferInfo::MAX_UNIFORM_BLOCK_SIZE:
+            {
+                static GLint x = 0;
+                if( x ) return x;
+                glGetIntegerv (GL_MAX_UNIFORM_BLOCK_SIZE, &x);
+                return x;
+            }
+            case GL_UniformBufferInfo::MAX_COMBINED_UNIFORM_BLOCKS:
+            {
+                static GLint x = 0;
+                if( x ) return x;
+                glGetIntegerv (GL_MAX_COMBINED_UNIFORM_BLOCKS, &x);
+                return x;
+            }
+        }
+    }
 };
+
 
 
 class GPUUniformBuffer
@@ -59,9 +155,9 @@ public:
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
         size = bytes;
-        std::cout << "Uniform Bufer created" << std::endl;
-        std::cout << "  size: " << size << std::endl;
-        std::cout << "   ubo: " << mUBO << std::endl;
+        GLA_DOUT  << "Uniform Bufer created" << std::endl;
+        GLA_DOUT  << "  size: " << size << std::endl;
+        GLA_DOUT  << "   ubo: " << mUBO << std::endl;
         if( mUBO == -1)
         {
             throw std::runtime_error("Uniform Buffer not created\n");
@@ -69,9 +165,8 @@ public:
 
         }
 
-
-
     }
+
 
     template<class T>
     void CopyData(const T & ProperlyAlignedStruct)
@@ -110,6 +205,7 @@ public:
     inline void BindBase(GLuint BindPoint)
     {
         bind();
+
         glBindBufferBase(GL_UNIFORM_BUFFER, BindPoint, mUBO);
     }
 

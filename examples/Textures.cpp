@@ -132,7 +132,7 @@ int main()
     // Since we had flagged the array buffers for deletion ,they will now be
     // cleared as well since they are no longer bound to any VAOs
     VAO.Release();
-    std::cout << "Released:" << std::endl;
+    GLA_DOUT  << "Released:" << std::endl;
 
     glfwDestroyWindow(gMainWindow);
     glfwTerminate();

@@ -151,6 +151,15 @@ namespace gla
                     m_Handle.Unbind();
             }
 
+            inline virtual void Render(PRIMITAVE PrimitaveType, const gla::uvec2 & IndexRange)
+            {
+                    //GLA_DOUT  << "Render: " << _size << " : " << _VAO << std::endl;
+                    m_Handle.Bind();
+                        _indexed ? glDrawElementsBaseVertex(PrimitaveType, _size, GL_UNSIGNED_INT, 0,0) :
+                                   glDrawArrays(PrimitaveType, IndexRange.x, IndexRange.y-IndexRange.x);
+                    m_Handle.Unbind();
+            }
+
 
 #ifdef TEST
             /**
@@ -160,7 +169,7 @@ namespace gla
              */
             inline virtual void Render(PRIMITAVE PrimitaveType)
             {
-                  //  std::cout << "Render: " << _size << " : " << _isIndexed << std::endl;
+                  //  GLA_DOUT  << "Render: " << _size << " : " << _isIndexed << std::endl;
                     glBindVertexArray( _VAO );
                         _isIndexed ? glDrawElementsBaseVertex(PrimitaveType, _size, GL_UNSIGNED_INT, 0,0) : glDrawArrays(PrimitaveType, 0, _size);
                     glBindVertexArray(0);
@@ -173,7 +182,7 @@ namespace gla
              */
             inline virtual void Render(PRIMITAVE PrimitaveType, const gla::uvec2 & IndexRange)
             {
-                    //std::cout << "Render: " << _size << " : " << _VAO << std::endl;
+                    //GLA_DOUT  << "Render: " << _size << " : " << _VAO << std::endl;
                     glBindVertexArray( _VAO );
                         _isIndexed ? glDrawElementsBaseVertex(PrimitaveType, _size, GL_UNSIGNED_INT, 0,0) : glDrawArrays(PrimitaveType, IndexRange.x, IndexRange.y-IndexRange.x);
                     glBindVertexArray(0);
@@ -186,7 +195,7 @@ namespace gla
              */
             inline virtual void Render()
             {
-               // std::cout << "REndering: " << _PrimitaveType << std::endl;
+               // GLA_DOUT  << "REndering: " << _PrimitaveType << std::endl;
                     Render( _PrimitaveType );
             }
 
@@ -294,9 +303,9 @@ namespace gla
             //}
 
 
-            VertexType & operator[](int i)
+            VertexType & operator[](size_t i)
             {
-                return mVertexBuffer[i];
+                return mVertexBuffer.Data[i];
             }
 
             GPUArrayObject ToGPU()
@@ -330,7 +339,7 @@ namespace gla
 
                 return GPU;
 //                //auto id = GPU._VAO;
-//                //GPU.mInfo = std::shared_ptr<GPUArrayObjectInfo>( new GPUArrayObjectInfo, [=](GPUArrayObjectInfo* a){ auto vao = id; delete a; glDeleteVertexArrays(1, &vao); std::cout << "Deleting VertexArrayObject: " << id << std::endl; } );
+//                //GPU.mInfo = std::shared_ptr<GPUArrayObjectInfo>( new GPUArrayObjectInfo, [=](GPUArrayObjectInfo* a){ auto vao = id; delete a; glDeleteVertexArrays(1, &vao); GLA_DOUT  << "Deleting VertexArrayObject: " << id << std::endl; } );
 //
 //                auto & In =
 //                GPU.mInfo->Buffers = std::make_shared< std::vector<GPUArrayBuffer> > ();
@@ -368,20 +377,20 @@ namespace gla
 //                glBindVertexArray(0);
 //
 //
-//                //std::cout << "============VOA Created============" << std::endl;
-//                //std::cout << "  ID       : " << GPU._VAO       << std::endl;
-//                //std::cout << "  size     : " << GPU._size      << std::endl;
-//                //std::cout << "  isindexed: " << GPU._isIndexed << std::endl;
-//                //std::cout << "  SizePerV: "  << GPU._size      << std::endl;
+//                //GLA_DOUT  << "============VOA Created============" << std::endl;
+//                //GLA_DOUT  << "  ID       : " << GPU._VAO       << std::endl;
+//                //GLA_DOUT  << "  size     : " << GPU._size      << std::endl;
+//                //GLA_DOUT  << "  isindexed: " << GPU._isIndexed << std::endl;
+//                //GLA_DOUT  << "  SizePerV: "  << GPU._size      << std::endl;
 //                //switch(GPU._PrimitaveType )
 //                //{
-//                //    case UNKNOWN_PRIMITAVE: std::cout << "elementtype: UNKNOWN"   << std::endl; break;
-//                //    case LINES: std::cout             << "elementtype: LINES"   << std::endl; break;
-//                //    case TRIANGLES: std::cout         << "elementtype: TRIANGLES" << std::endl; break;
-//                //    case QUADS: std::cout             << "elementtype: QUADS"     << std::endl; break;
+//                //    case UNKNOWN_PRIMITAVE: GLA_DOUT  << "elementtype: UNKNOWN"   << std::endl; break;
+//                //    case LINES: GLA_DOUT              << "elementtype: LINES"   << std::endl; break;
+//                //    case TRIANGLES: GLA_DOUT          << "elementtype: TRIANGLES" << std::endl; break;
+//                //    case QUADS: GLA_DOUT              << "elementtype: QUADS"     << std::endl; break;
 //                //}
 //
-//                //std::cout << "===================================" << std::endl;
+//                //GLA_DOUT  << "===================================" << std::endl;
 //
 //
 //                /* NOTE
@@ -400,7 +409,10 @@ namespace gla
             //};
 
 
-
+            size_t Size()
+            {
+                return mVertexBuffer.Data.size();
+            }
 
         public:
             //uint                           IndicesPerElement;
@@ -412,7 +424,8 @@ namespace gla
 
     };
 
-
+    template <typename... attrb>
+    using VertexArrayObject = InterleavedVAO<attrb...>;
 #if 0
     //====================================================================
     //  New VAO
@@ -455,7 +468,7 @@ namespace gla
                 if( !GPU._VAO  )  throw gla::GLA_EXCEPTION( "ARRAY OBJECT NOT CREATED" );
 
                 auto id = GPU._VAO;
-                GPU.mInfo = std::shared_ptr<GPUArrayObjectInfo>( new GPUArrayObjectInfo, [=](GPUArrayObjectInfo* a){ auto vao = id; delete a; glDeleteVertexArrays(1, &vao); std::cout << "Deleting VertexArrayObject: " << id << std::endl; } );
+                GPU.mInfo = std::shared_ptr<GPUArrayObjectInfo>( new GPUArrayObjectInfo, [=](GPUArrayObjectInfo* a){ auto vao = id; delete a; glDeleteVertexArrays(1, &vao); GLA_DOUT  << "Deleting VertexArrayObject: " << id << std::endl; } );
 
                 GPU.mInfo->Buffers = std::make_shared< std::vector<GPUArrayBuffer> > ();
 
@@ -493,19 +506,19 @@ namespace gla
                 glBindVertexArray(0);
 
 
-                std::cout << "============VOA Created============" << std::endl;
-                std::cout << "  ID       : " << GPU._VAO       << std::endl;
-                std::cout << "  size     : " << GPU._size      << std::endl;
-                std::cout << "  isindexed: " << GPU._isIndexed << std::endl;
+                GLA_DOUT  << "============VOA Created============" << std::endl;
+                GLA_DOUT  << "  ID       : " << GPU._VAO       << std::endl;
+                GLA_DOUT  << "  size     : " << GPU._size      << std::endl;
+                GLA_DOUT  << "  isindexed: " << GPU._isIndexed << std::endl;
                 switch(GPU._PrimitaveType )
                 {
-                    case UNKNOWN_PRIMITAVE: std::cout << "elementtype: UNKNOWN"   << std::endl; break;
-                    case LINES: std::cout             << "elementtype: UNKNOWN"   << std::endl; break;
-                    case TRIANGLES: std::cout         << "elementtype: TRIANGLES" << std::endl; break;
-                    case QUADS: std::cout             << "elementtype: QUADS"     << std::endl; break;
+                    case UNKNOWN_PRIMITAVE: GLA_DOUT  << "elementtype: UNKNOWN"   << std::endl; break;
+                    case LINES: GLA_DOUT              << "elementtype: UNKNOWN"   << std::endl; break;
+                    case TRIANGLES: GLA_DOUT          << "elementtype: TRIANGLES" << std::endl; break;
+                    case QUADS: GLA_DOUT              << "elementtype: QUADS"     << std::endl; break;
                 }
 
-                //std::cout << "===================================" << std::endl;
+                //GLA_DOUT  << "===================================" << std::endl;
 
 
                 /* NOTE
@@ -689,7 +702,7 @@ namespace gla
                         me->insert( T );
                     }
 
-                    std::cout << "Buffers joined: new size: " << me->getVertexCount() << std::endl;
+                    GLA_DOUT  << "Buffers joined: new size: " << me->getVertexCount() << std::endl;
                 }
             }
 

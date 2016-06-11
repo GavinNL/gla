@@ -234,8 +234,8 @@ void AddRow(glm::mat4 & T, glm::vec4 x)
 {
     auto y = x;
 
-    ApplyGivens(T[0], y, 0); // std::cout << y << std::endl;
-    ApplyGivens(T[1], y, 1); // std::cout << y << std::endl;
+    ApplyGivens(T[0], y, 0); // GLA_DOUT  << y << std::endl;
+    ApplyGivens(T[1], y, 1); // GLA_DOUT  << y << std::endl;
     ApplyGivens(T[2], y, 2);
     ApplyGivens(T[3], y, 3);
 }
@@ -541,12 +541,12 @@ int main()
     {
         vec4 x(0,0,0,0);
         vec4 y(2,1,5,-4);
-        std::cout << "Testing Givens Rotation on two vectors:" << x << " ,  " << y << std::endl;
+        GLA_DOUT  << "Testing Givens Rotation on two vectors:" << x << " ,  " << y << std::endl;
         ApplyGivens(x,y,0);
-        std::cout << x << std::endl;
-        std::cout << y << std::endl;
+        GLA_DOUT  << x << std::endl;
+        GLA_DOUT  << y << std::endl;
 
-        std::cout << "--------------------------" << std::endl;
+        GLA_DOUT  << "--------------------------" << std::endl;
     }
 
     if(1)
@@ -556,44 +556,44 @@ int main()
         vec4 x(2,1,5,-4);
         vec4 y(-1,4,-3,-4);
         vec4 z(3,-4,3,-2);
-        std::cout << "Testing Adding a vector to a matrix" << x << " ,  " << y << std::endl;
+        GLA_DOUT  << "Testing Adding a vector to a matrix" << x << " ,  " << y << std::endl;
         AddRow(T,w);
-        std::cout << T << std::endl;
+        GLA_DOUT  << T << std::endl;
         AddRow(T,x);
-        std::cout << T << std::endl;
+        GLA_DOUT  << T << std::endl;
         AddRow(T,y);
-        std::cout << T << std::endl;
+        GLA_DOUT  << T << std::endl;
         AddRow(T,z);
-        std::cout << T << std::endl;
+        GLA_DOUT  << T << std::endl;
     }
 
     if(1)
     {
-        std::cout << "Testing SVD of a 3x3 matrix" << std::endl;
+        GLA_DOUT  << "Testing SVD of a 3x3 matrix" << std::endl;
         glm::mat3 M;
         M[0] = vec3(1,1,3);
         M[1] = vec3(2,1,5);
         M[2] = vec3(-1,4,-3);
 
-        std::cout << M << std::endl;
-        std::cout << "--------------------------" << std::endl;
+        GLA_DOUT  << M << std::endl;
+        GLA_DOUT  << "--------------------------" << std::endl;
         vec3 Z;
         glm::mat3 V(0.0f);
         SVD(M,Z,V);
-        std::cout << "U = " << std::endl;
-        std::cout << M*glm::transpose(M) << std::endl;
-        std::cout << "Z = " << Z << std::endl;
-        std::cout << "V = "<< std::endl;
-        std::cout << V*glm::transpose(V) << std::endl;
+        GLA_DOUT  << "U = " << std::endl;
+        GLA_DOUT  << M*glm::transpose(M) << std::endl;
+        GLA_DOUT  << "Z = " << Z << std::endl;
+        GLA_DOUT  << "V = "<< std::endl;
+        GLA_DOUT  << V*glm::transpose(V) << std::endl;
     }
 
 
-    //std::cout << T << std::endl;
-    //std::cout << "----------------" << std::endl;
+    //GLA_DOUT  << T << std::endl;
+    //GLA_DOUT  << "----------------" << std::endl;
     //AddRow(T,y);
-    //std::cout << T << std::endl;
-    //std::cout << x << std::endl;
-    //std::cout << y << std::endl;
+    //GLA_DOUT  << T << std::endl;
+    //GLA_DOUT  << x << std::endl;
+    //GLA_DOUT  << y << std::endl;
 
 
 

@@ -152,7 +152,7 @@ class FrameBufferObject
                 case FBOColourFormat::RED    : T = TexFormat::RED ;  typ = DataType::UNSIGNED_BYTE;break;
                 default:
             {
-                std::cout << "FBO ERROR!!!!" << std::endl;
+                GLA_DOUT  << "FBO ERROR!!!!" << std::endl;
                 return;
             }
             }
@@ -191,7 +191,7 @@ class FrameBufferObject
 
         void Create()
         {
-            std::cout << "Creating FrameBuffer" << std::endl;
+            GLA_DOUT  << "Creating FrameBuffer" << std::endl;
             m_Handle.Release();
             m_Handle.Create();
             m_Handle.Unbind();
@@ -214,7 +214,7 @@ class FrameBufferObject
                 if( (GLuint)a.first != (GLuint)FBOAttachment::DEPTH)
                     attachments.push_back( (GLuint)a.first );
 
-//                std::cout << attachments[i] << " ::: " << a.second.m_Handle.GetID()  << std::endl;
+//                GLA_DOUT  << attachments[i] << " ::: " << a.second.m_Handle.GetID()  << std::endl;
 
                 glFramebufferTexture2D(GL_FRAMEBUFFER, (GLuint)a.first, GL_TEXTURE_2D, a.second.m_Handle.GetID(), 0);
             }

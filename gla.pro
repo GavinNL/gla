@@ -22,8 +22,10 @@ HEADERS +=  gla/gla.h                          \
             gla/solids.h \
             gla/utils/app.h \
             gla/utils/cameracontrol.h \
-    gla/renderbufferobject.h \
-    gla/handle.h
+            gla/renderbufferobject.h \
+            gla/stb_image_write_headeronly.h \
+            gla/handle.h \
+            gla/utils/sdlapp.h
 
 
 SOURCES +=  main.cpp                                     \

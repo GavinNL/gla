@@ -37,7 +37,7 @@ mat4 X;
 
 int main()
 {
-    //std::cout << &X << "   " << &X[0][0] << "   " << &X[0] << std::endl;
+    //GLA_DOUT  << &X << "   " << &X[0][0] << "   " << &X[0] << std::endl;
     //return 0;
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -119,8 +119,10 @@ int main()
 
     Timer_T<float> Timer;
 
+    std::cout << "Starting main loop" << std::endl;
 
-
+    auto uTextureArrayID = TextureArrayShader.GetUniformLocation("uTextureArray");
+    auto uSpeedID        = TextureArrayShader.GetUniformLocation("uSpeed");
     while (!glfwWindowShouldClose(gMainWindow) )
     {
 
@@ -140,8 +142,8 @@ int main()
         //  the next time we call sendUniform(0, "uSampler", X), it will use the cached value.
         //TextureArrayShader.sendUniform(0, "uTextureArray", 0);
         //TextureArrayShader.sendUniform(1, "uSpeed", Speed);
-        TextureArrayShader.UniformData( ShaderProgram::Hash("uTextureArray"), 0);
-        TextureArrayShader.UniformData( ShaderProgram::Hash("uSpeed"),        Speed);
+        TextureArrayShader.Uniform( uTextureArrayID, 0);
+        TextureArrayShader.Uniform( uSpeedID ,        Speed);
 
         VAO.Render();
 

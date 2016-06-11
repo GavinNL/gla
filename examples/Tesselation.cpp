@@ -52,7 +52,7 @@ int main()
     // compiling the shaders straight from a string. If we were compiling from a file
     // we'd just do:  VertexShader vs(Path_to_file);
     ShaderProgram TriangleShader;
-    std::cout << "attaching shaders: " << std::endl;
+    GLA_DOUT  << "attaching shaders: " << std::endl;
 
     TriangleShader.AttachShaders(
                 VertexShader("shaders/Tess.v"),
@@ -66,7 +66,7 @@ int main()
     auto vao = VAO;
     VAO.Release();
     //==========================================================
-    std::cout << "Starting" << std::endl;
+    GLA_DOUT  << "Starting" << std::endl;
 
     gla::Transformation T;
     //T.rotate( vec3(0.0,0.0,1.0), 12.3f);
@@ -78,7 +78,7 @@ int main()
     {
 
         //auto VAO2 = VAO;
-        //std::cout << VAO2._size << std::endl;
+        //GLA_DOUT  << VAO2._size << std::endl;
         // Set the triangle shader to be the one that we will use
         TriangleShader.Bind();
 

@@ -22,10 +22,10 @@ namespace gla {
 
 struct TexArrayInfo
 {
-    unsigned int UseCount = 0;
-    uvec3        Size = {0,0,0};
-    unsigned int Channels = 0;
-    unsigned int MipMaps  = 0;
+    unsigned int UseCount   = 0;
+    uvec3        Size       = {0,0,0};
+    unsigned int Channels   = 0;
+    unsigned int MipMaps    = 0;
     TexFilter    MinFilter;
     TexFilter    MagFilter;
     TexWrap      S_Wrap;
@@ -275,13 +275,13 @@ inline void GPUTextureArray::Create(uvec2 size, unsigned int depth, unsigned int
     //mComponents = components;
 
     //auto id = mID;
-    //mInfo = std::shared_ptr<GPUTextureArrayInfo>( new GPUTextureArrayInfo, [=](GPUTextureArrayInfo* a){ delete a; glDeleteTextures(1, &id); std::cout << "Deleting Texture Array: " << id << std::endl; } );
+    //mInfo = std::shared_ptr<GPUTextureArrayInfo>( new GPUTextureArrayInfo, [=](GPUTextureArrayInfo* a){ delete a; glDeleteTextures(1, &id); GLA_DOUT  << "Deleting Texture Array: " << id << std::endl; } );
 
 };
 
 
 
 
-};
+}
 
 #endif // GPUTEXTUREARRAY_H

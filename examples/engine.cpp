@@ -260,7 +260,7 @@ public:
      */
     void transformChild(SceneGraph::NodeID id, const Transformation& parentTransform)
     {
-        std::cout << "Transforming child: " << id << std::endl;
+        GLA_DOUT  << "Transforming child: " << id << std::endl;
         Get(id).world = parentTransform * Get(id).local;
 
         SceneGraph::NodeID child = GetFirstChild(id);
@@ -278,9 +278,9 @@ public:
      */
     void updateLocal(SceneGraph::NodeID id)
     {
-        std::cout << "Updating local : " << id << std::endl;
+        GLA_DOUT  << "Updating local : " << id << std::endl;
         SceneGraph::NodeID parentId = GetParent(id);
-        std::cout << "   parent : " << parentId << std::endl;
+        GLA_DOUT  << "   parent : " << parentId << std::endl;
         Transformation parentTransform;
 
         if (IsValid(parentId))
@@ -313,10 +313,10 @@ int main()
 {
 //    auto q = quat(0,0,0,1);
 //    auto n = quat();
-//    std::cout << q.x << q.y << q.z << q.w << std::endl;
-//    std::cout << n.x << n.y << n.z << n.w << std::endl;
+//    GLA_DOUT  << q.x << q.y << q.z << q.w << std::endl;
+//    GLA_DOUT  << n.x << n.y << n.z << n.w << std::endl;
 //    vec3 p = vec3(1,2,3) + quat(0,0,0,1) * (vec3(1,1,1) * vec3(1,1,1));
-//    std::cout << p << std::endl;
+//    GLA_DOUT  << p << std::endl;
 //
 //    return 0;
     SceneGraph sg;
@@ -325,10 +325,10 @@ int main()
     auto R = sg.Create();
     auto c = sg.Create(R); sg.Get(c).local = Transformation({1,1,1});
     sg.updateLocal(R);
-    std::cout << "Updating local:" << std::endl;
-    std::cout << sg.Get(c).world.mPosition << std::endl;
+    GLA_DOUT  << "Updating local:" << std::endl;
+    GLA_DOUT  << sg.Get(c).world.mPosition << std::endl;
     sg.transformChild( R, Transformation({1,2,3}));
-    std::cout << sg.Get(c).world.mPosition;
+    GLA_DOUT  << sg.Get(c).world.mPosition;
     return 0;
     TransformSequenceApp MyApp;
 

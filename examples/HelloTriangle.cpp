@@ -30,6 +30,7 @@ struct  Test
 {
     GPUArrayBuffer<ArrayType::ARRAY_BUFFER> A;
 };
+
 int main()
 {
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
@@ -74,7 +75,7 @@ int main()
     gla::EnableVertexAttribute<vec3, vec4>(G);
     //==========================================================
 
- ;
+
 
     while (!glfwWindowShouldClose(gMainWindow) )
     {
@@ -90,18 +91,6 @@ int main()
         glfwPollEvents();
     }
 
-
-
-
-//    {
-//        auto x = gpuPos;
-//        auto y = gpuCol;
-//
-//        // Clearing the two buffers will not do anything because x and y
-//        // still exist. Once x and y go out of scope, then only the memory will be freed
-//        gpuPos.clear();
-//        gpuCol.clear();
-//    }
 
     glfwDestroyWindow(gMainWindow);
     glfwTerminate();
