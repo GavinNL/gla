@@ -35,32 +35,32 @@ class Transformation
         }
 
         // positional transformations
-        inline virtual void translate(const vec3 & T)  { mPosition += T; }
-        inline virtual void setPosition(const vec3 & P){ mPosition  = P; }
+        inline virtual void Translate(const vec3 & T)  { mPosition += T; }
+        inline virtual void SetPosition(const vec3 & P){ mPosition  = P; }
 
         // scaling transformations
-        inline virtual void setScale(const vec3 & scale){mScale = scale;}
+        inline virtual void SetScale(const vec3 & scale){mScale = scale;}
 
         // rotational transformation
-        inline virtual void setOrientation(const quat & q) { mOrientation = q; }
-        inline virtual void rotate(const vec3 & axis, float AngleRadians) { mOrientation = glm::rotate( mOrientation, AngleRadians, axis ); }
+        inline virtual void SetOrientation(const quat & q) { mOrientation = q; }
+        inline virtual void Rotate(const vec3 & axis, float AngleRadians) { mOrientation = glm::rotate( mOrientation, AngleRadians, axis ); }
 
 
-        inline void setEuler( const vec3 & PitchYawRoll )
+        inline void SetEuler( const vec3 & PitchYawRoll )
         {
             mOrientation = quat(PitchYawRoll);
         }
 
-        inline gla::mat4 getMatrix() const
+        inline gla::mat4 GetMatrix() const
         {
             return glm::translate(mat4(1.0f), mPosition) * glm::mat4_cast(mOrientation) * glm::scale( mat4(1.0), mScale);
         }
 
-        const gla::quat   & getOrientation(){ return mOrientation; }
-        const gla::vec3   & getPosition   (){ return mPosition   ; }
-        const gla::vec3   & getScale      (){ return mScale; }
+        const gla::quat   & GetOrientation() const { return mOrientation; }
+        const gla::vec3   & GetPosition   () const { return mPosition   ; }
+        const gla::vec3   & GetScale      () const { return mScale; }
 
-        quat reverse() const {  return quat(mOrientation.w, -mOrientation.x, -mOrientation.y, -mOrientation.z); }
+        quat Reverse() const {  return quat(mOrientation.w, -mOrientation.x, -mOrientation.y, -mOrientation.z); }
 
 
         /**
@@ -72,7 +72,7 @@ class Transformation
          *
          * Interpolates between two transformations.
          */
-        static void interpolate( Transformation & out, Transformation & in1, Transformation & in2, float t)
+        static void Interpolate( Transformation & out, Transformation & in1, Transformation & in2, float t)
         {
             out.mPosition    = (1.0f-t)*in1.mPosition + t*in2.mPosition;
             out.mScale       = (1.0f-t)*in1.mScale    + t*in2.mScale;
@@ -90,23 +90,7 @@ class Transformation
 
 };
 
-//Transform operator*(const Transform& ps, const Transform& ls)
-//{
-//	Transform ws;
 
-//	ws.position    = ps.position + ps.orientation * (ps.scale * ls.position);
-//	ws.orientation = ps.orientation * ls.orientation;
-//	ws.scale       = ps.scale * (ps.orientation * ls.scale);
-
-//	return ws;
-//}
-
-//Transform& operator*=(Transform& ps, const Transform& ls)
-//{
-//	ps = ps * ls;
-
-//	return ps;
-//}
 
 inline Transformation operator * (const Transformation & ps, const Transformation & ls)
 {
@@ -143,6 +127,7 @@ inline Transformation operator/(const Transformation& ws, const Transformation& 
     return ls;
 }
 
-};
+
+}
 
 #endif // TRANSFORMATION_H

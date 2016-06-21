@@ -120,8 +120,8 @@ target_link_libraries (FrameBufferObject ${LIBS_FULL})
               examples/Tesselation.cpp)
 target_link_libraries (Tesselation ${LIBS_FULL})
 
-add_executable(test test.cpp)
-target_link_libraries (test ${LIBS_FULL})
+#add_executable(test test.cpp)
+#target_link_libraries (test ${LIBS_FULL})
 
 #add_executable(nogui test.cpp)
 #target_link_libraries (nogui ${LIBS_TEST})

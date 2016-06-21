@@ -34,6 +34,8 @@ class GPUUniformBuffer_new
 {
     using HandleType = Handle<GLuint, UniformBufferHandler, UniformBufferInfo>;
 
+
+    public:
     HandleType m_Handle;
 
 
@@ -64,7 +66,7 @@ class GPUUniformBuffer_new
         {
             throw std::runtime_error("Uniform Buffer not created\n");
         } else {
-
+            std::cout << "Uniform Buffer Created. Size: " << bytes << std::endl;
         }
     }
 
@@ -84,11 +86,11 @@ class GPUUniformBuffer_new
     template<class T>
     void CopyData(const T & ProperlyAlignedStruct)
     {
-        m_Handle.Bind();
+        Bind();
         glBufferSubData(GL_UNIFORM_BUFFER, 0, m_Handle.GetInfo().Size, &ProperlyAlignedStruct);
     }
 
-    inline void BindBase(GLuint BindPoint)
+    inline void SetBindPoint(GLuint BindPoint)
     {
         Bind();
         glBindBufferBase(GL_UNIFORM_BUFFER, BindPoint, m_Handle.GetID() );

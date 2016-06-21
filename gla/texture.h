@@ -638,7 +638,6 @@ namespace gla {
              */
             void loadFromPath( const std::string & path, unsigned int ForceNumberChannels=0)
             {
-
                 int x, y, comp;
 
                 //==========================================================

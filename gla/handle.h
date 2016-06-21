@@ -47,13 +47,13 @@ public:
         Handler::Create(id);
 
         m_ID = id;
-        GLA_DOUT  << "********CREATED***************" << std::endl;
-        GLA_DOUT  <<  m_ID << std::endl;
+        //GLA_DOUT  << "********CREATED***************" << std::endl;
+        //GLA_DOUT  <<  m_ID << std::endl;
         m_Shared = std::shared_ptr<HandleInfo>(  new HandleInfo(),
                                                  [ = ] ( HandleInfo * info)
         {
             delete info;
-            std::cout  << "Deleting: " << id << std::endl;
+            //std::cout  << "Deleting: " << id << std::endl;
             Type i = id;
             Handler::Release(i);
             i = 0;

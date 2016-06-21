@@ -132,11 +132,15 @@ int main()
 
     // Here we create a uniform buffer on the gpu, we pass the size of the struct
     // into the input parameter.
-    GPUUniformBuffer MyGPUUniformBuffer(sizeof(UniformBufferStruct140));
+  //  GPUUniformBuffer MyGPUUniformBuffer(sizeof(UniformBufferStruct140));
+
+    GPUUniformBuffer_new uniform_buffer;
+    uniform_buffer.AllocateMemory(UniformData);
 
 
     // We first need to get the block index of the "Uniform140" block in the shader.
     auto BlockIndex = UniformBufferShader.GetUniformBlockIndex("Uniform140");
+
 
     GLA_DOUT  << "Block Index                     : " << BlockIndex << std::endl;
     GLA_DOUT  << "Max Buffer Bind Points          : " << GPUUniformBuffer::Get_MAX_UNIFORM_BUFFER_BINDINGS() << std::endl;
@@ -151,12 +155,14 @@ int main()
     // to be between 0 and GPUUniformBuffer::GetGet_MAX_UNIFORM_BUFFER_BINDINGS()
     // We are going to bind it to 1.
     //--------------------------------------------------------------------
-    UniformBufferShader.BindUniformBuffer(MyGPUUniformBuffer, BlockIndex, 1);
+   // UniformBufferShader.BindUniformBuffer(MyGPUUniformBuffer, BlockIndex, 1);
+
+    uniform_buffer.SetBindPoint(1);
+    UniformBufferShader.BindUniformBlock(BlockIndex, 1);
     //--------------------------------------------------------------------
 
     while (!glfwWindowShouldClose(gMainWindow) )
     {
-
 
         // Set the GPU as the current texture 0;
         int TextureIndex = 0;
@@ -167,7 +173,8 @@ int main()
         UniformData.Dir_Speed = vec3{ cos(t), sin(t), cos(t)*sin(t) };
         UniformData.colour    = vec4{ cos(t)*cos(t), 0,0,1};
 
-        MyGPUUniformBuffer.CopyData(UniformData);
+        //MyGPUUniformBuffer.CopyData(UniformData);
+        uniform_buffer.CopyData(UniformData);
 
         // Here we send Uniform data to the shader
         //  The first argument is an user defined index. Depending on the number of uniforms you have, you should always
@@ -178,7 +185,7 @@ int main()
         //  sendUniform will only query the shader the first time and then store the shader uniform location in an array at index 0 (the first parameter)
         //  the next time we call sendUniform(0, "uSampler", X), it will use the cached value.
         //UniformBufferShader.sendUniform(0, "uTextureArray", TextureIndex);
-        UniformBufferShader.UniformData("uTextureArray"_h, TextureIndex);
+        UniformBufferShader.Uniform( UniformBufferShader.GetUniformLocation("uTextureArray"), TextureIndex);
 
         VAO.Render();
 

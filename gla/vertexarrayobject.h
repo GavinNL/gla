@@ -161,69 +161,7 @@ namespace gla
             }
 
 
-#ifdef TEST
-            /**
-             * Renders the ArrayObject as a partuclar type (triangle, quads ,etc)
-             *
-             * @param PrimitaveType The type of primitave to render as.
-             */
-            inline virtual void Render(PRIMITAVE PrimitaveType)
-            {
-                  //  GLA_DOUT  << "Render: " << _size << " : " << _isIndexed << std::endl;
-                    glBindVertexArray( _VAO );
-                        _isIndexed ? glDrawElementsBaseVertex(PrimitaveType, _size, GL_UNSIGNED_INT, 0,0) : glDrawArrays(PrimitaveType, 0, _size);
-                    glBindVertexArray(0);
-            }
 
-            /**
-             * @brief Render
-             * @param PrimitaveType
-             * @param IndexRange an vec2 of unsigned int that indicate the range of indices to draw, start and end indices
-             */
-            inline virtual void Render(PRIMITAVE PrimitaveType, const gla::uvec2 & IndexRange)
-            {
-                    //GLA_DOUT  << "Render: " << _size << " : " << _VAO << std::endl;
-                    glBindVertexArray( _VAO );
-                        _isIndexed ? glDrawElementsBaseVertex(PrimitaveType, _size, GL_UNSIGNED_INT, 0,0) : glDrawArrays(PrimitaveType, IndexRange.x, IndexRange.y-IndexRange.x);
-                    glBindVertexArray(0);
-            }
-
-            /**
-             * Renders the ArrayObject as the default primitave type as defined when
-             * it was created on the CPU
-             *
-             */
-            inline virtual void Render()
-            {
-               // GLA_DOUT  << "REndering: " << _PrimitaveType << std::endl;
-                    Render( _PrimitaveType );
-            }
-
-            /**
-             * Renders the ArrayObject but does not bind or unbind it. Make sure you know what you're doing
-             * if you plan on using this.
-             *
-             */
-            inline virtual void RenderNoBind()
-            {
-                    _isIndexed ? glDrawElementsBaseVertex(_PrimitaveType, _size, GL_UNSIGNED_INT, 0,0) : glDrawArrays(_PrimitaveType, 0, _size);
-            }
-
-            /**
-             * Clears the VertexArrayObject from the GPU. If there are any buffers associated with it they will be
-             * cleared if they are not used by another VAO.
-             *
-             */
-
-            GLuint    _VAO           = 0;
-            PRIMITAVE _PrimitaveType = UNKNOWN_PRIMITAVE;
-            int       _size          = 0;                    // Either the number of indices if the GPUArrayObject is indexed
-                                                // Or the number of vertices if the GPUArrayObject is not indexed.
-            bool      _isIndexed     = false;
-
-            std::vector<BUFFER_ELEMENT_TYPE>    _attachedBuffers;
-            std::shared_ptr<GPUArrayObjectInfo> mInfo;
-#endif
     };
 
 

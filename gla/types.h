@@ -17,8 +17,7 @@
 #include <iostream>
 #include <tuple>
 
-#define GLA_DOUT if(1) std::cout
-
+#define GLA_DOUT if(0) std::cout
 #define IS_SAME(First, Second) std::is_same<First, Second>::value
 
 static inline std::ostream& operator <<(std::ostream & out, const glm::vec2 & v)
@@ -60,31 +59,7 @@ static inline std::ostream& operator <<(std::ostream & out, const glm::mat3 & v)
 
 namespace gla {
 
-/*
 
-template<std::size_t> struct int_{};
-
-template <class Tuple, size_t Pos>
-std::ostream& print_tuple(std::ostream& out, const Tuple& t, int_<Pos> )
-{
-  out << std::get< std::tuple_size<Tuple>::value-Pos >(t) << ',';
-  return print_tuple(out, t, int_<Pos-1>());
-}
-
-template <class Tuple>
-std::ostream& print_tuple(std::ostream& out, const Tuple& t, int_<1> )
-{
-  return out << std::get<std::tuple_size<Tuple>::value-1>(t);
-}
-
-template <class... Args>
-ostream& operator<<(ostream& out, const std::tuple<Args...>& t)
-{
-  out << '(';
-  print_tuple(out, t, int_<sizeof...(Args)>());
-  return out << ')';
-}
-*/
 
 class GPUTexture;
 class FrameBufferObject;
@@ -395,10 +370,7 @@ typedef glm::vec3     col3;
 typedef glm::vec2     col2;
 
 
-
-
-
-};
+}
 
 
 

@@ -141,8 +141,6 @@ class ShaderProgram
 {
 public:
     using HandleType = gla::Handle<GLuint, ShaderProgramHandler, ShaderProgramInfo >;
-    using HashKey = size_t;
-
 
     HandleType m_Handle;
 
@@ -153,10 +151,21 @@ public:
     void Unbind()   { m_Handle.Unbind();  }
     void Release()  { m_Handle.Release(); }
 
+        inline static GLuint Invalid_Block_Index()
+        {
+            return GL_INVALID_INDEX;
+        }
 
         inline GLint GetUniformLocation(const GLchar *name)
         {            
             auto x = glGetUniformLocation(m_Handle.GetID(), name);
+            //GLA_DOUT  << "Uniform locatiom("<<mProgram<<"):,  " << name << ": " <<  x << std::endl;
+            return x;
+        }
+
+        inline GLint GetUniformLocation(const std::string & name)
+        {
+            auto x = glGetUniformLocation(m_Handle.GetID(), name.c_str());
             //GLA_DOUT  << "Uniform locatiom("<<mProgram<<"):,  " << name << ": " <<  x << std::endl;
             return x;
         }
@@ -234,7 +243,7 @@ public:
             //Info.UniformLocations.assign(N,-1);
             // ============ Get number of uniform locations ==================
 
-
+/*
             GLA_DOUT  << "Shader Program created: "  << ID << std::endl;
             GLA_DOUT  << "     Number of Uniforms: " << N      << std::endl;
             for(int i=0;i<N;i++)
@@ -249,19 +258,19 @@ public:
 
                 GLA_DOUT  << "          Uniform(" << i << "): " << GetUniformName(i) << std::endl;
             }
-
+*/
         }
         //========================================================
 
 
 
-        inline unsigned int GetUniformBlockIndex(const char * name)
+        inline GLuint GetUniformBlockIndex(const char * name)
         {
-          unsigned int block_index = glGetUniformBlockIndex( m_Handle.GetID(), name);
+          auto block_index = glGetUniformBlockIndex( m_Handle.GetID(), name);
           return block_index;
         }
 
-        inline unsigned int GetUniformBlockSize(const char * name )
+        inline GLint GetUniformBlockSize(const char * name )
         {
             auto index = GetUniformBlockIndex(name);
             GLint params;
@@ -282,14 +291,24 @@ public:
 
             glGetUniformIndices(m_Handle.GetID(), 1, names, &index);
 
-
             glGetActiveUniformBlockiv(m_Handle.GetID(), index, GL_UNIFORM_OFFSET, &params);
-
 
             return params;
 
         }
 
+
+        inline void BindUniformBlock(const char * BlockName, GLuint UniformBufferBindPoint)
+        {
+            BindUniformBlock( GetUniformBlockIndex(BlockName), UniformBufferBindPoint);
+        }
+
+
+        // Bind a uniform buffer's bindpoint to a block index in the shader.
+        inline void BindUniformBlock(GLuint BlockIndex, GLuint UniformBufferBindPoint)
+        {
+            glUniformBlockBinding(m_Handle.GetID(), BlockIndex, UniformBufferBindPoint);
+        }
 
 
         inline void BindUniformBuffer(GPUUniformBuffer & buffer, GLuint BlockIndex, GLuint BindPoint)

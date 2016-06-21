@@ -235,7 +235,7 @@ inline void GPUTextureArray::Create(uvec2 size, unsigned int depth, unsigned int
     //glGenTextures(1, &mID);
 
     GetGLError();
-    printf("Generated textures\n");
+    //printf("Generated textures\n");
     if( !m_Handle.GetID() )
     {
         throw gla::GLA_EXCEPTION("ERROR: error generating textures for TextureArray2D");
@@ -249,7 +249,7 @@ inline void GPUTextureArray::Create(uvec2 size, unsigned int depth, unsigned int
 
     GetGLError();
 
-    printf("glTexStorage complete\n");
+    //printf("glTexStorage complete\n");
     assert(m_Handle.GetID() != 0 );
 
     auto & Info   = m_Handle.__GetInfo();
