@@ -105,6 +105,7 @@
 #ifndef GLA_H
 #define GLA_H
 
+#include <gla/geometry/geometry.h>
 #include <gla/global.h>
 #include <gla/camera.h>
 #include <gla/texture.h>

@@ -25,7 +25,12 @@ HEADERS +=  gla/gla.h                          \
             gla/renderbufferobject.h \
             gla/stb_image_write_headeronly.h \
             gla/handle.h \
-            gla/utils/sdlapp.h
+            gla/utils/sdlapp.h \
+            gla/geometry/geometry.h \
+            gla/geometry/boundingbox.h \
+            gla/geometry/point3d.h \
+            gla/geometry/plane3d.h \
+            gla/geometry/line3d.h
 
 
 SOURCES +=  main.cpp                                     \
