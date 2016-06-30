@@ -26,7 +26,7 @@ class Camera
 
         inline void SetPosition( const vec3 & pos )
         {
-            mTransform.SetPosition(pos);
+            mTransform.SetPosition( pos );
         }
 
         inline void Translate( const vec3 & pos )

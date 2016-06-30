@@ -58,8 +58,8 @@ int main()
                 VertexShader("shaders/Tess.v"),
                 FragmentShader("shaders/Tess.f"),
              //   GeometryShader("shaders/Tess.g"),
-                TesselationControlShader("shaders/Tess.tc"),
-                TesselationEvaluationShader("shaders/Tess.te")
+                TessellationControlShader("shaders/Tess.tc"),
+                TessellationEvaluationShader("shaders/Tess.te")
                 );
 
 

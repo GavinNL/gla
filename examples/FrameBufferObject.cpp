@@ -119,10 +119,10 @@ int main()
     auto gpuTex2 = Texture("resources/grass.jpg", 3 ).ToGPU();
 
     Camera mCamera;
-    mCamera.perspective( 90.0f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
+    mCamera.Perspective( 90.0f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
     Transformation mTransform;
 
-    mTransform.setPosition( vec3{0,-2.0, 0.0});
+    mTransform.SetPosition( vec3{0,-2.0, 0.0});
     //mTransform.setEuler( vec3(0.5,0.2,-1.2));
     GLA_DOUT  << "Starting" << std::endl;
     mFBO.Unbind();
@@ -141,10 +141,10 @@ int main()
         GBuffer.Bind();
         gpuTex1.SetActive( 0 );
         gpuTex2.SetActive( 1 );
-        GBuffer.UniformData( ShaderProgram::Hash("uTransform"), mTransform.getMatrix());
-        GBuffer.UniformData( ShaderProgram::Hash("uCamera"),    mCamera.getProjectionMatrix() * mCamera.getTransform().getMatrix() );
-        GBuffer.UniformData( ShaderProgram::Hash("texture_diffuse1"),  0 );
-        GBuffer.UniformData( ShaderProgram::Hash("texture_specular1"), 1 );
+        GBuffer.Uniform( GBuffer.GetUniformLocation("uTransform"), mTransform.GetMatrix());
+        GBuffer.Uniform( GBuffer.GetUniformLocation("uCamera"),    mCamera.GetProjectionMatrix() * mCamera.GetTransform().GetMatrix() );
+        GBuffer.Uniform( GBuffer.GetUniformLocation("texture_diffuse1"),  0 );
+        GBuffer.Uniform( GBuffer.GetUniformLocation("texture_specular1"), 1 );
 
 
         // renders the VAO as triangles (assume triangles since our Index buffer is uvec3, if it was uvec4, it would assume quads
@@ -203,9 +203,9 @@ int main()
             mFBO.GetAttachment(FBOAttachment::COLOR2).SetActive(2);
             //mFBO.GetAttachment(FBOAttachment::DEPTH).SetActive(0);
             //gpuTex1.SetActive(0);
-            SPass.UniformData( ShaderProgram::Hash("gPosition"),   0 );
-            SPass.UniformData( ShaderProgram::Hash("gNormal"),     1 );
-            SPass.UniformData( ShaderProgram::Hash("gAlbedoSpec"), 2 );
+            SPass.Uniform( SPass.GetUniformLocation("gPosition"),   0 );
+            SPass.Uniform( SPass.GetUniformLocation("gNormal"),     1 );
+            SPass.Uniform( SPass.GetUniformLocation("gAlbedoSpec"), 2 );
 
             // To specify exactly what primitave you want. Use the following.
             VAO.Render();

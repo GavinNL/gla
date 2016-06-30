@@ -28,6 +28,7 @@ HEADERS +=  gla/gla.h                          \
             gla/utils/sdlapp.h \
             gla/geometry/geometry.h \
             gla/geometry/boundingbox.h \
+            gla/geometry/boundingrect.h \
             gla/geometry/point3d.h \
             gla/geometry/plane3d.h \
             gla/geometry/line3d.h
