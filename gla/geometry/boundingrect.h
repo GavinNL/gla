@@ -9,11 +9,14 @@ namespace gla
 template<typename T=float>
 struct BoundingRect
 {
-    using vec_type = glm::detail::tvec2<T, glm::defaultp>;
+
+    //using vec_type = glm::detail::tvec2<T, glm::defaultp>;
+    using vec_type = glm::tvec2<T, glm::defaultp>;
 
     vec_type min;
     vec_type max;
 	
+    glm::vec3 x;
 
     BoundingRect( const vec_type & pMin) : min(pMin), max(pMin)
 	{

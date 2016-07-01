@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include "boundingrect.h"
 #include <algorithm>
-#include <gla/transformation.h>
+#include <gla/transform.h>
 
 namespace gla
 {
@@ -12,7 +12,8 @@ namespace gla
 template<typename T=float>
 struct BoundingBox
 {
-    using vec_type = glm::detail::tvec3<T, glm::defaultp>;
+    //using vec_type = glm::detail::tvec3<T, glm::defaultp>;
+    using vec_type = glm::tvec3<T, glm::defaultp>;
 
     vec_type min;
     vec_type max;

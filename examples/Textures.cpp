@@ -119,7 +119,7 @@ int main()
         //  sendUniform will only query the shader the first time and then store the shader uniform location in an array at index 0 (the first parameter)
         //  the next time we call sendUniform(0, "uSampler", X), it will use the cached value.
         //TriangleShader.sendUniform(0, "uSampler", 0);
-        TriangleShader.UniformData("uSampler"_h, 0);
+        TriangleShader.Uniform( TriangleShader.GetUniformLocation("uSampler"), 0);
 
         VAO.Render();
 

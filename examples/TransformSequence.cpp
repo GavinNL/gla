@@ -38,8 +38,6 @@ class TransformSequenceApp : public gla::utils::GLFW_App
         void OnWindowPosition(int x, int y){}
 
 
-
-
         void OnClose()
         {
             mQuit=true;
@@ -80,11 +78,11 @@ class TransformSequenceApp : public gla::utils::GLFW_App
 
 
                 // Activate the line shader
-                LineShader.useShader();
+                LineShader.UseShader();
 
                 // Send the Camera Matrix and the Model matrix for the main Axis.
-                LineShader.sendUniform(0, "inCameraMatrix", mCamera.getProjectionMatrix() * mCamera.getMatrix()    );
-                LineShader.sendUniform(1, "inModelMatrix" , glm::scale( mat4(1.0), vec3(10.0,10.0,10.0))  );
+                LineShader.Uniform( LineShader.GetUniformLocation("inCameraMatrix"), mCamera.GetProjectionMatrix() * mCamera.GetMatrix()    );
+                LineShader.Uniform( LineShader.GetUniformLocation("inModelMatrix") , glm::scale( mat4(1.0), vec3(10.0,10.0,10.0))  );
 
                 // Render the axis
                 mAxis.Render();

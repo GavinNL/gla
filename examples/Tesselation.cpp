@@ -89,7 +89,7 @@ int main()
         //glDrawArrays( GL_PATCHES, 0, 3);
         // renders the VAO as triangles (assume triangles since our Index buffer is uvec3, if it was uvec4, it would assume quads
 
-        TriangleShader.UniformData("modelViewMatrix"_h, T.getMatrix() );
+        TriangleShader.Uniform( TriangleShader.GetUniformLocation("modelViewMatrix"), T.GetMatrix() );
         vao.Render(Primitave::PATCHES);
         //vao.Render();
 

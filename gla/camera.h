@@ -2,12 +2,12 @@
 #define GLA_CAMERA_H
 
 #include <gla/global.h>
-#include <gla/transformation.h>
+#include <gla/transform.h>
 
 namespace gla
 {
 
-class Camera
+class Camera : public Transform
 {
     public:
         Camera()
@@ -24,42 +24,46 @@ class Camera
              mProj        = glm::perspective(FOV, AspectRatio, zMin,zMax);
         }
 
-        inline void SetPosition( const vec3 & pos )
-        {
-            mTransform.SetPosition( pos );
-        }
+        //inline void SetPosition( const vec3 & pos )
+        //{
+        //    mTransform.SetPosition( pos );
+        //}
 
-        inline void Translate( const vec3 & pos )
-        {
-            mTransform.Translate( pos );
-        }
+        //inline void Translate( const vec3 & pos )
+        //{
+        //    mTransform.Translate( pos );
+        //}
 
-        inline void SetEuler(const vec3 & PitchYawRoll)
-        {
-             mTransform.SetEuler(PitchYawRoll);
-        }
+        //inline void SetEuler(const vec3 & PitchYawRoll)
+        //{
+        //     mTransform.SetEuler(PitchYawRoll);
+        //}
 
         mat4 & GetProjectionMatrix() { return mProj; }
 
         inline mat4 GetMatrix()
         {
-            auto mLook = mTransform.GetOrientation() * vec3(0, 0,-1) + mTransform.GetPosition();
-            auto mUp   = mTransform.GetOrientation() * vec3(0, 1, 0);
+            //auto mLook = mTransform.GetOrientation() * vec3(0, 0,-1) + mTransform.GetPosition();
+            //auto mUp   = mTransform.GetOrientation() * vec3(0, 1, 0);
+            //
+            //mView = glm::lookAt( mTransform.GetPosition(), mLook, mUp);
 
-            mView = glm::lookAt( mTransform.GetPosition(), mLook, mUp);
-            return mView;
+            return glm::inverse( Transform::GetMatrix() );
+            //return mView;
         }
 
         vec3 GetDirection()
         {
-            auto mLook = mTransform.GetOrientation() * vec3(0, 0,-1);// + mTransform.getPosition();
-            return mLook;
+            //auto mLook = mTransform.GetOrientation() * vec3(0, 0,-1);// + mTransform.getPosition();
+
+            return Orientation * vec3(0, 0,-1);// + mTransform.getPosition();
+            //return mLook;
         }
 
-        vec3 GetPosition() const
-        {
-            return mTransform.GetPosition();
-        }
+        //vec3 GetPosition() const
+        //{
+        //    return mTransform.GetPosition();
+        //}
 
 
 
@@ -73,13 +77,13 @@ class Camera
         void  setZMax(float zmax)     { Perspective(mFOV, mAspectRatio, mZMin, zmax); }
         void  setZMin(float zmin)     { Perspective(mFOV, mAspectRatio, zmin, mZMax); }
 
-        Transformation & GetTransform() { return mTransform; }
+       // Transform & GetTransform() { return mTransform; }
 
     private:
             mat4  mProj;
             mat4  mView;
 
-            Transformation mTransform;
+          //  Transform mTransform;
 
             float mFOV;
             float mAspectRatio;
