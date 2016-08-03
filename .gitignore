@@ -1,0 +1,7 @@
+build
+_old
+glre*
+CMakeLists.txt.user
+gla.pro*
+.*orig
+resources/*
