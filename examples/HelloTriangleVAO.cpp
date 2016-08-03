@@ -47,6 +47,7 @@ int main()
     tri.InsertElement( uvec2{0,1} );
     tri.InsertElement( uvec2{1,2} );
     tri.InsertElement( uvec2{2,0} );
+
     auto VAO = tri.ToGPU();
 
     // Create the two shaders. The second argument is set to true because we are
@@ -57,8 +58,7 @@ int main()
     TriangleShader.AttachShaders(  VertexShader("shaders/HelloTriangle.v"),  FragmentShader("shaders/HelloTriangle.f")  );
 
 
-    auto vao = VAO;
-    VAO.Release();
+    VAO = tri.ToGPU();
     //==========================================================
     GLA_DOUT  << "Starting" << std::endl;
     while (!glfwWindowShouldClose(gMainWindow) )
@@ -73,7 +73,7 @@ int main()
        // VAO2.Bind();
 
         // renders the VAO as triangles (assume triangles since our Index buffer is uvec3, if it was uvec4, it would assume quads
-        vao.Render();
+        VAO.Render();
 
         // To specify exactly what primitave you want. Use the following.
         //  VAO.Render(TRIANGLES);  // Can also use this.

@@ -12,7 +12,6 @@
 namespace gla  {
 namespace utils {
 
-
 class GLFW_App
 {
     public:
@@ -124,8 +123,9 @@ protected:
 };
 
 
-};
-};
+}
+
+}
 
 #endif // APP_H
 

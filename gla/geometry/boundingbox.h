@@ -20,13 +20,13 @@ struct BoundingBox
 	
 
     BoundingBox( const vec_type & pMin) : min(pMin), max(pMin)
-	{
-	}
-	
-	BoundingBox( const vec_type & pMin, const vec_type & pMax) : min(pMin), max(pMax)
-	{
-		
-	}
+    {
+    }
+
+    BoundingBox( const vec_type & pMin, const vec_type & pMax) : min(pMin), max(pMax)
+    {
+
+    }
 
     BoundingBox()
     {
@@ -41,6 +41,7 @@ struct BoundingBox
     vec_type Centre() const
     {
         return 0.5f*(min + max);
+        //return (min + max) / typename vec_type::value_type(2);
     }
 
     BoundingBox<T>& operator+=(const glm::vec3 & x )
@@ -100,7 +101,7 @@ struct BoundingBox
 
         BoundingBox<T> out( glm::vec3(std::numeric_limits<T>::max()),  glm::vec3(std::numeric_limits<T>::lowest()) );
 
-        for(int i=0;i<8;i++)
+        for(int i=0 ; i < 8 ; i++)
         {
             out.min.x = glm::min( out.min.x, p[i].x );
             out.min.y = glm::min( out.min.y, p[i].y );
@@ -167,17 +168,72 @@ struct BoundingBox
             return true;
     }
 
+
+    // determines where a point p, is relative to the bounding box.
+    // in front, back,
+    enum class eLocation :unsigned int {
+        INSIDE = 0,
+        LEFT   = 1,
+        RIGHT  = 2,
+        UNDER  = 4,
+        ABOVE  = 8,
+        BACK   = 16,
+        FRONT  = 32,
+
+        LEFT_UNDER=  1 | 4,
+        LEFT_ABOVE=  1 | 8,
+
+        RIGHT_UNDER  =  2 | 4 ,
+        RIGHT_ABOVE  =  2 | 8 ,
+
+        LEFT_BACK   =  1 | 16,
+        LEFT_FRONT  =  1 | 32,
+
+        RIGHT_BACK  =  2 | 16,
+        RIGHT_FRONT =  2 | 32,
+
+
+        UNDER_BACK   =  4 | 16,
+        UNDER_FRONT  =  4 | 32,
+        ABOVE_BACK   =  8 | 16,
+        ABOVE_FRONT  =  8 | 32,
+
+
+        LEFT_UNDER_BACK   =  1 | 4 | 16,
+        LEFT_UNDER_FRONT  =  1 | 4 | 32,
+        LEFT_ABOVE_BACK   =  1 | 8 | 16,
+        LEFT_ABOVE_FRONT  =  1 | 8 | 32,
+        RIGHT_UNDER_BACK  =  2 | 4 | 16,
+        RIGHT_UNDER_FRONT =  2 | 4 | 32,
+        RIGHT_ABOVE_BACK  =  2 | 8 | 16,
+        RIGHT_ABOVE_FRONT =  2 | 8 | 32
+    };
+
+
+    eLocation LocatePoint( const glm::vec3 & p )
+    {
+        //#warning Not Implemented yet.
+        unsigned int l=0;
+
+        auto x = p.x < min.x ?  eLocation::LEFT : (p.x > max.x ?  eLocation::RIGHT : eLocation::INSIDE);
+        auto y = p.y < min.y ?  eLocation::UNDER: (p.y > max.y ?  eLocation::ABOVE : eLocation::INSIDE);
+        auto z = p.z < min.z ?  eLocation::BACK : (p.z > max.z ?  eLocation::FRONT : eLocation::INSIDE);
+
+        l = static_cast<unsigned int>(x) | static_cast<unsigned int>(y) | static_cast<unsigned int>(z);
+        return static_cast<eLocation>(l);
+    }
+
     //
     // Returns true if the other aabb is FULLY contained within this box
     //
     bool Contains(const BoundingBox & other) const
     {
             if( other.max.x < max.x &&
-                    other.min.x > min.x &&
-                    other.max.y < max.y &&
-                    other.min.y > min.y &&
-                    other.max.z < max.z &&
-                    other.min.z > min.z  )
+                other.min.x > min.x &&
+                other.max.y < max.y &&
+                other.min.y > min.y &&
+                other.max.z < max.z &&
+                other.min.z > min.z  )
             {
                     return true;
             }
@@ -188,7 +244,14 @@ struct BoundingBox
             return (max.x-min.x) * (max.y-min.y) * (max.z-min.z);
     }
 	
-	
+    float Distance(const glm::vec3 & p)
+    {
+      float dx = std::max(min.x - p.x, 0, p.x - max.x);
+      float dy = std::max(min.y - p.y, 0, p.y - max.y);
+
+      return sqrt(dx*dx + dy*dy);
+    }
+
 };
 
 template<typename T>

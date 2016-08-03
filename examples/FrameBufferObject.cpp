@@ -120,7 +120,7 @@ int main()
 
     Camera mCamera;
     mCamera.Perspective( 90.0f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
-    Transformation mTransform;
+    Transform mTransform;
 
     mTransform.SetPosition( vec3{0,-2.0, 0.0});
     //mTransform.setEuler( vec3(0.5,0.2,-1.2));
@@ -142,7 +142,7 @@ int main()
         gpuTex1.SetActive( 0 );
         gpuTex2.SetActive( 1 );
         GBuffer.Uniform( GBuffer.GetUniformLocation("uTransform"), mTransform.GetMatrix());
-        GBuffer.Uniform( GBuffer.GetUniformLocation("uCamera"),    mCamera.GetProjectionMatrix() * mCamera.GetTransform().GetMatrix() );
+        GBuffer.Uniform( GBuffer.GetUniformLocation("uCamera"),    mCamera.GetProjectionMatrix() * mCamera.GetMatrix() );
         GBuffer.Uniform( GBuffer.GetUniformLocation("texture_diffuse1"),  0 );
         GBuffer.Uniform( GBuffer.GetUniformLocation("texture_specular1"), 1 );
 

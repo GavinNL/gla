@@ -53,7 +53,7 @@ public:
                                                  [ = ] ( HandleInfo * info)
         {
             delete info;
-            //std::cout  << "Deleting: " << id << std::endl;
+            std::cout  << "Deleting: " << id << std::endl;
             Type i = id;
             Handler::Release(i);
             i = 0;

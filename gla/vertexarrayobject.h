@@ -63,7 +63,7 @@ namespace gla
 
             void Bind()     { m_Handle.Bind();    }
             void Unbind()   { m_Handle.Unbind();  }
-            void Release()  { m_Handle.Release(); }
+            void Release()  { m_Handle.Release();  std::cout << "Releasing id: " << m_Handle.GetID() << std::endl; }
              /**
              * @brief Create
              * @param V

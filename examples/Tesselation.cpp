@@ -68,7 +68,7 @@ int main()
     //==========================================================
     GLA_DOUT  << "Starting" << std::endl;
 
-    gla::Transformation T;
+    gla::Transform T;
     //T.rotate( vec3(0.0,0.0,1.0), 12.3f);
 
 

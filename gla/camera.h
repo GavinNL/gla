@@ -15,7 +15,7 @@ class Camera : public Transform
 
         }
 
-        inline void Perspective(float FOV, float AspectRatio, float zMin=0.5f, float zMax=10000.f)
+        void Perspective(float FOV, float AspectRatio, float zMin=0.5f, float zMax=10000.f)
         {
              mAspectRatio = AspectRatio;
              mFOV         = FOV;
@@ -23,21 +23,6 @@ class Camera : public Transform
              mZMax        = zMax;
              mProj        = glm::perspective(FOV, AspectRatio, zMin,zMax);
         }
-
-        //inline void SetPosition( const vec3 & pos )
-        //{
-        //    mTransform.SetPosition( pos );
-        //}
-
-        //inline void Translate( const vec3 & pos )
-        //{
-        //    mTransform.Translate( pos );
-        //}
-
-        //inline void SetEuler(const vec3 & PitchYawRoll)
-        //{
-        //     mTransform.SetEuler(PitchYawRoll);
-        //}
 
         mat4 & GetProjectionMatrix() { return mProj; }
 
@@ -48,7 +33,9 @@ class Camera : public Transform
             //
             //mView = glm::lookAt( mTransform.GetPosition(), mLook, mUp);
 
-            return glm::inverse( Transform::GetMatrix() );
+            return glm::scale( mat4(1.0), 1.0f/Scale) * glm::mat4_cast( glm::inverse(Orientation) ) *  glm::translate(mat4(1.0f), -Position);
+
+            //return glm::inverse( Transform::GetMatrix() );
             //return mView;
         }
 
@@ -82,8 +69,6 @@ class Camera : public Transform
     private:
             mat4  mProj;
             mat4  mView;
-
-          //  Transform mTransform;
 
             float mFOV;
             float mAspectRatio;

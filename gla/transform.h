@@ -83,7 +83,7 @@ class Transform
             out.Orientation = glm::slerp( in1.Orientation, in2.Orientation, t);
         }
 
-        static Transform Interpolate( Transform & in1, Transform & in2, float t)
+        static Transform Interpolate( const Transform & in1, const Transform & in2, float t)
         {
             return Transform(
                                (1.0f-t)*in1.Position + t*in2.Position ,
@@ -108,7 +108,8 @@ inline Transform operator * (const Transform & ps, const Transform & ls)
     Transform w;
     w.Position    = ps.Position  + ps.Orientation * (ps.Scale * ls.Position);
     w.Orientation = ps.Orientation * ls.Orientation;
-    w.Scale       = ps.Scale * (ps.Orientation * ls.Scale);
+    //w.Scale       = ps.Scale * (ps.Orientation * ls.Scale);
+    w.Scale       = ps.Scale * ls.Scale;
 
     return w;
 
@@ -127,7 +128,7 @@ inline Transform operator/(const Transform& ws, const Transform& ps)
 {
     Transform ls;
 
-    const quat psConjugate( -ps.Orientation.x, -ps.Orientation.y, -ps.Orientation.z, ps.Orientation.w);
+    const quat psConjugate( ps.Orientation.w, -ps.Orientation.x, -ps.Orientation.y, -ps.Orientation.z);
 
     //const quat psConjugate(); ps.Orientation. conjugate(ps.orientation);
 
