@@ -1,4 +1,4 @@
-#include <GL/glew.h>    // include GLEW and new version of GL on Windows
+//#include <GL/glew.h>    // include GLEW and new version of GL on Windows
 #include <GLFW/glfw3.h> // GLFW helper library
 #include <stdio.h>
 
@@ -76,7 +76,7 @@ int main()
 
     //==========================================================
 
-    auto Sphere = gla::Solids::createSphere().ToGPU();
+    auto Sphere = gla::Solids::createBox().ToGPU();
     auto Plane  = gla::Solids::createPlane(10,10, vec2(0.1,0.1)).ToGPU();
 
 
@@ -97,7 +97,7 @@ int main()
 
     mCamera.Perspective( 90.0f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
 
-    mCamera.SetPosition( vec3(0,1,2));
+    mCamera.SetPosition( vec3(0,3,2));
     Transform mTransform;
 
     mTransform.SetPosition( vec3{0, 1.0, -2.0 });
@@ -111,12 +111,12 @@ int main()
     #if 1
          mFBO.Bind();
 
-         glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+         glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT );
          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
          float t  = Tim.getElapsedTime() * 2.0*3.14159 / 3.0f ;
 
-         glm::vec3 lightInvDir = glm::vec3(sin(t)*4.0f, 4.0 ,cos(t)*4.0f-2.0f);
+         glm::vec3 lightInvDir = glm::vec3(sin(t)*4.0f, 1.0 ,cos(t)*4.0f-2.0f);
 
 
 

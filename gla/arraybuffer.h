@@ -2,9 +2,10 @@
 #define ARRAYBUFFER_H
 
 #include <vector>
-#include <GL/glew.h>
-#include <GL/glext.h>
-#include <GL/gl.h>
+#include <gla/glad.h>
+//#include <GL/glew.h>
+//#include <GL/glext.h>
+//#include <GL/gl.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
 

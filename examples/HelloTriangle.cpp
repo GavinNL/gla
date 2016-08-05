@@ -1,4 +1,4 @@
-#include <GL/glew.h>    // include GLEW and new version of GL on Windows
+//#include <GL/glew.h>    // include GLEW and new version of GL on Windows
 #include <GLFW/glfw3.h> // GLFW helper library
 #include <stdio.h>
 
@@ -72,7 +72,7 @@ int main()
     TriangleShader.AttachShaders(  VertexShader("shaders/HelloTriangle.v"),  FragmentShader("shaders/HelloTriangle.f")  );
 
 
-    gla::EnableVertexAttribute<vec3, vec4>(G);
+    gla::EnableVertexAttribute<vec3, vec4>( G );
     //==========================================================
 
 
