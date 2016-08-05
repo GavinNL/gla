@@ -1,4 +1,4 @@
-build
+build*
 _old
 glre*
 CMakeLists.txt.user

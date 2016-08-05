@@ -5,8 +5,6 @@
 
 namespace gla
 {
-
-
     //TriMesh_PNCU createPrism(float width, float height, float depth);
     //
     iTriMesh_PNCU     loadModel(const std::string & path, bool sendToGPU=false);
