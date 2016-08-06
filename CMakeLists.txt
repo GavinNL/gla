@@ -94,9 +94,13 @@ set(LIBS_GLAD
 #  target_link_libraries (Shadows ${LIBS_FULL})
 #
 
-add_executable(HelloTriangleExp
-      examples/HelloTriangleExp.cpp glad.c)
+        add_executable(HelloTriangleExp
+              examples/HelloTriangleExp.cpp glad.c)
 target_link_libraries (HelloTriangleExp ${LIBS_GLAD})
+
+        add_executable(HelloTexturedTriangleExp
+              examples/HelloTexturedTriangleExp.cpp glad.c)
+target_link_libraries (HelloTexturedTriangleExp ${LIBS_GLAD})
 
 # This command b
 #add_custom_command(

@@ -10,4 +10,5 @@ void main()
 {
     // Output color = red
     color = vec4( texture2D( uSampler, FragmentTexCoord ).rgb, 1.0);
+
 }

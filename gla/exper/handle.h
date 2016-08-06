@@ -58,7 +58,6 @@ class BaseHandle
         // destroyed.
         void Generate()
         {
-
             Release();
 
             static CallableCreate C;

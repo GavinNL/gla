@@ -52,7 +52,7 @@ class ShaderUnit
             //GLA_DOUT  << "========================================" << std::endl;
             //GLA_DOUT  << " Compiling: " << shader_path << std::endl;
 
-            compileFromString( V );
+            return compileFromString( V );
         }
 
         GLuint compileFromString(const std::string & shader_code)

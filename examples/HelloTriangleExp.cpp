@@ -1,5 +1,6 @@
 #include <gla/glad.h>
 #include <gla/exper/array_buffer.h>
+#include <gla/exper/sampler2d.h>
 #include <gla/shader.h>
 #include <GLFW/glfw3.h>
 
@@ -58,6 +59,9 @@ int main()
         glEnableVertexAttribArray(1);
 
         //====
+
+
+        gla::experimental::Image T;
 
         while (!glfwWindowShouldClose(gMainWindow) )
         {
