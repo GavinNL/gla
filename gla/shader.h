@@ -46,6 +46,11 @@ class ShaderUnit
         {
             std::ifstream v(shader_path, std::ifstream::in);
 
+            if( !v )
+            {
+                throw std::runtime_error(std::string("Cannot find file: ") + shader_path);
+            }
+
             std::string V( (std::istreambuf_iterator<char>(v)),
                             std::istreambuf_iterator<char>() );
 
@@ -72,6 +77,8 @@ class ShaderUnit
             if(check)
             {
                 GLA_DOUT  << "Shader compiled sucessfully:" << V << std::endl;
+            } else {
+
             }
 
             mShaderID   = V;

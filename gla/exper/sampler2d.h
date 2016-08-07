@@ -111,6 +111,7 @@ enum class SamplerFormat
     RGBA16UI	     = GL_RGBA16UI	            ,
     RGBA32I	         = GL_RGBA32I	            ,
     RGBA32UI	     = GL_RGBA32UI,
+
     COMPRESSED_RED                     = GL_COMPRESSED_RED,
     COMPRESSED_RG	                   = GL_COMPRESSED_RG	,
     COMPRESSED_RGB	                   = GL_COMPRESSED_RGB	,
@@ -278,6 +279,7 @@ public:
        // I.Type    = Type;
        // I.InternalFormat = InternalFormat;
         m_PixelDataType = Type;
+        m_Size          = size;
 
         SetWrap( SamplerWrap::REPEAT, SamplerWrap::REPEAT);
         SetFilter(SamplerFilter::LINEAR_MIPMAP_LINEAR, SamplerFilter::LINEAR_MIPMAP_LINEAR);
@@ -356,7 +358,8 @@ public:
     }
 
 private:
-    DataType m_PixelDataType;
+    DataType   m_PixelDataType;
+    glm::uvec2 m_Size;
 };
 
 

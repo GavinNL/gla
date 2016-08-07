@@ -98,9 +98,17 @@ set(LIBS_GLAD
               examples/HelloTriangleExp.cpp glad.c)
 target_link_libraries (HelloTriangleExp ${LIBS_GLAD})
 
+        add_executable(HelloTriangleIndexedExp
+              examples/HelloTriangleIndexedExp.cpp glad.c)
+target_link_libraries (HelloTriangleIndexedExp ${LIBS_GLAD})
+
         add_executable(HelloTexturedTriangleExp
               examples/HelloTexturedTriangleExp.cpp glad.c)
 target_link_libraries (HelloTexturedTriangleExp ${LIBS_GLAD})
+
+        add_executable(Sampler2DArray
+              examples/Sampler2DArray.cpp glad.c)
+target_link_libraries (Sampler2DArray ${LIBS_GLAD})
 
 # This command b
 #add_custom_command(

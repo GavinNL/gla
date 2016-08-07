@@ -43,23 +43,28 @@ int main()
             glm::vec4 c;
         };
 
-        std::vector< MyVertex > CpuBuffer;
-
-        CpuBuffer.push_back( { glm::vec3(-1.0f, -1.0f, 0.f), glm::vec4(1.f, 0.f, 0.f, 1.0f)  }  );
-        CpuBuffer.push_back( { glm::vec3( 1.0f ,-1.0f, 0.f), glm::vec4(0.f, 1.f, 0.f, 1.0f)  }  );
-        CpuBuffer.push_back( { glm::vec3( 0.0f , 1.0f, 0.f), glm::vec4(0.f, 0.f, 1.f, 1.0f)  }  );
-
-        gla::experimental::Array_Buffer         G( CpuBuffer );
+        std::vector< MyVertex > VertexBuffer;
+        VertexBuffer.push_back( { glm::vec3(-1.0f, -1.0f, 0.f), glm::vec4(1.f, 0.f, 0.f, 1.0f)  }  );
+        VertexBuffer.push_back( { glm::vec3( 1.0f ,-1.0f, 0.f), glm::vec4(0.f, 1.f, 0.f, 1.0f)  }  );
+        VertexBuffer.push_back( { glm::vec3( 0.0f , 1.0f, 0.f), glm::vec4(0.f, 0.f, 1.f, 1.0f)  }  );
 
 
-        G.Bind();
-        G.EnableAttributes<glm::vec3, glm::vec4>( {false,false } );
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
+        // Create a triangle from vertex 0 1 and 2
+        std::vector< glm::uvec3 > IndexBuffer;
+        IndexBuffer.push_back( glm::uvec3( 0 ,1, 2) );
+
+        // Send the vertex buffer to the GPU
+        gla::experimental::Array_Buffer         G( VertexBuffer );
+
+        // Send the index buffer to the gpu.
+        gla::experimental::Element_Array_Buffer E( IndexBuffer );
+
+
+
+
 
         //====
 
-        gla::experimental::Image T;
 
         while (!glfwWindowShouldClose(gMainWindow) )
         {
@@ -67,12 +72,17 @@ int main()
             // Set the triangle shader to be the one that we will use
             TriangleShader.Bind();
 
-            //G.Bind();
+            // Bind the VertexBuffer and tell openGL that
+            // each vertex is 1 vec3 and 1vec4, and both are not noramlized
+            G.Bind();
+            G.EnableAttributes<glm::vec3, glm::vec4>( {false,false } );
+            glEnableVertexAttribArray(0);// enable the position attribute
+            glEnableVertexAttribArray(1);// enable the colour attribute
 
-            // Can use any one of the following to render the triangle, they are all equivelant.
-            // as long as both buffers have the same number of items in it. In our case 3.
-            G.Draw(gla::experimental::Primitave::TRIANGLES,0,3);
+            E.Bind(); // bind the index buffer
 
+            // Draw the Index Buffer, using every 3 indices to form a triangle.
+            E.Draw(gla::experimental::Primitave::TRIANGLES, 3);
 
             glfwSwapBuffers(gMainWindow);
             glfwPollEvents();

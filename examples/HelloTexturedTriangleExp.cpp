@@ -54,13 +54,20 @@ int main()
 
         Img.loadFromPath("../resources/textures/rocks1024.jpg" );
 
-        //Img.r = [] (float x, float y) { return (float)(0.5f * glm::perlin( glm::vec2(x,y)*8.0f ) + 0.5);  };
+
+        #define EXPRESSION( A ) [] (float x, float y) { return A; };
+
+        Img.r = [] (float x, float y) { return (float)(0.5f * glm::perlin( glm::vec2(x,y)*8.0f ) + 0.5);  };
+        Img.g = EXPRESSION( 2*x*x + y );
+
         //Img.a = [] (float x, float y) { return (float)(0.5f * glm::perlin( glm::vec2(x,y)*8.0f ) + 0.5);  };
         gla::experimental::Sampler2D Sampler(Img);
 
 
         gla::ShaderProgram TriangleShader;
         TriangleShader.AttachShaders(  gla::VertexShader("../resources/shaders/Textures.v"),  gla::FragmentShader("../resources/shaders/Textures.f")  );
+
+
 
 
         //====

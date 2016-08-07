@@ -3,8 +3,11 @@
 
 
 #include "handle.h"
-#include <glm/glm.hpp>
+#include "types.h"
 
+#include <typeinfo>
+#include <type_traits>
+#include <glm/glm.hpp>
 #include <vector>
 #include <iostream>
 #include <tuple>
@@ -12,7 +15,7 @@
 #include <type_traits>
 
 
-#include <gla/glad.h>
+
 
 
 namespace gla { namespace experimental
@@ -137,6 +140,7 @@ class Buffer : public BaseHandle<GLuint, GenBuff,DestBuff>
             Generate();
             Bind();
             glBufferData( static_cast<GLenum>(target) , data.size()*sizeof(VertexData), data.data() , static_cast<GLenum>(usage) );
+            m_Size = data.size()*sizeof(VertexData);
         }
 
         void Bind( )
@@ -192,14 +196,95 @@ class Buffer : public BaseHandle<GLuint, GenBuff,DestBuff>
             Generate(); // generates a new handle, releases the old one.
             Bind();
             glBufferData( static_cast<GLenum>(target) , size_in_bytes, NULL , static_cast<GLenum>(usage) );
+            m_Size = size_in_bytes;
         }
 
+        std::size_t m_Size;
 
 };
 
 
-using Array_Buffer         = Buffer<BufferBindTarget::ARRAY_BUFFER>;            // used for vertex data
-using Element_Array_Buffer = Buffer<BufferBindTarget::ELEMENT_ARRAY_BUFFER>;    // used for index data
+class Array_Buffer : public Buffer<BufferBindTarget::ARRAY_BUFFER>
+{
+    public:
+        template<typename VertexData>
+        Array_Buffer( const std::vector<VertexData> & data, BufferUsage usage = BufferUsage::STATIC_DRAW) : Buffer(data, usage)
+        {
+        }
+
+        template<bool BindFirst=true>
+        void Draw( Primitave p, std::size_t first, std::size_t NumberOfPrimitaves)
+        {
+            if(BindFirst) Bind();
+
+            glDrawArrays( static_cast<GLenum>(p),  static_cast<GLint>(first),  static_cast<GLsizei>(NumberOfPrimitaves) );
+        }
+};
+
+
+class Element_Array_Buffer : public Buffer<BufferBindTarget::ELEMENT_ARRAY_BUFFER>
+{
+    public:
+        template<typename VertexData>
+        Element_Array_Buffer( const std::vector<VertexData> & data, BufferUsage usage = BufferUsage::STATIC_DRAW) : Buffer(data, usage)
+        {
+
+                 if(   std::is_same<VertexData,glm::i32vec4>::value
+                    || std::is_same<VertexData,glm::i32vec3>::value
+                    || std::is_same<VertexData,glm::i32vec2>::value
+                    || std::is_same<VertexData,std::int32_t>::value
+                    || std::is_same<VertexData,glm::i32vec1>::value) { m_Data = DataType::INT; return;}
+
+            else if(   std::is_same<VertexData,glm::u32vec4>::value
+                    || std::is_same<VertexData,glm::u32vec3>::value
+                    || std::is_same<VertexData,glm::u32vec2>::value
+                    || std::is_same<VertexData,std::uint32_t>::value
+                    || std::is_same<VertexData,glm::u32vec1>::value) { m_Data = DataType::UNSIGNED_INT; return;}
+
+            else if(   std::is_same<VertexData,glm::i8vec4>::value
+                    || std::is_same<VertexData,glm::i8vec3>::value
+                    || std::is_same<VertexData,glm::i8vec2>::value
+                    || std::is_same<VertexData,std::int8_t>::value
+                    || std::is_same<VertexData,glm::i8vec1>::value) { m_Data = DataType::BYTE; return;}
+
+            else if(   std::is_same<VertexData,glm::u8vec4>::value
+                    || std::is_same<VertexData,glm::u8vec3>::value
+                    || std::is_same<VertexData,std::uint8_t>::value
+                    || std::is_same<VertexData,glm::u8vec2>::value
+                    || std::is_same<VertexData,glm::u8vec1>::value) { m_Data = DataType::UNSIGNED_BYTE; return;}
+
+            else if(   std::is_same<VertexData,glm::i16vec4>::value
+                    || std::is_same<VertexData,glm::i16vec3>::value
+                    || std::is_same<VertexData,glm::i16vec2>::value
+                    || std::is_same<VertexData,std::int16_t>::value
+                    || std::is_same<VertexData,glm::i16vec1>::value) { m_Data = DataType::SHORT; return;}
+
+            else if(   std::is_same<VertexData,glm::u16vec4>::value
+                    || std::is_same<VertexData,glm::u16vec3>::value
+                    || std::is_same<VertexData,glm::u16vec2>::value
+                    || std::is_same<VertexData,std::uint16_t>::value
+                    || std::is_same<VertexData,glm::u16vec1>::value) { m_Data = DataType::UNSIGNED_SHORT; return;}
+
+
+            throw std::runtime_error("Non standard data used for element buffer.");
+
+        }
+
+        template<bool BindFirst=true>
+        void Draw( Primitave p, std::size_t NumberOfIndices, std::size_t first=0 )
+        {
+            if(BindFirst) Bind();
+
+            //#define BUFFER_OFFSET(idx) (static_cast<char*>(0) + (idx))
+            glDrawElements( static_cast<GLenum>(p),
+                            static_cast<GLsizei>(NumberOfIndices),
+                            static_cast<GLenum>(m_Data),
+                            static_cast<char*>(0)+first
+                            );
+        }
+
+        DataType m_Data;
+};
 
 }}
 
