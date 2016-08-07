@@ -65,32 +65,74 @@ static inline typename std::enable_if< I < std::tuple_size<TupleType>::value, in
 EnableVertexAttribArrayFromTuple( std::int32_t offset, const std::array<bool, tuplesize > & normalized)
 {
     using NextElement = typename std::tuple_element<I, TupleType>::type;
+    using BaseType    = typename NextElement::value_type;
 
     int num_components = sizeof( NextElement ) / sizeof( typename NextElement::value_type);
 
+    const int SizeOfBaseType = sizeof(BaseType);
+
+    GLenum GlBaseType;
+
+    if( std::is_floating_point<BaseType>::value )
+    {
+
+        if( SizeOfBaseType == sizeof(std::int32_t) )
+        {
+            GlBaseType = GL_FLOAT;
+        }
+        else if( SizeOfBaseType == sizeof(std::int64_t) )
+        {
+            GlBaseType = GL_DOUBLE;
+        } else {
+            throw std::runtime_error("Unknown format! Make sure to use only the glm:vec_types");
+        }
+    }
+    else
+    {
+
+        if( std::is_signed<BaseType>::value )
+        {
+            if( SizeOfBaseType == sizeof(std::int8_t) )  GlBaseType = GL_BYTE;
+            else if( SizeOfBaseType == sizeof(std::int16_t) ) GlBaseType = GL_SHORT;
+            else if( SizeOfBaseType == sizeof(std::int32_t) ) GlBaseType = GL_INT;
+            else {
+                throw std::runtime_error("Unknown format! Make sure to use only the glm:vec_types");
+            }
+        } else {
+            if( SizeOfBaseType == sizeof(std::int8_t) )  GlBaseType = GL_UNSIGNED_BYTE;
+            if( SizeOfBaseType == sizeof(std::int16_t) ) GlBaseType = GL_UNSIGNED_SHORT;
+            if( SizeOfBaseType == sizeof(std::int32_t) ) GlBaseType = GL_UNSIGNED_INT;
+            else {
+                throw std::runtime_error("Unknown format! Make sure to use only the glm:vec_types");
+            }
+        }
+
+    }
     //std::cout << "Current Offset      : " << (long long)offset << std::endl;
     //std::cout << "Size of next element: " << sizeof(NextElement) << std::endl;
-//    std::cout << "Size of int : " << sizeof(int) << std::endl;
+    //std::cout << "Size of int : " << sizeof(int) << std::endl;
 
     #define BUFFER_OFFSET(idx) (static_cast<char*>(0) + (idx))
 
 
      glVertexAttribPointer( GLuint(I),
                             num_components ,
-                            GL_FLOAT,
+                            GlBaseType,
                             normalized[I] ,
                             sizeof(TupleType),
                             BUFFER_OFFSET(offset));
+    glEnableVertexAttribArray(I);
 
-    std::cout << "glVertexAttribPointer(" << I << ", ";
-    std::cout << num_components << ", ";
-    std::cout << "GL_FLOAT" << ", ";
-    std::cout << (normalized[I] ? "GL_TRUE" : "GL_FALSE") << ", ";
-    std::cout << sizeof(TupleType) << ", ";
-    std::cout << (long long)offset << ");" << std::endl;
+ //   std::cout << "glVertexAttribPointer(" << I << ", ";
+ //   std::cout << num_components << ", ";
+ //   std::cout << "GL_FLOAT" << ", ";
+ //   std::cout << (normalized[I] ? "GL_TRUE" : "GL_FALSE") << ", ";
+ //   std::cout << sizeof(TupleType) << ", ";
+ //   std::cout << (long long)offset << ");" << std::endl;
 
     EnableVertexAttribArrayFromTuple<I+1, TupleType>( offset + sizeof(NextElement) , normalized );
 }
+
 
 struct GenBuff
 {
@@ -143,12 +185,12 @@ class Buffer : public BaseHandle<GLuint, GenBuff,DestBuff>
             m_Size = data.size()*sizeof(VertexData);
         }
 
-        void Bind( )
+        void Bind( ) const
         {
             glBindBuffer( static_cast<GLuint>(target) , Get() );
         }
 
-        void Unbind( )
+        void Unbind( ) const
         {
             glBindBuffer( static_cast<GLuint>(target) , 0 );
         }
@@ -171,9 +213,24 @@ class Buffer : public BaseHandle<GLuint, GenBuff,DestBuff>
          *
          *
          */
-        static void EnableAttributes(  const std::array<bool, std::tuple_size< std::tuple< GLM_Vec_Types...> >::value > & normalized )
+        void EnableAttributes(  const std::array<bool, std::tuple_size< std::tuple< GLM_Vec_Types...> >::value > & normalized ) const
+        //static void EnableAttributes(  const bool & normalized)
         {
+            Bind();
             gla::experimental::EnableVertexAttribArrayFromTuple<0, std::tuple<GLM_Vec_Types...> > (0, normalized);
+        }
+
+        template <typename... GLM_Vec_Types>
+        /**
+         * @brief EnableAttributes
+         * Enables attributes  assuming all attributes are unnormalized
+         */
+        void EnableAttributes() const
+        {
+            Bind();
+            std::array<bool, std::tuple_size< std::tuple< GLM_Vec_Types...> >::value > FalseArray;
+            FalseArray.fill(false);
+            gla::experimental::EnableVertexAttribArrayFromTuple<0, std::tuple<GLM_Vec_Types...> > (0, FalseArray);
         }
 
 

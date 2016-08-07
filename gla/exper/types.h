@@ -44,6 +44,78 @@ enum class Primitave
 
 };
 
+enum class AttributeTypes
+{
+    v1 ,
+    v1n, // normalized
+    v2 ,
+    v2n, // normalized
+    v3 ,
+    v3n, // normalized
+    v4 ,
+    v4n, // normalized
+
+    // Integer
+    iv1 ,
+    iv1n, // normalized
+    iv2 ,
+    iv2n, // normalized
+    iv3 ,
+    iv3n, // normalized
+    iv4 ,
+    iv4n, // normalized
+
+    // unsigned int
+    uv1 ,
+    uv1n, // normalized
+    uv2 ,
+    uv2n, // normalized
+    uv3 ,
+    uv3n, // normalized
+    uv4 ,
+    uv4n, // normalized
+
+    // short
+    i16v1 ,
+    i16v1n, // normalized
+    i16v2 ,
+    i16v2n, // normalized
+    i16v3 ,
+    i16v3n, // normalized
+    i16v4 ,
+    i16v4n, // normalized
+
+    // unsigned short
+    u16v1 ,
+    u16v1n, // normalized
+    u16v2 ,
+    u16v2n, // normalized
+    u16v3 ,
+    u16v3n, // normalized
+    u16v4 ,
+    u16v4n, // normalized
+
+    // byte
+    i8v1 ,
+    i8v1n, // normalized
+    i8v2 ,
+    i8v2n, // normalized
+    i8v3 ,
+    i8v3n, // normalized
+    i8v4 ,
+    i8v4n, // normalized
+
+    // unsigned byte
+    u8v1 ,
+    u8v1n, // normalized
+    u8v2 ,
+    u8v2n, // normalized
+    u8v3 ,
+    u8v3n, // normalized
+    u8v4 ,
+    u8v4n // normalized
+};
+
 }}
 
 #endif

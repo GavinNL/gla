@@ -164,7 +164,6 @@ namespace gla
 
     };
 
-
     template <typename... attrb>
     class InterleavedVAO
     {

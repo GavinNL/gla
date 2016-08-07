@@ -94,22 +94,28 @@ set(LIBS_GLAD
 #  target_link_libraries (Shadows ${LIBS_FULL})
 #
 
-        add_executable(HelloTriangleExp
-              examples/HelloTriangleExp.cpp glad.c)
-target_link_libraries (HelloTriangleExp ${LIBS_GLAD})
+        add_executable(01_HelloTriangle
+              examples/01_HelloTriangle.cpp glad.c)
+target_link_libraries (01_HelloTriangle ${LIBS_GLAD})
 
-        add_executable(HelloTriangleIndexedExp
-              examples/HelloTriangleIndexedExp.cpp glad.c)
-target_link_libraries (HelloTriangleIndexedExp ${LIBS_GLAD})
+        add_executable(02_HelloTriangleIndexed
+              examples/02_HelloTriangleIndexed.cpp glad.c)
+target_link_libraries (02_HelloTriangleIndexed ${LIBS_GLAD})
 
-        add_executable(HelloTexturedTriangleExp
-              examples/HelloTexturedTriangleExp.cpp glad.c)
-target_link_libraries (HelloTexturedTriangleExp ${LIBS_GLAD})
+        add_executable(03_HelloTriangleVertexArray
+              examples/03_HelloTriangleVertexArray.cpp glad.c)
+target_link_libraries (03_HelloTriangleVertexArray ${LIBS_GLAD})
 
-        add_executable(Sampler2DArray
-              examples/Sampler2DArray.cpp glad.c)
-target_link_libraries (Sampler2DArray ${LIBS_GLAD})
+        add_executable(04_HelloTexturedTriangle
+              examples/04_HelloTexturedTriangle.cpp glad.c)
+target_link_libraries (04_HelloTexturedTriangle ${LIBS_GLAD})
 
+
+
+
+add_executable(Sampler2DArray
+      examples/Sampler2DArray.cpp glad.c)
+target_link_libraries(Sampler2DArray ${LIBS_GLAD})
 # This command b
 #add_custom_command(
 #    TARGET ${PROJECT_NAME} POST_BUILD
