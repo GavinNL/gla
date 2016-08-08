@@ -213,6 +213,7 @@ public:
 
     }
 
+
     void Bind()
     {
         glBindTexture(GL_TEXTURE_2D, Get() );

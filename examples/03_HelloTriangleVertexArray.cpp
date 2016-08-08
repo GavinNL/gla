@@ -66,8 +66,9 @@ int main()
 
         VAO.Attach<glm::vec3, glm::vec4>( E, G);
 
-        G.Unbind();
-        E.Unbind();
+
+        //G.Unbind();// unbind these so that the VAO will do it for us.
+        //E.Unbind();// unbind these so that the VAO will do it for us.
         //====
 
 
@@ -78,9 +79,6 @@ int main()
             TriangleShader.Bind();
 
             // Bind the VertexBuffer and tell openGL that
-            // each vertex is 1 vec3 and 1vec4, and both are not noramlized
-            //VAO.Bind();
-
             VAO.Draw(gla::experimental::Primitave::TRIANGLES, 3);
 
             //glDrawElementsBaseVertex( GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0, 0);

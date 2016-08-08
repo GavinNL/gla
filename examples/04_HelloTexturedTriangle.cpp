@@ -1,6 +1,7 @@
 #include <gla/glad.h>
 #include <gla/exper/array_buffer.h>
 #include <gla/exper/sampler2d.h>
+#include <gla/exper/vertexarray.h>
 #include <gla/shader.h>
 
 #include <glm/gtc/noise.hpp>
@@ -11,15 +12,9 @@
 //=================================================================================
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 480
+#define WINDOW_TITLE "Hello Textured Triangle"
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
-
-#ifdef GLAD_DEBUG
-// logs every gl call to the console
-void pre_gl_call(const char *name, void *funcptr, int len_args, ...) {
-    printf("Calling: %s (%d arguments)\n", name, len_args);
-}
-#endif
 
 
 int main()
@@ -32,84 +27,84 @@ int main()
         return -1;
     }
 
-#ifdef GLAD_DEBUG
-    // before every opengl call call pre_gl_call
-    glad_set_pre_callback(pre_gl_call);
-
-    // post callback checks for glGetError by default
-
-    // don't use the callback for glClear
-    // (glClear could be replaced with your own function)
-    glad_debug_glClear = glad_glClear;
-#endif
-
-    { // adding an extra scope here because we want all gla objects automatically destroyed when they go out of scope
+     { // adding an extra scope here because we want all gla objects automatically destroyed when they go out of scope
       // calling glfwTerminate before destroying the openGL objects will cause a segfault, so putting
       // this scope here will make the gla objects destroy themselves before terminate gets called.
 
         glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 
-        gla::experimental::Image Img;
-
-        Img.loadFromPath("../resources/textures/rocks1024.jpg" );
-
-
-        #define EXPRESSION( A ) [] (float x, float y) { return A; };
-
-        Img.r = [] (float x, float y) { return (float)(0.5f * glm::perlin( glm::vec2(x,y)*8.0f ) + 0.5);  };
-        Img.g = EXPRESSION( 2*x*x + y );
-
-        //Img.a = [] (float x, float y) { return (float)(0.5f * glm::perlin( glm::vec2(x,y)*8.0f ) + 0.5);  };
-        gla::experimental::Sampler2D Sampler(Img);
-
-
-        gla::ShaderProgram TriangleShader;
-        TriangleShader.AttachShaders(  gla::VertexShader("../resources/shaders/Textures.v"),  gla::FragmentShader("../resources/shaders/Textures.f")  );
-
-
-
-
-        //====
+        //================================================================
+        // 1. Create the vertices of the triangle using our vertex structure
+        //    The vertex strucutre contains positions and UV coords of each
+        //    vertex in the triangle.
+        //================================================================
         struct MyVertex
         {
             glm::vec3 p;
             glm::vec2 uv;
         };
 
-        std::vector< MyVertex > CpuBuffer;
+        std::vector< MyVertex > VertexData;
+        VertexData.push_back( { glm::vec3(-1.0f, -1.0f, 0.f), glm::vec2(0.f, 1.f)  }  );
+        VertexData.push_back( { glm::vec3( 1.0f ,-1.0f, 0.f), glm::vec2(1.f, 1.f)  }  );
+        VertexData.push_back( { glm::vec3( 0.0f , 1.0f, 0.f), glm::vec2(.5f, .0f)  }  );
 
-        CpuBuffer.push_back( { glm::vec3(-1.0f, -1.0f, 0.f), glm::vec2(0.f, 1.f)  }  );
-        CpuBuffer.push_back( { glm::vec3( 1.0f ,-1.0f, 0.f), glm::vec2(1.f, 1.f)  }  );
-        CpuBuffer.push_back( { glm::vec3( 0.0f , 1.0f, 0.f), glm::vec2(.5f, .0f)  }  );
+        // Send the vertex data to the GPU.
+        gla::experimental::Array_Buffer G( VertexData );
 
-        gla::experimental::Array_Buffer G( CpuBuffer );
-
-        G.Bind();
-        G.EnableAttributes<glm::vec3, glm::vec2>( {false,false } );
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
+        // Create a VertexArray from the data
+        gla::experimental::VertexArray VAO;
+        VAO.Attach<glm::vec3, glm::vec2>( VertexData );
+        //================================================================
 
 
+        //================================================================
+        // 2. Load an image we want to use as the texture
+        //================================================================
 
-        Sampler.SetActive(0);
-        Sampler.Bind();
-        //====
+        gla::experimental::Image Img;
+
+        Img.loadFromPath("../resources/textures/rocks1024.jpg" );
+
+        // We can modify the red channel using a lambda function
+        Img.r = [] (float x, float y) { return (float)(0.5f * glm::perlin( glm::vec2(x,y)*8.0f ) + 0.5);  };
+
+        // Or similarly using the macro which essentially does the same thing as the above
+        // but reduces the amount you need to write.
+        Img.g = IMAGE_EXPRESSION( 2*x*x + y );
+
+
+        // A texture in GLSL is called a Sampler2D, we send the data to the GPU
+        // by creating a Sampler2D object and initializing it with the Image object
+        gla::experimental::Sampler2D Sampler(Img);
+
+
+
+        //================================================================
+        // 3. Load the shader we want to use when drawsing the triangle
+        //================================================================
+        gla::ShaderProgram TriangleShader;
+        TriangleShader.AttachShaders(  gla::VertexShader(  "../resources/shaders/Textures.v"),
+                                       gla::FragmentShader("../resources/shaders/Textures.f"));
+
+
+
+        //================================================================
 
         while (!glfwWindowShouldClose(gMainWindow) )
         {
-
-            Sampler.SetActive( 0 );
             // Set the triangle shader to be the one that we will use
             TriangleShader.Bind();
 
-            TriangleShader.Uniform( TriangleShader.GetUniformLocation("uSampler"), 0 );
-            G.Bind();
+            // Attach the Sampler to Texture Unit 0.
+            Sampler.SetActive(0);
 
-            // Can use any one of the following to render the triangle, they are all equivelant.
-            // as long as both buffers have the same number of items in it. In our case 3.
-            //G.Render(Primitave::TRIANGLES, 0, 3);
-            glDrawArrays( GL_TRIANGLES, 0,  3 );
+            // Tell the shader that we are using Texture Unit 0 for the sampler
+            TriangleShader.Uniform( TriangleShader.GetUniformLocation("uSampler"), 0 );
+
+            // Draw the triangle.
+            VAO.Draw(gla::experimental::Primitave::TRIANGLES, 3);
 
 
             glfwSwapBuffers(gMainWindow);
