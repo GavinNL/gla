@@ -64,11 +64,11 @@ int main()
         // Create a vertex array object.
         gla::experimental::VertexArray VAO;
 
-        VAO.Attach<glm::vec3, glm::vec4>( E, G);
+        VAO.Attach<glm::vec3, glm::vec4>( E, G );
 
 
-        //G.Unbind();// unbind these so that the VAO will do it for us.
-        //E.Unbind();// unbind these so that the VAO will do it for us.
+        G.Unbind();
+        E.Unbind();
         //====
 
 
@@ -79,10 +79,8 @@ int main()
             TriangleShader.Bind();
 
             // Bind the VertexBuffer and tell openGL that
-            VAO.Draw(gla::experimental::Primitave::TRIANGLES, 3);
+            VAO.Draw( gla::experimental::Primitave::TRIANGLES, 3 );
 
-            //glDrawElementsBaseVertex( GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0, 0);
-            //glDrawArrays(GL_TRIANGLES, 0, 3);
             glfwSwapBuffers(gMainWindow);
             glfwPollEvents();
         }

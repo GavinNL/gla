@@ -113,6 +113,10 @@ target_link_libraries (04_HelloTexturedTriangle ${LIBS_GLAD})
        add_executable(05_Sampler2DArray
              examples/05_Sampler2DArray.cpp glad.c)
 target_link_libraries(05_Sampler2DArray ${LIBS_GLAD})
+
+       add_executable(06_UniformBuffer
+             examples/06_UniformBuffer.cpp glad.c)
+target_link_libraries(06_UniformBuffer ${LIBS_GLAD})
 # This command b
 #add_custom_command(
 #    TARGET ${PROJECT_NAME} POST_BUILD

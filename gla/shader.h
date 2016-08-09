@@ -2,7 +2,7 @@
 #define GLA_SHADER_H
 
 #include <gla/types.h>
-#include <gla/uniformbuffer.h>
+//#include <gla/uniformbuffer.h>
 #include <gla/handle.h>
 #include <iostream>
 #include <fstream>
@@ -318,11 +318,11 @@ public:
         }
 
 
-        inline void BindUniformBuffer(GPUUniformBuffer & buffer, GLuint BlockIndex, GLuint BindPoint)
-        {
-            glUniformBlockBinding(m_Handle.GetID(), BlockIndex, BindPoint);
-            buffer.BindBase(BindPoint);
-        }
+      //  inline void BindUniformBuffer(GPUUniformBuffer & buffer, GLuint BlockIndex, GLuint BindPoint)
+      //  {
+      //      glUniformBlockBinding(m_Handle.GetID(), BlockIndex, BindPoint);
+      //      buffer.BindBase(BindPoint);
+      //  }
 
 
         //========================================================================================
