@@ -17,5 +17,6 @@ void main()
     vec4 c1 = texture( uTextureArray, vec3(outTexCoord0, 0 ) );
     vec4 c2 = texture( uTextureArray, vec3(outTexCoord0, 1 ) );
 
+    t = round(t);
     OutColour = (1.0-t)*c1 + t*c2;
 }

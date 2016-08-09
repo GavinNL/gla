@@ -1,7 +1,6 @@
 #include <gla/glad.h>
-#include <gla/exper/array_buffer.h>
 #include <gla/exper/sampler2d.h>
-#include <gla/exper/vertexarray.h>
+#include <gla/exper/buffers.h>
 #include <gla/shader.h>
 
 #include <glm/gtc/noise.hpp>
@@ -71,8 +70,8 @@ int main()
         Img.r = [] (float x, float y) { return (float)(0.5f * glm::perlin( glm::vec2(x,y)*8.0f ) + 0.5);  };
 
         // Or similarly using the macro which essentially does the same thing as the above
-        // but reduces the amount you need to write.
-        Img.g = IMAGE_EXPRESSION( 2*x*x + y );
+        // but reduces the amount you need to write
+        Img.g = IMAGE_EXPRESSION( glm::clamp(2*x*x*x + y,0.0f,1.0f) );
 
 
         // A texture in GLSL is called a Sampler2D, we send the data to the GPU

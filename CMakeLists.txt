@@ -110,12 +110,9 @@ target_link_libraries (03_HelloTriangleVertexArray ${LIBS_GLAD})
               examples/04_HelloTexturedTriangle.cpp glad.c)
 target_link_libraries (04_HelloTexturedTriangle ${LIBS_GLAD})
 
-
-
-
-add_executable(Sampler2DArray
-      examples/Sampler2DArray.cpp glad.c)
-target_link_libraries(Sampler2DArray ${LIBS_GLAD})
+       add_executable(05_Sampler2DArray
+             examples/05_Sampler2DArray.cpp glad.c)
+target_link_libraries(05_Sampler2DArray ${LIBS_GLAD})
 # This command b
 #add_custom_command(
 #    TARGET ${PROJECT_NAME} POST_BUILD

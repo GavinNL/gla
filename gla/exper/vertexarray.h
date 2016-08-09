@@ -3,7 +3,8 @@
 
 #include <gla/glad.h>
 #include <gla/exper/handle.h>
-#include <gla/exper/array_buffer.h>
+//#include <gla/exper/array_buffer.h>
+#include <gla/exper/element_array_buffer.h>
 
 namespace gla { namespace experimental {
 

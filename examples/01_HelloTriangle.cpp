@@ -1,9 +1,9 @@
 #include <gla/glad.h>
-#include <gla/exper/array_buffer.h>
+#include <gla/exper/buffers.h>
 #include <gla/exper/sampler2d.h>
 #include <gla/shader.h>
 #include <GLFW/glfw3.h>
-#include <gla/exper/sampler2darray.h>
+
 //=================================================================================
 // Global Variables and Function Prototypes
 //=================================================================================
@@ -35,11 +35,11 @@ int main()
         //    The vertex strucutre contains positions and colours of each
         //    vertex in the triangle.
         //================================================================
-        struct MyVertex
-        {
-            glm::vec3 p;
-            glm::vec4 c;
-        };
+        struct MyVertex   // You don't actually need to create a struct for the vertex
+        {                 // as long as you keep the positions and colour values
+            glm::vec3 p;  // in their proper order...eg:
+            glm::vec4 c;  // p1,c1,p2,c2,p3,c3...etc
+        };                //
 
         // Populate a standard vector of the vertices with the appropriate information
         std::vector< MyVertex > CpuBuffer;

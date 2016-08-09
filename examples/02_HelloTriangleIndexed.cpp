@@ -1,5 +1,5 @@
 #include <gla/glad.h>
-#include <gla/exper/array_buffer.h>
+#include <gla/exper/buffers.h>
 #include <gla/exper/sampler2d.h>
 #include <gla/shader.h>
 #include <GLFW/glfw3.h>
@@ -46,6 +46,7 @@ int main()
         VertexBuffer.push_back( { glm::vec3(-1.0f, -1.0f, 0.f), glm::vec4(1.f, 0.f, 0.f, 1.0f)  }  );
         VertexBuffer.push_back( { glm::vec3( 1.0f ,-1.0f, 0.f), glm::vec4(0.f, 1.f, 0.f, 1.0f)  }  );
         VertexBuffer.push_back( { glm::vec3( 0.0f , 1.0f, 0.f), glm::vec4(0.f, 0.f, 1.f, 1.0f)  }  );
+
 
         // Create a buffer on the GPU using the data from the standard vector
         gla::experimental::Array_Buffer         G( VertexBuffer );
