@@ -101,7 +101,7 @@ int main()
 
             // Tell the shader that we are using Texture Unit 0 for the sampler
             TriangleShader.Uniform( TriangleShader.GetUniformLocation("uSampler"), 0 );
-
+            TriangleShader.Uniform( TriangleShader.GetUniformLocation("uTransform"), glm::mat4() );
             // Draw the triangle.
             VAO.Draw(gla::experimental::Primitave::TRIANGLES, 3);
 

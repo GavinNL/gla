@@ -4,6 +4,7 @@ in  vec2 FragmentTexCoord;
 
 uniform sampler2D uSampler;
 
+
 out vec4 color;
 
 void main()

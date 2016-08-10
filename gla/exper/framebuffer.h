@@ -87,9 +87,26 @@ public:
     }
 
     void Attach(Sampler2D Tex);
-}
+    void Use( const std::vector<FrameBufferAttachment> attach);
+};
 
 
+
+inline void FrameBuffer::Use( const std::vector<FrameBufferAttachment> attach)
+{
+    Bind();
+    glDrawBuffers( attach.size(), &attach[0] );
 }
+
+inline FrameBuffer::Attach( Sampler2D texture, FrameBufferAttachment attachment)
+{
+    Bind();
+    texture.Bind();
+    glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, texture.get(), 0);
+}
+
+} }
+
+
 
 #endif
