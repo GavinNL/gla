@@ -2,13 +2,14 @@
 
 #include "glad.h"
 #include <gla/timer.h>
+
 #include <gla/exper/sampler2darray.h>
-
 #include <gla/exper/sampler2d.h>
-
 #include <gla/exper/buffers.h>
+#include <gla/exper/shader.h>
 
-#include <gla/shader.h>
+#include <glm/gtc/noise.hpp> // for glm::perlin
+
 #include <GLFW/glfw3.h>
 
 
@@ -25,12 +26,8 @@ using namespace gla;
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
-struct Uniform140
-{
-    vec4 x;
-};
 
-mat4 X;
+using namespace gla::experimental;
 
 int main()
 {
@@ -66,16 +63,16 @@ int main()
         VertexBuffer.push_back( { vec3(-1.0f , 1.0f, 0.f), vec2( 0.f, 1.f )} );
 
         // Load teh buffer into the GPU
-        gla::experimental::Array_Buffer buff( VertexBuffer );
+        Array_Buffer buff( VertexBuffer );
 
 
-        gla::experimental::VertexArray VAO;
+        VertexArray VAO;
         VAO.Attach<glm::vec3, glm::vec2>( buff );
 
         // Load some textures. And force using 3 components (r,g,b)
-        gla::experimental::Image Tex1("../resources/textures/rocks.jpg",  3 );
-        gla::experimental::Image Tex2("../resources/textures/rocks1024.jpg", 3 );
-        gla::experimental::Image Tex3(256,256, 3);
+        Image Tex1("../resources/textures/rocks.jpg",  3 );
+        Image Tex2("../resources/textures/rocks1024.jpg", 3 );
+        Image Tex3(256,256, 3);
 
 
         buff.Release();
@@ -85,7 +82,7 @@ int main()
         // Create the Texture array on the GPU.
         //   Note: Any objects that start with GPU mean they are initialized on the GPU
         //=========================================================================================
-        gla::experimental::Sampler2DArray TexArray2D;
+        Sampler2DArray TexArray2D;
 
         // Create the GPUTexture array with 3 layers that hold 256x256 images with 3 components each, and 2 mipmaps.
         TexArray2D.Create( uvec2(256,256), 3, 3 , 2);
@@ -157,7 +154,7 @@ int main()
             TextureArrayShader.Uniform( uSpeedID ,        Speed); //a constant variable that we are using in the shader
 
 
-            VAO.Draw(gla::experimental::Primitave::TRIANGLE_FAN, 4);
+            VAO.Draw(Primitave::TRIANGLE_FAN, 4);
 
 
             glfwSwapBuffers(gMainWindow);

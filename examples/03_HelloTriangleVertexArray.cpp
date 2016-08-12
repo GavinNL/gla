@@ -1,10 +1,10 @@
 #include "glad.h"
 #include <gla/exper/array_buffer.h>
 #include <gla/exper/sampler2d.h>
-#include <gla/shader.h>
-#include <GLFW/glfw3.h>
+#include <gla/exper/shader.h>
 #include <gla/exper/sampler2darray.h>
 #include <gla/exper/vertexarray.h>
+#include <GLFW/glfw3.h>
 //=================================================================================
 // Global Variables and Function Prototypes
 //=================================================================================
@@ -13,6 +13,9 @@
 #define WINDOW_TITLE "HelloTriangleVertexArray"
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
+
+
+using namespace gla::experimental;
 
 int main()
 {
@@ -34,8 +37,8 @@ int main()
 
 
 
-        gla::ShaderProgram TriangleShader;
-        TriangleShader.AttachShaders(  gla::VertexShader("../resources/shaders/HelloTriangle.v"),  gla::FragmentShader("../resources/shaders/HelloTriangle.f")  );
+        ShaderProgram TriangleShader;
+        TriangleShader.AttachShaders(  VertexShader("../resources/shaders/HelloTriangle.v"),  FragmentShader("../resources/shaders/HelloTriangle.f")  );
 
 
         //====
@@ -57,12 +60,12 @@ int main()
 
 
         // Send the vertex buffer to the GPU
-        gla::experimental::Array_Buffer         G( VertexBuffer );
-        gla::experimental::Element_Array_Buffer E( IndexBuffer );
+        Array_Buffer         G( VertexBuffer );
+        Element_Array_Buffer E( IndexBuffer );
 
 
         // Create a vertex array object.
-        gla::experimental::VertexArray VAO;
+        VertexArray VAO;
 
         VAO.Attach<glm::vec3, glm::vec4>( E, G );
 
@@ -79,7 +82,7 @@ int main()
             TriangleShader.Bind();
 
             // Bind the VertexBuffer and tell openGL that
-            VAO.Draw( gla::experimental::Primitave::TRIANGLES, 3 );
+            VAO.Draw( Primitave::TRIANGLES, 3 );
 
             glfwSwapBuffers(gMainWindow);
             glfwPollEvents();

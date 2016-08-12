@@ -105,23 +105,32 @@
 #ifndef GLA_H
 #define GLA_H
 
-#include <gla/geometry/geometry.h>
-#include <gla/global.h>
-#include <gla/camera.h>
-#include <gla/texture.h>
-#include <gla/timer.h>
-#include <gla/shader.h>
-#include <gla/gputexturearray.h>
-#include <gla/vertexarrayobject.h>
-#include <gla/framebufferobject.h>
-#include <gla/solids.h>
-#include <gla/uniformbuffer.h>
 
-namespace gla {
+#include <gla/exper/buffers.h>
+#include <gla/exper/camera.h>
+#include <gla/exper/timer.h>
+#include <gla/exper/framebuffer.h>
+#include <gla/exper/image.h>
+#include <gla/exper/sampler2d.h>
+#include <gla/exper/sampler2darray.h>
+#include <gla/exper/geometry.h>
+#include <gla/exper/shader.h>
+
+//#include <gla/geometry/geometry.h>
+//#include <gla/global.h>
+//#include <gla/camera.h>
+//#include <gla/texture.h>
+//#include <gla/timer.h>
+//#include <gla/shader.h>
+//#include <gla/gputexturearray.h>
+//#include <gla/vertexarrayobject.h>
+//#include <gla/framebufferobject.h>
+//#include <gla/solids.h>
+//#include <gla/uniformbuffer.h>
 
 
+//namespace glan = gla::experimental;
 
 
-}
 
 #endif // GLA_H

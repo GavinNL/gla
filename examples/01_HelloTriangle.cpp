@@ -2,7 +2,8 @@
 #include "glad.h"
 #include <gla/exper/buffers.h>
 #include <gla/exper/sampler2d.h>
-#include <gla/shader.h>
+#include <gla/exper/shader.h>
+
 #include <GLFW/glfw3.h>
 
 //=================================================================================
@@ -12,6 +13,9 @@
 #define WINDOW_HEIGHT 480
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
+
+
+using namespace gla::experimental;
 
 int main()
 {
@@ -26,9 +30,9 @@ int main()
 
 
 
-        gla::ShaderProgram TriangleShader;
-        TriangleShader.AttachShaders(  gla::VertexShader("../resources/shaders/HelloTriangle.v"),
-                                       gla::FragmentShader("../resources/shaders/HelloTriangle.f")  );
+        ShaderProgram TriangleShader;
+        TriangleShader.AttachShaders(  VertexShader("../resources/shaders/HelloTriangle.v"),
+                                       FragmentShader("../resources/shaders/HelloTriangle.f")  );
 
 
         //================================================================
@@ -49,12 +53,12 @@ int main()
         CpuBuffer.push_back( { glm::vec3( 0.0f , 1.0f, 0.f), glm::vec4(0.f, 0.f, 1.f, 1.0f)  }  );
 
         // Create a buffer on the GPU using the data from the standard vector
-        gla::experimental::Array_Buffer         G;
+        Array_Buffer         G;
 
         G << CpuBuffer;
 
 
-        gla::experimental::Array_Buffer g;
+        Array_Buffer g;
         g = G;
 
         G.Release();
@@ -72,14 +76,14 @@ int main()
             // consists of one vec3 and one vec4 that are both un-normalized.
             // This function will automatically bind the array buffer and set the
             // attributes.
-            g.EnableAttributes<glm::vec3, glm::vec4>( {false,false } );
+            g.EnableAttributes<vec3, vec4>( {false,false } );
             // (alternatively) G.EnableAttributes<glm::vec3, glm::vec4>(); // same as non-normlaized vectors
 
 
             // Now draw the triangle.
             // we are drawing Triangles, starting at Vertex Index 0
             // and we are drawing 3 vertices (because 3 vertices make a triangle)
-            g.Draw(gla::experimental::Primitave::TRIANGLES, 0, 3);
+            g.Draw(Primitave::TRIANGLES, 0, 3);
 
 
             glfwSwapBuffers(gMainWindow);

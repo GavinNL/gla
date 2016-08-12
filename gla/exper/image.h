@@ -2,7 +2,7 @@
 #define GLA_Image_H
 
 #include "types.h"
-#include <gla/global.h>
+//#include <gla/global.h>
 //#include <gla/types.h>
 //#include <gla/exceptions.h>
 #include <iostream>
@@ -11,7 +11,7 @@
 #include <memory>
 #include <vector>
 
-#include <gla/handle.h>
+//#include <gla/handle.h>
 #ifdef GLA_IMAGE_USE_STB
     #include <stb/stb_image.h>
 #elif GLA_IMAGE_USE_FREEIMAGE
@@ -90,6 +90,7 @@ namespace gla { namespace experimental {
      */
     class ImageBase
     {
+
 
         protected:
 
@@ -204,7 +205,7 @@ namespace gla { namespace experimental {
                 }
                 else
                 {
-                    GLA_DOUT  << "from Memory error: " << x << "," << y << "\n";
+                    throw std::runtime_error("Error loading image from memory");
                 }
 
             }
@@ -304,7 +305,7 @@ namespace gla { namespace experimental {
              * @brief size Gets the dimensions of the Image
              * @return
              */
-            inline gla::uvec2  size() const { return mDim; }
+            inline uvec2  size() const { return mDim; }
 
             /**
              * @brief getRawData gets a pointer to the raw pixel data so that it can be sent to OpenGL
@@ -369,7 +370,7 @@ namespace gla { namespace experimental {
             //=====================================
             // Operators
             //=====================================
-            ImageBase& operator=(  std::function<gla::ucol4(float,float) > F)
+            ImageBase& operator=(  std::function<ucol4(float,float) > F)
             {
                 uvec2 S = size();
                 float W = 1.0 / (float)S.x;
@@ -387,7 +388,7 @@ namespace gla { namespace experimental {
                 return *this;
             }
 
-            ImageBase& operator=(  std::function<gla::vec4(float,float) > F)
+            ImageBase& operator=(  std::function<vec4(float,float) > F)
             {
                 uvec2 S = size();
                 float W = 1.0 / (float)S.x;

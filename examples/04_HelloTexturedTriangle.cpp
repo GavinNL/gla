@@ -2,7 +2,6 @@
 #include <gla/exper/sampler2d.h>
 #include <gla/exper/buffers.h>
 #include <gla/exper/shader.h>
-//#include <gla/shader.h>
 
 #include <glm/gtc/noise.hpp>
 #include <GLFW/glfw3.h>
@@ -16,6 +15,7 @@
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
+using namespace gla::experimental;
 
 int main()
 {
@@ -51,10 +51,10 @@ int main()
         VertexData.push_back( { glm::vec3( 0.0f , 1.0f, 0.f), glm::vec2(.5f, .0f)  }  );
 
         // Send the vertex data to the GPU.
-        gla::experimental::Array_Buffer G( VertexData );
+        Array_Buffer G( VertexData );
 
         // Create a VertexArray from the data
-        gla::experimental::VertexArray VAO;
+        VertexArray VAO;
         VAO.Attach<glm::vec3, glm::vec2>( VertexData );
         //================================================================
 
@@ -63,7 +63,7 @@ int main()
         // 2. Load an image we want to use as the texture
         //================================================================
 
-        gla::experimental::Image Img;
+        Image Img;
 
         Img.loadFromPath("../resources/textures/rocks1024.jpg" );
 
@@ -77,7 +77,7 @@ int main()
 
         // A texture in GLSL is called a Sampler2D, we send the data to the GPU
         // by creating a Sampler2D object and initializing it with the Image object
-        gla::experimental::Sampler2D Sampler(Img);
+        Sampler2D Sampler(Img);
 
 
 
@@ -90,12 +90,12 @@ int main()
         //================================================================
 
 #if 0
-        gla::ShaderProgram TriangleShader;
-        TriangleShader.AttachShaders(  gla::VertexShader(  "../resources/shaders/Textures.v"),
-                                       gla::FragmentShader("../resources/shaders/Textures.f"));
+        ShaderProgram TriangleShader;
+        TriangleShader.AttachShaders(  VertexShader(  "../resources/shaders/Textures.v"),
+                                       FragmentShader("../resources/shaders/Textures.f"));
 #else
-        //auto TriangleShader = gla::ShaderProgram::Load("../resources/shaders/Textures.s");
-        auto TriangleShader = gla::experimental::ShaderProgram::Load("../resources/shaders/Textures.s");
+        //auto TriangleShader = ShaderProgram::Load("../resources/shaders/Textures.s");
+        auto TriangleShader = ShaderProgram::Load("../resources/shaders/Textures.s");
 #endif
 
         //================================================================
@@ -113,7 +113,7 @@ int main()
             TriangleShader.Uniform( TriangleShader.GetUniformLocation("uTransform"), glm::mat4() );
 
             // Draw the triangle.
-            VAO.Draw(gla::experimental::Primitave::TRIANGLES, 3);
+            VAO.Draw(Primitave::TRIANGLES, 3);
 
             glfwSwapBuffers(gMainWindow);
             glfwPollEvents();

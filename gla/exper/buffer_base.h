@@ -4,7 +4,6 @@
 
 #include "handle.h"
 #include "types.h"
-
 #include <typeinfo>
 #include <type_traits>
 #include <glm/glm.hpp>
@@ -43,7 +42,6 @@ enum class BufferUsage
         DYNAMIC_DRAW   = GL_DYNAMIC_DRAW,
         DYNAMIC_READ   = GL_DYNAMIC_READ,
         DYNAMIC_COPY   = GL_DYNAMIC_COPY
-
 };
 
 
@@ -92,6 +90,7 @@ class Buffer : public BaseHandle<GLuint, GenBuff,DestBuff>
             Allocate(size_in_bytes);
         }
 
+
         template<typename VertexData>
         Buffer( const std::vector<VertexData> & data, BufferUsage usage = BufferUsage::STATIC_DRAW)
         {
@@ -101,7 +100,7 @@ class Buffer : public BaseHandle<GLuint, GenBuff,DestBuff>
             m_Size = data.size()*sizeof(VertexData);
         }
 
-        void Bind( ) const
+        void Bind() const
         {
             glBindBuffer( static_cast<GLuint>(target) , Get() );
         }
@@ -168,6 +167,15 @@ class Buffer : public BaseHandle<GLuint, GenBuff,DestBuff>
         {
             CopyData( (unsigned char*)&V[0], sizeof(VertexType)*V.size(), offset);
         }
+
+    //    template<BufferBindTarget targ>
+    //    Buffer<target> & operator=(const Buffer<targ> & rhs)
+    //    {
+    //        static_cast<Base&>(*this) = rhs;
+    //        Base::operator = (rhs);
+    //        // ... copy member variables of Derived
+    //        return *this;
+    //    }
 
         std::size_t m_Size;
 

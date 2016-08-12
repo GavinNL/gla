@@ -2,13 +2,21 @@
 #define EXP_TYPES
 
 
-//#define USE_GLAD
-
-#ifdef USE_GLAD
-#include<gla/glad.h>
+#ifndef GL_DEPTH_BUFFER_BIT
+    #include "../../glad.h"
 #endif
 
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
+#define GLM_FORCE_RADIANS
+#include <glm/gtc/quaternion.hpp>
+#define GLM_FORCE_RADIANS
+#include <glm/gtc/matrix_transform.hpp>
+
+
+#ifndef GLA_DOUT
+#define GLA_DOUT std::cout
+#endif
 
 namespace gla { namespace experimental {
 
@@ -115,6 +123,31 @@ enum class AttributeTypes
     u8v4 ,
     u8v4n // normalized
 };
+
+
+using bvec2 = glm::bvec2 ;
+using bvec3 = glm::bvec3 ;
+using bvec4 = glm::bvec4 ;
+using vec2  = glm::vec2  ;
+using vec3  = glm::vec3  ;
+using vec4  = glm::vec4  ;
+using uvec4 = glm::uvec4 ;
+using uvec3 = glm::uvec3 ;
+using uvec2 = glm::uvec2 ;
+using ivec2 = glm::ivec2 ;
+using ivec3 = glm::ivec3 ;
+using ivec4 = glm::ivec4 ;
+using mat2  = glm::mat2  ;
+using mat3  = glm::mat3  ;
+using mat4  = glm::mat4  ;
+using quat  = glm::quat  ;
+using ucol4 = glm::u8vec4;
+using ucol3 = glm::u8vec3;
+using ucol2 = glm::u8vec2;
+using ucol1 = glm::u8vec1;
+using col4  = glm::vec4  ;
+using col3  = glm::vec3  ;
+using col2  = glm::vec2  ;
 
 }}
 

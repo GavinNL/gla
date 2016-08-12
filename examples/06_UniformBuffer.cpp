@@ -3,21 +3,19 @@
 #include <stdio.h>
 
 #include "glad.h"
-//#include <gla/global.h>
-//#include <gla/camera.h>
-//#include <gla/texture.h>
+
 #include <gla/timer.h>
-#include <gla/shader.h>
 #include <gla/exper/sampler2darray.h>
 #include <gla/exper/vertexarray.h>
 #include <gla/exper/uniformbuffer.h>
+#include <gla/exper/shader.h>
+
+
+#include <glm/gtc/noise.hpp>
 
 #include <GLFW/glfw3.h> // GLFW helper library
 
 #include <locale>
-
-using namespace gla;
-
 
 //=================================================================================
 // Global Variables and Function Prototypes
@@ -28,10 +26,7 @@ using namespace gla;
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
-struct Uniform140
-{
-    vec4 x;
-};
+using namespace gla::experimental;
 
 int main()
 {
@@ -52,8 +47,8 @@ int main()
         // Also create an index buffer.
         struct MyVertex
         {
-            glm::vec3 p;
-            glm::vec2 uv;
+            vec3 p;
+            vec2 uv;
         };
 
         std::vector< MyVertex > VertexBuffer;
@@ -64,16 +59,16 @@ int main()
         VertexBuffer.push_back( { vec3(-1.0f , 1.0f, 0.f), vec2( 0.f, 1.f )} );
 
         // Load teh buffer into the GPU
-        gla::experimental::Array_Buffer buff( VertexBuffer );
+        Array_Buffer buff( VertexBuffer );
 
 
-        gla::experimental::VertexArray VAO;
-        VAO.Attach<glm::vec3, glm::vec2>( buff );
+        VertexArray VAO;
+        VAO.Attach<vec3, vec2>( buff );
 
         // Load some textures. And force using 3 components (r,g,b)
-        gla::experimental::Image Tex1("../resources/textures/rocks.jpg",  3 );
-        gla::experimental::Image Tex2("../resources/textures/rocks1024.jpg", 3 );
-        gla::experimental::Image Tex3(256,256, 3);
+        Image Tex1("../resources/textures/rocks.jpg",  3 );
+        Image Tex2("../resources/textures/rocks1024.jpg", 3 );
+        Image Tex3(256,256, 3);
 
 
         buff.Release();
@@ -83,13 +78,13 @@ int main()
         // Create the Texture array on the GPU.
         //   Note: Any objects that start with GPU mean they are initialized on the GPU
         //=========================================================================================
-        gla::experimental::Sampler2DArray TexArray2D;
+        Sampler2DArray TexArray2D;
 
         // Create the GPUTexture array with 3 layers that hold 256x256 images with 3 components each, and 2 mipmaps.
         TexArray2D.Create( uvec2(256,256), 3, 3 , 2);
 
         // Set the red channel using a lambda function
-        Tex3.r =  IMAGE_EXPRESSION( glm::perlin( vec2(x,y) * 4.0f, vec2(4.0,4.0) )*0.5 + 0.5f )
+        Tex3.r =  IMAGE_EXPRESSION( perlin( vec2(x,y) * 4.0f, vec2(4.0,4.0) )*0.5 + 0.5f )
 
                 // Resize the textures so they match the TextureArray. This will throw an exception if
                 // the sizes do not match.
@@ -153,7 +148,7 @@ int main()
         // into the input parameter.
         //  GPUUniformBuffer MyGPUUniformBuffer(sizeof(UniformBufferStruct140));
 
-        gla::experimental::UniformBuffer uniform_buffer;
+        UniformBuffer uniform_buffer;
 
         uniform_buffer.Allocate( sizeof(UniformBufferStruct140) );
 
@@ -162,9 +157,9 @@ int main()
 
 
         GLA_DOUT  << "Block Index                     : " << BlockIndex << std::endl;
-        GLA_DOUT  << "Max Buffer Bind Points          : " << gla::experimental::UniformBuffer::Get_MaxUniformBufferBindings() << std::endl;
-        GLA_DOUT  << "Max Buffer block size           : " << gla::experimental::UniformBuffer::Get_MaxUniformBlockSize() << std::endl;
-        GLA_DOUT  << "Max Combined Uniform block size : " << gla::experimental::UniformBuffer::Get_MaxCombinedUniformBlocks() << std::endl;
+        GLA_DOUT  << "Max Buffer Bind Points          : " << UniformBuffer::Get_MaxUniformBufferBindings() << std::endl;
+        GLA_DOUT  << "Max Buffer block size           : " << UniformBuffer::Get_MaxUniformBlockSize() << std::endl;
+        GLA_DOUT  << "Max Combined Uniform block size : " << UniformBuffer::Get_MaxCombinedUniformBlocks() << std::endl;
 
         GLA_DOUT  << "Uniform Block  Size: " << UniformBufferShader.GetUniformBlockSize("Uniform140") << std::endl;
         GLA_DOUT  << "Uniform Struct Size: " << sizeof(UniformBufferStruct140) << std::endl;
@@ -201,7 +196,7 @@ int main()
             //UniformBufferShader.sendUniform(0, "uTextureArray", TextureIndex);
             UniformBufferShader.Uniform( UniformBufferShader.GetUniformLocation("uTextureArray"), TextureIndex);
 
-            VAO.Draw(gla::experimental::Primitave::TRIANGLE_FAN, 4);
+            VAO.Draw(Primitave::TRIANGLE_FAN, 4);
 
 
             glfwSwapBuffers(gMainWindow);

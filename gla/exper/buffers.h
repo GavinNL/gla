@@ -4,5 +4,6 @@
 #include <gla/exper/array_buffer.h>
 #include <gla/exper/element_array_buffer.h>
 #include <gla/exper/vertexarray.h>
+#include <gla/exper/uniformbuffer.h>
 
 #endif

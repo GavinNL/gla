@@ -1,9 +1,10 @@
 #include "glad.h"
 #include <gla/exper/buffers.h>
 #include <gla/exper/sampler2d.h>
-#include <gla/shader.h>
-#include <GLFW/glfw3.h>
+#include <gla/exper/shader.h>
 #include <gla/exper/sampler2darray.h>
+
+#include <GLFW/glfw3.h>
 //=================================================================================
 // Global Variables and Function Prototypes
 //=================================================================================
@@ -12,6 +13,8 @@
 #define WINDOW_TITLE "Hello Indexed Triangle"
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
+
+using namespace gla::experimental;
 
 int main()
 {
@@ -26,9 +29,9 @@ int main()
         glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 
-        gla::ShaderProgram TriangleShader;
-        TriangleShader.AttachShaders(  gla::VertexShader("../resources/shaders/HelloTriangle.v"),
-                                       gla::FragmentShader("../resources/shaders/HelloTriangle.f")  );
+        ShaderProgram TriangleShader;
+        TriangleShader.AttachShaders(  VertexShader("../resources/shaders/HelloTriangle.v"),
+                                       FragmentShader("../resources/shaders/HelloTriangle.f")  );
 
 
         //================================================================
@@ -49,7 +52,7 @@ int main()
 
 
         // Create a buffer on the GPU using the data from the standard vector
-        gla::experimental::Array_Buffer         G( VertexBuffer );
+        Array_Buffer         G( VertexBuffer );
         //================================================================
 
 
@@ -63,7 +66,7 @@ int main()
         IndexBuffer.push_back( glm::uvec3( 0 ,1, 2) );
 
         // Send the index buffer to the gpu.
-        gla::experimental::Element_Array_Buffer E( IndexBuffer );
+        Element_Array_Buffer E( IndexBuffer );
         //================================================================
 
 
@@ -83,7 +86,7 @@ int main()
 
             // Draw the Index Buffer, using every 3 indices to form a triangle.
             // G will automatically be bound when calling EnableAttributes
-            E.Draw(gla::experimental::Primitave::TRIANGLES, 3);
+            E.Draw(Primitave::TRIANGLES, 3);
 
             glfwSwapBuffers(gMainWindow);
             glfwPollEvents();

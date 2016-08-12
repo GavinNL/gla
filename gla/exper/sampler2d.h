@@ -5,7 +5,6 @@
 #include "types.h"
 #include "handle.h"
 #include "image.h"
-#include <glm/glm.hpp>
 
 #include <vector>
 #include <iostream>
@@ -290,7 +289,7 @@ public:
         return true;
     }
 
-    void PasteSubImage( const gla::uvec2 & xy, const ImageBase & T, int level=0);
+    void PasteSubImage( const uvec2 & xy, const ImageBase & T, int level=0);
 
 
     /**
@@ -369,7 +368,7 @@ private:
 
 
 
-inline void Sampler2D::PasteSubImage( const gla::uvec2 & xy, const ImageBase & T, int level)
+inline void Sampler2D::PasteSubImage( const uvec2 & xy, const ImageBase & T, int level)
 {
     if( !Get() ) return;
 
