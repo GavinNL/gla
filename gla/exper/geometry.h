@@ -14,10 +14,17 @@ struct Vertex_pun
     glm::vec3 n;
 };
 
+
+
+
+
+
 static std::vector<Vertex_pun > createBox( const glm::vec3 & s = glm::vec3(1.0,1.0,1.0) )
 {
     using namespace glm;
     // always use quads for the time being
+
+
 
     {
         //VertexArrayObject Box(QUADS);

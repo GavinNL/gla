@@ -6,7 +6,6 @@
 //#include <GL/glext.h>
 //#include <GL/gl.h>
 
-#include <gla/glad.h>
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>

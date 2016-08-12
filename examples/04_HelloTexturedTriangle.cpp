@@ -1,7 +1,8 @@
-#include <gla/glad.h>
+#include "glad.h"
 #include <gla/exper/sampler2d.h>
 #include <gla/exper/buffers.h>
-#include <gla/shader.h>
+#include <gla/exper/shader.h>
+//#include <gla/shader.h>
 
 #include <glm/gtc/noise.hpp>
 #include <GLFW/glfw3.h>
@@ -93,7 +94,8 @@ int main()
         TriangleShader.AttachShaders(  gla::VertexShader(  "../resources/shaders/Textures.v"),
                                        gla::FragmentShader("../resources/shaders/Textures.f"));
 #else
-        auto TriangleShader = gla::ShaderProgram::Load("../resources/shaders/Textures.s");
+        //auto TriangleShader = gla::ShaderProgram::Load("../resources/shaders/Textures.s");
+        auto TriangleShader = gla::experimental::ShaderProgram::Load("../resources/shaders/Textures.s");
 #endif
 
         //================================================================

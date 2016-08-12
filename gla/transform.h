@@ -45,7 +45,6 @@ class Transform
         inline virtual void SetOrientation(const quat & q) { Orientation = q; }
         inline virtual void Rotate(const vec3 & axis, float AngleRadians) { Orientation = glm::rotate( Orientation, AngleRadians, axis ); }
 
-
         inline void SetEuler( const vec3 & PitchYawRoll )
         {
             Orientation = quat(PitchYawRoll);

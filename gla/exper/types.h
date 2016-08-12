@@ -2,7 +2,7 @@
 #define EXP_TYPES
 
 
-#define USE_GLAD
+//#define USE_GLAD
 
 #ifdef USE_GLAD
 #include<gla/glad.h>

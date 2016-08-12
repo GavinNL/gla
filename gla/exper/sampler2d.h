@@ -279,11 +279,7 @@ public:
             glGenerateMipmap(GL_TEXTURE_2D);
         }
 
-       // I.Format  = Format;
-       // I.MipMaps = MipMaps;
-       // I.Size    = size;
-       // I.Type    = Type;
-       // I.InternalFormat = InternalFormat;
+
         m_PixelDataType = Type;
         m_Size          = size;
 

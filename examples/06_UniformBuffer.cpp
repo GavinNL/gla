@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 
+#include "glad.h"
 //#include <gla/global.h>
 //#include <gla/camera.h>
 //#include <gla/texture.h>
@@ -56,7 +57,6 @@ int main()
         };
 
         std::vector< MyVertex > VertexBuffer;
-
 
         VertexBuffer.push_back( { vec3(-1.0f, -1.0f, 0.f), vec2( 0.f, 0.f )} );
         VertexBuffer.push_back( { vec3( 1.0f ,-1.0f, 0.f), vec2( 1.f, 0.f )} );

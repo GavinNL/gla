@@ -149,12 +149,12 @@ class Array_Buffer : public Buffer<BufferBindTarget::ARRAY_BUFFER>
          * Enables attributes  assuming all attributes are unnormalized
          */
         template <typename... GLM_Vec_Types>
-        void EnableAttributes() const
+        void EnableAttributes(std::size_t offset = 0) const
         {
             Bind();
             std::array<bool, std::tuple_size< std::tuple< GLM_Vec_Types...> >::value > FalseArray;
             FalseArray.fill(false);
-            gla::experimental::EnableVertexAttribArrayFromTuple<0, std::tuple<GLM_Vec_Types...> > (0, FalseArray);
+            gla::experimental::EnableVertexAttribArrayFromTuple<0, std::tuple<GLM_Vec_Types...> > (offset, FalseArray);
         }
 
 };

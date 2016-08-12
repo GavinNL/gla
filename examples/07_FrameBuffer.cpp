@@ -2,11 +2,12 @@
 
 #include <stdio.h>
 
+#include "glad.h"
 //#include <gla/global.h>
 //#include <gla/camera.h>
 //#include <gla/texture.h>
 #include <gla/timer.h>
-#include <gla/shader.h>
+#include <gla/exper/shader.h>
 #include <gla/exper/sampler2darray.h>
 #include <gla/exper/vertexarray.h>
 #include <gla/exper/uniformbuffer.h>
@@ -98,14 +99,14 @@ int main()
         // Create the two shaders. The second argument is set to true because we are
         // compiling the shaders straight from a string. If we were compiling from a file
         // we'd just do:  VertexShader vs(Path_to_file);
-        ShaderProgram GBufferShader;
-        GBufferShader.AttachShaders(  VertexShader("../resources/shaders/GBuffer.v"),
-                                      FragmentShader("../resources/shaders/GBuffer.f")  );
+        GLA::ShaderProgram GBufferShader;
+        GBufferShader.AttachShaders(  GLA::VertexShader("../resources/shaders/GBuffer.v"),
+                                      GLA::FragmentShader("../resources/shaders/GBuffer.f")  );
 
 
-        ShaderProgram GBufferSPass_Shader;
-        GBufferSPass_Shader.AttachShaders(  VertexShader("../resources/shaders/GBuffer_SPass.v"),
-                                            FragmentShader("../resources/shaders/GBuffer_SPass.f")  );
+        GLA::ShaderProgram GBufferSPass_Shader;
+        GBufferSPass_Shader.AttachShaders(  GLA::VertexShader("../resources/shaders/GBuffer_SPass.v"),
+                                            GLA::FragmentShader("../resources/shaders/GBuffer_SPass.f")  );
 
         //==========================================================
 
@@ -119,7 +120,6 @@ int main()
         gla::Camera C;
         C.SetPosition( {0.0,0.0,0.0f});
         C.Perspective(45.0, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1);
-
 
         GLA::FrameBuffer FBO;
         FBO.Generate();
@@ -156,7 +156,7 @@ int main()
             // Attach the Sampler to Texture Unit 0.
             Samp1.SetActive(0);
 
-            T.SetEuler( { Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0});
+            T.SetEuler( { Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0 } );
 
             // Tell the shader that we are using Texture Unit 0 for the sampler
             GBufferShader.Uniform( GBufferShader.GetUniformLocation("uSampler"), 0 );

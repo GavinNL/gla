@@ -1,4 +1,4 @@
-#include <gla/glad.h>
+#include "glad.h"
 #include <gla/exper/array_buffer.h>
 #include <gla/exper/sampler2d.h>
 #include <gla/shader.h>

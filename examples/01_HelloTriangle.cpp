@@ -1,4 +1,5 @@
-#include <gla/glad.h>
+
+#include "glad.h"
 #include <gla/exper/buffers.h>
 #include <gla/exper/sampler2d.h>
 #include <gla/shader.h>
@@ -53,6 +54,10 @@ int main()
         G << CpuBuffer;
 
 
+        gla::experimental::Array_Buffer g;
+        g = G;
+
+        G.Release();
         //====
 
 
@@ -67,14 +72,14 @@ int main()
             // consists of one vec3 and one vec4 that are both un-normalized.
             // This function will automatically bind the array buffer and set the
             // attributes.
-            G.EnableAttributes<glm::vec3, glm::vec4>( {false,false } );
+            g.EnableAttributes<glm::vec3, glm::vec4>( {false,false } );
             // (alternatively) G.EnableAttributes<glm::vec3, glm::vec4>(); // same as non-normlaized vectors
 
 
             // Now draw the triangle.
             // we are drawing Triangles, starting at Vertex Index 0
             // and we are drawing 3 vertices (because 3 vertices make a triangle)
-            G.Draw(gla::experimental::Primitave::TRIANGLES, 0, 3);
+            g.Draw(gla::experimental::Primitave::TRIANGLES, 0, 3);
 
 
             glfwSwapBuffers(gMainWindow);

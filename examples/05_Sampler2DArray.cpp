@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "glad.h"
 #include <gla/timer.h>
 #include <gla/exper/sampler2darray.h>
 

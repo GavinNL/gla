@@ -3,7 +3,7 @@
 
 #include <gla/exper/handle.h>
 #include <gla/exper/sampler2d.h>
-#include <gla/glad.h>
+
 
 namespace gla { namespace experimental
 {
