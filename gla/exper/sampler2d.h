@@ -41,13 +41,16 @@ struct DestSampler2D
 
 enum class SamplerFormat
 {
-    RED            = GL_RED,
-    RG             = GL_RG,
-    RGB            = GL_RGB,
-    BGR            = GL_BGR,
-    RGBA           = GL_RGBA,
-    BGRA           = GL_BGRA,
-    DEPTH_COMPONENT= GL_DEPTH_COMPONENT,
+    RED              = GL_RED,
+    RG               = GL_RG,
+    RGB              = GL_RGB,
+    BGR              = GL_BGR,
+    RGBA             = GL_RGBA,
+    BGRA             = GL_BGRA,
+    DEPTH_COMPONENT  = GL_DEPTH_COMPONENT,
+    DEPTH_COMPONENT16= GL_DEPTH_COMPONENT16,
+    DEPTH_COMPONENT24= GL_DEPTH_COMPONENT24,
+    DEPTH_COMPONENT32= GL_DEPTH_COMPONENT32,
     DEPTH_STENCIL  = GL_DEPTH_STENCIL,
 
     R8               = GL_R8                   ,
@@ -176,11 +179,11 @@ public:
     }
 
     Sampler2D( const glm::uvec2 & size,
-                bool              MipMaps        =  false,
                 SamplerFormat     InternalFormat =  SamplerFormat::RGBA,
                 ImageFormat       Format         =  ImageFormat::RGBA,
-                DataType          Type           =  DataType::UNSIGNED_BYTE
-                )
+                DataType          Type           =  DataType::UNSIGNED_BYTE,
+                bool              MipMaps        =  false
+              ) : BaseHandle<GLuint, GenSampler2D, DestSampler2D>()
     {
         Create(size, MipMaps, InternalFormat, Format, Type);
     }
@@ -258,6 +261,8 @@ public:
        // }
 
         //auto & I = m_Handle.__GetInfo( );
+
+
 
         glTexImage2D(
                      GL_TEXTURE_2D,
@@ -357,6 +362,9 @@ public:
         glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max);
         return max;
     }
+
+
+
 
 private:
     DataType   m_PixelDataType;

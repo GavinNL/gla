@@ -11,6 +11,7 @@
 #include <gla/exper/vertexarray.h>
 #include <gla/exper/uniformbuffer.h>
 #include <gla/exper/geometry.h>
+#include <gla/exper/framebuffer.h>
 #include <gla/transform.h>
 #include <gla/camera.h>
 #include <GLFW/glfw3.h> // GLFW helper library
@@ -24,19 +25,16 @@ using namespace gla;
 //=================================================================================
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 480
-#define WINDOW_TITLE  "Uniform Buffers"
+#define WINDOW_TITLE  "Framebuffers and Differed Rendering"
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
-struct Uniform140
-{
-    vec4 x;
-};
-
 int main()
 {
+
+    namespace GLA = gla::experimental;
+
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
-    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 
     { // create a scope around the main GL calls so that glfwTerminate is not called before
@@ -58,30 +56,37 @@ int main()
 
         std::vector< MyVertex > VertexBuffer;
 
-        auto BoxVertices = gla::experimental::createBox();
-
-     //   VertexBuffer.push_back( { vec3(-1.0f, -1.0f, 0.f), vec2( 0.f, 0.f )} );
-     //   VertexBuffer.push_back( { vec3( 1.0f ,-1.0f, 0.f), vec2( 1.f, 0.f )} );
-     //   VertexBuffer.push_back( { vec3( 1.0f , 1.0f, 0.f), vec2( 1.f, 1.f )} );
-     //   VertexBuffer.push_back( { vec3(-1.0f , 1.0f, 0.f), vec2( 0.f, 1.f )} );
+        auto BoxVertices = GLA::createBox();
 
         // Load teh buffer into the GPU
-        gla::experimental::Array_Buffer buff( BoxVertices );
+        GLA::Array_Buffer buff( BoxVertices );
 
-        gla::experimental::VertexArray VAO;
+        GLA::VertexArray VAO;
         VAO.Attach<glm::vec3, glm::vec2, glm::vec3>( buff );
 
         // Load some textures. And force using 3 components (r,g,b)
-        gla::experimental::Image Tex1("../resources/textures/rocks.jpg",  3 );
+        GLA::Image Tex1("../resources/textures/rocks.jpg",  3 );
 
         buff.Release();
 
+        VertexBuffer.push_back( { glm::vec3(-1.0,  1.0, 0.0) , glm::vec2(0.0,0.0) }); // 3
+        VertexBuffer.push_back( { glm::vec3(-1.0, -1.0, 0.0) , glm::vec2(0.0,1.0) }); // 0
+        VertexBuffer.push_back( { glm::vec3( 1.0, -1.0, 0.0) , glm::vec2(1.0,1.0) }); // 1
+
+        VertexBuffer.push_back( { glm::vec3(-1.0,  1.0, 0.0) , glm::vec2(0.0,0.0) }); // 0
+        VertexBuffer.push_back( { glm::vec3( 1.0, -1.0, 0.0) , glm::vec2(1.0,1.0) }); // 2
+        VertexBuffer.push_back( { glm::vec3( 1.0,  1.0, 0.0) , glm::vec2(1.0,0.0) }); // 2
+
+
+        GLA::VertexArray  PlaneVAO;
+        GLA::Array_Buffer PlaneBuff( VertexBuffer );
+        PlaneVAO.Attach<glm::vec3, glm::vec2>(PlaneBuff);
 
         //=========================================================================================
         // Create the Texture array on the GPU.
         //   Note: Any objects that start with GPU mean they are initialized on the GPU
         //=========================================================================================
-        gla::experimental::Sampler2D Samp1(Tex1);
+        GLA::Sampler2D Samp1(Tex1);
 
         //===============================================================
 
@@ -93,8 +98,14 @@ int main()
         // Create the two shaders. The second argument is set to true because we are
         // compiling the shaders straight from a string. If we were compiling from a file
         // we'd just do:  VertexShader vs(Path_to_file);
-        ShaderProgram TriangleShader;
-        TriangleShader.AttachShaders(  VertexShader("../resources/shaders/Textures.v"),  FragmentShader("../resources/shaders/Textures.f")  );
+        ShaderProgram GBufferShader;
+        GBufferShader.AttachShaders(  VertexShader("../resources/shaders/GBuffer.v"),
+                                      FragmentShader("../resources/shaders/GBuffer.f")  );
+
+
+        ShaderProgram GBufferSPass_Shader;
+        GBufferSPass_Shader.AttachShaders(  VertexShader("../resources/shaders/GBuffer_SPass.v"),
+                                            FragmentShader("../resources/shaders/GBuffer_SPass.f")  );
 
         //==========================================================
 
@@ -103,17 +114,44 @@ int main()
 
         gla::Transform T;
 
-        T.SetEuler( { 0.3f, 4.,-2.2});
-
+      //  T.SetEuler( { 0.3f, 4.,-2.2});
+        T.SetPosition( {0,0,-3});
         gla::Camera C;
-        C.SetPosition( {0.0,0.0,2.0f});
+        C.SetPosition( {0.0,0.0,0.0f});
         C.Perspective(45.0, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1);
+
+
+        GLA::FrameBuffer FBO;
+        FBO.Generate();
+        FBO.Bind();
+
+        auto Positions = GLA::FrameBuffer::CreateBufferTexture_Vec3_16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
+        auto Normals   = GLA::FrameBuffer::CreateBufferTexture_Vec3_16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
+        auto Colours   = GLA::FrameBuffer::CreateBufferTexture_RGBA(     glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
+        auto Depth     = GLA::FrameBuffer::CreateBufferTexture_Depth16F( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
+
+        //FBO.Bind();
+        FBO.Attach(Positions, GLA::FrameBufferAttachment::COLOR0);
+        FBO.Attach(Normals,   GLA::FrameBufferAttachment::COLOR1);
+        FBO.Attach(Colours,   GLA::FrameBufferAttachment::COLOR2);
+        FBO.Attach(Depth  ,   GLA::FrameBufferAttachment::DEPTH);
+
+        FBO.Use( {GLA::FrameBufferAttachment::COLOR0 , GLA::FrameBufferAttachment::COLOR1, GLA::FrameBufferAttachment::COLOR2} );
+
+        if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            std::cout << "ERROR!!!" << std::endl;
+
+
 
         while (!glfwWindowShouldClose(gMainWindow) )
         {
+
+            FBO.Bind();
+            glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             // Set the triangle shader to be the one that we will use
-            TriangleShader.Bind();
+            GBufferShader.Bind();
 
             // Attach the Sampler to Texture Unit 0.
             Samp1.SetActive(0);
@@ -121,13 +159,29 @@ int main()
             T.SetEuler( { Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0});
 
             // Tell the shader that we are using Texture Unit 0 for the sampler
-            TriangleShader.Uniform( TriangleShader.GetUniformLocation("uSampler"), 0 );
-            TriangleShader.Uniform( TriangleShader.GetUniformLocation("uTransform"), C.GetProjectionMatrix() * C.GetMatrix() * T.GetMatrix() );
-
+            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uSampler"), 0 );
+            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uTransform"),  T.GetMatrix() );
+            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uCamera"),  C.GetProjectionMatrix() );
 
             // Draw the triangle.
-            VAO.Draw(gla::experimental::Primitave::TRIANGLES, 36);
+            VAO.Draw(GLA::Primitave::TRIANGLES, 36);
 
+            FBO.UnBind();
+
+            GBufferSPass_Shader.Bind();
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            Positions.SetActive(0);
+            Normals.SetActive(1);
+            Colours.SetActive(2);
+            Depth.SetActive(3);
+
+            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gPosition")  , 0 );
+            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gNormal")    , 1 );
+            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gAlbedoSpec"), 2 );
+            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gDepth")     , 3 );
+
+            PlaneVAO.Draw(GLA::Primitave::TRIANGLES, 6);
 
             glfwSwapBuffers(gMainWindow);
             glfwPollEvents();

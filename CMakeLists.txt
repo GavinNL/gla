@@ -30,21 +30,21 @@ ADD_DEFINITIONS (
 #                       "${CMAKE_MODULE_PATH}" )
 
 find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
+#find_package(GLEW REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 pkg_search_module(GLFW REQUIRED glfw3)
 
 include_directories(${OpenGL_INCLUDE_DIRS})
-include_directories(${GLEW_INCLUDE_DIRS})
+#include_directories(${GLEW_INCLUDE_DIRS})
 include_directories(${GLFW_INCLUDE_DIRS} )
 
 # A variable of all the libraries we need
 set(LIBS_FULL
     ${GLFW_STATIC_LIBRARIES}
     ${OPENGL_gl_LIBRARY}
-    ${GLEW_LIBRARIES}
+#    ${GLEW_LIBRARIES}
 )
 
 set(LIBS_GLAD
