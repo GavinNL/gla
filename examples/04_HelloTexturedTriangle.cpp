@@ -82,12 +82,19 @@ int main()
 
         //================================================================
         // 3. Load the shader we want to use when drawsing the triangle
+        //         Can use one or the other.
+        //  The .s shader file has each component of the shader
+        //  separated by xml tags:  <vertex>, <fragment> <geometry> <tessellation_control>
+        //  and <tessellation_evaluation>
         //================================================================
+
+#if 0
         gla::ShaderProgram TriangleShader;
         TriangleShader.AttachShaders(  gla::VertexShader(  "../resources/shaders/Textures.v"),
                                        gla::FragmentShader("../resources/shaders/Textures.f"));
-
-
+#else
+        auto TriangleShader = gla::ShaderProgram::Load("../resources/shaders/Textures.s");
+#endif
 
         //================================================================
 
@@ -102,9 +109,9 @@ int main()
             // Tell the shader that we are using Texture Unit 0 for the sampler
             TriangleShader.Uniform( TriangleShader.GetUniformLocation("uSampler"), 0 );
             TriangleShader.Uniform( TriangleShader.GetUniformLocation("uTransform"), glm::mat4() );
+
             // Draw the triangle.
             VAO.Draw(gla::experimental::Primitave::TRIANGLES, 3);
-
 
             glfwSwapBuffers(gMainWindow);
             glfwPollEvents();
