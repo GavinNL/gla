@@ -2,23 +2,27 @@
 #define EXP_HANDLE
 
 #include <iostream>
-
+#include <memory>
 namespace gla { namespace experimental
 {
 
 
 class RefCounter
 {
-    std::size_t count=0;
+    int count=0;
 
     public:
-        std::size_t refcount() const { return count; }
 
-        std::size_t inc()
+        RefCounter() : count(0) {}
+
+        int refcount() const { return count; }
+
+        void inc()
         {
-            return ++count;
+            count++;
         }
-        std::size_t dec()
+
+        int dec()
         {
             return --count;
         }
@@ -35,20 +39,104 @@ enum class Unique_Handle_Name
     Sampler2DArray,
 };
 
+
+
 template<typename HandleType, typename CallableCreate, typename CallableDestroy>
 class BaseHandle
 {
-    public:
-        //using Handle = gla::experimental::Handle_t< Unique_Handle_Name::Buffer, GLuint>;
 
-        BaseHandle()
-        {
-        }
+public:
+    using Handle = BaseHandle<HandleType, CallableCreate, CallableDestroy>;
 
-        ~BaseHandle()
+    BaseHandle() : m_ID(0), ref(nullptr)
+    {
+        ref = new RefCounter();
+        ref->inc();
+    }
+
+    ~BaseHandle()
+    {
+        Release();
+    }
+
+
+    HandleType Get() const
+    {
+        return m_ID;
+    }
+
+    void Generate()
+    {
+        if( ref ) // if already referenced
         {
             Release();
         }
+
+        static CallableCreate C;
+        C(m_ID);
+        ref = new RefCounter();
+        ref->inc();
+        std::cout << "ID Generated: " << m_ID << "     use count: " << ref->refcount() << std::endl;
+    }
+
+    void Release()
+    {
+        if( ref)
+        {
+            if( ref->dec() == 0)
+            {
+                if( m_ID )
+                {
+                    static CallableDestroy D;
+                    D(m_ID);
+
+                    delete ref;
+                }
+            }
+        }
+
+        m_ID = 0;
+        ref  = nullptr;
+    }
+
+    operator bool() const
+    {
+        return m_ID != 0;
+    }
+
+    Handle & operator = (const Handle & sp)
+    {
+        if( this != &sp )
+        {
+            Release();
+
+            m_ID = sp.m_ID;
+            ref  = sp.ref;
+            ref->inc();
+        }
+    }
+
+    protected:
+        HandleType m_ID = 0;
+        RefCounter * ref;
+};
+
+template<typename HandleType, typename CallableCreate, typename CallableDestroy>
+class BaseHandle_old
+{
+    public:
+        using Handle = BaseHandle<HandleType, CallableCreate, CallableDestroy>;
+
+        BaseHandle_old() : ref( new RefCounter() ) , m_ID(0)
+        {
+        }
+
+        ~BaseHandle_old()
+        {
+            Release();
+        }
+
+
 
 
         //===============================================
@@ -71,7 +159,11 @@ class BaseHandle
         // completely deleted (ie: No other objects are referenced to it)
         bool Release()
         {
-            if(!(*this)) return true;
+            if( !(*this) )
+            {
+                m_ID = 0;
+                return true;
+            }
 
             auto ret = false;
 
@@ -89,6 +181,7 @@ class BaseHandle
 
             ref = nullptr;
 
+            m_ID = 0;
             return ret;
         }
 
@@ -133,7 +226,7 @@ class BaseHandle
     private:
 
         HandleType  m_ID = 0;
-        RefCounter * ref = nullptr;
+        RefCounter * ref;
 
 
 

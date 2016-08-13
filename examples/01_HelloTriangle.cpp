@@ -31,9 +31,12 @@ int main()
 
 
         ShaderProgram TriangleShader;
-        TriangleShader.AttachShaders(  VertexShader("../resources/shaders/HelloTriangle.v"),
-                                       FragmentShader("../resources/shaders/HelloTriangle.f")  );
+//        VertexShader   V("../resources/shaders/HelloTriangle.v");
+//        FragmentShader F("../resources/shaders/HelloTriangle.f");
+//        TriangleShader.AttachShaders( V , F );
 
+        TriangleShader.AttachShaders( VertexShader  ("../resources/shaders/HelloTriangle.v"),
+                                      FragmentShader("../resources/shaders/HelloTriangle.f") );
 
         //================================================================
         // 1. Create the vertices of the triangle using our vertex structure

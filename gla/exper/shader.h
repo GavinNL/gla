@@ -23,7 +23,7 @@ struct GenShaderUnit
     void operator()(GLuint & x)
     {
         x = glCreateShader( SHADER_TYPE );
-        std::cout << "Frame Buffer Generated: " << x << std::endl;
+        std::cout << "Shader Unit Generated: " << x << std::endl;
     }
 };
 
@@ -31,9 +31,9 @@ struct DestShaderUnit
 {
     void operator()(GLuint & x)
     {
+        std::cout << "Destroying Shader Unit: " << x << std::endl;
         glDeleteShader( x );
         x = 0;
-        //std::cout << "Destroying Frame Buffer: " << x << std::endl;
         //glDeleteFramebuffers( 1, &x );
         //x = 0;
     }
@@ -48,7 +48,7 @@ class ShaderUnit : public BaseHandle<GLuint, GenShaderUnit<SHADER_TYPE>, DestSha
 
     public:
 
-        ShaderUnit(const std::string & Path_Or_SourceCode, bool isSourceCode=false)
+        ShaderUnit(const std::string & Path_Or_SourceCode, bool isSourceCode=false) : HandleType()
         {
             if(isSourceCode)
             {

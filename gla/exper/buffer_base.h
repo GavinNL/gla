@@ -14,9 +14,6 @@
 #include <type_traits>
 
 
-
-
-
 namespace gla { namespace experimental
 {
 
@@ -52,8 +49,6 @@ struct GenBuff
 {
     void operator()(GLuint & x)
     {
-        static int i=0;
-        x = ++i;
         glGenBuffers(1, &x);
         std::cout << "Buffer Generated: " << x << std::endl;
     }
@@ -80,6 +75,14 @@ template<BufferBindTarget target>
 class Buffer : public BaseHandle<GLuint, GenBuff,DestBuff>
 {
     public:
+        //using HandleType =
+        //
+        //HandleType m_Handle;
+        std::size_t m_Size  = 0;
+
+        //GLuint Get() const { return m_Handle.Get(); }
+        //bool   Release()   { m_Handle.Release();    }
+        //void   Generate()  { m_Handle.Generate();   }
 
         Buffer()
         {
@@ -142,8 +145,8 @@ class Buffer : public BaseHandle<GLuint, GenBuff,DestBuff>
 
             Bind();
 
-            if( size > m_Size)
-                throw std::runtime_error("Uniform Buffer is too small to hold all the data");
+            if( size > m_Size )
+                throw std::runtime_error("Buffer is too small to hold all the data");
 
             glBufferSubData( static_cast<GLenum>(target), offset, size, data);
         }
@@ -177,7 +180,7 @@ class Buffer : public BaseHandle<GLuint, GenBuff,DestBuff>
     //        return *this;
     //    }
 
-        std::size_t m_Size;
+
 
 };
 

@@ -2,9 +2,11 @@
 #define EXP_TYPES
 
 
-#ifndef GL_DEPTH_BUFFER_BIT
-    #include "../../glad.h"
-#endif
+//#ifndef GL_DEPTH_BUFFER_BIT
+//    #include "../../glad.h"
+//#endif
+
+#include <GL/gl.h>
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
