@@ -67,7 +67,7 @@ class Element_Array_Buffer : public Buffer<BufferBindTarget::ELEMENT_ARRAY_BUFFE
                             );
         }
 
-        DataType m_Data;
+        DataType   m_Data;
 };
 
 }}

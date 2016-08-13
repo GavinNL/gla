@@ -50,7 +50,9 @@ struct GenBuff
     void operator()(GLuint & x)
     {
         glGenBuffers(1, &x);
+
         std::cout << "Buffer Generated: " << x << std::endl;
+        std::cout << "Error: " << glGetError() << std::endl;
     }
 };
 
@@ -72,19 +74,17 @@ template<BufferBindTarget target>
  *
  * A buffer stored on the GPU that holds data.
  */
-class Buffer : public BaseHandle<GLuint, GenBuff,DestBuff>
+class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
 {
     public:
-        //using HandleType =
-        //
-        //HandleType m_Handle;
+
         std::size_t m_Size  = 0;
 
         //GLuint Get() const { return m_Handle.Get(); }
         //bool   Release()   { m_Handle.Release();    }
         //void   Generate()  { m_Handle.Generate();   }
 
-        Buffer()
+        Buffer() : BaseHandle<GLuint, GenBuff,DestBuff>()
         {
         }
 
@@ -105,12 +105,14 @@ class Buffer : public BaseHandle<GLuint, GenBuff,DestBuff>
 
         void Bind() const
         {
-            glBindBuffer( static_cast<GLuint>(target) , Get() );
+            auto D = Get();
+            GLenum T =  static_cast<GLenum>(target);
+            glBindBuffer(T, D );
         }
 
         void Unbind( ) const
         {
-            glBindBuffer( static_cast<GLuint>(target) , 0 );
+            glBindBuffer( static_cast<GLenum>(target) , 0 );
         }
 
         std::size_t Size() const {

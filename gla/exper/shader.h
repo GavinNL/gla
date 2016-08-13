@@ -457,6 +457,12 @@ public:
         {
             glUniform1fv( UniformID, count, V);
         }
+
+        template<typename T>
+        inline void Uniform( const char * name, const T &V , uint count=1)
+        {
+            Uniform( GetUniformLocation(name), V, count);
+        }
         //===============================================================================================
 
 

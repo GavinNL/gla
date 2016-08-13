@@ -90,8 +90,8 @@ public:
                     static CallableDestroy D;
                     D(m_ID);
 
-                    delete ref;
                 }
+                delete ref;
             }
         }
 
