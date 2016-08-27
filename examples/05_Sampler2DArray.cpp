@@ -146,7 +146,7 @@ int main()
             // Set the GPu as the current texture 0;
             TexArray2D.SetActive(0);
 
-            vec2 Speed = Timer.getElapsedTime() * vec2(0.15,0.4);
+            vec2 Speed = Timer.getElapsedTime() * vec2(0.15,0.4) * 0.2f;
 
 
             // Send the Uniforms to the shader.

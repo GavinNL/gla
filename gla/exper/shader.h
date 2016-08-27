@@ -96,7 +96,7 @@ class ShaderUnit : public BaseHandle<GLuint, GenShaderUnit<SHADER_TYPE>, DestSha
 
             if(check)
             {
-                std::cout  << "Shader compiled sucessfully:" << V << std::endl;
+               // std::cout  << "Shader compiled sucessfully:" << V << std::endl;
             } else {
                 HandleType::Release();
             }

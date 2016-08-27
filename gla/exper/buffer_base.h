@@ -138,7 +138,7 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
          * @param size   - size of the data
          * @param offset - offset from the start of the buffer to write to
          */
-        void CopyData(const unsigned char * data, std::size_t size, std::size_t offset=0)
+        void CopyData(const GLvoid * data, std::size_t size, std::size_t offset=0)
         {
             if( !(*this) )
             {
@@ -147,17 +147,17 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
 
             Bind();
 
-            if( size > m_Size )
+            if( size+offset > m_Size )
                 throw std::runtime_error("Buffer is too small to hold all the data");
 
             glBufferSubData( static_cast<GLenum>(target), offset, size, data);
         }
 
-        template<typename T>
-        void CopyData(const T & structure, std::size_t offset = 0)
-        {
-            CopyData( (unsigned char*)&structure, sizeof(T), offset);
-        }
+     //   template<typename T>
+     //   void CopyData(const std::vector<T> & structure, std::size_t offset = 0)
+     //   {
+     //       CopyData( (unsigned char*)&structure, sizeof( T )*structure.size(), offset);
+     //   }
 
 
         /**

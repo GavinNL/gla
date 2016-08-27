@@ -10,6 +10,7 @@
 #include <functional>
 #include <memory>
 #include <vector>
+#include <algorithm>
 
 //#include <gla/handle.h>
 #ifdef GLA_IMAGE_USE_STB
@@ -101,51 +102,70 @@ namespace gla { namespace experimental {
 
             ImageBase( const uvec2 & size, unsigned int components=4) : mData(0)
             {
-                mDim.x = size.x;
-                mDim.y = size.y;
-                mComponents = components;
-                mData  = new unsigned char[ mDim[0] * mDim[1] * components];
+                //mDim.x = size.x;
+                //mDim.y = size.y;
+                //mComponents = components;
+                //mData  = new unsigned char[ mDim[0] * mDim[1] * components];
+                Create(size, components);
                 memset(mData,0, mDim[0] * mDim[1] * components);
             }
 
             ImageBase(uint w, uint h, unsigned int components=4) : mData(0)
             {
-                mDim.x = w;
-                mDim.y = h;
-
-                mComponents = components;
-                mData  = new unsigned char[ mDim[0] * mDim[1] * components];
+                //mDim.x = w;
+                //mDim.y = h;
+                //mComponents = components;
+                //mData  = new unsigned char[ mDim[0] * mDim[1] * components];
+                Create( uvec2(w,h), components);
                 memset(mData,0, mDim[0] * mDim[1] * components);
             }
 
-            explicit ImageBase(ImageBase & T) :  mData(0)
+            explicit ImageBase(const ImageBase & T) :  mData(0)
             {
-
-                mDim  = T.mDim;
-                mComponents = T.mComponents;
-                mData = new unsigned char[mDim[0]*mDim[1]*T.mComponents];
+                //mDim  = T.mDim;
+                //mComponents = T.mComponents;
+                //mData = new unsigned char[mDim[0]*mDim[1]*T.mComponents];
+                Create( T.mDim, T.mComponents);
                 memcpy( mData, (void*)T.mData, mDim[0] * mDim[1] * T.mComponents);
 
             }
 
             ImageBase(ImageBase && T) : mData(0)
             {
-                if(mData) clear();
-
-                mData   = T.mData;
-                mDim    = T.mDim;
-                mComponents = T.mComponents;
-
-                T.mDim  = { 0, 0 };
-                T.mData = 0;
-                T.mComponents = 0;
+                *this = std::move(T);
+                //if( mData ) clear();
+                //
+                //mData   = T.mData;
+                //mDim    = T.mDim;
+                //mComponents = T.mComponents;
+                //
+                //T.mDim  = { 0, 0 };
+                //T.mData = 0;
+                //T.mComponents = 0;
                 //GLA_DOUT  << " ImageBase::Move constructor\n";
 
             }
 
+
+
     public:
+
+
+            void Create( const uvec2 & size, unsigned int components=4)
+            {
+                if(mData)
+                    delete [] mData;
+
+                mDim        = size;
+                mComponents = components;
+                mData       = new unsigned char[mDim[0]*mDim[1]*mComponents];
+                memset(mData,0,mDim[0]*mDim[1]*mComponents);
+            }
+
             ImageBase & operator=(ImageBase && T)
             {
+                if(&T == this) return *this;
+
                 if(mData) clear();
 
                 mData       = T.mData;
@@ -156,7 +176,6 @@ namespace gla { namespace experimental {
                 T.mData       = 0;
                 T.mComponents = 0;
 
-                //GLA_DOUT  << " ImageBase::Move operator\n";
                 return *this;
             }
 
@@ -247,31 +266,7 @@ namespace gla { namespace experimental {
              *
              * @return A GPUImage
              */
-//            GPUImage ToGPU(bool MipMaps=true)
-//            {
-//                GPUImage GPU;
 
-//                TexFormat format;
-//                TexInternalFormat iFormat;
-
-//                switch( mComponents )
-//                {
-//                    case 1: iFormat = TexInternalFormat::RED;  format = TexFormat::RED;  break;
-//                    case 2: iFormat = TexInternalFormat::RG;   format = TexFormat::RG;   break;
-//                    case 3: iFormat = TexInternalFormat::RGB;  format = TexFormat::RGB;  break;
-//                    case 4: iFormat = TexInternalFormat::RGBA; format = TexFormat::RGBA; break;
-//                }
-
-//                if( GPU.Create( mDim, iFormat, format, DataType::UNSIGNED_BYTE, (void*)mData), MipMaps )
-//                {
-//                    GPU.SetFilter(     TexFilter::LINEAR, TexFilter::LINEAR);
-//                    GPU.SetImageWrap(TexWrap::REPEAT, TexWrap::REPEAT);
-
-//                    return GPU;
-//                }
-
-//                return GPU;
-//            }
 
 
             inline unsigned int getChannels() const
@@ -285,6 +280,7 @@ namespace gla { namespace experimental {
             void clear()
             {
                 if( mData ) free(mData);
+                mDim = uvec2(0,0);
                 mData = 0;
             }
 
@@ -367,6 +363,14 @@ namespace gla { namespace experimental {
                 return mData[ y*(mDim[0] * mComponents) + x*mComponents + comp ];
             }
 
+            /**
+             * Access pixel data on the CPU. This is unpredictable if you
+             * have cleared the CPU data.
+             */
+            inline unsigned char & operator ()(int x, int y, int comp)
+            {
+                return mData[ y*(mDim[0] * mComponents) + x*mComponents + comp ];
+            }
             //=====================================
             // Operators
             //=====================================
@@ -570,12 +574,15 @@ namespace gla { namespace experimental {
             return (*mParent)(x,y, mComp);
         }
 
+        inline unsigned char & operator()(int x, int y) const
+        {
+            return (*mParent)(x,y, mComp);
+        }
+
         ChannelRef& operator=(ChannelRef & other)
         {
             int c   = other.mComp;
             uvec2 S = glm::min( mParent->size(), other.mParent->size() );
-
-            printf(" === %d %d ===\n", other.mComp, mComp);
 
             for(int y =0; y < S.y; y++)
                 for(int x=0; x < S.x; x++)
@@ -586,7 +593,18 @@ namespace gla { namespace experimental {
             return *this;
         }
 
+        void PasteImage(const ChannelRef & other, int x_offset, int y_offset)
+        {
+            auto S = glm::min( GetSize() , uvec2(x_offset,y_offset)+other.GetSize() );
 
+            int c  = other.mComp;
+
+            for(int y = y_offset; y < S.y; y++)
+                for(int x = x_offset; x < S.x; x++)
+                {
+                    (*mParent)(x,y,(int)mComp) = (*other.mParent)( x-x_offset, y-y_offset, c);
+                }
+        }
 
 
         ChannelRef& operator=(const Image & other);
@@ -612,6 +630,31 @@ namespace gla { namespace experimental {
             return *this;
         }
 
+        void Print() const
+        {
+            char data[] = " .:ioVM@";
+            auto s = GetSize();
+            for (int j=0; j < s.y; ++j) std::cout << '#';
+             std::cout << std::endl;
+
+            for (int j=0; j < s.y; ++j)
+            {
+               printf("#");
+               for (int i=0; i < s.x; ++i)
+               {
+                  printf("%c",  data[ (*this)(i,j)>>5] );
+               }
+               printf("#\n");
+            }
+
+            for (int j=0; j < s.y; ++j) std::cout << '#';
+             std::cout << std::endl;
+        }
+
+        const uvec2 GetSize() const
+        {
+            return mParent->size();
+        }
 
         unsigned int    mComp;
         ImageBase     *mParent;
@@ -634,7 +677,10 @@ namespace gla { namespace experimental {
 
             }
 
-            Image( const uvec2 & size, unsigned int components=4) : r(this,0),g(this,1),b(this,2),a(this,3), ImageBase(size,components)
+            Image( const uvec2 & size, unsigned int components=4) : r(this, std::min(0u,components-1) ),
+                                                                    g(this, std::min(1u,components-1) ),
+                                                                    b(this, std::min(2u,components-1) ),
+                                                                    a(this, std::min(3u,components-1) ), ImageBase(size,components)
             {
             }
 
@@ -676,6 +722,34 @@ namespace gla { namespace experimental {
                 return *this;
 
             }
+
+            void PasteImage(const ChannelRef & other, int x_offset, int y_offset)
+            {
+                auto S = glm::min( size() , uvec2(x_offset,y_offset)+other.GetSize() );
+
+                for(int y = y_offset; y < S.y; y++)
+                    for(int x = x_offset; x < S.x; x++)
+                    {
+                        for(int i=0;i<mComponents;i++)
+                            (*this)(x,y,i) = other( x-x_offset, y-y_offset);
+                    }
+            }
+
+            void PasteImage(const Image & other, int x_offset, int y_offset)
+            {
+                auto S = glm::min( size() , uvec2(x_offset,y_offset)+other.size() );
+
+                int comp = std::min( mComponents, other.mComponents);
+
+                for(int y = y_offset; y < S.y; y++)
+                    for(int x = x_offset; x < S.x; x++)
+                    {
+                        for(int i=0;i<comp;i++)
+                            (*this)(x,y,i) = other( x-x_offset , y-y_offset, i);
+                    }
+            }
+
+
     };
 
 

@@ -15,7 +15,7 @@ namespace gla { namespace experimental
              void operator << (const ProperlyAlignedStructType & structure)
              {
                  Bind();
-                 Buffer::CopyData(structure);
+                 Buffer::CopyData( &structure, sizeof(structure), 0);
              }
 
             template<bool bindfirst=true>

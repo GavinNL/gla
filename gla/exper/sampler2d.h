@@ -50,7 +50,7 @@ enum class SamplerFormat
     DEPTH_COMPONENT16= GL_DEPTH_COMPONENT16,
     DEPTH_COMPONENT24= GL_DEPTH_COMPONENT24,
     DEPTH_COMPONENT32= GL_DEPTH_COMPONENT32,
-    DEPTH_STENCIL  = GL_DEPTH_STENCIL,
+    DEPTH_STENCIL    = GL_DEPTH_STENCIL,
 
     R8               = GL_R8                   ,
     R8_SNORM	     = GL_R8_SNORM	            ,
@@ -184,7 +184,13 @@ public:
                 bool              MipMaps        =  false
               ) : BaseHandle<GLuint, GenSampler2D, DestSampler2D>()
     {
-        Create(size, MipMaps, InternalFormat, Format, Type);
+        //Create(size, MipMaps, InternalFormat, Format, Type);
+        Create(size,
+               InternalFormat,
+               Format,
+               Type,
+               0,
+               true);
     }
 
     Sampler2D( const Image & img, bool mipmaps =true )
@@ -227,17 +233,16 @@ public:
     }
 
 
-    inline bool Create(const uvec2 & size,
-                       bool MipMaps=true,
-
-                       SamplerFormat InternalFormat = SamplerFormat::RGBA,
-                       ImageFormat   texformat      = ImageFormat::RGBA,
-                       DataType            datatype = DataType::UNSIGNED_BYTE
-                       )
-    {
-
-        return( Create(size, InternalFormat, texformat, datatype, 0, MipMaps) );
-    }
+    //inline bool Create(const uvec2 & size,
+    //                   bool                 MipMaps = true,
+    //                   SamplerFormat InternalFormat = SamplerFormat::RGBA,
+    //                   ImageFormat   texformat      = ImageFormat::RGBA,
+    //                   DataType            datatype = DataType::UNSIGNED_BYTE
+    //                   )
+    //{
+    //
+    //    return( Create(size, InternalFormat, texformat, datatype, 0, MipMaps) );
+    //}
 
     /**
      * @brief create Creates a blank texture
@@ -368,31 +373,54 @@ private:
 
 
 
+
 inline void Sampler2D::PasteSubImage( const uvec2 & xy, const ImageBase & T, int level)
 {
     if( !Get() ) return;
 
     auto d = T.getRawData();
+
     if(!d) return;
 
     //have a bigger image bigImage and the
     // subImage sub
-   // GLA_DOUT  << "Copying subimage over\n";
+    std::cout  << "Copying subimage over\n";
+    std::cout  << "        x: " << xy.x << std::endl;
+    std::cout  << "        y: " << xy.y << std::endl;
+    std::cout <<  "        w: " << T.size().x << std::endl;
+    std::cout <<  "        h: " << T.size().y << std::endl;
     Bind();
 
+
+    //const
+    //SamplerFormat internal[] = {SamplerFormat::RED ,
+    //                            SamplerFormat::RG  ,
+    //                            SamplerFormat::RGB ,
+    //                            SamplerFormat::RGBA};
+
+    const
+    ImageFormat imformat[] = {  ImageFormat::RED ,
+                                ImageFormat::RG  ,
+                                ImageFormat::RGB ,
+                                ImageFormat::RGBA};
+
+    //GLenum Format[] = {GL_RED, 0, GL_RGB, GL_RGBA};
     // Note, i/j might have the origin int he bottom left corner instead of top left.
-    GLenum Format[] = {GL_RED, GL_RG, GL_RGB, GL_RGBA};
+ //   GLenum Format[] = {GL_RED, GL_RG, GL_RGB, GL_RGBA};
    // GLA_DOUT  << "PASTING SUB IMAGE: " << T.getChannels()-1 <<std::endl;
     glTexSubImage2D(GL_TEXTURE_2D,
                     level,
                     xy.x, xy.y,
                     T.size().x,
                     T.size().y,
-                    Format[T.getChannels()-1],
+                    static_cast<GLenum>(imformat[T.getChannels()-1]),
+                    //Format[T.getChannels()-1],
                     (GLenum)m_PixelDataType,
                     d );
 
-  //  GLA_DOUT  << "Error code: " << glGetError() << std::endl;
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    std::cout << "Error code: " << glGetError() << std::endl;
 
 }
 

@@ -105,7 +105,7 @@
 #ifndef GLA_H
 #define GLA_H
 
-
+#include <gla/exper/timer.h>
 #include <gla/exper/buffers.h>
 #include <gla/exper/camera.h>
 #include <gla/exper/timer.h>

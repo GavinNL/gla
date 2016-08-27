@@ -235,6 +235,7 @@ extern "C" {
     #define GLAIDEF extern
 #endif
 
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // PRIMARY API - works on images of any type
@@ -244,89 +245,89 @@ extern "C" {
 // load image by filename, open file, or memory buffer
 //
 
-GLAIDEF GLA_uc *GLA_load_from_memory(GLA_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp);
-
-#ifndef GLAI_NO_STDIO
-GLAIDEF GLA_uc *GLA_load            (char const *filename,     int *x, int *y, int *comp, int req_comp);
-GLAIDEF GLA_uc *GLA_load_from_file  (FILE *f,                  int *x, int *y, int *comp, int req_comp);
-// for GLA_load_from_file, file pointer is left pointing immediately after image
-#endif
-
-typedef struct
-{
-   int      (*read)  (void *user,char *data,int size);   // fill 'data' with 'size' bytes.  return number of bytes actually read 
-   void     (*skip)  (void *user,int n);                 // skip the next 'n' bytes, or 'unget' the last -n bytes if negative
-   int      (*eof)   (void *user);                       // returns nonzero if we are at end of file/data
-} GLA_io_callbacks;
-
-GLAIDEF GLA_uc *GLA_load_from_callbacks  (GLA_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp);
-
-#ifndef GLAI_NO_HDR
-   GLAIDEF float *GLA_loadf_from_memory(GLA_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp);
-
-   #ifndef GLAI_NO_STDIO
-       GLAIDEF float *GLA_loadf            (char const *filename,   int *x, int *y, int *comp, int req_comp);
-       GLAIDEF float *GLA_loadf_from_file  (FILE *f,                int *x, int *y, int *comp, int req_comp);
-   #endif
-   
-   GLAIDEF float *GLA_loadf_from_callbacks  (GLA_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp);
-
-   GLAIDEF void   GLA_hdr_to_ldr_gamma(float gamma);
-   GLAIDEF void   GLA_hdr_to_ldr_scale(float scale);
-
-   GLAIDEF void   GLA_ldr_to_hdr_gamma(float gamma);
-   GLAIDEF void   GLA_ldr_to_hdr_scale(float scale);
-#endif // GLAI_NO_HDR
-
-// GLA_is_hdr is always defined
-GLAIDEF int    GLA_is_hdr_from_callbacks(GLA_io_callbacks const *clbk, void *user);
-GLAIDEF int    GLA_is_hdr_from_memory(GLA_uc const *buffer, int len);
-#ifndef GLAI_NO_STDIO
-GLAIDEF int      GLA_is_hdr          (char const *filename);
-GLAIDEF int      GLA_is_hdr_from_file(FILE *f);
-#endif // GLAI_NO_STDIO
-
-
-// get a VERY brief reason for failure
-// NOT THREADSAFE
-GLAIDEF const char *GLA_failure_reason  (void);
-
-// free the loaded image -- this is just free()
-GLAIDEF void     GLA_image_free      (void *retval_from_GLA_load);
-
-// get image dimensions & components without fully decoding
-GLAIDEF int      GLA_info_from_memory(GLA_uc const *buffer, int len, int *x, int *y, int *comp);
-GLAIDEF int      GLA_info_from_callbacks(GLA_io_callbacks const *clbk, void *user, int *x, int *y, int *comp);
-
-#ifndef GLAI_NO_STDIO
-GLAIDEF int      GLA_info            (char const *filename,     int *x, int *y, int *comp);
-GLAIDEF int      GLA_info_from_file  (FILE *f,                  int *x, int *y, int *comp);
-
-#endif
-
-
-
-// for image formats that explicitly notate that they have premultiplied alpha,
-// we just return the colors as stored in the file. set this flag to force
-// unpremultiplication. results are undefined if the unpremultiply overflow.
-GLAIDEF void GLA_set_unpremultiply_on_load(int flag_true_if_should_unpremultiply);
-
-// indicate whether we should process iphone images back to canonical format,
-// or just pass them through "as-is"
-GLAIDEF void GLA_convert_iphone_png_to_rgb(int flag_true_if_should_convert);
-
-
-// ZLIB client - used by PNG, available for other purposes
-
-//GLAIDEF char *GLA_zlib_decode_malloc_guesssize(const char *buffer, int len, int initial_size, int *outlen);
-//GLAIDEF char *GLA_zlib_decode_malloc_guesssize_headerflag(const char *buffer, int len, int initial_size, int *outlen, int parse_header);
-GLAIDEF char *GLA_zlib_decode_malloc(const char *buffer, int len, int *outlen);
-GLAIDEF int   GLA_zlib_decode_buffer(char *obuffer, int olen, const char *ibuffer, int ilen);
-
-GLAIDEF char *GLA_zlib_decode_noheader_malloc(const char *buffer, int len, int *outlen);
-GLAIDEF int   GLA_zlib_decode_noheader_buffer(char *obuffer, int olen, const char *ibuffer, int ilen);
-
-
+//   GLAIDEF GLA_uc *GLA_load_from_memory(GLA_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp);
+//
+//   #ifndef GLAI_NO_STDIO
+//   GLAIDEF GLA_uc *GLA_load            (char const *filename,     int *x, int *y, int *comp, int req_comp);
+//   GLAIDEF GLA_uc *GLA_load_from_file  (FILE *f,                  int *x, int *y, int *comp, int req_comp);
+//   // for GLA_load_from_file, file pointer is left pointing immediately after image
+//   #endif
+//
+   typedef struct
+   {
+      int      (*read)  (void *user,char *data,int size);   // fill 'data' with 'size' bytes.  return number of bytes actually read
+      void     (*skip)  (void *user,int n);                 // skip the next 'n' bytes, or 'unget' the last -n bytes if negative
+      int      (*eof)   (void *user);                       // returns nonzero if we are at end of file/data
+   } GLA_io_callbacks;
+//
+//   GLAIDEF GLA_uc *GLA_load_from_callbacks  (GLA_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp);
+//
+//   #ifndef GLAI_NO_HDR
+//      GLAIDEF float *GLA_loadf_from_memory(GLA_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp);
+//
+//      #ifndef GLAI_NO_STDIO
+//          GLAIDEF float *GLA_loadf            (char const *filename,   int *x, int *y, int *comp, int req_comp);
+//          GLAIDEF float *GLA_loadf_from_file  (FILE *f,                int *x, int *y, int *comp, int req_comp);
+//      #endif
+//
+//      GLAIDEF float *GLA_loadf_from_callbacks  (GLA_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp);
+//
+//      GLAIDEF void   GLA_hdr_to_ldr_gamma(float gamma);
+//      GLAIDEF void   GLA_hdr_to_ldr_scale(float scale);
+//
+//      GLAIDEF void   GLA_ldr_to_hdr_gamma(float gamma);
+//      GLAIDEF void   GLA_ldr_to_hdr_scale(float scale);
+//   #endif // GLAI_NO_HDR
+//
+//   // GLA_is_hdr is always defined
+//   GLAIDEF int    GLA_is_hdr_from_callbacks(GLA_io_callbacks const *clbk, void *user);
+//   GLAIDEF int    GLA_is_hdr_from_memory(GLA_uc const *buffer, int len);
+//   #ifndef GLAI_NO_STDIO
+//   GLAIDEF int      GLA_is_hdr          (char const *filename);
+//   GLAIDEF int      GLA_is_hdr_from_file(FILE *f);
+//   #endif // GLAI_NO_STDIO
+//
+//
+//   // get a VERY brief reason for failure
+//   // NOT THREADSAFE
+//   GLAIDEF const char *GLA_failure_reason  (void);
+//
+//   // free the loaded image -- this is just free()
+//   GLAIDEF void     GLA_image_free      (void *retval_from_GLA_load);
+//
+//   // get image dimensions & components without fully decoding
+//   GLAIDEF int      GLA_info_from_memory(GLA_uc const *buffer, int len, int *x, int *y, int *comp);
+//   GLAIDEF int      GLA_info_from_callbacks(GLA_io_callbacks const *clbk, void *user, int *x, int *y, int *comp);
+//
+//   #ifndef GLAI_NO_STDIO
+//   GLAIDEF int      GLA_info            (char const *filename,     int *x, int *y, int *comp);
+//   GLAIDEF int      GLA_info_from_file  (FILE *f,                  int *x, int *y, int *comp);
+//
+//   #endif
+//
+//
+//
+//   // for image formats that explicitly notate that they have premultiplied alpha,
+//   // we just return the colors as stored in the file. set this flag to force
+//   // unpremultiplication. results are undefined if the unpremultiply overflow.
+//   GLAIDEF void GLA_set_unpremultiply_on_load(int flag_true_if_should_unpremultiply);
+//
+//   // indicate whether we should process iphone images back to canonical format,
+//   // or just pass them through "as-is"
+//   GLAIDEF void GLA_convert_iphone_png_to_rgb(int flag_true_if_should_convert);
+//
+//
+//   // ZLIB client - used by PNG, available for other purposes
+//
+//   //GLAIDEF char *GLA_zlib_decode_malloc_guesssize(const char *buffer, int len, int initial_size, int *outlen);
+//   //GLAIDEF char *GLA_zlib_decode_malloc_guesssize_headerflag(const char *buffer, int len, int initial_size, int *outlen, int parse_header);
+//   GLAIDEF char *GLA_zlib_decode_malloc(const char *buffer, int len, int *outlen);
+//   GLAIDEF int   GLA_zlib_decode_buffer(char *obuffer, int olen, const char *ibuffer, int ilen);
+//
+//   GLAIDEF char *GLA_zlib_decode_noheader_malloc(const char *buffer, int len, int *outlen);
+//   GLAIDEF int   GLA_zlib_decode_noheader_buffer(char *obuffer, int olen, const char *ibuffer, int ilen);
+//
+//
 // define faster low-level operations (typically SIMD support)
 #ifdef GLAI_SIMD
 typedef void (*GLA_idct_8x8)(GLA_uc *out, int out_stride, short data[64], unsigned short *dequantize);
@@ -350,6 +351,7 @@ GLAIDEF void GLA_install_YCbCr_to_RGB(GLA_YCbCr_to_RGB_run func);
 #ifdef __cplusplus
 }
 #endif
+
 
 //
 //

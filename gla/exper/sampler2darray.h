@@ -30,6 +30,8 @@ struct DestSampler2DArray
     {
         public:
             Sampler2DArrayLayerRef & operator=(const Image & img);
+            Sampler2DArrayLayerRef(Sampler2DArray* R, std::size_t l):ref(R),layer(l){}
+
         private:
             Sampler2DArray *ref;
             std::size_t     layer;
@@ -58,7 +60,7 @@ struct DestSampler2DArray
 
             void SetActive( unsigned int unit);
 
-            Sampler2DArrayLayerRef & operator[](int layer);
+            Sampler2DArrayLayerRef operator[](int layer);
 
         private:
 
@@ -67,15 +69,13 @@ struct DestSampler2DArray
             std::size_t m_MipmapCount;
             std::size_t m_Components;
 
-            Sampler2DArrayLayerRef m_LayerRef;
+      //      Sampler2DArrayLayerRef m_LayerRef;
     };
 
 
-    inline Sampler2DArrayLayerRef & Sampler2DArray::operator[](int layer)
+    inline Sampler2DArrayLayerRef Sampler2DArray::operator[](int layer)
     {
-        m_LayerRef.ref   = this;
-        m_LayerRef.layer = layer;
-        return m_LayerRef;
+        return Sampler2DArrayLayerRef(this,layer);
     }
 
     inline Sampler2DArrayLayerRef & Sampler2DArrayLayerRef::operator=(const Image & img)

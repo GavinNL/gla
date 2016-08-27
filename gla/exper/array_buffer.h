@@ -84,7 +84,7 @@ EnableVertexAttribArrayFromTuple( std::int32_t offset, const std::array<bool, tu
                             normalized[I] ,
                             sizeof(TupleType),
                             BUFFER_OFFSET(offset));
-    glEnableVertexAttribArray(I);
+     glEnableVertexAttribArray(I);
 
  //   std::cout << "glVertexAttribPointer(" << I << ", ";
  //   std::cout << num_components << ", ";
@@ -111,7 +111,7 @@ class Array_Buffer : public Buffer<BufferBindTarget::ARRAY_BUFFER>
         }
 
         template<bool BindFirst=true>
-        void Draw( Primitave p, std::size_t first, std::size_t NumberOfPrimitaves)
+        void Draw( Primitave p, std::size_t first, std::size_t NumberOfPrimitaves) const
         {
             if(BindFirst) Bind();
 
@@ -156,6 +156,8 @@ class Array_Buffer : public Buffer<BufferBindTarget::ARRAY_BUFFER>
             FalseArray.fill(false);
             gla::experimental::EnableVertexAttribArrayFromTuple<0, std::tuple<GLM_Vec_Types...> > (offset, FalseArray);
         }
+
+        std::size_t m_Number_Of_Items;
 
 };
 

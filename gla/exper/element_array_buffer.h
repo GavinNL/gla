@@ -6,9 +6,23 @@
 namespace gla { namespace experimental
 {
 
+
+
 class Element_Array_Buffer : public Buffer<BufferBindTarget::ELEMENT_ARRAY_BUFFER>
 {
     public:
+        Element_Array_Buffer() : Buffer()
+        {
+
+        }
+
+        template<typename T>
+        void operator << (const T & structure)
+        {
+            Bind();
+            Buffer::CopyData(structure);
+        }
+
         template<typename VertexData>
         Element_Array_Buffer( const std::vector<VertexData> & data, BufferUsage usage = BufferUsage::STATIC_DRAW) : Buffer(data, usage)
         {

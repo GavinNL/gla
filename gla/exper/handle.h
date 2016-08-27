@@ -39,8 +39,6 @@ enum class Unique_Handle_Name
     Sampler2DArray,
 };
 
-
-
 template<typename HandleType, typename CallableCreate, typename CallableDestroy>
 class BaseHandle
 {
@@ -48,13 +46,72 @@ class BaseHandle
 public:
     using Handle = BaseHandle<HandleType, CallableCreate, CallableDestroy>;
 
-    BaseHandle() : m_ID(0), ref(nullptr)
+    BaseHandle() : m_ID(0), ref_count( new int() )
+    {
+    }
+
+    ~BaseHandle()
+    {
+        Release();
+    }
+
+
+    HandleType Get() const
+    {
+        return m_ID;
+    }
+
+    void Generate()
+    {
+        Release();
+
+        static CallableCreate C;
+        C(m_ID);
+
+        //std::cout << "ID Generated: " << m_ID << "     use count: " << ref->refcount() << std::endl;
+    }
+
+    void Release()
+    {
+        if( ref_count.use_count() == 1)
+        {
+            if(m_ID)
+            {
+                static CallableDestroy D;
+                D(m_ID);
+            }
+        }
+        ref_count.reset( new int() );
+        m_ID = 0;
+
+    }
+
+    operator bool() const
+    {
+        return m_ID != 0;
+    }
+
+
+    protected:
+        HandleType m_ID = 0;
+
+        std::shared_ptr<int> ref_count;
+};
+
+template<typename HandleType, typename CallableCreate, typename CallableDestroy>
+class BaseHandle_Old2
+{
+
+public:
+    using Handle = BaseHandle_Old2<HandleType, CallableCreate, CallableDestroy>;
+
+    BaseHandle_Old2() : m_ID(0), ref(nullptr)
     {
         ref = new RefCounter();
         ref->inc();
     }
 
-    ~BaseHandle()
+    ~BaseHandle_Old2()
     {
         Release();
     }
@@ -76,19 +133,29 @@ public:
         C(m_ID);
         ref = new RefCounter();
         ref->inc();
-        std::cout << "ID Generated: " << m_ID << "     use count: " << ref->refcount() << std::endl;
+        //std::cout << "ID Generated: " << m_ID << "     use count: " << ref->refcount() << std::endl;
     }
 
     void Release()
     {
+        if( ref_count.use_count() == 1)
+        {
+            ref_count.reset( new int() );
+            if(m_ID)
+            {
+                static CallableDestroy D;
+                D(m_ID);
+            }
+        }
+
         if( ref)
         {
             if( ref->dec() == 0)
             {
                 if( m_ID )
                 {
-                    static CallableDestroy D;
-                    D(m_ID);
+                    //static CallableDestroy D;
+                    //D(m_ID);
 
                 }
                 delete ref;
@@ -113,12 +180,15 @@ public:
             m_ID = sp.m_ID;
             ref  = sp.ref;
             ref->inc();
+
+            ref_count = sp.ref_count;
         }
     }
 
     protected:
         HandleType m_ID = 0;
         RefCounter * ref;
+        std::shared_ptr<int> ref_count;
 };
 
 template<typename HandleType, typename CallableCreate, typename CallableDestroy>

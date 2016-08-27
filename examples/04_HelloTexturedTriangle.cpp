@@ -67,6 +67,8 @@ int main()
 
         Img.loadFromPath("../resources/textures/rocks1024.jpg" );
 
+        Sampler2D Sampler(Img);
+
         // We can modify the red channel using a lambda function
         Img.r = [] (float x, float y) { return (float)(0.5f * glm::perlin( glm::vec2(x,y)*8.0f ) + 0.5);  };
 
@@ -77,8 +79,7 @@ int main()
 
         // A texture in GLSL is called a Sampler2D, we send the data to the GPU
         // by creating a Sampler2D object and initializing it with the Image object
-        Sampler2D Sampler(Img);
-
+        Sampler.PasteSubImage(uvec2(512,512), Img);
 
 
         //================================================================
