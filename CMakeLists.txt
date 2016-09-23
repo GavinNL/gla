@@ -22,7 +22,30 @@ include_directories ("${PROJECT_SOURCE_DIR}")
 # Compiler definitions
 #===========================================================================
 ADD_DEFINITIONS (
-    -std=c++11 )
+    -std=c++11
+    -Wfloat-equal
+#    -Wundef
+    -Werror=shadow
+    -Wpointer-arith
+    -Wcast-align
+    -Wstrict-prototypes
+    -Wstrict-overflow=5
+    -Wwrite-strings
+#    -Waggregate-return
+    -Wcast-qual
+    -Werror=switch-default
+    -Wswitch-enum
+#    -Wconversion
+    -Wunreachable-code
+   # -Werror
+    #-Werror=unused-function
+    -Werror=return-type
+    -Werror=cast-qual
+    -Werror=pedantic
+    -pedantic-errors
+  #  -Wfatal-errors
+)
+
 #===========================================================================
 # Find packages
 #===========================================================================
@@ -95,31 +118,31 @@ set(LIBS_GLAD
 #
 
         add_executable(01_HelloTriangle
-              examples/01_HelloTriangle.cpp glad.c)
+              examples/01_HelloTriangle.cpp glad.cpp)
 target_link_libraries (01_HelloTriangle ${LIBS_GLAD})
 
         add_executable(02_HelloTriangleIndexed
-              examples/02_HelloTriangleIndexed.cpp glad.c)
+              examples/02_HelloTriangleIndexed.cpp glad.cpp)
 target_link_libraries (02_HelloTriangleIndexed ${LIBS_GLAD})
 
         add_executable(03_HelloTriangleVertexArray
-              examples/03_HelloTriangleVertexArray.cpp glad.c)
+              examples/03_HelloTriangleVertexArray.cpp glad.cpp)
 target_link_libraries (03_HelloTriangleVertexArray ${LIBS_GLAD})
 
         add_executable(04_HelloTexturedTriangle
-              examples/04_HelloTexturedTriangle.cpp glad.c)
+              examples/04_HelloTexturedTriangle.cpp glad.cpp)
 target_link_libraries (04_HelloTexturedTriangle ${LIBS_GLAD})
 
        add_executable(05_Sampler2DArray
-             examples/05_Sampler2DArray.cpp glad.c)
+             examples/05_Sampler2DArray.cpp glad.cpp)
 target_link_libraries(05_Sampler2DArray ${LIBS_GLAD})
 
        add_executable(06_UniformBuffer
-             examples/06_UniformBuffer.cpp glad.c)
+             examples/06_UniformBuffer.cpp glad.cpp)
 target_link_libraries(06_UniformBuffer ${LIBS_GLAD})
 
        add_executable(07_FrameBuffer
-             examples/07_FrameBuffer.cpp glad.c)
+             examples/07_FrameBuffer.cpp glad.cpp)
 target_link_libraries(07_FrameBuffer ${LIBS_GLAD})
 
 # This command b

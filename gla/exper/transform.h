@@ -16,19 +16,19 @@ namespace gla { namespace experimental {
 class Transform
 {
     public:
-        Transform() : Scale(1.0,1.0,1.0), Position(0,0,0), Orientation(1,0,0,0)
+        Transform() : Position(0,0,0) , Orientation(1,0,0,0) , Scale(1.0,1.0,1.0)
         {
         }
 
-        Transform(const vec3 & position, const quat & rot, const vec3 & scale) : Position(position), Scale(scale), Orientation(rot)
+        Transform(const vec3 & position, const quat & rot, const vec3 & scale) : Position(position), Orientation(rot), Scale(scale)
         {
         }
 
-        Transform(const vec3 & position, const quat & rot) : Position(position), Scale(1.0f,1.0f,1.0f), Orientation(rot)
+        Transform(const vec3 & position, const quat & rot) : Position(position), Orientation(rot), Scale(1.0f,1.0f,1.0f)
         {
         }
 
-        Transform(const vec3 & position) : Position(position), Scale(1,1,1), Orientation(1,0,0,0)
+        Transform(const vec3 & position) : Position(position), Orientation(1,0,0,0), Scale(1,1,1)
         {
 
         }
@@ -91,8 +91,8 @@ class Transform
 
 
     public:
-        quat    Orientation;
         vec3    Position;
+        quat    Orientation;
         vec3    Scale;
 
         //vec3    mEulerAngles; //pitch,roll,yaw

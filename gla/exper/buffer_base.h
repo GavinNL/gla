@@ -25,7 +25,9 @@ enum class BufferBindTarget
     ELEMENT_ARRAY_BUFFER  = GL_ELEMENT_ARRAY_BUFFER,
     TEXTURE_BUFFER        = GL_TEXTURE_BUFFER,
     SHADER_STORAGE_BUFFER = GL_SHADER_STORAGE_BUFFER,
-    UNIFORM_BUFFER        = GL_UNIFORM_BUFFER
+    UNIFORM_BUFFER        = GL_UNIFORM_BUFFER,
+    COPY_READ_BUFFER      = GL_COPY_READ_BUFFER,
+    COPY_WRITE_BUFFER     = GL_COPY_WRITE_BUFFER
 };
 
 enum class BufferUsage
@@ -80,10 +82,6 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
 
         std::size_t m_Size  = 0;
 
-        //GLuint Get() const { return m_Handle.Get(); }
-        //bool   Release()   { m_Handle.Release();    }
-        //void   Generate()  { m_Handle.Generate();   }
-
         Buffer() : BaseHandle<GLuint, GenBuff,DestBuff>()
         {
         }
@@ -103,16 +101,15 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
             m_Size = data.size()*sizeof(VertexData);
         }
 
-        void Bind() const
+
+        void Bind(BufferBindTarget targ = target) const
         {
-            auto D = Get();
-            GLenum T =  static_cast<GLenum>(target);
-            glBindBuffer(T, D );
+            glBindBuffer( static_cast<GLenum>(targ), Get() );
         }
 
-        void Unbind( ) const
+        void Unbind(BufferBindTarget targ = target ) const
         {
-            glBindBuffer( static_cast<GLenum>(target) , 0 );
+            glBindBuffer( static_cast<GLenum>(targ) , 0 );
         }
 
         std::size_t Size() const {
@@ -153,13 +150,6 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
             glBufferSubData( static_cast<GLenum>(target), offset, size, data);
         }
 
-     //   template<typename T>
-     //   void CopyData(const std::vector<T> & structure, std::size_t offset = 0)
-     //   {
-     //       CopyData( (unsigned char*)&structure, sizeof( T )*structure.size(), offset);
-     //   }
-
-
         /**
          * @brief CopyData
          * @param V
@@ -170,20 +160,69 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
         template<typename VertexType>
         void CopyData(const std::vector<VertexType> & V, std::size_t offset = 0)
         {
+            CopyData( (const GLvoid *)&V[0], sizeof(VertexType)*V.size(), offset);
+        }
+
+
+};
+
+
+class Buffer_T : public BaseHandle<GLuint, GenBuff, DestBuff>
+{
+    public:
+
+        void Bind(BufferBindTarget target) const
+        {
+            glBindBuffer(static_cast<GLenum>(target) , Get() );
+        }
+
+        void Unbind( BufferBindTarget target ) const
+        {
+            glBindBuffer( static_cast<GLenum>(target) , 0 );
+        }
+
+        void Allocate(std::size_t size, BufferUsage usage = BufferUsage::STATIC_DRAW)
+        {
+            Generate(); // generates a new handle, releases the old one.
+
+            Bind(BufferBindTarget::COPY_READ_BUFFER);
+
+            glBufferData( static_cast<GLenum>(BufferBindTarget::COPY_READ_BUFFER) ,
+                          size,
+                          NULL ,
+                          static_cast<GLenum>(usage) );
+            m_Size = size;
+            Unbind(BufferBindTarget::COPY_READ_BUFFER);
+        }
+
+        template<typename VertexType>
+        void CopySubData(const std::vector<VertexType> & V, std::size_t offset = 0)
+        {
             CopyData( (unsigned char*)&V[0], sizeof(VertexType)*V.size(), offset);
         }
 
-    //    template<BufferBindTarget targ>
-    //    Buffer<target> & operator=(const Buffer<targ> & rhs)
-    //    {
-    //        static_cast<Base&>(*this) = rhs;
-    //        Base::operator = (rhs);
-    //        // ... copy member variables of Derived
-    //        return *this;
-    //    }
+        void CopyData(const GLvoid * data, std::size_t size, std::size_t offset=0)
+        {
+            if( !(*this) )
+            {
+                Allocate( size + offset );
+            }
+
+            Bind(BufferBindTarget::COPY_READ_BUFFER);
+
+            if( size+offset > m_Size )
+                throw std::runtime_error("Buffer is too small to hold all the data");
+
+            glBufferSubData( static_cast<GLenum>(BufferBindTarget::COPY_READ_BUFFER), offset, size, data);
+
+            Unbind(BufferBindTarget::COPY_READ_BUFFER);
+        }
 
 
+        std::size_t Size() const { return m_Size; }
 
+    protected:
+        std::size_t m_Size  = 0;
 };
 
 

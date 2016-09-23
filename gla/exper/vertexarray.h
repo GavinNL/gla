@@ -2,7 +2,6 @@
 #define EXP_VERTEX_ARRAY
 
 #include <gla/exper/handle.h>
-//#include <gla/exper/array_buffer.h>
 #include <gla/exper/element_array_buffer.h>
 
 namespace gla { namespace experimental {
@@ -55,8 +54,6 @@ class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray>
             Bind();
                 Attribute.Bind();
                 Attribute.EnableAttributes< GLM_Vec_Types... >();
-
-
             Unbind();
 
         }
@@ -85,6 +82,89 @@ class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray>
         DataType m_Data = DataType::UNKNOWN;
 };
 
+
+
+class VertexArray_T : public BaseHandle<GLuint, GenVertexArray, DestVertexArray>
+{
+    public:
+        void Bind  () const { glBindVertexArray( Get() ); }
+        void Unbind() const { glBindVertexArray(  0    ); }
+
+        std::size_t m_NumberOfVertices_Or_Indices = 0;
+        std::size_t m_StartVertex_Or_Index        = 0;
+        DataType    m_DataType                    = DataType::UNKNOWN;
+
+        template<bool BindFirst=true>
+        void Draw(Primitave p )
+        {
+            if(BindFirst) Bind();
+
+            m_DataType == DataType::UNKNOWN ?
+                        glDrawArrays( static_cast<GLenum>(p),
+                                      static_cast<GLint>(m_StartVertex_Or_Index),
+                                      static_cast<GLsizei>(m_NumberOfVertices_Or_Indices) )
+                        :
+                        glDrawElements( static_cast<GLenum>(p),
+                                        static_cast<GLsizei>(m_NumberOfVertices_Or_Indices),
+                                        static_cast<GLenum>(m_DataType),
+                                        static_cast<char*>(0)+m_StartVertex_Or_Index
+                                        );
+
+        }
+
+        template<bool BindFirst=true>
+        void Draw(Primitave p, std::size_t NumberOfVertices_Or_Indices, std::size_t  StartVertex_Or_Index=0)
+        {
+            if(BindFirst) Bind();
+            m_DataType == DataType::UNKNOWN ?
+                        glDrawArrays( static_cast<GLenum>(p),
+                                      static_cast<GLint>(StartVertex_Or_Index),
+                                      static_cast<GLsizei>(NumberOfVertices_Or_Indices) )
+                        :
+                        glDrawElements( static_cast<GLenum>(p),
+                                        static_cast<GLsizei>(NumberOfVertices_Or_Indices),
+                                        static_cast<GLenum>(m_DataType),
+                                        static_cast<char*>(0)+StartVertex_Or_Index
+                                        );
+        }
+
+        //====================================================================
+        template<typename ...GLM_Types>
+        static VertexArray_T MakeVAO( const Array_Buffer & Vertex , std::uint32_t Normalize_Flags=0 )
+        {
+            VertexArray_T vao;
+            vao.Generate();
+            vao.Bind();
+
+            vao.m_DataType = DataType::UNKNOWN;
+
+                vao.Bind();
+                    Vertex.Bind(BufferBindTarget::ARRAY_BUFFER);
+                    //Vertex.EnableAttributes< GLM_Types... >();
+                    EnableAttributes<GLM_Types...>::Enable(0,0,Normalize_Flags);
+                vao.Unbind();
+
+            return vao;
+        }
+
+        template<typename ...GLM_Types>
+        static VertexArray_T MakeVAO( const Element_Array_Buffer & Element, const Array_Buffer & Vertex,  std::uint32_t Normalize_Flags = 0  )
+        {
+            VertexArray_T vao;
+            vao.Generate();
+            vao.Bind();
+
+            vao.m_DataType = Element.m_Data;
+
+            vao.Bind();
+                Vertex.Bind(BufferBindTarget::ARRAY_BUFFER);
+                Element.Bind(BufferBindTarget::ELEMENT_ARRAY_BUFFER);
+                EnableAttributes<GLM_Types...>::Enable(0,0,Normalize_Flags);
+            vao.Unbind();
+            return vao;
+        }
+
+};
 
 } }
 

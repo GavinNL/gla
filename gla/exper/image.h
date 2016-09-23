@@ -317,9 +317,9 @@ namespace gla { namespace experimental {
                 ImageBase T( newSize.x, newSize.y , mComponents);
                 auto d = T.size();
 
-                for(int j=0; j < d.y; j++)
-                for(int i=0; i < d.x; i++)
-                for(int z=0; z < mComponents; z++)
+                for(auto j=0u; j < d.y; j++)
+                for(auto i=0u; i < d.x; i++)
+                for(auto z=0u; z < mComponents; z++)
                     {
                         // scale the x and y dimeninos to be between 0 and 1
                         float x = (float)i / (float)d.x;
@@ -379,8 +379,8 @@ namespace gla { namespace experimental {
                 uvec2 S = size();
                 float W = 1.0 / (float)S.x;
                 float H = 1.0 / (float)S.y;
-                for(int y =0; y < S.y; y++)
-                    for(int x=0; x < S.x; x++)
+                for(auto y =0u; y < S.y; y++)
+                    for(auto x=0u; x < S.x; x++)
                     {
                         auto c = (F( (float)x * W, (float)y*H ));
                         (*this)(x,y,0) = c[0];
@@ -397,8 +397,8 @@ namespace gla { namespace experimental {
                 uvec2 S = size();
                 float W = 1.0 / (float)S.x;
                 float H = 1.0 / (float)S.y;
-                for(int y =0; y < S.y; y++)
-                    for(int x=0; x < S.x; x++)
+                for(auto y =0u; y < S.y; y++)
+                    for(auto x=0u; x < S.x; x++)
                     {
                         auto c = (F( (float)x * W, (float)y*H ) );
                         (*this)(x,y,0) = (unsigned char)c[0]*255.f;
@@ -417,9 +417,9 @@ namespace gla { namespace experimental {
                 unsigned int C = mComponents;
                 ImageBase T(    siz.x,siz.y  ,C   );
 
-                for(int y=0;y<siz.y;y++)
-                for(int x=0;x<siz.x;x++)
-                for(int z=0;z<C;z++)
+                for(auto y=0u;y<siz.y;y++)
+                for(auto x=0u;x<siz.x;x++)
+                for(auto z=0u;z<C;z++)
                 {
                     T(x,y,z) = (*this)(x,y,z) + c(x,y,z);
                 }
@@ -433,9 +433,9 @@ namespace gla { namespace experimental {
                 unsigned int C = mComponents;
                 ImageBase T(    siz.x,siz.y  ,C   );
 
-                for(int y=0;y<siz.y;y++)
-                for(int x=0;x<siz.x;x++)
-                for(int z=0;z<C;z++)
+                for(auto y=0u;y<siz.y;y++)
+                for(auto x=0u;x<siz.x;x++)
+                for(auto z=0u;z<C;z++)
                 {
                     T(x,y,z) = (*this)(x,y,z) - c(x,y,z);
                 }
@@ -453,9 +453,9 @@ namespace gla { namespace experimental {
                ImageBase T(    siz.x,siz.y ,C    );
 
                 //DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }
-                for(int y=0;y<siz.y;y++)
-                for(int x=0;x<siz.x;x++)
-                for(int z=0;z<C;z++)
+                for(auto y=0u;y<siz.y;y++)
+                for(auto x=0u;x<siz.x;x++)
+                for(auto z=0u;z<C;z++)
                 {
                     T(x,y,z) = (*this)(x,y,z) - static_cast<unsigned char>(c*255.f);
                 }
@@ -470,9 +470,9 @@ namespace gla { namespace experimental {
                ImageBase T(    siz.x,siz.y ,C    );
 
                 //DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }
-                for(int y=0;y<siz.y;y++)
-                for(int x=0;x<siz.x;x++)
-                for(int z=0;z<C;z++)
+                for(auto y=0u;y<siz.y;y++)
+                for(auto x=0u;x<siz.x;x++)
+                for(auto z=0u;z<C;z++)
                 {
                     T(x,y,z) = (*this)(x,y,z) + static_cast<unsigned char>(c*255.f);
                 }
@@ -487,9 +487,9 @@ namespace gla { namespace experimental {
                ImageBase T(    siz.x,siz.y ,C    );
 
                 //DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }
-                for(int y=0;y<siz.y;y++)
-                for(int x=0;x<siz.x;x++)
-                for(int z=0;z<C;z++)
+                for(auto y=0u;y<siz.y;y++)
+                for(auto x=0u;x<siz.x;x++)
+                for(auto z=0u;z<C;z++)
                 {
                     T(x,y,z) = (*this)(x,y,z) * c;
                 }
@@ -504,9 +504,9 @@ namespace gla { namespace experimental {
                ImageBase T(    siz.x,siz.y ,C    );
 
                 //DOUBLE_LOOP(siz)  {  T(x,y) = LeftOp OPP RightOp ;  }
-                for(int y=0;y<siz.y;y++)
-                for(int x=0;x<siz.x;x++)
-                for(int z=0;z<C;z++)
+                for(auto y=0u;y<siz.y;y++)
+                for(auto x=0u;x<siz.x;x++)
+                for(auto z=0u;z<C;z++)
                 {
                     T(x,y,z) = (*this)(x,y,z) / c;
                 }
@@ -521,9 +521,9 @@ namespace gla { namespace experimental {
                unsigned int C = mComponents;                                     \
                ImageBase T(    siz.x,siz.y ,C    );                                \
                                                                                  \
-                for(int y=0; y<siz.y;y++)                                         \
-                for(int x=0; x<siz.x;x++)                                         \
-                for(int z=0; z<C    ;z++)                                         \
+                for(auto y=0u; y<siz.y;y++)                                         \
+                for(auto x=0u; x<siz.x;x++)                                         \
+                for(auto z=0u; z<C    ;z++)                                         \
                 {                                                                \
                     T(x,y,z) = (*this)(x,y,z) OP c;                               \
                 }                                                                \
@@ -551,7 +551,7 @@ namespace gla { namespace experimental {
             }
 
             unsigned char   *mData;
-            int              mComponents;
+            unsigned int     mComponents;
             uvec2            mDim;
 
 
@@ -584,23 +584,23 @@ namespace gla { namespace experimental {
             int c   = other.mComp;
             uvec2 S = glm::min( mParent->size(), other.mParent->size() );
 
-            for(int y =0; y < S.y; y++)
-                for(int x=0; x < S.x; x++)
-                {
-                    (*mParent)(x,y,(int)mComp) = (*other.mParent)(x, y, c);
-                }
+            for(auto y=0u; y < S.y; y++)
+            for(auto x=0u; x < S.x; x++)
+            {
+                (*mParent)(x,y,(int)mComp) = (*other.mParent)(x, y, c);
+            }
 
             return *this;
         }
 
-        void PasteImage(const ChannelRef & other, int x_offset, int y_offset)
+        void PasteImage(const ChannelRef & other, unsigned int x_offset, unsigned int y_offset)
         {
             auto S = glm::min( GetSize() , uvec2(x_offset,y_offset)+other.GetSize() );
 
             int c  = other.mComp;
 
-            for(int y = y_offset; y < S.y; y++)
-                for(int x = x_offset; x < S.x; x++)
+            for(auto y = y_offset; y < S.y; y++)
+                for(auto x = x_offset; x < S.x; x++)
                 {
                     (*mParent)(x,y,(int)mComp) = (*other.mParent)( x-x_offset, y-y_offset, c);
                 }
@@ -621,8 +621,8 @@ namespace gla { namespace experimental {
             uvec2 S = mParent->size();
             float W = 1.0 / (float)S.x;
             float H = 1.0 / (float)S.y;
-            for(int y =0; y < S.y; y++)
-                for(int x=0; x < S.x; x++)
+            for(auto y =0u; y < S.y; y++)
+                for(auto x=0u; x < S.x; x++)
                 {
                     (*mParent)(x,y,(int)mComp) = (unsigned char)(F( (float)x * W, (float)y*H ) * 255.f);
                 }
@@ -634,20 +634,20 @@ namespace gla { namespace experimental {
         {
             char data[] = " .:ioVM@";
             auto s = GetSize();
-            for (int j=0; j < s.y; ++j) std::cout << '#';
+            for (auto j=0u; j < s.y; ++j) std::cout << '#';
              std::cout << std::endl;
 
-            for (int j=0; j < s.y; ++j)
+            for (auto j=0u; j < s.y; ++j)
             {
                printf("#");
-               for (int i=0; i < s.x; ++i)
+               for (auto i=0u; i < s.x; ++i)
                {
                   printf("%c",  data[ (*this)(i,j)>>5] );
                }
                printf("#\n");
             }
 
-            for (int j=0; j < s.y; ++j) std::cout << '#';
+            for (auto j=0u; j < s.y; ++j) std::cout << '#';
              std::cout << std::endl;
         }
 
@@ -656,8 +656,8 @@ namespace gla { namespace experimental {
             return mParent->size();
         }
 
+        ImageBase      *mParent;
         unsigned int    mComp;
-        ImageBase     *mParent;
     };
 
 
@@ -677,27 +677,28 @@ namespace gla { namespace experimental {
 
             }
 
-            Image( const uvec2 & size, unsigned int components=4) : r(this, std::min(0u,components-1) ),
+            Image( const uvec2 & size, unsigned int components=4) : ImageBase(size,components),
+                                                                    r(this, std::min(0u,components-1) ),
                                                                     g(this, std::min(1u,components-1) ),
                                                                     b(this, std::min(2u,components-1) ),
-                                                                    a(this, std::min(3u,components-1) ), ImageBase(size,components)
+                                                                    a(this, std::min(3u,components-1) )
             {
             }
 
-            Image(uint w, uint h, unsigned int components=4) : r(this,0),g(this,1),b(this,2),a(this,3), ImageBase(w,h,components)
+            Image(uint w, uint h, unsigned int components=4) : ImageBase(w,h,components), r(this,0),g(this,1),b(this,2),a(this,3)
             {
             }
 
-            Image(const std::string & path, unsigned int ForceNumberChannels=0) : r(this,0),g(this,1),b(this,2),a(this,3)
+            Image(const std::string & path, unsigned int ForceNumberChannels=0) : ImageBase(), r(this,0),g(this,1),b(this,2),a(this,3)
             {
                 loadFromPath(path, ForceNumberChannels);
             }
 
-            explicit Image(Image & T) : r(this,0),g(this,1),b(this,2),a(this,3),  ImageBase(T)
+            explicit Image(Image & T) : ImageBase(T), r(this,0),g(this,1),b(this,2),a(this,3)
             {
             }
 
-            Image(Image && T) : r(this,0),g(this,1),b(this,2),a(this,3),  ImageBase(T)
+            Image(Image && T) : ImageBase(T), r(this,0),g(this,1),b(this,2),a(this,3)
             {
                 *this = std::move(T);
             }
@@ -723,28 +724,28 @@ namespace gla { namespace experimental {
 
             }
 
-            void PasteImage(const ChannelRef & other, int x_offset, int y_offset)
+            void PasteImage(const ChannelRef & other, unsigned int x_offset, unsigned int y_offset)
             {
                 auto S = glm::min( size() , uvec2(x_offset,y_offset)+other.GetSize() );
 
-                for(int y = y_offset; y < S.y; y++)
-                    for(int x = x_offset; x < S.x; x++)
+                for(auto y = y_offset; y < S.y; y++)
+                    for(auto x = x_offset; x < S.x; x++)
                     {
-                        for(int i=0;i<mComponents;i++)
+                        for(auto i=0u;i<mComponents;i++)
                             (*this)(x,y,i) = other( x-x_offset, y-y_offset);
                     }
             }
 
-            void PasteImage(const Image & other, int x_offset, int y_offset)
+            void PasteImage(const Image & other, unsigned int x_offset, unsigned int y_offset)
             {
                 auto S = glm::min( size() , uvec2(x_offset,y_offset)+other.size() );
 
-                int comp = std::min( mComponents, other.mComponents);
+                auto comp = std::min( mComponents, other.mComponents);
 
-                for(int y = y_offset; y < S.y; y++)
-                    for(int x = x_offset; x < S.x; x++)
+                for(auto y = y_offset; y < S.y; y++)
+                    for(auto x = x_offset; x < S.x; x++)
                     {
-                        for(int i=0;i<comp;i++)
+                        for(auto i=0u; i < comp;i++)
                             (*this)(x,y,i) = other( x-x_offset , y-y_offset, i);
                     }
             }
@@ -757,8 +758,8 @@ namespace gla { namespace experimental {
     {
         uvec2 S = glm::min( mParent->size(), other.size() );
 
-        for(int y =0; y < S.y; y++)
-            for(int x=0; x < S.x; x++)
+        for(auto y = 0u ; y < S.y; y++)
+            for(auto x = 0u; x < S.x; x++)
             {
                 (*mParent)(x,y,(int)mComp) = other(x, y, 0);
             }
@@ -774,8 +775,8 @@ namespace gla { namespace experimental {
 
 
 
-        for(int y =0; y < S.y; y++)
-            for(int x=0; x < S.x; x++)
+        for(auto y =0u; y < S.y; y++)
+            for(auto x=0u; x < S.x; x++)
             {
                 T(x,y,0) = (*mParent)(x, y, mComp) + (*other.mParent)(x, y, c);
             }
@@ -791,8 +792,8 @@ namespace gla { namespace experimental {
 
 
 
-        for(int y =0; y < S.y; y++)
-            for(int x=0; x < S.x; x++)
+        for(auto y =0u; y < S.y; y++)
+            for(auto x=0u; x < S.x; x++)
             {
                 T(x,y,0) = (*mParent)(x, y, mComp) - (*other.mParent)(x, y, c);
             }
@@ -807,8 +808,8 @@ namespace gla { namespace experimental {
         Image T( S, 1);
 
 
-        for(int y =0; y < S.y; y++)
-            for(int x=0; x < S.x; x++)
+        for(auto y =0u; y < S.y; y++)
+            for(auto x=0u; x < S.x; x++)
             {
                 float t = (float)(*mParent)(x, y, mComp) * (float)(*other.mParent)(x, y, c);
                 T(x,y,0) = (unsigned char)(t / (255.f));
@@ -824,8 +825,8 @@ namespace gla { namespace experimental {
         Image T( S, 1);
 
 
-        for(int y =0; y < S.y; y++)
-            for(int x=0; x < S.x; x++)
+        for(auto y =0u; y < S.y; y++)
+            for(auto x=0u; x < S.x; x++)
             {
                 float t = (float)(*mParent)(x, y, mComp) / (float)(*other.mParent)(x, y, c);
                 T(x,y,0) = (unsigned char)(t * (255.f));
@@ -843,8 +844,8 @@ namespace gla { namespace experimental {
         Image T( S, 1);
 
 
-        for(int y =0; y < S.y; y++)
-            for(int x=0; x < S.x; x++)
+        for(auto y =0u; y < S.y; y++)
+            for(auto x=0u; x < S.x; x++)
             {
                 T(x,y,0) = (unsigned char) (  (float)(*left.mParent)(x, y, left.mComp) / (float) right(x, y, 0) * (255.f)  );
             }
@@ -859,8 +860,8 @@ namespace gla { namespace experimental {
         Image T( S, 1);
 
 
-        for(int y =0; y < S.y; y++)
-            for(int x=0; x < S.x; x++)
+        for(auto y =0u; y < S.y; y++)
+            for(auto x=0u; x < S.x; x++)
             {
                 T(x,y,0) = (unsigned char) (  (float)(*left.mParent)(x, y, left.mComp) * (float) right(x, y, 0) * (1.0f/255.f)  );
             }
@@ -880,8 +881,8 @@ namespace gla { namespace experimental {
         Image T( S, 1);
 
 
-        for(int y =0; y < S.y; y++)
-            for(int x=0; x < S.x; x++)
+        for(auto y =0u; y < S.y; y++)
+            for(auto x=0u; x < S.x; x++)
             {
                 T(x,y,0) = (*left.mParent)(x, y, left.mComp) + right(x, y, 0);
             }
@@ -895,8 +896,8 @@ namespace gla { namespace experimental {
         Image T( S, 1);
 
 
-        for(int y =0; y < S.y; y++)
-            for(int x=0; x < S.x; x++)
+        for(auto y =0u; y < S.y; y++)
+            for(auto x=0u; x < S.x; x++)
             {
                 T(x,y,0) = (*left.mParent)(x, y, left.mComp) - right(x, y, 0);
             }
@@ -911,8 +912,8 @@ namespace gla { namespace experimental {
         Image T( S, 1);
 
 
-        for(int y =0; y < S.y; y++)
-            for(int x=0; x < S.x; x++)
+        for(auto y = 0u; y < S.y; y++)
+            for(auto x=0u; x < S.x; x++)
             {
                 T(x,y,0) = - left(x, y, 0) - (*right.mParent)(x, y, right.mComp);
             }

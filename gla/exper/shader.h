@@ -113,11 +113,12 @@ class ShaderUnit : public BaseHandle<GLuint, GenShaderUnit<SHADER_TYPE>, DestSha
                 GLint maxLength = 0;
                 glGetShaderiv(id, GL_INFO_LOG_LENGTH, &maxLength);
 
-                char errorLog[maxLength];
+                std::string errorLog(maxLength, ' ');
+                //char errorLog[maxLength];
                 glGetShaderInfoLog(id, maxLength, &maxLength, &errorLog[0]);
 
-                std::cout   << errorLog << std::endl;
-
+                //std::cout   << errorLog << std::endl;
+                throw std::runtime_error( std::string(errorLog) );
 
                 return false;
             } else {
@@ -259,31 +260,14 @@ public:
 
             // ============ Get number of uniform locations ==================
             //auto & M = m_Handle.__GetMap();
-
-            int   N = GetNumUniforms();
-            auto ID = Get();
-
-         //   auto & Info = m_Handle.__GetInfo();
-         //   Info.UniformLocations.clear();
+            //int   N = GetNumUniforms();
+            //auto ID = Get();
+            //auto & Info = m_Handle.__GetInfo();
+            //Info.UniformLocations.clear();
             //Info.UniformLocations.assign(N,-1);
             // ============ Get number of uniform locations ==================
 
-/*
-            GLA_DOUT  << "Shader Program created: "  << ID << std::endl;
-            GLA_DOUT  << "     Number of Uniforms: " << N      << std::endl;
-            for(int i=0;i<N;i++)
-            {
-                auto name = GetUniformName(i);
-                auto loc  = GetUniformLocation(name.c_str());
 
-                Info.UniformLocations[ name ] = loc;
-                //GLA_DOUT  << "          Uniform(" << i << "): " << GetUniformName(i) << " HashKey: " << Hash(name.c_str()) << "  glUniformLoc: " << loc << std::endl;
-
-                //Info.UniformMap[ Hash(name.c_str()) ] = loc;
-
-                GLA_DOUT  << "          Uniform(" << i << "): " << GetUniformName(i) << std::endl;
-            }
-*/
         }
         //========================================================
 

@@ -174,7 +174,7 @@ static int get_exts(void) {
 
 static void free_exts(void) {
     if (exts_i != NULL) {
-        free((char **)exts_i);
+        free(  const_cast<char **>(exts_i)  );
         exts_i = NULL;
     }
 }
@@ -220,6 +220,7 @@ static int has_ext(const char *ext) {
 
     return 0;
 }
+
 int GLAD_GL_VERSION_1_0;
 int GLAD_GL_VERSION_1_1;
 int GLAD_GL_VERSION_1_2;

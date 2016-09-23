@@ -357,18 +357,17 @@ public:
     static GLuint GetMaxTextureImageUnits()
     {
         static GLint  max = 0;
-        if(max!=0) return max;
+
+        if( max != 0 ) return max;
+
         //glGetIntegerv (GL_MAX_TEXTURE_SIZE, &max);
         glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max);
         return max;
     }
 
-
-
-
-private:
-    DataType   m_PixelDataType;
-    glm::uvec2 m_Size;
+    private:
+        DataType   m_PixelDataType;
+        glm::uvec2 m_Size;
 };
 
 
@@ -384,11 +383,11 @@ inline void Sampler2D::PasteSubImage( const uvec2 & xy, const ImageBase & T, int
 
     //have a bigger image bigImage and the
     // subImage sub
-    std::cout  << "Copying subimage over\n";
-    std::cout  << "        x: " << xy.x << std::endl;
-    std::cout  << "        y: " << xy.y << std::endl;
-    std::cout <<  "        w: " << T.size().x << std::endl;
-    std::cout <<  "        h: " << T.size().y << std::endl;
+    //std::cout  << "Copying subimage over\n";
+    //std::cout  << "        x: " << xy.x << std::endl;
+    //std::cout  << "        y: " << xy.y << std::endl;
+    //std::cout <<  "        w: " << T.size().x << std::endl;
+    //std::cout <<  "        h: " << T.size().y << std::endl;
     Bind();
 
 

@@ -8,6 +8,120 @@
 namespace gla { namespace experimental
 {
 
+template<typename T, typename ...Tail>
+struct type_size
+{
+
+};
+
+template<typename T>
+struct type_size<T>
+{
+    static const int max   = sizeof(T);
+    static const int min   = sizeof(T);
+    static const int sum   = sizeof(T);
+};
+
+template<typename T, typename Head>
+struct type_size<T,Head>
+{
+    static const int max   = sizeof(T)>sizeof(Head) ? sizeof(T) : sizeof(Head);
+    static const int min   = sizeof(T)<sizeof(Head) ? sizeof(T) : sizeof(Head);
+    static const int sum   = sizeof(T)+sizeof(Head);
+};
+
+template<typename T, typename Head, typename ...Tail>
+struct type_size<T,Head,Tail...>
+{
+    static const int max = sizeof(T) > type_size<Head,Tail...>::max ? sizeof(T) : type_size<Head,Tail...>::max;
+    static const int min = sizeof(T) < type_size<Head,Tail...>::min ? sizeof(T) : type_size<Head,Tail...>::min;
+    static const int sum = sizeof(T) + type_size<Head,Tail...>::sum;
+
+};
+
+template<typename ...VecTypes>
+struct EnableAttributes
+{
+    static void Enable(GLuint i, std::int32_t offset, std::uint32_t NormalizeFlags, int Size_Leave_as_Default=-1)
+    {
+    }
+};
+
+template<>
+struct EnableAttributes<>
+{
+    static void Enable(GLuint i, std::int32_t offset, std::uint32_t NormalizeFlags, int Size_Leave_as_Default=-1)
+    {
+    }
+};
+
+template<typename FirstType, typename ...VecTypes>
+struct EnableAttributes<FirstType, VecTypes...>
+{
+    static void Enable(GLuint i, std::int32_t offset, std::uint32_t NormalizeFlags, int Size_Leave_as_Default=-1)
+    {
+        #define BUFFER_OFFSET(idx) (static_cast<char*>(0) + (idx))
+        using BaseType    = typename FirstType::value_type;
+
+        const int total_size     = type_size<FirstType, VecTypes...>::sum;
+        const int num_components = sizeof(FirstType) / sizeof(BaseType);
+        GLenum GlBaseType;
+
+        if( std::is_floating_point<BaseType>::value )
+        {
+            if     ( sizeof(BaseType) == sizeof(std::int32_t) ) GlBaseType = GL_FLOAT;
+            else if( sizeof(BaseType) == sizeof(std::int64_t) ) GlBaseType = GL_DOUBLE;
+            else throw std::runtime_error("Unknown format! Make sure to use only the glm:vec_types");
+        }
+        else
+        {
+            if( std::is_signed<BaseType>::value )
+            {
+                switch(sizeof(BaseType))
+                {
+                case sizeof(std::int8_t)  : GlBaseType = GL_BYTE;  break;
+                case sizeof(std::int16_t) : GlBaseType = GL_SHORT; break;
+                case sizeof(std::int32_t) : GlBaseType = GL_INT;   break;
+                default:
+                    throw std::runtime_error("Unknown format! Make sure to use only the glm:vec_types");
+                }
+            }
+            else
+            {
+                switch(sizeof(BaseType))
+                {
+                     case sizeof(std::uint8_t)  : GlBaseType = GL_UNSIGNED_BYTE;  break;
+                     case sizeof(std::uint16_t) : GlBaseType = GL_UNSIGNED_SHORT; break;
+                     case sizeof(std::uint32_t) : GlBaseType = GL_UNSIGNED_INT;   break;
+                     default:
+                         throw std::runtime_error("Unknown format! Make sure to use only the glm:vec_types");
+                }
+            }
+        }
+
+        Size_Leave_as_Default = Size_Leave_as_Default==-1 ? total_size : Size_Leave_as_Default;
+
+        std::cout << "Enabling attribute        : " << i << std::endl;
+        std::cout << "   totalsize              : " << Size_Leave_as_Default << std::endl;
+        std::cout << "        size              : " << sizeof(FirstType) << std::endl;
+        std::cout << "        offset            : " << offset << std::endl;
+        std::cout << "        normal            : " << ((NormalizeFlags>>i)&01)<< std::endl;
+        std::cout << "        num_components    : " << num_components<< std::endl;
+        std::cout << "        base type         : " << GlBaseType << std::endl;
+
+
+        glVertexAttribPointer( i,
+                               num_components ,
+                               GlBaseType,
+                               ((NormalizeFlags>>i)&01) ,
+                               Size_Leave_as_Default,
+                               BUFFER_OFFSET(offset));
+
+        glEnableVertexAttribArray(i);
+
+        EnableAttributes<VecTypes...>::Enable(i+1, offset + sizeof(FirstType) , NormalizeFlags , Size_Leave_as_Default);
+    }
+};
 
 // Terminating case
 template<std::size_t I = 0, typename TupleType, std::size_t tuplesize>
@@ -52,10 +166,9 @@ EnableVertexAttribArrayFromTuple( std::int32_t offset, const std::array<bool, tu
     }
     else
     {
-
         if( std::is_signed<BaseType>::value )
         {
-            if( SizeOfBaseType == sizeof(std::int8_t) )  GlBaseType = GL_BYTE;
+            if( SizeOfBaseType == sizeof(std::int8_t) )       GlBaseType = GL_BYTE;
             else if( SizeOfBaseType == sizeof(std::int16_t) ) GlBaseType = GL_SHORT;
             else if( SizeOfBaseType == sizeof(std::int32_t) ) GlBaseType = GL_INT;
             else {
@@ -71,9 +184,6 @@ EnableVertexAttribArrayFromTuple( std::int32_t offset, const std::array<bool, tu
         }
 
     }
-    //std::cout << "Current Offset      : " << (long long)offset << std::endl;
-    //std::cout << "Size of next element: " << sizeof(NextElement) << std::endl;
-    //std::cout << "Size of int : " << sizeof(int) << std::endl;
 
     #define BUFFER_OFFSET(idx) (static_cast<char*>(0) + (idx))
 
@@ -86,15 +196,11 @@ EnableVertexAttribArrayFromTuple( std::int32_t offset, const std::array<bool, tu
                             BUFFER_OFFSET(offset));
      glEnableVertexAttribArray(I);
 
- //   std::cout << "glVertexAttribPointer(" << I << ", ";
- //   std::cout << num_components << ", ";
- //   std::cout << "GL_FLOAT" << ", ";
- //   std::cout << (normalized[I] ? "GL_TRUE" : "GL_FALSE") << ", ";
- //   std::cout << sizeof(TupleType) << ", ";
- //   std::cout << (long long)offset << ");" << std::endl;
+    return EnableVertexAttribArrayFromTuple<I+1, TupleType>( offset + sizeof(NextElement) , normalized );
 
-    EnableVertexAttribArrayFromTuple<I+1, TupleType>( offset + sizeof(NextElement) , normalized );
 }
+
+//============================
 
 
 class Array_Buffer : public Buffer<BufferBindTarget::ARRAY_BUFFER>
@@ -149,12 +255,14 @@ class Array_Buffer : public Buffer<BufferBindTarget::ARRAY_BUFFER>
          * Enables attributes  assuming all attributes are unnormalized
          */
         template <typename... GLM_Vec_Types>
-        void EnableAttributes(std::size_t offset = 0) const
+        void EnableAttributes( std::size_t offset = 0) const
         {
             Bind();
             std::array<bool, std::tuple_size< std::tuple< GLM_Vec_Types...> >::value > FalseArray;
             FalseArray.fill(false);
-            gla::experimental::EnableVertexAttribArrayFromTuple<0, std::tuple<GLM_Vec_Types...> > (offset, FalseArray);
+            //gla::experimental::EnableAttributes<
+            gla::experimental::EnableAttributes<GLM_Vec_Types...>::Enable(0, 0, 0);
+            //gla::experimental::EnableVertexAttribArrayFromTuple<0, std::tuple<GLM_Vec_Types...> > (offset, FalseArray);
         }
 
         std::size_t m_Number_Of_Items;

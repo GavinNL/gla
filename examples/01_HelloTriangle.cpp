@@ -1,4 +1,3 @@
-
 #include "glad.h"
 #include <gla/exper/buffers.h>
 #include <gla/exper/sampler2d.h>
@@ -17,10 +16,13 @@ GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 
 using namespace gla::experimental;
 
+
+
 int main()
 {
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
 
+    EnableAttributes<vec3, vec2, uvec2, glm::u8vec3>::Enable(0,0,2);
 
     { // adding an extra scope here because we want all gla objects automatically destroyed when they go out of scope
       // calling glfwTerminate before destroying the openGL objects will cause a segfault, so putting
@@ -79,7 +81,9 @@ int main()
             // consists of one vec3 and one vec4 that are both un-normalized.
             // This function will automatically bind the array buffer and set the
             // attributes.
-            g.EnableAttributes<vec3, vec4>( {false,false } );
+            //g.EnableAttributes<vec3, vec4>( {{false ,false}} );
+            g.EnableAttributes<vec3, vec4>( );
+           // break;
             // (alternatively) G.EnableAttributes<glm::vec3, glm::vec4>(); // same as non-normlaized vectors
 
 

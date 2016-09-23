@@ -483,8 +483,9 @@ typedef struct
    int buflen;
    GLA_uc buffer_start[128];
 
-   GLA_uc *img_buffer, *img_buffer_end;
-   GLA_uc *img_buffer_original;
+   GLA_uc * img_buffer;
+   GLA_uc * img_buffer_end;
+   GLA_uc * img_buffer_original;
 } GLA__context;
 
 
@@ -495,16 +496,16 @@ public:
 //static void GLA__refill_buffer(GLA__context *s);
 
 // initialize a memory-decode context
-static void GLA__start_mem(GLA__context *s, GLA_uc const *buffer, int len)
+static void GLA__start_mem(GLA__context *s, GLA_uc const * buffer, int len)
 {
    s->io.read = NULL;
    s->read_from_callbacks = 0;
-   s->img_buffer = s->img_buffer_original = (GLA_uc *) buffer;
-   s->img_buffer_end = (GLA_uc *) buffer+len;
+   s->img_buffer        = s->img_buffer_original = const_cast<GLA_uc*>(buffer);
+   s->img_buffer_end    =                          const_cast<GLA_uc*>(buffer)+len;
 }
 
 // initialize a callback-based context
-static void GLA__start_callbacks(GLA__context *s, GLA_io_callbacks *c, void *user)
+static void GLA__start_callbacks(GLA__context *s, GLA_io_callbacks const * c, void *user)
 {
    s->io = *c;
    s->io_user_data = user;
@@ -671,14 +672,14 @@ GLAIDEF unsigned char *GLA_load_from_file(FILE *f, int *x, int *y, int *comp, in
 GLAIDEF unsigned char *GLA_load_from_memory(GLA_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp)
 {
    GLA__context s;
-   GLA__start_mem(&s,buffer,len);
+   GLA__start_mem( &s , buffer ,len);
    return GLA_load_main(&s,x,y,comp,req_comp);
 }
 
 unsigned char *GLA_load_from_callbacks(GLA_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp)
 {
    GLA__context s;
-   GLA__start_callbacks(&s, (GLA_io_callbacks *) clbk, user);
+   GLA__start_callbacks(&s, clbk, user);
    return GLA_load_main(&s,x,y,comp,req_comp);
 }
 
@@ -707,7 +708,7 @@ float *GLA_loadf_from_memory(GLA_uc const *buffer, int len, int *x, int *y, int 
 float *GLA_loadf_from_callbacks(GLA_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp)
 {
    GLA__context s;
-   GLA__start_callbacks(&s, (GLA_io_callbacks *) clbk, user);
+   GLA__start_callbacks(&s,  clbk, user);
    return GLA_loadf_main(&s,x,y,comp,req_comp);
 }
 
@@ -777,7 +778,7 @@ GLAIDEF int      GLA_is_hdr_from_callbacks(GLA_io_callbacks const *clbk, void *u
 {
    #ifndef GLAI_NO_HDR
    GLA__context s;
-   GLA__start_callbacks(&s, (GLA_io_callbacks *) clbk, user);
+   GLA__start_callbacks(&s,  clbk, user);
    return GLA__hdr_test(&s);
    #else
    return 0;
@@ -1659,6 +1660,8 @@ static int GLA__process_marker(GLA__jpeg *z, int m)
             L -= n;
          }
          return L==0;
+      default:
+        break;
    }
    // check for comment block or APP blocks
    if ((m >= 0xE0 && m <= 0xEF) || m == 0xFE) {
@@ -2192,10 +2195,10 @@ static int GLA__zbuild_huffman(GLA__zhuffman *z, GLA_uc *sizelist, int num)
          z->size [c] = (GLA_uc     ) s;
          z->value[c] = (GLA__uint16) i;
          if (s <= GLAI__ZFAST_BITS) {
-            int k = GLA__bit_reverse(next_code[s],s);
-            while (k < (1 << GLAI__ZFAST_BITS)) {
-               z->fast[k] = (GLA__uint16) c;
-               k += (1 << s);
+            int kk = GLA__bit_reverse(next_code[s],s);
+            while (kk < (1 << GLAI__ZFAST_BITS)) {
+               z->fast[kk] = (GLA__uint16) c;
+               kk += (1 << s);
             }
          }
          ++next_code[s];
@@ -2212,7 +2215,9 @@ static int GLA__zbuild_huffman(GLA__zhuffman *z, GLA_uc *sizelist, int num)
 
 typedef struct
 {
-   GLA_uc *zbuffer, *zbuffer_end;
+   GLA_uc const * zbuffer;
+   GLA_uc const * zbuffer_end;
+
    int num_bits;
    GLA__uint32 code_buffer;
 
@@ -2493,8 +2498,8 @@ GLAIDEF char *GLA_zlib_decode_malloc_guesssize(const char *buffer, int len, int 
    GLA__zbuf a;
    char *p = (char *) GLA__malloc(initial_size);
    if (p == NULL) return NULL;
-   a.zbuffer = (GLA_uc *) buffer;
-   a.zbuffer_end = (GLA_uc *) buffer + len;
+   a.zbuffer     =  (GLA_uc const * )buffer;
+   a.zbuffer_end =  (GLA_uc const * )(buffer + len);
    if (GLA__do_zlib(&a, p, initial_size, 1, 1)) {
       if (outlen) *outlen = (int) (a.zout - a.zout_start);
       return a.zout_start;
@@ -2514,8 +2519,8 @@ GLAIDEF char *GLA_zlib_decode_malloc_guesssize_headerflag(const char *buffer, in
    GLA__zbuf a;
    char *p = (char *) GLA__malloc(initial_size);
    if (p == NULL) return NULL;
-   a.zbuffer = (GLA_uc *) buffer;
-   a.zbuffer_end = (GLA_uc *) buffer + len;
+   a.zbuffer     = (GLA_uc const *) buffer;
+   a.zbuffer_end = (GLA_uc const *) buffer + len;
    if (GLA__do_zlib(&a, p, initial_size, 1, parse_header)) {
       if (outlen) *outlen = (int) (a.zout - a.zout_start);
       return a.zout_start;
@@ -2528,8 +2533,8 @@ GLAIDEF char *GLA_zlib_decode_malloc_guesssize_headerflag(const char *buffer, in
 GLAIDEF int GLA_zlib_decode_buffer(char *obuffer, int olen, char const *ibuffer, int ilen)
 {
    GLA__zbuf a;
-   a.zbuffer = (GLA_uc *) ibuffer;
-   a.zbuffer_end = (GLA_uc *) ibuffer + ilen;
+   a.zbuffer     = (GLA_uc const *) ibuffer;
+   a.zbuffer_end = (GLA_uc const *) ibuffer + ilen;
    if (GLA__do_zlib(&a, obuffer, olen, 0, 1))
       return (int) (a.zout - a.zout_start);
    else
@@ -2541,8 +2546,8 @@ GLAIDEF char *GLA_zlib_decode_noheader_malloc(char const *buffer, int len, int *
    GLA__zbuf a;
    char *p = (char *) GLA__malloc(16384);
    if (p == NULL) return NULL;
-   a.zbuffer = (GLA_uc *) buffer;
-   a.zbuffer_end = (GLA_uc *) buffer+len;
+   a.zbuffer     = (GLA_uc const *) buffer;
+   a.zbuffer_end = (GLA_uc const *) buffer+len;
    if (GLA__do_zlib(&a, p, 16384, 1, 0)) {
       if (outlen) *outlen = (int) (a.zout - a.zout_start);
       return a.zout_start;
@@ -2555,8 +2560,8 @@ GLAIDEF char *GLA_zlib_decode_noheader_malloc(char const *buffer, int len, int *
 GLAIDEF int GLA_zlib_decode_noheader_buffer(char *obuffer, int olen, const char *ibuffer, int ilen)
 {
    GLA__zbuf a;
-   a.zbuffer = (GLA_uc *) ibuffer;
-   a.zbuffer_end = (GLA_uc *) ibuffer + ilen;
+   a.zbuffer     = (GLA_uc const *) ibuffer;
+   a.zbuffer_end = (GLA_uc const *) ibuffer + ilen;
    if (GLA__do_zlib(&a, obuffer, olen, 0, 0))
       return (int) (a.zout - a.zout_start);
    else
@@ -2663,6 +2668,8 @@ static int GLA__create_png_image_raw(GLA__png *a, GLA_uc *raw, GLA__uint32 raw_l
             case GLAI__F_paeth      : cur[k] = GLAI__BYTECAST(raw[k] + GLA__paeth(0,prior[k],0)); break;
             case GLAI__F_avg_first  : cur[k] = raw[k]; break;
             case GLAI__F_paeth_first: cur[k] = raw[k]; break;
+            default:
+             break;
          }
       }
       if (img_n != out_n) cur[img_n] = 255;
@@ -2683,6 +2690,7 @@ static int GLA__create_png_image_raw(GLA__png *a, GLA_uc *raw, GLA__uint32 raw_l
             CASE(GLAI__F_paeth)        cur[k] = GLAI__BYTECAST(raw[k] + GLA__paeth(cur[k-img_n],prior[k],prior[k-img_n])); break;
             CASE(GLAI__F_avg_first)    cur[k] = GLAI__BYTECAST(raw[k] + (cur[k-img_n] >> 1)); break;
             CASE(GLAI__F_paeth_first)  cur[k] = GLAI__BYTECAST(raw[k] + GLA__paeth(cur[k-img_n],0,0)); break;
+            default: break;
          }
          #undef CASE
       } else {
@@ -2699,6 +2707,8 @@ static int GLA__create_png_image_raw(GLA__png *a, GLA_uc *raw, GLA__uint32 raw_l
             CASE(GLAI__F_paeth)        cur[k] = GLAI__BYTECAST(raw[k] + GLA__paeth(cur[k-out_n],prior[k],prior[k-out_n])); break;
             CASE(GLAI__F_avg_first)    cur[k] = GLAI__BYTECAST(raw[k] + (cur[k-out_n] >> 1)); break;
             CASE(GLAI__F_paeth_first)  cur[k] = GLAI__BYTECAST(raw[k] + GLA__paeth(cur[k-out_n],0,0)); break;
+         default:
+                break;
          }
          #undef CASE
       }
@@ -3480,8 +3490,8 @@ static GLA_uc *GLA__tga_load(GLA__context *s, int *x, int *y, int *comp, int req
 
    if ( !tga_indexed && !tga_is_RLE) {
       for (i=0; i < tga_height; ++i) {
-         int y = tga_inverted ? tga_height -i - 1 : i;
-         GLA_uc *tga_row = tga_data + y*tga_width*tga_comp;
+         int yy = tga_inverted ? tga_height -i - 1 : i;
+         GLA_uc *tga_row = tga_data + yy*tga_width*tga_comp;
          GLA__getn(s, tga_row, tga_width * tga_comp);
       }
    } else  {
@@ -3916,7 +3926,7 @@ static GLA_uc *GLA__pic_load_core(GLA__context *s,int width,int height,int *comp
 
                   if (count >= 128) { // Repeated
                      GLA_uc value[4];
-                     int i;
+                     int ii;
 
                      if (count==128)
                         count = GLA__get16be(s);
@@ -3928,7 +3938,7 @@ static GLA_uc *GLA__pic_load_core(GLA__context *s,int width,int height,int *comp
                      if (!GLA__readval(s,packet->channel,value))
                         return 0;
 
-                     for(i=0;i<count;++i, dest += 4)
+                     for(ii=0;ii<count;++ii, dest += 4)
                         GLA__copyval(packet->channel,dest,value);
                   } else { // Raw
                      ++count;
@@ -4154,7 +4164,7 @@ static GLA_uc *GLA__process_gif_raster(GLA__context *s, GLA__gif *g)
          bits |= (GLA__int32) GLA__get8(s) << valid_bits;
          valid_bits += 8;
       } else {
-         GLA__int32 code = bits & codemask;
+          code = bits & codemask;
          bits >>= codesize;
          valid_bits -= codesize;
          // @OPTIMIZE: is there some way we can accelerate the non-clear path?
@@ -4400,6 +4410,8 @@ static void GLA__hdr_convert(float *output, GLA_uc *input, int req_comp)
          case 2: output[1] = 1; /* fallthrough */
          case 1: output[0] = 0;
                  break;
+         default:
+            break;
       }
    }
 }
@@ -4713,7 +4725,7 @@ GLAIDEF int GLA_info_from_memory(GLA_uc const *buffer, int len, int *x, int *y, 
    return GLA__info_main(&s,x,y,comp);
 }
 
-GLAIDEF int GLA_info_from_callbacks(GLA_io_callbacks const *c, void *user, int *x, int *y, int *comp)
+GLAIDEF int GLA_info_from_callbacks(GLA_io_callbacks  *c, void *user, int *x, int *y, int *comp)
 {
    GLA__context s;
    GLA__start_callbacks(&s, (GLA_io_callbacks *) c, user);
@@ -4721,6 +4733,7 @@ GLAIDEF int GLA_info_from_callbacks(GLA_io_callbacks const *c, void *user, int *
 }
 
 };
+
 
 #endif // GLA_IMAGE_IMPLEMENTATION
 
