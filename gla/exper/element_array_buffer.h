@@ -7,24 +7,41 @@ namespace gla { namespace experimental
 {
 
 
-
-class Element_Array_Buffer : public Buffer<BufferBindTarget::ELEMENT_ARRAY_BUFFER>
+/**
+ * @brief The ElementArrayBuffer class
+ *
+ * An element array buffer is used to hold indices for
+ */
+class ElementArrayBuffer : public Buffer
 {
     public:
-        Element_Array_Buffer() : Buffer()
+        static BufferBindTarget const BindTarget = BufferBindTarget::ELEMENT_ARRAY_BUFFER;
+
+
+        ElementArrayBuffer() : Buffer()
         {
 
         }
+        ElementArrayBuffer( std::size_t size ) : Buffer(size){}
 
-        template<typename T>
-        void operator << (const T & structure)
+        void Bind() const
         {
-            Bind();
-            Buffer::CopyData(structure);
+            Buffer::Bind( *this, BindTarget);
         }
+        void Unbind() const
+        {
+            Buffer::Unbind(  BindTarget );
+        }
+
+
+        //template<typename T>
+        //void operator << (const T & structure)
+        //{
+        //    Buffer::CopyData(structure);
+        //}
 
         template<typename VertexData>
-        Element_Array_Buffer( const std::vector<VertexData> & data, BufferUsage usage = BufferUsage::STATIC_DRAW) : Buffer(data, usage)
+        ElementArrayBuffer( const std::vector<VertexData> & data, BufferUsage usage = BufferUsage::STATIC_DRAW) : Buffer(data, usage)
         {
 
                  if(   std::is_same<VertexData,glm::i32vec4>::value
@@ -71,7 +88,8 @@ class Element_Array_Buffer : public Buffer<BufferBindTarget::ELEMENT_ARRAY_BUFFE
         template<bool BindFirst=true>
         void Draw( Primitave p, std::size_t NumberOfIndices, std::size_t first=0 )
         {
-            if(BindFirst) Bind();
+            if(BindFirst)
+                Bind();
 
             //#define BUFFER_OFFSET(idx) (static_cast<char*>(0) + (idx))
             glDrawElements( static_cast<GLenum>(p),

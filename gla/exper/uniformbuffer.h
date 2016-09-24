@@ -6,17 +6,24 @@
 namespace gla { namespace experimental
 {
 
-    class UniformBuffer : public Buffer<BufferBindTarget::UNIFORM_BUFFER>
+    class UniformBuffer : public Buffer
     {
         public:
+             static BufferBindTarget const BindTarget = BufferBindTarget::UNIFORM_BUFFER;
 
+             using Buffer::Buffer;
 
-             template<typename ProperlyAlignedStructType>
-             void operator << (const ProperlyAlignedStructType & structure)
+             void Bind() const
              {
-                 Bind();
-                 Buffer::CopyData( &structure, sizeof(structure), 0);
+                 Buffer::Bind( *this, BindTarget);
              }
+             void Unbind() const
+             {
+                 Buffer::Unbind(  BindTarget);
+             }
+
+           // UniformBuffer() : Buffer(){}
+           // UniformBuffer( std::size_t size ) : Buffer(size){}
 
             template<bool bindfirst=true>
             inline void SetBindPoint(GLuint BindPoint)

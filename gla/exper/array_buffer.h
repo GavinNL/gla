@@ -3,7 +3,8 @@
 
 
 #include "buffer_base.h"
-
+#include <type_traits>
+#include <cstdint>
 
 namespace gla { namespace experimental
 {
@@ -42,7 +43,7 @@ struct type_size<T,Head,Tail...>
 template<typename ...VecTypes>
 struct EnableAttributes
 {
-    static void Enable(GLuint i, std::int32_t offset, std::uint32_t NormalizeFlags, int Size_Leave_as_Default=-1)
+    static void Enable(GLuint i, std::int32_t offset, std::uint32_t NormalizeFlags, int Stride_Leave_as_Default=-1)
     {
     }
 };
@@ -50,7 +51,7 @@ struct EnableAttributes
 template<>
 struct EnableAttributes<>
 {
-    static void Enable(GLuint i, std::int32_t offset, std::uint32_t NormalizeFlags, int Size_Leave_as_Default=-1)
+    static void Enable(GLuint i, std::int32_t offset, std::uint32_t NormalizeFlags, int Stride_Leave_as_Default=-1)
     {
     }
 };
@@ -58,68 +59,107 @@ struct EnableAttributes<>
 template<typename FirstType, typename ...VecTypes>
 struct EnableAttributes<FirstType, VecTypes...>
 {
-    static void Enable(GLuint i, std::int32_t offset, std::uint32_t NormalizeFlags, int Size_Leave_as_Default=-1)
+    static void Enable(GLuint i, std::int32_t offset, std::uint32_t NormalizeFlags, int Stride_Leave_as_Default=-1)
     {
         #define BUFFER_OFFSET(idx) (static_cast<char*>(0) + (idx))
-        using BaseType    = typename FirstType::value_type;
 
         const int total_size     = type_size<FirstType, VecTypes...>::sum;
-        const int num_components = sizeof(FirstType) / sizeof(BaseType);
-        GLenum GlBaseType;
 
-        if( std::is_floating_point<BaseType>::value )
-        {
-            if     ( sizeof(BaseType) == sizeof(std::int32_t) ) GlBaseType = GL_FLOAT;
-            else if( sizeof(BaseType) == sizeof(std::int64_t) ) GlBaseType = GL_DOUBLE;
-            else throw std::runtime_error("Unknown format! Make sure to use only the glm:vec_types");
-        }
-        else
-        {
-            if( std::is_signed<BaseType>::value )
-            {
-                switch(sizeof(BaseType))
-                {
-                case sizeof(std::int8_t)  : GlBaseType = GL_BYTE;  break;
-                case sizeof(std::int16_t) : GlBaseType = GL_SHORT; break;
-                case sizeof(std::int32_t) : GlBaseType = GL_INT;   break;
-                default:
-                    throw std::runtime_error("Unknown format! Make sure to use only the glm:vec_types");
-                }
-            }
-            else
-            {
-                switch(sizeof(BaseType))
-                {
-                     case sizeof(std::uint8_t)  : GlBaseType = GL_UNSIGNED_BYTE;  break;
-                     case sizeof(std::uint16_t) : GlBaseType = GL_UNSIGNED_SHORT; break;
-                     case sizeof(std::uint32_t) : GlBaseType = GL_UNSIGNED_INT;   break;
-                     default:
-                         throw std::runtime_error("Unknown format! Make sure to use only the glm:vec_types");
-                }
-            }
-        }
-
-        Size_Leave_as_Default = Size_Leave_as_Default==-1 ? total_size : Size_Leave_as_Default;
-
-        std::cout << "Enabling attribute        : " << i << std::endl;
-        std::cout << "   totalsize              : " << Size_Leave_as_Default << std::endl;
-        std::cout << "        size              : " << sizeof(FirstType) << std::endl;
-        std::cout << "        offset            : " << offset << std::endl;
-        std::cout << "        normal            : " << ((NormalizeFlags>>i)&01)<< std::endl;
-        std::cout << "        num_components    : " << num_components<< std::endl;
-        std::cout << "        base type         : " << GlBaseType << std::endl;
+        static_assert(
+            ( !std::is_same< FirstType, double       >::value )   ||
+            ( !std::is_same< FirstType, glm::dvec2    >::value )   ||
+            ( !std::is_same< FirstType, glm::dvec3    >::value )   ||
+            ( !std::is_same< FirstType, glm::dvec4    >::value )   ||
+            ( !std::is_same< FirstType, float        >::value )   ||
+            ( !std::is_same< FirstType, glm::vec2    >::value )   ||
+            ( !std::is_same< FirstType, glm::vec3    >::value )   ||
+            ( !std::is_same< FirstType, glm::vec4    >::value )   ||
+            ( !std::is_same< FirstType, std::int32_t >::value )   ||
+            ( !std::is_same< FirstType, glm::ivec2   >::value )   ||
+            ( !std::is_same< FirstType, glm::ivec3   >::value )   ||
+            ( !std::is_same< FirstType, glm::ivec4   >::value )   ||
+            ( !std::is_same< FirstType, std::uint32_t>::value )   ||
+            ( !std::is_same< FirstType, glm::uvec2   >::value )   ||
+            ( !std::is_same< FirstType, glm::uvec3   >::value )   ||
+            ( !std::is_same< FirstType, glm::uvec4   >::value )   ||
+            ( !std::is_same< FirstType, std::int16_t >::value )   ||
+            ( !std::is_same< FirstType, glm::i16vec2 >::value )   ||
+            ( !std::is_same< FirstType, glm::i16vec3 >::value )   ||
+            ( !std::is_same< FirstType, glm::i16vec4 >::value )   ||
+            ( !std::is_same< FirstType, std::uint16_t>::value )   ||
+            ( !std::is_same< FirstType, glm::u16vec2 >::value )   ||
+            ( !std::is_same< FirstType, glm::u16vec3 >::value )   ||
+            ( !std::is_same< FirstType, glm::u16vec4 >::value )   ||
+            ( !std::is_same< FirstType, std::int8_t  >::value )   ||
+            ( !std::is_same< FirstType, glm::i8vec2  >::value )   ||
+            ( !std::is_same< FirstType, glm::i8vec3  >::value )   ||
+            ( !std::is_same< FirstType, glm::i8vec4  >::value )   ||
+            ( !std::is_same< FirstType, std::uint8_t >::value )   ||
+            ( !std::is_same< FirstType, glm::u8vec2  >::value )   ||
+            ( !std::is_same< FirstType, glm::u8vec3  >::value )   ||
+            ( !std::is_same< FirstType, glm::u8vec4  >::value )  ,
+            "Unknown data type. Valid types are:  float ,glm::vec2 ,glm::vec3 ,glm::vec4 ,std::int32_t ,glm::ivec2 ,glm::ivec3 ,glm::ivec4 ,std::uint32_t ,glm::uvec2 ,glm::uvec3 ,glm::uvec4 ,std::int16_t ,glm::i16vec2 ,glm::i16vec3 ,glm::i16vec4 ,std::uint16_t ,glm::u16vec2 ,glm::u16vec3 ,glm::u16vec4 ,std::int8_t ,glm::i8vec2 ,glm::i8vec3 ,glm::i8vec4 ,std::uint8_t ,glm::u8vec2 ,glm::u8vec3 ,glm::u8vec4" );
 
 
-        glVertexAttribPointer( i,
-                               num_components ,
-                               GlBaseType,
-                               ((NormalizeFlags>>i)&01) ,
-                               Size_Leave_as_Default,
-                               BUFFER_OFFSET(offset));
+        Stride_Leave_as_Default = Stride_Leave_as_Default==-1 ? total_size : Stride_Leave_as_Default;
+
+     //   std::cout << "Enabling attribute        : " << i << std::endl;
+     //   std::cout << "   totalsize              : " << Stride_Leave_as_Default << std::endl;
+     //   std::cout << "        size              : " << sizeof(FirstType) << std::endl;
+     //   std::cout << "        offset            : " << offset << std::endl;
+     //   std::cout << "        normal            : " << ((NormalizeFlags>>i)&01)<< std::endl;
+     //   std::cout << "        num_components    : " << num_components<< std::endl;
+     //   std::cout << "        base type         : " << GlBaseType << std::endl;
+
+        // compile-time if statements, will be optimized
+        if( std::is_same< FirstType, double>::value )        glVertexAttribPointer( i,  1 , GL_DOUBLE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::dvec2>::value )     glVertexAttribPointer( i, 2 , GL_DOUBLE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::dvec3>::value )     glVertexAttribPointer( i, 3 , GL_DOUBLE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::dvec4>::value )     glVertexAttribPointer( i, 4 , GL_DOUBLE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+
+        if( std::is_same< FirstType, float>::value )        glVertexAttribPointer( i,  1 , GL_FLOAT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::vec2>::value )     glVertexAttribPointer( i, 2 , GL_FLOAT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::vec3>::value )     glVertexAttribPointer( i, 3 , GL_FLOAT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::vec4>::value )     glVertexAttribPointer( i, 4 , GL_FLOAT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+
+        if( std::is_same< FirstType, std::int32_t>::value )  glVertexAttribPointer( i, 1 ,          GL_INT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::ivec2>::value )    glVertexAttribPointer( i, 2 ,          GL_INT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::ivec3>::value )    glVertexAttribPointer( i, 3 ,          GL_INT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::ivec4>::value )    glVertexAttribPointer( i, 4 ,          GL_INT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, std::uint32_t>::value ) glVertexAttribPointer( i, 1 , GL_UNSIGNED_INT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::uvec2>::value )    glVertexAttribPointer( i, 2 , GL_UNSIGNED_INT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::uvec3>::value )    glVertexAttribPointer( i, 3 , GL_UNSIGNED_INT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::uvec4>::value )    glVertexAttribPointer( i, 4 , GL_UNSIGNED_INT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+
+        if( std::is_same< FirstType, std::int16_t>::value )    glVertexAttribPointer( i, 1 ,          GL_SHORT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::i16vec2>::value )    glVertexAttribPointer( i, 2 ,          GL_SHORT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::i16vec3>::value )    glVertexAttribPointer( i, 3 ,          GL_SHORT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::i16vec4>::value )    glVertexAttribPointer( i, 4 ,          GL_SHORT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, std::uint16_t>::value )   glVertexAttribPointer( i, 1 , GL_UNSIGNED_SHORT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::u16vec2>::value )    glVertexAttribPointer( i, 2 , GL_UNSIGNED_SHORT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::u16vec3>::value )    glVertexAttribPointer( i, 3 , GL_UNSIGNED_SHORT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::u16vec4>::value )    glVertexAttribPointer( i, 4 , GL_UNSIGNED_SHORT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+
+        if( std::is_same< FirstType, std::int8_t>::value )    glVertexAttribPointer( i, 1 ,          GL_BYTE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::i8vec2>::value )    glVertexAttribPointer( i, 2 ,          GL_BYTE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::i8vec3>::value )    glVertexAttribPointer( i, 3 ,          GL_BYTE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::i8vec4>::value )    glVertexAttribPointer( i, 4 ,          GL_BYTE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, std::uint8_t>::value )   glVertexAttribPointer( i, 1 , GL_UNSIGNED_BYTE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::u8vec2>::value )    glVertexAttribPointer( i, 2 , GL_UNSIGNED_BYTE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::u8vec3>::value )    glVertexAttribPointer( i, 3 , GL_UNSIGNED_BYTE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::u8vec4>::value )    glVertexAttribPointer( i, 4 , GL_UNSIGNED_BYTE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+
+
+     //   glVertexAttribPointer( i,
+     //                          num_components ,
+     //                          GlBaseType,
+     //                          ((NormalizeFlags>>i)&01) ,
+     //                          Stride_Leave_as_Default,
+     //                          BUFFER_OFFSET(offset));
 
         glEnableVertexAttribArray(i);
 
-        EnableAttributes<VecTypes...>::Enable(i+1, offset + sizeof(FirstType) , NormalizeFlags , Size_Leave_as_Default);
+        EnableAttributes<VecTypes...>::Enable(i+1, offset + sizeof(FirstType) , NormalizeFlags , Stride_Leave_as_Default);
     }
 };
 
@@ -203,51 +243,39 @@ EnableVertexAttribArrayFromTuple( std::int32_t offset, const std::array<bool, tu
 //============================
 
 
-class Array_Buffer : public Buffer<BufferBindTarget::ARRAY_BUFFER>
+class ArrayBuffer : public Buffer
 {
     public:
-        Array_Buffer() : Buffer<BufferBindTarget::ARRAY_BUFFER>()
-        {
+        static BufferBindTarget const BindTarget = BufferBindTarget::ARRAY_BUFFER;
 
+        using Buffer::Buffer;
+
+//        ArrayBuffer() : Buffer()
+//        {
+//
+//        }
+//
+//        ArrayBuffer( std::size_t size ) : Buffer(size){}
+//
+//        template<typename VertexData>
+//        ArrayBuffer( const std::vector<VertexData> & data, BufferUsage usage = BufferUsage::STATIC_DRAW) : Buffer(data, usage)
+//        {
+//        }
+
+        void Bind() const
+        {
+            Buffer::Bind( *this, BindTarget);
         }
-
-        template<typename VertexData>
-        Array_Buffer( const std::vector<VertexData> & data, BufferUsage usage = BufferUsage::STATIC_DRAW) : Buffer(data, usage)
+        void Unbind() const
         {
+            Buffer::Unbind(  BindTarget);
         }
 
         template<bool BindFirst=true>
         void Draw( Primitave p, std::size_t first, std::size_t NumberOfPrimitaves) const
         {
             if(BindFirst) Bind();
-
             glDrawArrays( static_cast<GLenum>(p),  static_cast<GLint>(first),  static_cast<GLsizei>(NumberOfPrimitaves) );
-        }
-
-
-        template<typename T>
-        void operator << (const T & structure)
-        {
-            Bind();
-            Buffer::CopyData(structure);
-        }
-
-        /**
-         * @brief EnableAttributes
-         * @param normalized
-         *
-         * Enable vertex attributes using GLM types. For example:
-         *
-         *
-         * EnableAttributes<glm::vec3, glm::vec2, glm::vec3>( {false, false, true}  )
-         *
-         *
-         */
-        template <typename... GLM_Vec_Types>
-        void EnableAttributes(  const std::array<bool, std::tuple_size< std::tuple< GLM_Vec_Types...> >::value > & normalized ) const
-        {
-            Bind();
-            gla::experimental::EnableVertexAttribArrayFromTuple<0, std::tuple<GLM_Vec_Types...> > (0, normalized);
         }
 
         /**
@@ -255,15 +283,10 @@ class Array_Buffer : public Buffer<BufferBindTarget::ARRAY_BUFFER>
          * Enables attributes  assuming all attributes are unnormalized
          */
         template <typename... GLM_Vec_Types>
-        void EnableAttributes( std::size_t offset = 0) const
+        void EnableAttributes( NormalizeFlags::Flags NormalizeFlags = static_cast<NormalizeFlags::Flags>(0) ) const
         {
             Bind();
-            std::array<bool, std::tuple_size< std::tuple< GLM_Vec_Types...> >::value > FalseArray;
-            FalseArray.fill(false);
-            //gla::experimental::EnableAttributes<
-            gla::experimental::EnableAttributes<GLM_Vec_Types...>::Enable(0, 0, 0);
-            //gla::experimental::EnableVertexAttribArrayFromTuple<0, std::tuple<GLM_Vec_Types...> > (offset, FalseArray);
-        }
+            gla::experimental::EnableAttributes<GLM_Vec_Types...>::Enable(0, 0, NormalizeFlags);        }
 
         std::size_t m_Number_Of_Items;
 

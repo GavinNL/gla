@@ -20,6 +20,8 @@ using namespace gla::experimental;
 
 int main()
 {
+
+
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
 
     EnableAttributes<vec3, vec2, uvec2, glm::u8vec3>::Enable(0,0,2);
@@ -37,8 +39,8 @@ int main()
 //        FragmentShader F("../resources/shaders/HelloTriangle.f");
 //        TriangleShader.AttachShaders( V , F );
 
-        TriangleShader.AttachShaders( VertexShader  ("../resources/shaders/HelloTriangle.v"),
-                                      FragmentShader("../resources/shaders/HelloTriangle.f") );
+        TriangleShader.AttachShaders( VertexShader  ("./resources/shaders/HelloTriangle.v"),
+                                      FragmentShader("./resources/shaders/HelloTriangle.f") );
 
         //================================================================
         // 1. Create the vertices of the triangle using our vertex structure
@@ -58,12 +60,21 @@ int main()
         CpuBuffer.push_back( { glm::vec3( 0.0f , 1.0f, 0.f), glm::vec4(0.f, 0.f, 1.f, 1.0f)  }  );
 
         // Create a buffer on the GPU using the data from the standard vector
-        Array_Buffer         G;
+        ArrayBuffer  G( CpuBuffer.size() * 2 * sizeof(MyVertex) );
 
-        G << CpuBuffer;
+        //G.Reserve( CpuBuffer.size() * 2 * sizeof(MyVertex) );
 
 
-        Array_Buffer g;
+
+        std::size_t Offset1 = G << CpuBuffer;  // copy the vector into the buffer
+        std::size_t Offset2 = G << CpuBuffer;  // append the vector to the end of the buffer
+
+
+        //G.CopyData(CpuBuffer);
+        //G << CpuBuffer;
+
+
+        ArrayBuffer g;
         g = G;
 
         G.Release();
@@ -81,11 +92,7 @@ int main()
             // consists of one vec3 and one vec4 that are both un-normalized.
             // This function will automatically bind the array buffer and set the
             // attributes.
-            //g.EnableAttributes<vec3, vec4>( {{false ,false}} );
-            g.EnableAttributes<vec3, vec4>( );
-           // break;
-            // (alternatively) G.EnableAttributes<glm::vec3, glm::vec4>(); // same as non-normlaized vectors
-
+            g.EnableAttributes<vec3, vec4>();
 
             // Now draw the triangle.
             // we are drawing Triangles, starting at Vertex Index 0

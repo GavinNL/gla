@@ -70,7 +70,7 @@ struct DestBuff
 
 
 
-template<BufferBindTarget target>
+//template<BufferBindTarget target>
 /**
  * @brief The Buffer class
  *
@@ -80,52 +80,94 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
 {
     public:
 
-        std::size_t m_Size  = 0;
+        struct SubData
+        {
+            SubData(const Buffer & B) : buf(B){}
+
+            Buffer const & buf;
+        };
+
 
         Buffer() : BaseHandle<GLuint, GenBuff,DestBuff>()
         {
         }
 
-        Buffer(std::size_t size_in_bytes)
+        Buffer(std::size_t size_in_bytes) : BaseHandle<GLuint, GenBuff,DestBuff>()
         {
-            Allocate(size_in_bytes);
+            Reserve(size_in_bytes);
         }
-
 
         template<typename VertexData>
         Buffer( const std::vector<VertexData> & data, BufferUsage usage = BufferUsage::STATIC_DRAW)
         {
             Generate();
-            Bind();
-            glBufferData( static_cast<GLenum>(target) , data.size()*sizeof(VertexData), data.data() , static_cast<GLenum>(usage) );
-            m_Size = data.size()*sizeof(VertexData);
+            Bind(  *this , BufferBindTarget::COPY_WRITE_BUFFER);
+            glBufferData( static_cast<GLenum>(BufferBindTarget::COPY_WRITE_BUFFER) , data.size()*sizeof(VertexData), data.data() , static_cast<GLenum>(usage) );
+            m_Reserve = data.size()*sizeof(VertexData);
+            m_Size    = data.size()*sizeof(VertexData);
+            Unbind(BufferBindTarget::COPY_WRITE_BUFFER);
         }
 
-
-        void Bind(BufferBindTarget targ = target) const
+        static void Bind(const Buffer & B, BufferBindTarget targ)
         {
-            glBindBuffer( static_cast<GLenum>(targ), Get() );
+            glBindBuffer( static_cast<GLenum>(targ), B.Get() );
         }
 
-        void Unbind(BufferBindTarget targ = target ) const
+        static void Unbind(BufferBindTarget targ)
         {
-            glBindBuffer( static_cast<GLenum>(targ) , 0 );
+            glBindBuffer( static_cast<GLenum>(targ), 0);
         }
 
+
+        /**
+         * @brief Size
+         * @return
+         *
+         * Gets the total size of the buffer.
+         */
         std::size_t Size() const {
+            return m_Reserve;
+        }
+
+        /**
+         * @brief Offset
+         * @return
+         *
+         * Returns the current offset of the buffer. The offset is where new bytes will
+         * be appended to. It indicates the start of unused data.
+         */
+        std::size_t Offset() const {
             return m_Size;
         }
+
+        /**
+         * @brief Clear
+         *
+         * Clears the information about the buffer's size. This does not remove the data from the
+         * GPU. Instead, this only resets where new data will be written to.
+         */
+        void Clear()
+        {
+            m_Size = 0;
+        }
+
         //================================================
 
-         // Allocates new data and releases old data
-        // if the old data is referenced by another instance, it will remain in memory
-        // until all references have been released.
-        void Allocate(std::size_t size_in_bytes, BufferUsage usage = BufferUsage::STATIC_DRAW)
+        /**
+         * @brief Reserve
+         * @param size_in_bytes - number of bytes to allocate
+         * @param usage
+         *
+         * Reserves data on the GPU for storing raw data.
+         */
+        void Reserve(std::size_t size_in_bytes, BufferUsage usage = BufferUsage::STATIC_DRAW)
         {
-            Generate(); // generates a new handle, releases the old one.
-            Bind();
-            glBufferData( static_cast<GLenum>(target) , size_in_bytes, NULL , static_cast<GLenum>(usage) );
-            m_Size = size_in_bytes;
+            auto const targ = BufferBindTarget::COPY_WRITE_BUFFER;
+            Generate( ); // generates a new handle, releases the old one.
+            Bind(  *this , targ);
+            glBufferData( static_cast<GLenum>(targ) , size_in_bytes, NULL , static_cast<GLenum>(usage) );
+            m_Size    = 0;
+            m_Reserve = size_in_bytes;
         }
 
 
@@ -134,20 +176,30 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
          * @param data   - pointer to the data
          * @param size   - size of the data
          * @param offset - offset from the start of the buffer to write to
+         *
+         * Copies raw data directly into the buffer at a particular offset
          */
-        void CopyData(const GLvoid * data, std::size_t size, std::size_t offset=0)
+        void CopyData(const GLvoid * data, std::size_t size, std::size_t offset)
         {
-            if( !(*this) )
+            auto const targ = BufferBindTarget::COPY_WRITE_BUFFER;
+
+            if( !(*this) )  // If the buffere is not allocated,
             {
-                Allocate( size+offset );
+                Reserve( size+offset );
             }
 
-            Bind();
+            Bind(  *this , targ);
 
-            if( size+offset > m_Size )
+            if( size+offset > m_Reserve )
                 throw std::runtime_error("Buffer is too small to hold all the data");
 
-            glBufferSubData( static_cast<GLenum>(target), offset, size, data);
+            glBufferSubData( static_cast<GLenum>(targ), offset, size, data);
+
+            if( size+offset > m_Size )
+            {
+                m_Size = size+offset;
+            }
+            Unbind(targ);
         }
 
         /**
@@ -155,74 +207,78 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
          * @param V
          * @param offset
          *
-         * Copies a vector a data into the buffer.
+         * Copies a vector data into the buffer.
          */
         template<typename VertexType>
-        void CopyData(const std::vector<VertexType> & V, std::size_t offset = 0)
+        std::size_t CopyData(const std::vector<VertexType> & V, std::size_t offset = 0)
         {
             CopyData( (const GLvoid *)&V[0], sizeof(VertexType)*V.size(), offset);
+            return sizeof(VertexType)*V.size();
         }
 
-
-};
-
-
-class Buffer_T : public BaseHandle<GLuint, GenBuff, DestBuff>
-{
-    public:
-
-        void Bind(BufferBindTarget target) const
+        /**
+         * @brief Append
+         * @param V
+         * @return the current offset of the data that was placed into the buffer
+         *
+         * Copies all the bytes in the input vector and appends it to the end
+         * of the buffer, returns the offset in the buffer at which the data was
+         * stored.
+         *
+         * If there is not enough room to hold the data, an exception will be thrown.
+         */
+        template<typename VertexType>
+        std::size_t Append(const std::vector<VertexType> & V)
         {
-            glBindBuffer(static_cast<GLenum>(target) , Get() );
-        }
-
-        void Unbind( BufferBindTarget target ) const
-        {
-            glBindBuffer( static_cast<GLenum>(target) , 0 );
-        }
-
-        void Allocate(std::size_t size, BufferUsage usage = BufferUsage::STATIC_DRAW)
-        {
-            Generate(); // generates a new handle, releases the old one.
-
-            Bind(BufferBindTarget::COPY_READ_BUFFER);
-
-            glBufferData( static_cast<GLenum>(BufferBindTarget::COPY_READ_BUFFER) ,
-                          size,
-                          NULL ,
-                          static_cast<GLenum>(usage) );
-            m_Size = size;
-            Unbind(BufferBindTarget::COPY_READ_BUFFER);
+            auto offset = m_Size;
+            CopyData(V, m_Size);
+            return offset;
         }
 
         template<typename VertexType>
-        void CopySubData(const std::vector<VertexType> & V, std::size_t offset = 0)
+        std::size_t Append(const VertexType & V)
         {
-            CopyData( (unsigned char*)&V[0], sizeof(VertexType)*V.size(), offset);
+            auto offset = m_Size;
+            CopyData(&V, m_Size, 0);
+            return offset;
         }
 
-        void CopyData(const GLvoid * data, std::size_t size, std::size_t offset=0)
+        /**
+         * @brief operator <<
+         * @param V
+         * @return the current offset of the data that was placed into the buffer
+         *
+         * Same as Append()
+         */
+        template<typename VertexType>
+        inline std::size_t operator << (const std::vector<VertexType> & V)
         {
-            if( !(*this) )
-            {
-                Allocate( size + offset );
-            }
-
-            Bind(BufferBindTarget::COPY_READ_BUFFER);
-
-            if( size+offset > m_Size )
-                throw std::runtime_error("Buffer is too small to hold all the data");
-
-            glBufferSubData( static_cast<GLenum>(BufferBindTarget::COPY_READ_BUFFER), offset, size, data);
-
-            Unbind(BufferBindTarget::COPY_READ_BUFFER);
+            return Append(V);
         }
 
+        template<typename VertexType>
+        inline std::size_t operator << (const VertexType & V)
+        {
+            return Append(V);
+        }
 
-        std::size_t Size() const { return m_Size; }
+        template<typename VertexType>
+        inline std::size_t operator () (const VertexType & V, std::size_t offset=0)
+        {
+            CopyData(&V, sizeof(V) , offset);
+            return sizeof(V);
+        }
 
-    protected:
-        std::size_t m_Size  = 0;
+        template<typename VertexType>
+        inline std::size_t operator () (const std::vector<VertexType> & V,  std::size_t offset=0)
+        {
+            CopyData( V, 0, offset);
+            return sizeof(V)*V.size();
+        }
+
+private:
+        std::size_t m_Size    = 0;
+        std::size_t m_Reserve = 0;
 };
 
 

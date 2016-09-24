@@ -146,10 +146,10 @@ target_link_libraries(06_UniformBuffer ${LIBS_GLAD})
 target_link_libraries(07_FrameBuffer ${LIBS_GLAD})
 
 # This command b
-#add_custom_command(
-#    TARGET ${PROJECT_NAME} POST_BUILD
-#    COMMAND rm resources || true
-#    COMMAND ln -s ${PROJECT_SOURCE_DIR}/resources resources
-#)
+add_custom_command(
+   TARGET 01_HelloTriangle POST_BUILD
+   COMMAND rm resources || true
+   COMMAND ln -s ${PROJECT_SOURCE_DIR}/resources resources)
+
 
 

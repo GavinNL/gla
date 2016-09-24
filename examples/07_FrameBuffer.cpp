@@ -61,13 +61,13 @@ int main()
         auto BoxVertices = createBox();
 
         // Load teh buffer into the GPU
-        Array_Buffer buff( BoxVertices );
+        ArrayBuffer buff( BoxVertices );
 
         VertexArray VAO;
         VAO.Attach<glm::vec3, glm::vec2, glm::vec3>( buff );
 
         // Load some textures. And force using 3 components (r,g,b)
-        Image Tex1("../resources/textures/rocks.jpg",  3 );
+        Image Tex1("./resources/textures/rocks.jpg",  3 );
 
         buff.Release();
 
@@ -81,7 +81,8 @@ int main()
 
 
         VertexArray  PlaneVAO;
-        Array_Buffer PlaneBuff( VertexBuffer );
+        ArrayBuffer  PlaneBuff( VertexBuffer );
+
         PlaneVAO.Attach<glm::vec3, glm::vec2>(PlaneBuff);
 
         //=========================================================================================
@@ -101,18 +102,19 @@ int main()
         // compiling the shaders straight from a string. If we were compiling from a file
         // we'd just do:  VertexShader vs(Path_to_file);
         ShaderProgram GBufferShader;
-        GBufferShader.AttachShaders(  VertexShader("../resources/shaders/GBuffer.v"),
-                                      FragmentShader("../resources/shaders/GBuffer.f")  );
+        GBufferShader.AttachShaders(  VertexShader(  "./resources/shaders/GBuffer.v"),
+                                      FragmentShader("./resources/shaders/GBuffer.f")  );
 
 
         ShaderProgram GBufferSPass_Shader;
-        GBufferSPass_Shader.AttachShaders(  VertexShader("../resources/shaders/GBuffer_SPass.v"),
-                                            FragmentShader("../resources/shaders/GBuffer_SPass.f")  );
+        GBufferSPass_Shader.AttachShaders(  VertexShader(  "./resources/shaders/GBuffer_SPass.v"),
+                                            FragmentShader("./resources/shaders/GBuffer_SPass.f")  );
 
         //==========================================================
 
         glEnable(GL_DEPTH_TEST);
         Timer_T<float> Timer;
+        Timer_T<float> Timer2;
 
         Transform T;
 
@@ -177,9 +179,16 @@ int main()
             Colours.SetActive(2);
             Depth.SetActive(3);
 
+            static int i=0;
+            if( Timer2.getElapsedTime() > 2.0 )
+            {
+                i = (i+1)%4;
+                Timer2.reset();
+            }
+
             GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gPosition")  , 0 );
             GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gNormal")    , 1 );
-            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gAlbedoSpec"), 2 );
+            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gAlbedoSpec"),  i );
             GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gDepth")     , 3 );
 
             PlaneVAO.Draw(Primitave::TRIANGLES, 6);

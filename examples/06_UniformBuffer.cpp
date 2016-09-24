@@ -59,15 +59,15 @@ int main()
         VertexBuffer.push_back( { vec3(-1.0f , 1.0f, 0.f), vec2( 0.f, 1.f )} );
 
         // Load teh buffer into the GPU
-        Array_Buffer buff( VertexBuffer );
+        ArrayBuffer buff( VertexBuffer );
 
 
         VertexArray VAO;
         VAO.Attach<vec3, vec2>( buff );
 
         // Load some textures. And force using 3 components (r,g,b)
-        Image Tex1("../resources/textures/rocks.jpg",  3 );
-        Image Tex2("../resources/textures/rocks1024.jpg", 3 );
+        Image Tex1("./resources/textures/rocks.jpg",  3 );
+        Image Tex2("./resources/textures/rocks1024.jpg", 3 );
         Image Tex3(256,256, 3);
 
 
@@ -124,7 +124,7 @@ int main()
         // compiling the shaders straight from a string. If we were compiling from a file
         // we'd just do:  VertexShader vs(Path_to_file);
         ShaderProgram UniformBufferShader;
-        UniformBufferShader.AttachShaders(  VertexShader("../resources/shaders/UniformBuffer.v"),  FragmentShader("../resources/shaders/UniformBuffer.f")  );
+        UniformBufferShader.AttachShaders(  VertexShader("./resources/shaders/UniformBuffer.v"),  FragmentShader("./resources/shaders/UniformBuffer.f")  );
 
         //==========================================================
 
@@ -150,7 +150,7 @@ int main()
 
         UniformBuffer uniform_buffer;
 
-        uniform_buffer.Allocate( sizeof(UniformBufferStruct140) );
+        uniform_buffer.Reserve( sizeof(UniformBufferStruct140) );
 
         // We first need to get the block index of the "Uniform140" block in the shader.
         auto BlockIndex = UniformBufferShader.GetUniformBlockIndex("Uniform140");
@@ -183,7 +183,7 @@ int main()
             UniformData.colour    = vec4{ cos(t)*cos(t), 0,0,1};
 
             // Copy the data over
-            uniform_buffer << UniformData;
+            uniform_buffer( UniformData );
 
             // Here we send Uniform data to the shader
             //  The first argument is an user defined index. Depending on the number of uniforms you have, you should always

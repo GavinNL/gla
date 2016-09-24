@@ -8,13 +8,13 @@ namespace gla { namespace experimental {
 
 struct GenVertexArray
 {
-    void operator()(GLuint & h) { glGenVertexArrays(1, &h); }
+    void operator()(GLuint & h) const { glGenVertexArrays(1, &h); }
 };
 
 
 struct DestVertexArray
 {
-    void operator()(GLuint & h) { glDeleteVertexArrays(1, &h); }
+    void operator()(GLuint & h) const { glDeleteVertexArrays(1, &h); }
 };
 
 
@@ -24,8 +24,22 @@ class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray>
         void Bind  () { glBindVertexArray( Get() ); }
         void Unbind() { glBindVertexArray(  0    ); }
 
+        VertexArray() {}
+
         template <typename... GLM_Vec_Types>
-        void Attach(const Element_Array_Buffer & IndexArray, const Array_Buffer & Attribute )
+        VertexArray(const ElementArrayBuffer & IndexArray, const ArrayBuffer & Attribute)
+        {
+            Attach<GLM_Vec_Types...>(IndexArray,Attribute);
+        }
+
+        template <typename... GLM_Vec_Types>
+        VertexArray(const ArrayBuffer & Attribute)
+        {
+            Attach<GLM_Vec_Types...>(Attribute);
+        }
+
+        template <typename... GLM_Vec_Types>
+        void Attach(const ElementArrayBuffer & IndexArray, const ArrayBuffer & Attribute )
         {
             if( !(*this) )
                 Generate();
@@ -44,7 +58,7 @@ class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray>
         }
 
         template <typename... GLM_Vec_Types>
-        void Attach(const Array_Buffer & Attribute )
+        void Attach(const ArrayBuffer & Attribute )
         {
             if( !(*this) )
                 Generate();
@@ -55,12 +69,6 @@ class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray>
                 Attribute.Bind();
                 Attribute.EnableAttributes< GLM_Vec_Types... >();
             Unbind();
-
-        }
-
-        template<typename ...GlaBufferTypes >
-        VertexArray()
-        {
 
         }
 
@@ -129,26 +137,9 @@ class VertexArray_T : public BaseHandle<GLuint, GenVertexArray, DestVertexArray>
         }
 
         //====================================================================
-        template<typename ...GLM_Types>
-        static VertexArray_T MakeVAO( const Array_Buffer & Vertex , std::uint32_t Normalize_Flags=0 )
-        {
-            VertexArray_T vao;
-            vao.Generate();
-            vao.Bind();
-
-            vao.m_DataType = DataType::UNKNOWN;
-
-                vao.Bind();
-                    Vertex.Bind(BufferBindTarget::ARRAY_BUFFER);
-                    //Vertex.EnableAttributes< GLM_Types... >();
-                    EnableAttributes<GLM_Types...>::Enable(0,0,Normalize_Flags);
-                vao.Unbind();
-
-            return vao;
-        }
 
         template<typename ...GLM_Types>
-        static VertexArray_T MakeVAO( const Element_Array_Buffer & Element, const Array_Buffer & Vertex,  std::uint32_t Normalize_Flags = 0  )
+        static VertexArray_T MakeVAO( const ElementArrayBuffer & Element, const ArrayBuffer & Vertex,  std::uint32_t Normalize_Flags = 0  )
         {
             VertexArray_T vao;
             vao.Generate();
@@ -157,8 +148,8 @@ class VertexArray_T : public BaseHandle<GLuint, GenVertexArray, DestVertexArray>
             vao.m_DataType = Element.m_Data;
 
             vao.Bind();
-                Vertex.Bind(BufferBindTarget::ARRAY_BUFFER);
-                Element.Bind(BufferBindTarget::ELEMENT_ARRAY_BUFFER);
+                Vertex.Bind( );
+                Element.Bind( );
                 EnableAttributes<GLM_Types...>::Enable(0,0,Normalize_Flags);
             vao.Unbind();
             return vao;

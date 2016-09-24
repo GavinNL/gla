@@ -60,8 +60,8 @@ int main()
 
 
         // Send the vertex buffer to the GPU
-        Array_Buffer         G( VertexBuffer );
-        Element_Array_Buffer E( IndexBuffer );
+        ArrayBuffer         G( VertexBuffer );
+        ElementArrayBuffer  E( IndexBuffer );
 
 
         // Create a vertex array object.

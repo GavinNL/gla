@@ -63,7 +63,7 @@ int main()
         VertexBuffer.push_back( { vec3(-1.0f , 1.0f, 0.f), vec2( 0.f, 1.f )} );
 
         // Load teh buffer into the GPU
-        Array_Buffer buff( VertexBuffer );
+        ArrayBuffer buff( VertexBuffer );
 
 
         VertexArray VAO;

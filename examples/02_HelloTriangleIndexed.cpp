@@ -52,7 +52,7 @@ int main()
 
 
         // Create a buffer on the GPU using the data from the standard vector
-        Array_Buffer         G( VertexBuffer );
+        ArrayBuffer         G( VertexBuffer );
         //================================================================
 
 
@@ -66,7 +66,7 @@ int main()
         IndexBuffer.push_back( glm::uvec3( 0 ,1, 2) );
 
         // Send the index buffer to the gpu.
-        Element_Array_Buffer E( IndexBuffer );
+        ElementArrayBuffer E( IndexBuffer );
         //================================================================
 
 
@@ -79,7 +79,7 @@ int main()
             // consists of one vec3 and one vec4 that are both un-normalized.
             // This function will automatically bind the array buffer and set the
             // attributes.
-            G.EnableAttributes<glm::vec3, glm::vec4>( {false,false } );
+            G.EnableAttributes<glm::vec3, glm::vec4>( );
             // (alternatively) G.EnableAttributes<glm::vec3, glm::vec4>(); // same as non-normlaized vectors
 
 
@@ -106,6 +106,7 @@ int main()
 //=============================================================================
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow()
 {
+
     //    glewExperimental = GL_TRUE;
 
     if (!glfwInit())

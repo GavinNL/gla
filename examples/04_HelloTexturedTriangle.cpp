@@ -51,7 +51,7 @@ int main()
         VertexData.push_back( { glm::vec3( 0.0f , 1.0f, 0.f), glm::vec2(.5f, .0f)  }  );
 
         // Send the vertex data to the GPU.
-        Array_Buffer G( VertexData );
+        ArrayBuffer G( VertexData );
 
         // Create a VertexArray from the data
         VertexArray VAO;
