@@ -38,7 +38,7 @@ int main()
 
 
         ShaderProgram TriangleShader;
-        TriangleShader.AttachShaders(  VertexShader("../resources/shaders/HelloTriangle.v"),  FragmentShader("../resources/shaders/HelloTriangle.f")  );
+        TriangleShader.AttachShaders(  VertexShader("./resources/shaders/HelloTriangle.v"),  FragmentShader("./resources/shaders/HelloTriangle.f")  );
 
 
         //====
@@ -53,25 +53,24 @@ int main()
         VertexBuffer.push_back( { glm::vec3( 1.0f ,-1.0f, 0.f), glm::vec4(0.f, 1.f, 0.f, 1.0f)  }  );
         VertexBuffer.push_back( { glm::vec3( 0.0f , 1.0f, 0.f), glm::vec4(0.f, 0.f, 1.f, 1.0f)  }  );
 
-
         // Create a triangle from vertex 0 1 and 2
         std::vector< glm::uvec3 > IndexBuffer;
         IndexBuffer.push_back( glm::uvec3( 0 ,1, 2) );
 
-
         // Send the vertex buffer to the GPU
         ArrayBuffer         G( VertexBuffer );
         ElementArrayBuffer  E( IndexBuffer );
-
 
         // Create a vertex array object.
         VertexArray VAO;
 
         VAO.Attach<glm::vec3, glm::vec4>( E, G );
 
-
         G.Unbind();
         E.Unbind();
+
+        G.Release(); // we can release these handles now since we don't plan on modifying them, OpenGL will keep them in memory
+        E.Release(); // until the VAO is released.
         //====
 
 

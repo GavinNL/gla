@@ -39,14 +39,35 @@ enum class Unique_Handle_Name
     Sampler2DArray,
 };
 
-template<typename HandleType, typename CallableCreate, typename CallableDestroy>
+
+
+/**
+ * @brief The BaseHandle class
+ * The BaseHandle class is a wrapper around a generic openGL handle type.
+ *
+ * It provides reference counting which auto releases the object from the GPU.
+ *
+ * This class should be inherited from
+ *
+ * Templates Arguments:
+ *
+ *   HandleType     - the base data type that the OpenGL handle is stored as, usually GLuint, or GLint
+ *   CallableCreate - A callable class with the operator()(HandleType & h) implemented which creates
+ *                    the object on the GPU and stores the handle in h
+ *   CallableDestroy- A callable class with the operator()(HandleType & h) implemented which destroys
+ *                    handle, h, and resets h to it's default states
+ *
+ *   SharedData     - a struct which contains data about the handle that is not used regularly, such as
+ *                    size of buffers, etc.
+ */
+template<typename HandleType, typename CallableCreate, typename CallableDestroy, typename SharedDataType=int>
 class BaseHandle
 {
 
 public:
-    using Handle = BaseHandle<HandleType, CallableCreate, CallableDestroy>;
+    using Handle = BaseHandle<HandleType, CallableCreate, CallableDestroy, SharedDataType>;
 
-    BaseHandle() : m_ID(0), ref_count( new int() )
+    BaseHandle() : m_ID(0), ref_count( new SharedDataType() )
     {
     }
 
@@ -67,8 +88,6 @@ public:
 
         static CallableCreate C;
         C(m_ID);
-
-        //std::cout << "ID Generated: " << m_ID << "     use count: " << ref->refcount() << std::endl;
     }
 
     void Release()
@@ -81,9 +100,14 @@ public:
                 D(m_ID);
             }
         }
-        ref_count.reset( new int() );
+        ref_count.reset( new SharedDataType() );
         m_ID = 0;
 
+    }
+
+    SharedDataType * SharedData()
+    {
+        return ref_count.get();
     }
 
     operator bool() const
@@ -92,215 +116,12 @@ public:
     }
 
 
-    protected:
-        HandleType m_ID = 0;
-
-        std::shared_ptr<int> ref_count;
-};
-
-template<typename HandleType, typename CallableCreate, typename CallableDestroy>
-class BaseHandle_Old2
-{
-
-public:
-    using Handle = BaseHandle_Old2<HandleType, CallableCreate, CallableDestroy>;
-
-    BaseHandle_Old2() : m_ID(0), ref(nullptr)
-    {
-        ref = new RefCounter();
-        ref->inc();
-    }
-
-    ~BaseHandle_Old2()
-    {
-        Release();
-    }
-
-
-    HandleType Get() const
-    {
-        return m_ID;
-    }
-
-    void Generate()
-    {
-        if( ref ) // if already referenced
-        {
-            Release();
-        }
-
-        static CallableCreate C;
-        C(m_ID);
-        ref = new RefCounter();
-        ref->inc();
-        //std::cout << "ID Generated: " << m_ID << "     use count: " << ref->refcount() << std::endl;
-    }
-
-    void Release()
-    {
-        if( ref_count.use_count() == 1)
-        {
-            ref_count.reset( new int() );
-            if(m_ID)
-            {
-                static CallableDestroy D;
-                D(m_ID);
-            }
-        }
-
-        if( ref)
-        {
-            if( ref->dec() == 0)
-            {
-                if( m_ID )
-                {
-                    //static CallableDestroy D;
-                    //D(m_ID);
-
-                }
-                delete ref;
-            }
-        }
-
-        m_ID = 0;
-        ref  = nullptr;
-    }
-
-    operator bool() const
-    {
-        return m_ID != 0;
-    }
-
-    Handle & operator = (const Handle & sp)
-    {
-        if( this != &sp )
-        {
-            Release();
-
-            m_ID = sp.m_ID;
-            ref  = sp.ref;
-            ref->inc();
-
-            ref_count = sp.ref_count;
-        }
-    }
 
     protected:
-        HandleType m_ID = 0;
-        RefCounter * ref;
-        std::shared_ptr<int> ref_count;
+        HandleType                      m_ID = 0;
+        std::shared_ptr<SharedDataType> ref_count;
 };
 
-template<typename HandleType, typename CallableCreate, typename CallableDestroy>
-class BaseHandle_old
-{
-    public:
-        using Handle = BaseHandle<HandleType, CallableCreate, CallableDestroy>;
-
-        BaseHandle_old() : ref( new RefCounter() ) , m_ID(0)
-        {
-        }
-
-        ~BaseHandle_old()
-        {
-            Release();
-        }
-
-
-
-
-        //===============================================
-        // Creates a new buffer. If this buffer already
-        // contains some data, it will be released.
-        // if it is the only one that holds data, the data will be
-        // destroyed.
-        void Generate()
-        {
-            Release();
-
-            static CallableCreate C;
-            C(m_ID);
-
-            ref = new RefCounter();
-            ref->inc();
-        }
-
-        // Releases the buffer, returns true if the object has been
-        // completely deleted (ie: No other objects are referenced to it)
-        bool Release()
-        {
-            if( !(*this) )
-            {
-                m_ID = 0;
-                return true;
-            }
-
-            auto ret = false;
-
-            auto r = ref->dec();
-            std::cout << "   " << m_ID << " ref count: " << ref->refcount() << std::endl;
-            if( r==0 ) // destroy the GL object and delete the reference counter
-            {                     // if it this is the last reference
-
-                static CallableDestroy D;
-                D(m_ID);
-
-                ret = true;
-                delete ref;
-            }
-
-            ref = nullptr;
-
-            m_ID = 0;
-            return ret;
-        }
-
-        const HandleType & Get() const
-        {
-            return m_ID;
-        }
-
-        operator bool() const
-        {
-            return ref != nullptr;
-        }
-
-        std::size_t GetUseCount() const
-        {
-            if( ref )
-            {
-                return ref->refcount();
-            }
-            return 0;
-        }
-
-        BaseHandle<HandleType, CallableCreate,CallableDestroy> & operator=(const BaseHandle<HandleType, CallableCreate,CallableDestroy> & h)
-        {
-            std::cout << "Copy operator" << std::endl;
-
-            if(*this)
-                Release();
-
-            delete ref;
-
-            m_ID = h.m_ID;
-            ref  = h.ref;
-
-            ref->inc();
-            std::cout << "   " << m_ID << " ref count: " << ref->refcount() << std::endl;
-            return *this;
-        }
-
-        //================================================
-
-    private:
-
-        HandleType  m_ID = 0;
-        RefCounter * ref;
-
-
-
-};
 
 
 

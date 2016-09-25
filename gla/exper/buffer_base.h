@@ -103,8 +103,8 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
             Generate();
             Bind(  *this , BufferBindTarget::COPY_WRITE_BUFFER);
             glBufferData( static_cast<GLenum>(BufferBindTarget::COPY_WRITE_BUFFER) , data.size()*sizeof(VertexData), data.data() , static_cast<GLenum>(usage) );
-            m_Reserve = data.size()*sizeof(VertexData);
-            m_Size    = data.size()*sizeof(VertexData);
+            m_Reserve   = data.size()*sizeof(VertexData);
+            m_Offset    = data.size()*sizeof(VertexData);
             Unbind(BufferBindTarget::COPY_WRITE_BUFFER);
         }
 
@@ -137,7 +137,7 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
          * be appended to. It indicates the start of unused data.
          */
         std::size_t Offset() const {
-            return m_Size;
+            return m_Offset;
         }
 
         /**
@@ -148,7 +148,7 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
          */
         void Clear()
         {
-            m_Size = 0;
+            m_Offset = 0;
         }
 
         //================================================
@@ -158,7 +158,8 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
          * @param size_in_bytes - number of bytes to allocate
          * @param usage
          *
-         * Reserves data on the GPU for storing raw data.
+         * Reserves data on the GPU for storing raw data.  Reserve will destroy any old
+         * data and create a new handle. Any shared resources will be invalidated.
          */
         void Reserve(std::size_t size_in_bytes, BufferUsage usage = BufferUsage::STATIC_DRAW)
         {
@@ -166,8 +167,8 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
             Generate( ); // generates a new handle, releases the old one.
             Bind(  *this , targ);
             glBufferData( static_cast<GLenum>(targ) , size_in_bytes, NULL , static_cast<GLenum>(usage) );
-            m_Size    = 0;
-            m_Reserve = size_in_bytes;
+            m_Offset    = 0;
+            m_Reserve   = size_in_bytes;
         }
 
 
@@ -190,17 +191,18 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
 
             Bind(  *this , targ);
 
-            if( size+offset > m_Reserve )
+            if( size + offset > m_Reserve )
                 throw std::runtime_error("Buffer is too small to hold all the data");
 
             glBufferSubData( static_cast<GLenum>(targ), offset, size, data);
 
-            if( size+offset > m_Size )
+            if( size+offset > m_Offset )
             {
-                m_Size = size+offset;
+                m_Offset = size+offset;
             }
             Unbind(targ);
         }
+
 
         /**
          * @brief CopyData
@@ -218,7 +220,7 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
 
         /**
          * @brief Append
-         * @param V
+         * @param V - a vector of vertices.
          * @return the current offset of the data that was placed into the buffer
          *
          * Copies all the bytes in the input vector and appends it to the end
@@ -230,16 +232,27 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
         template<typename VertexType>
         std::size_t Append(const std::vector<VertexType> & V)
         {
-            auto offset = m_Size;
-            CopyData(V, m_Size);
+            auto offset = m_Offset;
+            CopyData(V, m_Offset);
             return offset;
         }
 
+        /**
+         * @brief Append
+         * @param V - reference to some data structure, sizeof(V) must return a valid value
+         * @return the current offset of the data that was placed into the buffer
+         *
+         * Copies all the bytes in the input vector and appends it to the end
+         * of the buffer, returns the offset in the buffer at which the data was
+         * stored.
+         *
+         * If there is not enough room to hold the data, an exception will be thrown.
+         */
         template<typename VertexType>
         std::size_t Append(const VertexType & V)
         {
-            auto offset = m_Size;
-            CopyData(&V, m_Size, 0);
+            auto offset = m_Offset;
+            CopyData(&V, m_Offset, 0);
             return offset;
         }
 
@@ -277,7 +290,7 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
         }
 
 private:
-        std::size_t m_Size    = 0;
+        std::size_t m_Offset    = 0;
         std::size_t m_Reserve = 0;
 };
 

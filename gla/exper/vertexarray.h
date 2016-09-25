@@ -52,7 +52,7 @@ class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray>
                 Attribute.Bind();
                 Attribute.EnableAttributes< GLM_Vec_Types... >();
 
-                //#error dont use this yet.
+
             Unbind();
 
         }

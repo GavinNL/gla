@@ -97,6 +97,13 @@ public:
      */
     static Sampler2D CreateBufferTexture_Depth16F( const glm::uvec2 & size)
     {
+        gla::experimental::Sampler2D Depth( size , gla::experimental::SamplerFormat::DEPTH_COMPONENT16,  gla::experimental::ImageFormat::DEPTH_COMPONENT, gla::experimental::DataType::FLOAT);
+        Depth.SetFilter( gla::experimental::SamplerFilter::NEAREST , gla::experimental::SamplerFilter::NEAREST );
+        return Depth;
+    }
+
+    static Sampler2D CreateBufferTexture_Depth24F( const glm::uvec2 & size)
+    {
         gla::experimental::Sampler2D Depth( size , gla::experimental::SamplerFormat::DEPTH_COMPONENT24,  gla::experimental::ImageFormat::DEPTH_COMPONENT, gla::experimental::DataType::FLOAT);
         Depth.SetFilter( gla::experimental::SamplerFilter::NEAREST , gla::experimental::SamplerFilter::NEAREST );
         return Depth;
@@ -126,6 +133,20 @@ public:
     static Sampler2D CreateBufferTexture_Vec4_16f( const glm::uvec2 & size)
     {
         gla::experimental::Sampler2D Depth( size , gla::experimental::SamplerFormat::RGBA16F,  gla::experimental::ImageFormat::RGBA, gla::experimental::DataType::FLOAT);
+        Depth.SetFilter( gla::experimental::SamplerFilter::NEAREST , gla::experimental::SamplerFilter::NEAREST );
+        return Depth;
+    }
+
+    static Sampler2D CreateBufferTexture_Vec3_32f( const glm::uvec2 & size)
+    {
+        gla::experimental::Sampler2D Depth( size , gla::experimental::SamplerFormat::RGB32F,  gla::experimental::ImageFormat::RGB, gla::experimental::DataType::FLOAT);
+        Depth.SetFilter( gla::experimental::SamplerFilter::NEAREST , gla::experimental::SamplerFilter::NEAREST );
+        return Depth;
+    }
+
+    static Sampler2D CreateBufferTexture_Vec4_32f( const glm::uvec2 & size)
+    {
+        gla::experimental::Sampler2D Depth( size , gla::experimental::SamplerFormat::RGBA32F,  gla::experimental::ImageFormat::RGBA, gla::experimental::DataType::FLOAT);
         Depth.SetFilter( gla::experimental::SamplerFilter::NEAREST , gla::experimental::SamplerFilter::NEAREST );
         return Depth;
     }

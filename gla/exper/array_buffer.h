@@ -250,45 +250,60 @@ class ArrayBuffer : public Buffer
 
         using Buffer::Buffer;
 
-//        ArrayBuffer() : Buffer()
-//        {
-//
-//        }
-//
-//        ArrayBuffer( std::size_t size ) : Buffer(size){}
-//
-//        template<typename VertexData>
-//        ArrayBuffer( const std::vector<VertexData> & data, BufferUsage usage = BufferUsage::STATIC_DRAW) : Buffer(data, usage)
-//        {
-//        }
-
+        /**
+         * @brief Bind
+         * Binds this handle as the current GL_ARRAY_BUFFER
+         */
         void Bind() const
         {
             Buffer::Bind( *this, BindTarget);
         }
+
+        /**
+         * @brief Unbind
+         * Unbinds any current GL_ARRAY_BUFFER
+         */
         void Unbind() const
         {
-            Buffer::Unbind(  BindTarget);
+            Buffer::Unbind(  BindTarget );
         }
 
         template<bool BindFirst=true>
-        void Draw( Primitave p, std::size_t first, std::size_t NumberOfPrimitaves) const
+        /**
+         * @brief Draw
+         * @param p - the pimitave type (LINES, TRIANGLES, TRIANGLE_FAN, etc)
+         * @param first - the index of the first
+         * @param NumberOfVertices - number of vertices to render.
+         *
+         * Use the BindFirst=false template paramter to not automatically bind before each call.
+         * This is useful if are making a more optimized rendering engine.
+         */
+        void Draw( Primitave p, std::size_t first, std::size_t NumberOfVertices) const
         {
             if(BindFirst) Bind();
-            glDrawArrays( static_cast<GLenum>(p),  static_cast<GLint>(first),  static_cast<GLsizei>(NumberOfPrimitaves) );
+            glDrawArrays( static_cast<GLenum>(p),  static_cast<GLint>(first),  static_cast<GLsizei>(NumberOfVertices) );
         }
 
         /**
          * @brief EnableAttributes
-         * Enables attributes  assuming all attributes are unnormalized
+         * @param NormalizeFlags - flags which indicate which attributes should be normalized.
+         *                         eg:  NormalizeFlags::_0 |  NormalizeFlags::_3
+         *
+         * Tells OpenGL how the attributes in the array_buffer should be read as, eg:
+         *
+         * Given an array_buffer, where each vertex is composed of position(vec3), uv_coords(vec2), normal(vec3), and colour(vec4)
+         * where the normal must be normalized
+         *
+         * Then we can tell openGL to read the array buffer by calling the following function.
+         *
+         * EnableAttributes<glm::vec3, glm::vec2, glm::vec3, glm::vec4>(NormalizeFlags::_2);
          */
         template <typename... GLM_Vec_Types>
         void EnableAttributes( NormalizeFlags::Flags NormalizeFlags = static_cast<NormalizeFlags::Flags>(0) ) const
         {
             Bind();
-            gla::experimental::EnableAttributes<GLM_Vec_Types...>::Enable(0, 0, NormalizeFlags);        }
-
-        std::size_t m_Number_Of_Items;
+            gla::experimental::EnableAttributes<GLM_Vec_Types...>::Enable(0, 0, NormalizeFlags);
+        }
 
 };
 
