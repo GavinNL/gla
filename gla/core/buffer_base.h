@@ -97,6 +97,7 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
             Reserve(size_in_bytes);
         }
 
+
         template<typename VertexData>
         Buffer( const std::vector<VertexData> & data, BufferUsage usage = BufferUsage::STATIC_DRAW)
         {

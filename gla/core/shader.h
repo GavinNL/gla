@@ -4,6 +4,7 @@
 #include "types.h"
 #include "handle.h"
 
+#include <type_traits>
 #include <iostream>
 #include <fstream>
 #include <streambuf>
@@ -229,30 +230,91 @@ public:
 
 
         //=====================================================================
-        template<std::size_t I = 0, typename... Tp>
-        inline typename std::enable_if<I == sizeof...(Tp), void>::type
-        __AttachShader( const std::tuple<Tp...>& t)
-        {
-        }
+      //  template<std::size_t I = 0, typename... Tp>
+      //  //inline typename std::enable_if<I == sizeof...(Tp), void>::type
+      //  void __AttachShader( const std::tuple<Tp...>& t)
+      //  {
+      //  }
+      //
+      //  template<std::size_t I = 0, typename... Tp>
+      //  inline typename std::enable_if<I < sizeof...(Tp), void>::type
+      //  __AttachShader( const std::tuple<Tp...>& t)
+      //  {
+      //      glAttachShader( Get(), std::get<I>(t).Get() );
+      //      __AttachShader<I+1>( t );
+      //  }
 
-        template<std::size_t I = 0, typename... Tp>
-        inline typename std::enable_if<I < sizeof...(Tp), void>::type
-        __AttachShader( const std::tuple<Tp...>& t)
-        {
-            glAttachShader( Get(), std::get<I>(t).Get() );
-            __AttachShader<I+1>( t );
-        }
-
-
-
-        template<class... U>
-        void AttachShaders(const U&... u)
+        template<class S1>
+        void AttachShaders(const S1 & s1)
         {
             Generate();
-            //m_Handle.Release();
-            //m_Handle.Create();
+            glAttachShader( Get(), s1.Get() );
+            glLinkProgram( Get() );
+            Bind() ; // <<---- Use Program
+        }
 
-            __AttachShader( std::make_tuple( std::forward<const U>(u)... ) );
+        template<class S1,class S2>
+        void AttachShaders(const S1 & s1,const S2 & s2)
+        {
+            Generate();
+            glAttachShader( Get(), s1.Get() );
+            glAttachShader( Get(), s2.Get() );
+            glLinkProgram( Get() );
+            Bind() ; // <<---- Use Program
+        }
+
+        template<class S1,class S2,class S3>
+        void AttachShaders(const S1 & s1,const S2 & s2,const S3 & s3)
+        {
+            Generate();
+            glAttachShader( Get(), s1.Get() );
+            glAttachShader( Get(), s2.Get() );
+            glAttachShader( Get(), s3.Get() );
+            glLinkProgram( Get() );
+            Bind() ; // <<---- Use Program
+        }
+
+        template<class S1,class S2,class S3, class S4>
+        void AttachShaders(const S1 & s1,const S2 & s2,const S3 & s3,const S4 & s4)
+        {
+            Generate();
+            glAttachShader( Get(), s1.Get() );
+            glAttachShader( Get(), s2.Get() );
+            glAttachShader( Get(), s3.Get() );
+            glAttachShader( Get(), s4.Get() );
+            glLinkProgram( Get() );
+            Bind() ; // <<---- Use Program
+        }
+
+        template<class S1,class S2,class S3, class S4, class S5>
+        void AttachShaders(const S1 & s1,const S2 & s2,const S3 & s3,const S4 & s4,const S5 & s5)
+        {
+            Generate();
+            glAttachShader( Get(), s1.Get() );
+            glAttachShader( Get(), s2.Get() );
+            glAttachShader( Get(), s3.Get() );
+            glAttachShader( Get(), s4.Get() );
+            glAttachShader( Get(), s5.Get() );
+            glLinkProgram( Get() );
+            Bind() ; // <<---- Use Program
+        }
+
+        template<class... U>
+        void AttachShaders2(const U&... u)
+        {
+            Generate();
+
+            auto id = Get();
+            for_each( std::make_tuple( std::forward<const U>(u)... ), [id](const auto &x)
+            {
+                glAttachShader( id, x.Get() );
+                //std::cout << x << std::endl;
+            }
+            );
+            //__AttachShader<0, U...>( std::make_tuple( std::forward<const U>(u)... ) ) ;
+
+          //  __AttachShader<0, U...>( std::make_tuple( std::forward<const U>(u)... ) );
+        //    ShaderAttacher< std::tuple<const U...>, 0, sizeof...(U) - 1>::Attach( std::make_tuple( std::forward<const U>(u)... ) );
 
             glLinkProgram( Get() );
 
@@ -388,62 +450,62 @@ public:
 
 
         //========================================================================================
-        inline void Uniform(GLint UniformID, const glm::mat4 & V, uint count=1)
+		inline void Uniform(GLint UniformID, const glm::mat4 & V, std::uint32_t count = 1)
         {
             glUniformMatrix4fv(UniformID, count, GL_FALSE, &V[0][0] );
         }
-        inline void Uniform(GLint UniformID, const glm::mat3 & V, uint count=1)
+		inline void Uniform(GLint UniformID, const glm::mat3 & V, std::uint32_t count = 1)
         {
             glUniformMatrix3fv(UniformID, count, GL_FALSE, &V[0][0] );
         }
-        inline void Uniform(GLint UniformID, const glm::mat2 & V, uint count=1)
+		inline void Uniform(GLint UniformID, const glm::mat2 & V, std::uint32_t count = 1)
         {
             glUniformMatrix2fv(UniformID, count, GL_FALSE, &V[0][0] );
         }
-        inline void Uniform(GLint UniformID, const glm::vec4 & V, uint count=1)
+		inline void Uniform(GLint UniformID, const glm::vec4 & V, std::uint32_t count = 1)
         {
             glUniform4fv(UniformID, count, &V[0] );
         }
-        inline void Uniform(GLint UniformID, const glm::vec3 & V, uint count=1)
+		inline void Uniform(GLint UniformID, const glm::vec3 & V, std::uint32_t count = 1)
         {
             glUniform3fv(UniformID, count, &V[0] );
         }
-        inline void Uniform(GLint UniformID, const glm::vec2 & V, uint count=1)
+		inline void Uniform(GLint UniformID, const glm::vec2 & V, std::uint32_t count = 1)
         {
             glUniform2fv(UniformID, count, &V[0] );
         }
-        inline void Uniform(GLint UniformID, const glm::ivec4 & V, uint count=1)
+		inline void Uniform(GLint UniformID, const glm::ivec4 & V, std::uint32_t count = 1)
         {
             glUniform4iv(UniformID, count, &V[0] );
         }
-        inline void Uniform(GLint UniformID, const glm::ivec3 & V, uint count=1)
+		inline void Uniform(GLint UniformID, const glm::ivec3 & V, std::uint32_t count = 1)
         {
             glUniform3iv(UniformID, count, &V[0] );
         }
-        inline void Uniform(GLint UniformID, const glm::ivec2 & V, uint count=1)
+		inline void Uniform(GLint UniformID, const glm::ivec2 & V, std::uint32_t count = 1)
         {
             glUniform2iv(UniformID, count, &V[0] );
         }
 
-        inline void Uniform(GLint UniformID, const float & V, uint count=1)
+		inline void Uniform(GLint UniformID, const float & V, std::uint32_t count = 1)
         {
             glUniform1f(UniformID, V );
         }
-        inline void Uniform(GLint UniformID, const int & V, uint count=1)
+		inline void Uniform(GLint UniformID, const int & V, std::uint32_t count = 1)
         {
             glUniform1i(UniformID, V );
         }
-        inline void Uniform(GLint UniformID, const int * V, uint count=1)
+		inline void Uniform(GLint UniformID, const int * V, std::uint32_t count = 1)
         {
             glUniform1iv( UniformID, count, V);
         }
-        inline void Uniform(GLint UniformID, const float * V, uint count=1)
+		inline void Uniform(GLint UniformID, const float * V, std::uint32_t count = 1)
         {
             glUniform1fv( UniformID, count, V);
         }
 
         template<typename T>
-        inline void Uniform( const char * name, const T &V , uint count=1)
+		inline void Uniform(const char * name, const T &V, std::uint32_t count = 1)
         {
             Uniform( GetUniformLocation(name), V, count);
         }

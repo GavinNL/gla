@@ -71,6 +71,11 @@ public:
     {
     }
 
+	BaseHandle(const BaseHandle & B) : m_ID(B.m_ID), ref_count( B.ref_count)
+	{
+
+	}
+
     ~BaseHandle()
     {
         Release();

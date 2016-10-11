@@ -56,7 +56,7 @@ struct DestSampler2DArray
 
             void SetFilter( SamplerFilter Min, SamplerFilter Mag);
             void SetWrap( SamplerWrap S_direction, SamplerWrap T_direction);
-            void SetLayer(const Image & T, uint Layer, const uvec2 & pOffset=uvec2(0,0));
+			void SetLayer(const Image & T, std::uint32_t Layer, const uvec2 & pOffset = uvec2(0, 0));
 
             void SetActive( unsigned int unit);
 
@@ -84,7 +84,7 @@ struct DestSampler2DArray
         return *this;
     }
 
-    inline void Sampler2DArray::SetLayer(const Image & T, uint Layer, const uvec2 & pOffset )
+	inline void Sampler2DArray::SetLayer(const Image & T, std::uint32_t Layer, const uvec2 & pOffset)
     {
         Bind();
 

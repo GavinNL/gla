@@ -248,7 +248,13 @@ class ArrayBuffer : public Buffer
     public:
         static BufferBindTarget const BindTarget = BufferBindTarget::ARRAY_BUFFER;
 
-        using Buffer::Buffer;
+        ArrayBuffer() : Buffer() {}
+        ArrayBuffer(std::size_t size_in_bytes) : Buffer(size_in_bytes)
+        {}
+
+        template<typename VertexData>
+        ArrayBuffer( const std::vector<VertexData> & data, BufferUsage usage = BufferUsage::STATIC_DRAW) : Buffer(data, usage)
+        {}
 
         /**
          * @brief Bind

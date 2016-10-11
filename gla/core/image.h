@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 #include <algorithm>
+#include <cstdint>
 
 //#include <gla/handle.h>
 #ifdef GLA_IMAGE_USE_STB
@@ -18,8 +19,8 @@
 #elif GLA_IMAGE_USE_FREEIMAGE
     #include <freeimage.h>
 #else
-    #include <gla/stb_image_headeronly.h>
-    #include <gla/stb_image_write_headeronly.h>
+    #include <gla/core/stb_image_headeronly.h>
+    #include <gla/core/stb_image_write_headeronly.h>
 #endif
 
 
@@ -110,7 +111,7 @@ namespace gla { namespace experimental {
                 memset(mData,0, mDim[0] * mDim[1] * components);
             }
 
-            ImageBase(uint w, uint h, unsigned int components=4) : mData(0)
+			ImageBase(std::uint32_t w, std::uint32_t h, std::uint32_t components = 4) : mData(0)
             {
                 //mDim.x = w;
                 //mDim.y = h;
@@ -344,7 +345,7 @@ namespace gla { namespace experimental {
                         s = s-floor(s);
                         t = t-floor(t);
 
-                        T(i,j,z) = f00 * (1-s)*(1-t) + f10*s*(1-t) + f01*(1-s)*t + f11*s*t;
+                        T(i,j,z) = static_cast<unsigned char>(f00 * (1-s)*(1-t) + f10*s*(1-t) + f01*(1-s)*t + f11*s*t);
 
                     }
 
@@ -377,8 +378,8 @@ namespace gla { namespace experimental {
             ImageBase& operator=(  std::function<ucol4(float,float) > F)
             {
                 uvec2 S = size();
-                float W = 1.0 / (float)S.x;
-                float H = 1.0 / (float)S.y;
+                float W = 1.0f / (float)S.x;
+                float H = 1.0f / (float)S.y;
                 for(auto y =0u; y < S.y; y++)
                     for(auto x=0u; x < S.x; x++)
                     {
@@ -395,16 +396,16 @@ namespace gla { namespace experimental {
             ImageBase& operator=(  std::function<vec4(float,float) > F)
             {
                 uvec2 S = size();
-                float W = 1.0 / (float)S.x;
-                float H = 1.0 / (float)S.y;
+                float W = 1.0f / (float)S.x;
+                float H = 1.0f / (float)S.y;
                 for(auto y =0u; y < S.y; y++)
                     for(auto x=0u; x < S.x; x++)
                     {
                         auto c = (F( (float)x * W, (float)y*H ) );
-                        (*this)(x,y,0) = (unsigned char)c[0]*255.f;
-                        (*this)(x,y,1) = (unsigned char)c[1]*255.f;
-                        (*this)(x,y,2) = (unsigned char)c[2]*255.f;
-                        (*this)(x,y,3) = (unsigned char)c[3]*255.f;
+                        (*this)(x,y,0) = static_cast<unsigned char>(c[0]*255.f);
+                        (*this)(x,y,1) = static_cast<unsigned char>(c[1]*255.f);
+                        (*this)(x,y,2) = static_cast<unsigned char>(c[2]*255.f);
+                        (*this)(x,y,3) = static_cast<unsigned char>(c[3]*255.f);
                     }
 
                 return *this;
@@ -540,7 +541,7 @@ namespace gla { namespace experimental {
 
 
         public:
-            void _handleRawPixels(unsigned char * buffer, uint width, uint height)
+			void _handleRawPixels(unsigned char * buffer, std::uint32_t width, std::uint32_t height)
             {
                 clear();
 
@@ -685,7 +686,7 @@ namespace gla { namespace experimental {
             {
             }
 
-            Image(uint w, uint h, unsigned int components=4) : ImageBase(w,h,components), r(this,0),g(this,1),b(this,2),a(this,3)
+			Image(std::uint32_t w, std::uint32_t h, unsigned int components = 4) : ImageBase(w, h, components), r(this, 0), g(this, 1), b(this, 2), a(this, 3)
             {
             }
 

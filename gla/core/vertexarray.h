@@ -8,13 +8,13 @@ namespace gla { namespace experimental {
 
 struct GenVertexArray
 {
-    void operator()(GLuint & h) const { glGenVertexArrays(1, &h); }
+    void operator()(GLuint & h) const { glGenVertexArrays(1, &h);  std::cout << "VOA generated: " << h << std::endl;}
 };
 
 
 struct DestVertexArray
 {
-    void operator()(GLuint & h) const { glDeleteVertexArrays(1, &h); }
+    void operator()(GLuint & h) const { std::cout << "VOA destroyed: " << h << std::endl; glDeleteVertexArrays(1, &h); }
 };
 
 

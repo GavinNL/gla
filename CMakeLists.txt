@@ -21,24 +21,21 @@ include_directories ("${PROJECT_SOURCE_DIR}")
 #===========================================================================
 # Compiler definitions
 #===========================================================================
+if (UNIX)
+    
 ADD_DEFINITIONS (
     -std=c++11
     -Wfloat-equal
-#    -Wundef
     -Werror=shadow
     -Wpointer-arith
     -Wcast-align
     -Wstrict-prototypes
     -Wstrict-overflow=5
     -Wwrite-strings
-#    -Waggregate-return
     -Wcast-qual
     -Werror=switch-default
     -Wswitch-enum
-#    -Wconversion
     -Wunreachable-code
-   # -Werror
-    #-Werror=unused-function
     -Werror=return-type
     -Werror=cast-qual
     -Werror=pedantic
@@ -46,6 +43,7 @@ ADD_DEFINITIONS (
   #  -Wfatal-errors
 )
 
+endif (UNIX)
 #===========================================================================
 # Find packages
 #===========================================================================
@@ -55,9 +53,9 @@ ADD_DEFINITIONS (
 find_package(OpenGL REQUIRED)
 #find_package(GLEW REQUIRED)
 find_package(glfw3 REQUIRED)
-find_package(PkgConfig REQUIRED)
+#find_package(PkgConfig REQUIRED)
 
-pkg_search_module(GLFW REQUIRED glfw3)
+#pkg_search_module(GLFW REQUIRED glfw3)
 
 include_directories(${OpenGL_INCLUDE_DIRS})
 #include_directories(${GLEW_INCLUDE_DIRS})

@@ -66,8 +66,8 @@ int main()
         VAO.Attach<glm::vec3, glm::vec2>( buff );
 
         // Load some textures. And force using 3 components (r,g,b)
-        Image Tex1("../resources/textures/rocks.jpg",  3 );
-        Image Tex2("../resources/textures/rocks1024.jpg", 3 );
+        Image Tex1("./resources/textures/rocks.jpg",  3 );
+        Image Tex2("./resources/textures/rocks1024.jpg", 3 );
         Image Tex3(256,256, 3);
 
 
@@ -124,7 +124,7 @@ int main()
         // compiling the shaders straight from a string. If we were compiling from a file
         // we'd just do:  VertexShader vs(Path_to_file);
         ShaderProgram TextureArrayShader;
-        TextureArrayShader.AttachShaders(  VertexShader("../resources/shaders/TextureArray.v"),  FragmentShader("../resources/shaders/TextureArray.f")  );
+        TextureArrayShader.AttachShaders(  VertexShader("./resources/shaders/TextureArray.v"),  FragmentShader("./resources/shaders/TextureArray.f")  );
 
         //==========================================================
 

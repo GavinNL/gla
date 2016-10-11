@@ -69,10 +69,8 @@ int main()
         G.Unbind();
         E.Unbind();
 
-        G.Release(); // we can release these handles now since we don't plan on modifying them, OpenGL will keep them in memory
-        E.Release(); // until the VAO is released.
-        //====
 
+        //====
 
         while (!glfwWindowShouldClose(gMainWindow) )
         {

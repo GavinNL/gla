@@ -66,7 +66,7 @@ int main()
 
         Image Img;
 
-        Img.loadFromPath("../resources/textures/rocks1024.jpg" );
+        Img.loadFromPath("./resources/textures/rocks1024.jpg" );
 
         Sampler2D Sampler(Img);
 
@@ -97,7 +97,7 @@ int main()
                                        FragmentShader("../resources/shaders/Textures.f"));
 #else
         //auto TriangleShader = ShaderProgram::Load("../resources/shaders/Textures.s");
-        auto TriangleShader = ShaderProgram::Load("../resources/shaders/Textures.s");
+        auto TriangleShader = ShaderProgram::Load("./resources/shaders/Textures.s");
 #endif
 
         //================================================================

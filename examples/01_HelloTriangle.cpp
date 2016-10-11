@@ -18,9 +18,9 @@ GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 using namespace gla::core;
 
 
-int main()
+int main(int argc, char **argv)
 {
-
+    std::cout << argv[0] << std::endl;
 
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
 
@@ -60,7 +60,7 @@ int main()
         CpuBuffer.push_back( { glm::vec3( 0.0f , 1.0f, 0.f), glm::vec4(0.f, 0.f, 1.f, 1.0f)  }  );
 
         // Create a buffer on the GPU using the data from the standard vector
-        ArrayBuffer  G( CpuBuffer.size() * 2 * sizeof(MyVertex) );
+        ArrayBuffer  G( static_cast<std::size_t>(CpuBuffer.size() * 2 * sizeof(MyVertex)) );
 
         //G.Reserve( CpuBuffer.size() * 2 * sizeof(MyVertex) );
 

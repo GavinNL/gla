@@ -28,8 +28,8 @@ int main()
 
 
         ShaderProgram TriangleShader;
-        TriangleShader.AttachShaders(  VertexShader("../resources/shaders/HelloTriangle.v"),
-                                       FragmentShader("../resources/shaders/HelloTriangle.f")  );
+        TriangleShader.AttachShaders(  VertexShader("./resources/shaders/HelloTriangle.v"),
+                                       FragmentShader("./resources/shaders/HelloTriangle.f")  );
 
 
         //================================================================
