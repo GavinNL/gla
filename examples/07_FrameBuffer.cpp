@@ -46,21 +46,10 @@ int main()
         // GLA code.
         //===========================================================================
 
-        //---------------------------------------------------------------------------
-        // Create two buffers on the CPU to hold position and colour information
-        //---------------------------------------------------------------------------
-        // Also create an index buffer.
-        struct MyVertex
-        {
-            glm::vec3 p;
-            glm::vec2 uv;
-        };
 
-        std::vector< MyVertex > VertexBuffer;
-
+        //====================== Create the geometry for the box ==============================
         auto BoxVertices = createBox();
-
-        // Load teh buffer into the GPU
+        // Load the buffer into the GPU
         ArrayBuffer buff( BoxVertices );
 
         VertexArray VAO;
@@ -69,16 +58,22 @@ int main()
         // Load some textures. And force using 3 components (r,g,b)
         Image Tex1("./resources/textures/rocks.jpg",  3 );
 
-        buff.Release();
+
+        //====================== Create the Plane =============================================
+        struct MyVertex
+        {
+            glm::vec3 p;
+            glm::vec2 uv;
+        };
+        std::vector< MyVertex > VertexBuffer;
 
         VertexBuffer.push_back( { glm::vec3(-1.0,  1.0, 0.0) , glm::vec2(0.0,0.0) }); // 3
         VertexBuffer.push_back( { glm::vec3(-1.0, -1.0, 0.0) , glm::vec2(0.0,1.0) }); // 0
         VertexBuffer.push_back( { glm::vec3( 1.0, -1.0, 0.0) , glm::vec2(1.0,1.0) }); // 1
 
-       // VertexBuffer.push_back( { glm::vec3(-1.0,  1.0, 0.0) , glm::vec2(0.0,0.0) }); // 0
-       // VertexBuffer.push_back( { glm::vec3( 1.0, -1.0, 0.0) , glm::vec2(1.0,1.0) }); // 2
-       // VertexBuffer.push_back( { glm::vec3( 1.0,  1.0, 0.0) , glm::vec2(1.0,0.0) }); // 2
-
+        VertexBuffer.push_back( { glm::vec3(-1.0,  1.0, 0.0) , glm::vec2(0.0,0.0) }); // 0
+        VertexBuffer.push_back( { glm::vec3( 1.0, -1.0, 0.0) , glm::vec2(1.0,1.0) }); // 2
+        VertexBuffer.push_back( { glm::vec3( 1.0,  1.0, 0.0) , glm::vec2(1.0,0.0) }); // 2
 
         VertexArray  PlaneVAO;
         ArrayBuffer  PlaneBuff( VertexBuffer );
@@ -149,7 +144,6 @@ int main()
 
         while (!glfwWindowShouldClose(gMainWindow) )
         {
-
             FBO.Bind();
             glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
@@ -192,7 +186,7 @@ int main()
             GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gAlbedoSpec"),  i );
             GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gDepth")     , 3 );
 
-            PlaneVAO.Draw(Primitave::TRIANGLES, 3 );
+            PlaneVAO.Draw(Primitave::TRIANGLES, 6 );
 
             glfwSwapBuffers(gMainWindow);
             glfwPollEvents();

@@ -28,7 +28,7 @@ static std::vector<Vertex_pun > createBox( const glm::vec3 & s = glm::vec3(1.0,1
 
     {
         //VertexArrayObject Box(QUADS);
-        std::vector<Vertex_pun> Box;
+        std::vector< Vertex_pun > Box;
 
         Box.push_back( { vec3(0.0,0.0,s.z) -s*0.5f, vec2(0.0,0.0) , vec3(0.0,  0.0, 1.0)} ); // 0
         Box.push_back( { vec3(s.x,0.0,s.z) -s*0.5f, vec2(1.0,0.0) , vec3(0.0,  0.0, 1.0)} ); // 1
