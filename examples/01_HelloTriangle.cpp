@@ -1,8 +1,8 @@
 #include "glad.h"
-#include <gla/exper/buffers.h>
-#include <gla/exper/sampler2d.h>
-#include <gla/exper/shader.h>
-
+//#include <gla/exper/buffers.h>
+//#include <gla/exper/sampler2d.h>
+//#include <gla/exper/shader.h>
+#include <gla/gla.h>
 #include <GLFW/glfw3.h>
 
 //=================================================================================
@@ -14,8 +14,8 @@ GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
 
-using namespace gla::experimental;
-
+//using namespace gla::experimental;
+using namespace gla::core;
 
 
 int main()

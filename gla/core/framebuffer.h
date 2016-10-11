@@ -1,8 +1,8 @@
 #ifndef EXP_FRAMEBUFFER_
 #define EXP_FRAMEBUFFER_
 
-#include <gla/exper/handle.h>
-#include <gla/exper/sampler2d.h>
+#include "handle.h"
+#include "sampler2d.h"
 
 
 namespace gla { namespace experimental

@@ -4,11 +4,12 @@
 
 #include "glad.h"
 
-#include <gla/timer.h>
-#include <gla/exper/sampler2darray.h>
-#include <gla/exper/vertexarray.h>
-#include <gla/exper/uniformbuffer.h>
-#include <gla/exper/shader.h>
+#include <gla/gla.h>
+//#include <gla/timer.h>
+//#include <gla/exper/sampler2darray.h>
+//#include <gla/exper/vertexarray.h>
+//#include <gla/exper/uniformbuffer.h>
+//#include <gla/exper/shader.h>
 
 
 #include <glm/gtc/noise.hpp>
@@ -26,7 +27,7 @@
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
-using namespace gla::experimental;
+using namespace gla::core;
 
 int main()
 {
@@ -129,7 +130,7 @@ int main()
         //==========================================================
 
 
-        gla::Timer_T<float> Timer;
+        Timer_T<float> Timer;
 
 
         // This is the structure that we will create a buffer for

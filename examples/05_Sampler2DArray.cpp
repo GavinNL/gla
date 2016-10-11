@@ -1,12 +1,8 @@
 #include <stdio.h>
 
 #include "glad.h"
-#include <gla/timer.h>
 
-#include <gla/exper/sampler2darray.h>
-#include <gla/exper/sampler2d.h>
-#include <gla/exper/buffers.h>
-#include <gla/exper/shader.h>
+#include <gla/gla.h>
 
 #include <glm/gtc/noise.hpp> // for glm::perlin
 

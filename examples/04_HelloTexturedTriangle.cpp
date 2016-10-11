@@ -1,7 +1,8 @@
 #include "glad.h"
-#include <gla/exper/sampler2d.h>
-#include <gla/exper/buffers.h>
-#include <gla/exper/shader.h>
+#include <gla/gla.h>
+//#include <gla/exper/sampler2d.h>
+//#include <gla/exper/buffers.h>
+//#include <gla/exper/shader.h>
 
 #include <glm/gtc/noise.hpp>
 #include <GLFW/glfw3.h>

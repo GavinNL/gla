@@ -1,8 +1,8 @@
 #ifndef EXP_VERTEX_ARRAY
 #define EXP_VERTEX_ARRAY
 
-#include <gla/exper/handle.h>
-#include <gla/exper/element_array_buffer.h>
+#include <gla/core/handle.h>
+#include <gla/core/element_array_buffer.h>
 
 namespace gla { namespace experimental {
 

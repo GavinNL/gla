@@ -1,7 +1,7 @@
 #ifndef EXP_UNIFORM_BUFER_ARRAY
 #define EXP_UNIFORM_BUFER_ARRAY
 
-#include <gla/exper/buffer_base.h>
+#include "buffer_base.h"
 
 namespace gla { namespace experimental
 {

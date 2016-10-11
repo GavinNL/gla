@@ -1,9 +1,9 @@
 #include "glad.h"
-#include <gla/exper/array_buffer.h>
-#include <gla/exper/sampler2d.h>
-#include <gla/exper/shader.h>
-#include <gla/exper/sampler2darray.h>
-#include <gla/exper/vertexarray.h>
+#include <gla/gla.h>
+//#include <gla/exper/sampler2d.h>
+//#include <gla/exper/shader.h>
+//#include <gla/exper/sampler2darray.h>
+//#include <gla/exper/vertexarray.h>
 #include <GLFW/glfw3.h>
 //=================================================================================
 // Global Variables and Function Prototypes
