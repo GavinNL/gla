@@ -292,6 +292,7 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff, BufferInfo>
 //private:
 //        std::size_t m_Offset  = 0;
 //        std::size_t m_Reserve = 0;
+
 };
 
 

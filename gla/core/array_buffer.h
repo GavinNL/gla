@@ -302,10 +302,10 @@ class ArrayBuffer : public Buffer
          * EnableAttributes<glm::vec3, glm::vec2, glm::vec3, glm::vec4>(NormalizeFlags::_2);
          */
         template <typename... GLM_Vec_Types>
-        void EnableAttributes( NormalizeFlags::Flags NormalizeFlags = static_cast<NormalizeFlags::Flags>(0) ) const
+        void EnableAttributes( NormalizeFlags normalizeFlags = NormalizeFlags::none ) const
         {
             Bind();
-            gla::experimental::EnableAttributes<GLM_Vec_Types...>::Enable(0, 0, NormalizeFlags);
+            gla::experimental::EnableAttributes<GLM_Vec_Types...>::Enable(0, 0, normalizeFlags._flags);
         }
 
 };

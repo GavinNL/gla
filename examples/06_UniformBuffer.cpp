@@ -63,8 +63,8 @@ int main()
         ArrayBuffer buff( VertexBuffer );
 
 
-        VertexArray VAO;
-        VAO.Attach<vec3, vec2>( buff );
+        VertexArray VAO = VertexArray::MakeVAO<vec3,vec2>( buff );
+      //  VAO.Attach<vec3, vec2>( buff );
 
         // Load some textures. And force using 3 components (r,g,b)
         Image Tex1("./resources/textures/rocks.jpg",  3 );
@@ -72,6 +72,7 @@ int main()
         Image Tex3(256,256, 3);
 
 
+        std::cout << "Attempting release" << std::endl;
         buff.Release();
 
 

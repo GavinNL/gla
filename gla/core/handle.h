@@ -65,7 +65,8 @@ class BaseHandle
 {
 
 public:
-    using Handle = BaseHandle<HandleType, CallableCreate, CallableDestroy, SharedDataType>;
+    using Handle           = BaseHandle<HandleType, CallableCreate, CallableDestroy, SharedDataType>;
+    using SharedHandle     = std::shared_ptr< std::pair<HandleType, SharedDataType> >;
 
     struct Deleter
     {
@@ -170,6 +171,11 @@ public:
 
     long Use_Count() const {
         return m_ID.use_count();
+    }
+
+    SharedHandle GetSharedHandle() const
+    {
+        return m_ID;
     }
 
     protected:

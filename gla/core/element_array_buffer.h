@@ -33,13 +33,6 @@ class ElementArrayBuffer : public Buffer
             Buffer::Unbind(  BindTarget );
         }
 
-
-        //template<typename T>
-        //void operator << (const T & structure)
-        //{
-        //    Buffer::CopyData(structure);
-        //}
-
         template<typename VertexData>
         ElementArrayBuffer( const std::vector<VertexData> & data, BufferUsage usage = BufferUsage::STATIC_DRAW) : Buffer(data, usage)
         {

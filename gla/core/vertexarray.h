@@ -17,8 +17,13 @@ struct DestVertexArray
     void operator()(GLuint & h) const { std::cout << "VOA destroyed: " << h << std::endl; glDeleteVertexArrays(1, &h); }
 };
 
+struct VertexArrayInfo
+{
+    Buffer::SharedHandle elementbuffer;
+    Buffer::SharedHandle vertexbuffer;
+};
 
-class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray>
+class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray,VertexArrayInfo>
 {
     public:
         void Bind  () { glBindVertexArray( Get() ); }
@@ -27,38 +32,40 @@ class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray>
         VertexArray() {}
 
         template <typename... GLM_Vec_Types>
-        VertexArray(const ElementArrayBuffer & IndexArray, const ArrayBuffer & Attribute)
+        VertexArray(const ArrayBuffer & Attribute, const ElementArrayBuffer & IndexArray, NormalizeFlags Normalize_Flags = NormalizeFlags::none)
         {
-            Attach<GLM_Vec_Types...>(IndexArray,Attribute);
+            Attach<GLM_Vec_Types...>(Attribute, IndexArray, Normalize_Flags);
         }
 
         template <typename... GLM_Vec_Types>
-        VertexArray(const ArrayBuffer & Attribute)
+        VertexArray(const ArrayBuffer & Attribute, NormalizeFlags Normalize_Flags = NormalizeFlags::none)
         {
-            Attach<GLM_Vec_Types...>(Attribute);
+            Attach<GLM_Vec_Types...>(Attribute, Normalize_Flags);
         }
 
         template <typename... GLM_Vec_Types>
-        void Attach(const ElementArrayBuffer & IndexArray, const ArrayBuffer & Attribute )
+        void Attach(const ArrayBuffer & Attribute , const ElementArrayBuffer & IndexArray , NormalizeFlags Normalize_Flags = NormalizeFlags::none)
         {
             if( !(*this) )
                 Generate();
 
 
             Bind();
+                SharedData().elementbuffer = IndexArray.GetSharedHandle();
+                SharedData().vertexbuffer  =  Attribute.GetSharedHandle();
+
                 IndexArray.Bind();
                 m_Data = IndexArray.m_Data;
 
                 Attribute.Bind();
-                Attribute.EnableAttributes< GLM_Vec_Types... >();
-
+                Attribute.EnableAttributes< GLM_Vec_Types... >( Normalize_Flags._flags);
 
             Unbind();
 
         }
 
         template <typename... GLM_Vec_Types>
-        void Attach(const ArrayBuffer & Attribute )
+        void Attach(const ArrayBuffer & Attribute , NormalizeFlags Normalize_Flags = NormalizeFlags::none )
         {
             if( !(*this) )
                 Generate();
@@ -66,8 +73,11 @@ class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray>
             m_Data = DataType::UNKNOWN;
 
             Bind();
+
+                SharedData().vertexbuffer  = Attribute.GetSharedHandle();
+
                 Attribute.Bind();
-                Attribute.EnableAttributes< GLM_Vec_Types... >();
+                Attribute.EnableAttributes< GLM_Vec_Types... >( Normalize_Flags );
             Unbind();
 
         }
@@ -86,6 +96,23 @@ class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray>
                                 static_cast<char*>(0)+first
                                 );
         }
+
+        template<typename ...GLM_Types>
+        static VertexArray MakeVAO(  const ArrayBuffer & Vertex, const ElementArrayBuffer & Element, NormalizeFlags Normalize_Flags = NormalizeFlags::none  )
+        {
+            VertexArray vao;
+            vao.Attach<GLM_Types...>(Vertex, Element, Normalize_Flags);
+            return vao;
+        }
+
+        template<typename ...GLM_Types>
+        static VertexArray MakeVAO(  const ArrayBuffer & Vertex, NormalizeFlags Normalize_Flags = NormalizeFlags::none  )
+        {
+            VertexArray vao;
+            vao.Attach<GLM_Types...>(Vertex, Normalize_Flags);
+            return vao;
+        }
+
 
         DataType m_Data = DataType::UNKNOWN;
 };
