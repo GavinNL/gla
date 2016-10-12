@@ -69,6 +69,11 @@ struct DestBuff
 };
 
 
+struct BufferInfo
+{
+    std::size_t m_Offset  = 0;
+    std::size_t m_Reserve = 0;
+};
 
 //template<BufferBindTarget target>
 /**
@@ -79,14 +84,6 @@ struct DestBuff
 class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
 {
     public:
-
-        struct SubData
-        {
-            SubData(const Buffer & B) : buf(B){}
-
-            Buffer const & buf;
-        };
-
 
         Buffer() : BaseHandle<GLuint, GenBuff,DestBuff>()
         {
@@ -291,7 +288,7 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
         }
 
 private:
-        std::size_t m_Offset    = 0;
+        std::size_t m_Offset  = 0;
         std::size_t m_Reserve = 0;
 };
 

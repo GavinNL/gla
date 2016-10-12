@@ -171,6 +171,7 @@ struct DestShaderProgram
     void operator()(GLuint & x)
     {
         glDeleteProgram(x);
+        std::cout << "Shader Program Destroyed: " << x << std::endl;
         x = 0;
     }
 };
@@ -299,38 +300,38 @@ public:
             Bind() ; // <<---- Use Program
         }
 
-        template<class... U>
-        void AttachShaders2(const U&... u)
-        {
-            Generate();
-
-            auto id = Get();
-            for_each( std::make_tuple( std::forward<const U>(u)... ), [id](const auto &x)
-            {
-                glAttachShader( id, x.Get() );
-                //std::cout << x << std::endl;
-            }
-            );
-            //__AttachShader<0, U...>( std::make_tuple( std::forward<const U>(u)... ) ) ;
-
-          //  __AttachShader<0, U...>( std::make_tuple( std::forward<const U>(u)... ) );
-        //    ShaderAttacher< std::tuple<const U...>, 0, sizeof...(U) - 1>::Attach( std::make_tuple( std::forward<const U>(u)... ) );
-
-            glLinkProgram( Get() );
-
-            Bind() ; // <<---- Use Program
-
-            // ============ Get number of uniform locations ==================
-            //auto & M = m_Handle.__GetMap();
-            //int   N = GetNumUniforms();
-            //auto ID = Get();
-            //auto & Info = m_Handle.__GetInfo();
-            //Info.UniformLocations.clear();
-            //Info.UniformLocations.assign(N,-1);
-            // ============ Get number of uniform locations ==================
-
-
-        }
+        //template<class... U>
+        //void AttachShaders2(const U&... u)
+        //{
+        //    Generate();
+        //
+        //    auto id = Get();
+        //    for_each( std::make_tuple( std::forward<const U>(u)... ), [id](const auto &x)
+        //    {
+        //        glAttachShader( id, x.Get() );
+        //        //std::cout << x << std::endl;
+        //    }
+        //    );
+        //    //__AttachShader<0, U...>( std::make_tuple( std::forward<const U>(u)... ) ) ;
+        //
+        //  //  __AttachShader<0, U...>( std::make_tuple( std::forward<const U>(u)... ) );
+        ////    ShaderAttacher< std::tuple<const U...>, 0, sizeof...(U) - 1>::Attach( std::make_tuple( std::forward<const U>(u)... ) );
+        //
+        //    glLinkProgram( Get() );
+        //
+        //    Bind() ; // <<---- Use Program
+        //
+        //    // ============ Get number of uniform locations ==================
+        //    //auto & M = m_Handle.__GetMap();
+        //    //int   N = GetNumUniforms();
+        //    //auto ID = Get();
+        //    //auto & Info = m_Handle.__GetInfo();
+        //    //Info.UniformLocations.clear();
+        //    //Info.UniformLocations.assign(N,-1);
+        //    // ============ Get number of uniform locations ==================
+        //
+        //
+        //}
         //========================================================
 
         static ShaderProgram Load(const std::string & path, const std::map<std::string, std::string> & Replacements = std::map<std::string, std::string>())

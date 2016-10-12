@@ -18,9 +18,9 @@ GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 using namespace gla::core;
 
 
+
 int main(int argc, char **argv)
 {
-    std::cout << argv[0] << std::endl;
 
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
 
@@ -75,6 +75,7 @@ int main(int argc, char **argv)
 
 
         ArrayBuffer g;
+
         g = G;
 
         G.Release();

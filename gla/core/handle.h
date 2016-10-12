@@ -67,11 +67,22 @@ class BaseHandle
 public:
     using Handle = BaseHandle<HandleType, CallableCreate, CallableDestroy, SharedDataType>;
 
-    BaseHandle() : m_ID(0), ref_count( new SharedDataType() )
+    struct Deleter
     {
+        void operator()( std::pair<HandleType, SharedDataType> * h ) const
+        {
+            static CallableDestroy D;
+            if(h->first) D( h->first );
+        }
+    };
+
+
+    BaseHandle() : m_ID( new std::pair<HandleType, SharedDataType>(),  Deleter() )//, ref_count( new SharedDataType() )
+    {
+        m_ID->first = 0;
     }
 
-	BaseHandle(const BaseHandle & B) : m_ID(B.m_ID), ref_count( B.ref_count)
+    BaseHandle(const BaseHandle & B) : m_ID(B.m_ID)//, ref_count( B.ref_count)
 	{
 
 	}
@@ -84,7 +95,7 @@ public:
 
     HandleType Get() const
     {
-        return m_ID;
+        return m_ID->first;
     }
 
     void Generate()
@@ -92,39 +103,45 @@ public:
         Release();
 
         static CallableCreate C;
-        C(m_ID);
+        C(m_ID->first);
     }
 
     void Release()
     {
-        if( ref_count.use_count() == 1)
-        {
-            if(m_ID)
-            {
-                static CallableDestroy D;
-                D(m_ID);
-            }
-        }
-        ref_count.reset( new SharedDataType() );
-        m_ID = 0;
+        //if( m_ID.use_count() == 1)
+        //{
+        //    if(m_ID->first)
+        //    {
+        //        static CallableDestroy D;
+        //        D( m_ID->first );
+        //    }
+        //}
+
+        m_ID.reset( new std::pair<HandleType, SharedDataType>() , Deleter() );
+        m_ID->first = 0;
+        //m_ID = 0;
 
     }
 
-    SharedDataType * SharedData()
+    SharedDataType & SharedData()
     {
-        return ref_count.get();
+        return m_ID->second;//.get();
     }
 
     operator bool() const
     {
-        return m_ID != 0;
+        return m_ID->first != 0;
     }
 
 
 
     protected:
-        HandleType                      m_ID = 0;
-        std::shared_ptr<SharedDataType> ref_count;
+        std::shared_ptr<
+        std::pair<HandleType, SharedDataType>
+        > m_ID;
+
+        //HandleType                      m_ID = 0;
+      //  std::shared_ptr<SharedDataType> ref_count;
 };
 
 
