@@ -243,7 +243,7 @@ public:
         template<class S1>
         void AttachShaders(const S1 & s1)
         {
-            Reenerate();
+            Regenerate();
             glAttachShader( Get(), s1.Get() );
             glLinkProgram( Get() );
             Bind() ; // <<---- Use Program

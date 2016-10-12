@@ -251,8 +251,8 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff, BufferInfo>
         template<typename VertexType>
         std::size_t Append(const VertexType & V)
         {
-            auto offset = m_Offset;
-            CopyData(&V, m_Offset, 0);
+            auto offset = SharedData().m_Offset;
+            CopyData(&V, offset, 0);
             return offset;
         }
 

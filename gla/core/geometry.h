@@ -27,8 +27,8 @@ static Mesh createCylinder(float radius = 1.0 , unsigned int faces = 20)
     for(int i = 0 ; i < faces+1; i++)
     {
         float const s = static_cast<float>(i) / static_cast<float>(faces);
-        float const x = std::cosf( 2*3.141592653589f * s );
-        float const z = std::sinf( 2*3.141592653589f * s );
+        float const x = std::cos( 2*3.141592653589f * s );
+        float const z = std::sin( 2*3.141592653589f * s );
         float const y = 0;
         Cyl.vertices.push_back(  { vec3(x*radius,y,z*radius) , vec2( s, 0 ), vec3( z, 0, -x )} );
     }
@@ -36,8 +36,8 @@ static Mesh createCylinder(float radius = 1.0 , unsigned int faces = 20)
     for(int i = 0 ; i < faces+1; i++)
     {
         float const s = static_cast<float>(i) / static_cast<float>(faces);
-        float const x = std::cosf( 2*3.141592653589f * s );
-        float const z = std::sinf( 2*3.141592653589f * s );
+        float const x = std::cos( 2*3.141592653589f * s );
+        float const z = std::sin( 2*3.141592653589f * s );
         float const y = 1;
         Cyl.vertices.push_back(  { vec3(x*radius,y,z*radius) , vec2( s, 1 ), vec3( z, 0, -x )} );
     }
@@ -59,8 +59,8 @@ static Mesh createCylinder(float radius = 1.0 , unsigned int faces = 20)
     for(int i = 0 ; i < faces; i++)
     {
         float const s = static_cast<float>(i) / static_cast<float>(faces);
-        float const x = std::cosf( 2*3.141592653589f * s );
-        float const z = std::sinf( 2*3.141592653589f * s );
+        float const x = std::cos( 2*3.141592653589f * s );
+        float const z = std::sin( 2*3.141592653589f * s );
         float const y = 1;
         Cyl.vertices.push_back(  { vec3(x*radius,y,z*radius) , vec2( 0.5+x*0.5, 0.5+z*0.5 ), vec3( 0, 1, 0 )} );
 
@@ -75,8 +75,8 @@ static Mesh createCylinder(float radius = 1.0 , unsigned int faces = 20)
     for(int i = 0 ; i < faces; i++)
     {
         float const s = static_cast<float>(i) / static_cast<float>(faces);
-        float const x = std::cosf( 2*3.141592653589f * s );
-        float const z = std::sinf( 2*3.141592653589f * s );
+        float const x = std::cos( 2*3.141592653589f * s );
+        float const z = std::sin( 2*3.141592653589f * s );
         float const y = 0;
         Cyl.vertices.push_back(  { vec3(x*radius,y,z*radius) , vec2( 0.5+x*0.5, 0.5+z*0.5 ), vec3( 0, -1, 0 )} );
 
@@ -97,9 +97,9 @@ static Mesh createSphere(float radius = 1.0, unsigned int rings=20, unsigned int
 
     for(r = 0; r < rings; r++)
         for(s = 0; s < sectors; s++) {
-            float const y = std::sinf( -3.141592653589f*0.5f + 3.141592653589f * r * R );
-            float const x = std::cosf(2*3.141592653589f * s * S) * std::sinf( 3.141592653589f * r * R );
-            float const z = std::sinf(2*3.141592653589f * s * S) * std::sinf( 3.141592653589f * r * R );
+            float const y = std::sin( -3.141592653589f*0.5f + 3.141592653589f * r * R );
+            float const x = std::cos(2*3.141592653589f * s * S) * std::sin( 3.141592653589f * r * R );
+            float const z = std::sin(2*3.141592653589f * s * S) * std::sin( 3.141592653589f * r * R );
 
             Sphere.vertices.push_back(  {radius*vec3(x,y,z) ,
                                    vec2(s*S, r*R),
