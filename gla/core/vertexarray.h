@@ -97,6 +97,22 @@ class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray,Ve
                                 );
         }
 
+        template<bool BindFirst=true>
+        void DrawInstanced( Primitave p, std::size_t NumberOfIndices, std::size_t primcount, std::size_t first=0 )
+        {
+            if(BindFirst) Bind();
+
+            m_Data==DataType::UNKNOWN ?
+                glDrawArraysInstanced( static_cast<GLenum>(p),  static_cast<GLint>(first),  static_cast<GLsizei>(NumberOfIndices), static_cast<GLsizei>(primcount) )
+                      :
+                glDrawElementsInstanced( static_cast<GLenum>(p),
+                                static_cast<GLsizei>(NumberOfIndices),
+                                static_cast<GLenum>(m_Data),
+                                static_cast<char*>(0)+first,
+                                static_cast<GLsizei>(primcount)
+                                );
+        }
+
         template<typename ...GLM_Types>
         static VertexArray MakeVAO(  const ArrayBuffer & Vertex, const ElementArrayBuffer & Element, NormalizeFlags Normalize_Flags = NormalizeFlags::none  )
         {

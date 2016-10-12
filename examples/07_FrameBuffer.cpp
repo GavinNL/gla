@@ -172,7 +172,8 @@ int main()
 #ifdef BOX
             VAO.Draw(Primitave::TRIANGLES, 36 );
 #else
-            VAO.Draw(Primitave::TRIANGLES, SphereVertices.indices.size() );
+            //VAO.Draw(Primitave::TRIANGLES, SphereVertices.indices.size() );
+            VAO.DrawInstanced(Primitave::TRIANGLES, SphereVertices.indices.size(), 3 );
 #endif
 
             FBO.UnBind();
