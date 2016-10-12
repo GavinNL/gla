@@ -163,7 +163,7 @@ struct EnableAttributes<FirstType, VecTypes...>
     }
 };
 
-// Terminating case
+/*
 template<std::size_t I = 0, typename TupleType, std::size_t tuplesize>
 static inline typename std::enable_if<I == std::tuple_size<TupleType>::value, int>::type
 EnableVertexAttribArrayFromTuple(std::int32_t offset, const std::array<bool, tuplesize > & normalized)
@@ -173,10 +173,7 @@ EnableVertexAttribArrayFromTuple(std::int32_t offset, const std::array<bool, tup
 
 
 
-// A recursive template function
-// That will enable the vertex attribute based on the GLM types in a
-// tuple.
-// Do not call this function directly.
+
 template<std::size_t I = 0, typename TupleType, std::size_t tuplesize>
 static inline typename std::enable_if< I < std::tuple_size<TupleType>::value, int>::type
 EnableVertexAttribArrayFromTuple( std::int32_t offset, const std::array<bool, tuplesize > & normalized)
@@ -239,7 +236,7 @@ EnableVertexAttribArrayFromTuple( std::int32_t offset, const std::array<bool, tu
     return EnableVertexAttribArrayFromTuple<I+1, TupleType>( offset + sizeof(NextElement) , normalized );
 
 }
-
+*/
 //============================
 
 

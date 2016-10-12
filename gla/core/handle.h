@@ -73,31 +73,58 @@ public:
         {
             static CallableDestroy D;
             if(h->first) D( h->first );
+
+            delete h;
         }
     };
-
 
     BaseHandle() : m_ID( new std::pair<HandleType, SharedDataType>(),  Deleter() )//, ref_count( new SharedDataType() )
     {
         m_ID->first = 0;
     }
 
-    BaseHandle(const BaseHandle & B) : m_ID(B.m_ID)//, ref_count( B.ref_count)
-	{
+    BaseHandle(const BaseHandle & B) : m_ID( B.m_ID )//, ref_count( B.ref_count)
+    {
 
-	}
+    }
+
+    BaseHandle(BaseHandle && B)
+    {
+        m_ID = std::move( B.m_ID );
+    }
+
+    BaseHandle & operator=(const BaseHandle & B)
+    {
+        if( this != &B)
+        m_ID = B.m_ID;
+        return *this;
+    }
+
+    BaseHandle & operator=( BaseHandle && B)
+    {
+        if( this != &B)
+        m_ID = std::move(B.m_ID);
+    }
 
     ~BaseHandle()
     {
-        Release();
     }
 
 
+    /**
+     * @brief Get - returns the openGL handle type
+     * @return The OpenGL handle type (GLuint)
+     */
     HandleType Get() const
     {
         return m_ID->first;
     }
 
+    /**
+     * @brief Generate
+     * Generates the OpenGL handle. This will release the previous handle if it exists. Previous handles
+     * will not be deallocated unless there are no more references to it.
+     */
     void Generate()
     {
         Release();
@@ -106,21 +133,29 @@ public:
         C(m_ID->first);
     }
 
+    /**
+     * @brief Regenerate
+     * Regnerates the OpenGL handle. This will destroy the data and regenerate it. All references
+     * to the old handle will not point to the new handle.
+     */
+    void Regenerate()
+    {
+        static CallableDestroy D;
+        static CallableCreate C;
+
+        if(m_ID->first) D( m_ID->first );
+        C(m_ID->first);
+    }
+
     void Release()
     {
-        //if( m_ID.use_count() == 1)
-        //{
-        //    if(m_ID->first)
-        //    {
-        //        static CallableDestroy D;
-        //        D( m_ID->first );
-        //    }
-        //}
-
         m_ID.reset( new std::pair<HandleType, SharedDataType>() , Deleter() );
         m_ID->first = 0;
-        //m_ID = 0;
+    }
 
+    SharedDataType & SharedData() const
+    {
+        return m_ID->second;//.get();
     }
 
     SharedDataType & SharedData()
@@ -133,15 +168,14 @@ public:
         return m_ID->first != 0;
     }
 
-
+    long Use_Count() const {
+        return m_ID.use_count();
+    }
 
     protected:
         std::shared_ptr<
         std::pair<HandleType, SharedDataType>
         > m_ID;
-
-        //HandleType                      m_ID = 0;
-      //  std::shared_ptr<SharedDataType> ref_count;
 };
 
 

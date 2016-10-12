@@ -84,7 +84,7 @@ struct DestSampler2DArray
         return *this;
     }
 
-	inline void Sampler2DArray::SetLayer(const Image & T, std::uint32_t Layer, const uvec2 & pOffset)
+    inline void Sampler2DArray::SetLayer(const Image & T, std::uint32_t Layer, const uvec2 & pOffset)
     {
         Bind();
 
@@ -141,7 +141,7 @@ struct DestSampler2DArray
         Bind();
 
         GLuint format[4] = {GL_R8, GL_RG8, GL_RGB8, GL_RGBA8};
-        glTexStorage3D( GL_TEXTURE_2D_ARRAY, mipmaps, format[components-1], size.x, size.y, depth);
+        glTexStorage3D( GL_TEXTURE_2D_ARRAY, mipmaps, format[components-1], size.x, size.y, static_cast<GLsizei>(depth) );
 
         m_Size        = size;
         m_Depth       = depth;
@@ -160,12 +160,12 @@ struct DestSampler2DArray
 
        // auto & I = m_Handle.__GetInfo();
 
-        glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, static_cast<GLuint>(Min) );
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, static_cast<GLuint>(Min) );
 
         if( Mag == SamplerFilter::LINEAR_MIPMAP_LINEAR)  Mag = SamplerFilter::LINEAR;
         if( Mag == SamplerFilter::LINEAR_MIPMAP_NEAREST) Mag = SamplerFilter::NEAREST;
 
-        glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, static_cast<GLuint>(Mag));
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, static_cast<GLuint>(Mag));
 
         //I.MagFilter = Mag;
         //I.MinFilter = Mag;
@@ -177,8 +177,8 @@ struct DestSampler2DArray
     {
         Bind();
 
-        glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, (GLuint)S_direction);
-        glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, (GLuint)T_direction);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, (GLuint)S_direction);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, (GLuint)T_direction);
 
         //I.S_Wrap = S_direction;
         //I.T_Wrap = T_direction;

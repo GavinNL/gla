@@ -21,8 +21,8 @@ INCLUDEPATH += $$PWD/../
 #SOURCES  += ../examples/03_HelloTriangleVertexArray.cpp ../glad.cpp
 #SOURCES  += ../examples/04_HelloTexturedTriangle.cpp ../glad.cpp
 #SOURCES  += ../examples/05_Sampler2DArray.cpp ../glad.cpp
-#SOURCES  += ../examples/06_UniformBuffer.cpp ../glad.cpp
-SOURCES  += ../examples/07_FrameBuffer.cpp ../glad.cpp
+SOURCES  += ../examples/06_UniformBuffer.cpp ../glad.cpp
+#SOURCES  += ../examples/07_FrameBuffer.cpp ../glad.cpp
 
 CONFIG   += c++11
 

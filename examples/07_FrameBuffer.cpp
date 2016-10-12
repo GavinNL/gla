@@ -117,7 +117,7 @@ int main()
         T.SetPosition( {0,0,-3});
         Camera C;
         C.SetPosition( {0.0,0.0,0.0f});
-        C.Perspective(45.0, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1);
+        C.Perspective(45.0f, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1f);
 
         FrameBuffer FBO;
         FBO.Generate();

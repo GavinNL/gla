@@ -75,12 +75,12 @@ int main()
 
         // Or similarly using the macro which essentially does the same thing as the above
         // but reduces the amount you need to write
-        Img.g = IMAGE_EXPRESSION( glm::clamp(2*x*x*x + y,0.0f,1.0f) );
+        Img.b = IMAGE_EXPRESSION( glm::clamp(2*x + y,0.0f,1.0f) );
 
 
         // A texture in GLSL is called a Sampler2D, we send the data to the GPU
         // by creating a Sampler2D object and initializing it with the Image object
-        Sampler.PasteSubImage(uvec2(512,512), Img);
+        Sampler.PasteSubImage( uvec2(0,0), Img);
 
 
         //================================================================

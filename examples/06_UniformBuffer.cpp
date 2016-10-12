@@ -135,7 +135,7 @@ int main()
 
         // This is the structure that we will create a buffer for
         // Note: the alignment of structs and the alignment of uniform blocks in the shader
-        // are NOT the same. vec3 are are aligned to vec4, so you will need to padd
+        // are NOT the same. vec3 are are aligned to vec4, so you will need to pad
         // the data with an extra by te
         struct UniformBufferStruct140 {
             vec3          Dir_Speed; // x,y = direction, z = speed
