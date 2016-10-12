@@ -57,7 +57,7 @@ int main()
         VertexArray VAO;
         VAO.Attach<glm::vec3, glm::vec2, glm::vec3>( buff );
 #else
-        auto SphereVertices = createCylinder();
+        auto SphereVertices = createCylinder(0.2, 5);
         ArrayBuffer        Buff( SphereVertices.vertices );
         ElementArrayBuffer Ind( SphereVertices.indices );
         VertexArray VAO = VertexArray::MakeVAO<vec3,vec2,vec3>( Buff, Ind );
