@@ -18,9 +18,9 @@ GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 using namespace gla::core;
 
 
+
 int main(int argc, char **argv)
 {
-    std::cout << argv[0] << std::endl;
 
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
 
@@ -70,14 +70,13 @@ int main(int argc, char **argv)
         std::size_t Offset2 = G << CpuBuffer;  // append the vector to the end of the buffer
 
 
-        //G.CopyData(CpuBuffer);
-        //G << CpuBuffer;
-
-
         ArrayBuffer g;
+
         g = G;
 
+        std::cout << "Releasing One reference" << std::endl;
         G.Release();
+
         //====
 
 
@@ -97,7 +96,7 @@ int main(int argc, char **argv)
             // Now draw the triangle.
             // we are drawing Triangles, starting at Vertex Index 0
             // and we are drawing 3 vertices (because 3 vertices make a triangle)
-            g.Draw(Primitave::TRIANGLES, 1, 3);
+            g.Draw(Primitave::TRIANGLES, 0, 3);
 
 
             glfwSwapBuffers(gMainWindow);

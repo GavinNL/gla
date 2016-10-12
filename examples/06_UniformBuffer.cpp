@@ -63,8 +63,8 @@ int main()
         ArrayBuffer buff( VertexBuffer );
 
 
-        VertexArray VAO;
-        VAO.Attach<vec3, vec2>( buff );
+        VertexArray VAO = VertexArray::MakeVAO<vec3,vec2>( buff );
+      //  VAO.Attach<vec3, vec2>( buff );
 
         // Load some textures. And force using 3 components (r,g,b)
         Image Tex1("./resources/textures/rocks.jpg",  3 );
@@ -72,6 +72,7 @@ int main()
         Image Tex3(256,256, 3);
 
 
+        std::cout << "Attempting release" << std::endl;
         buff.Release();
 
 
@@ -135,7 +136,7 @@ int main()
 
         // This is the structure that we will create a buffer for
         // Note: the alignment of structs and the alignment of uniform blocks in the shader
-        // are NOT the same. vec3 are are aligned to vec4, so you will need to padd
+        // are NOT the same. vec3 are are aligned to vec4, so you will need to pad
         // the data with an extra by te
         struct UniformBufferStruct140 {
             vec3          Dir_Speed; // x,y = direction, z = speed

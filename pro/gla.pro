@@ -24,6 +24,9 @@ INCLUDEPATH += $$PWD/../
 #SOURCES  += ../examples/06_UniformBuffer.cpp ../glad.cpp
 SOURCES  += ../examples/07_FrameBuffer.cpp ../glad.cpp
 
+HEADERS += ../gla/*
+HEADERS += ../gla/core/*
+
 CONFIG   += c++11
 
 win32:CONFIG(release, debug|release):    LIBS += -L$$PWD/../deps -lglfw3 -lopengl32 -lgdi32 -luser32

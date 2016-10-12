@@ -46,17 +46,22 @@ int main()
             glm::vec2 uv;
         };
 
-        std::vector< MyVertex > VertexData;
+        std::vector< MyVertex >     VertexData;
+        std::vector< unsigned int > IndexData;
         VertexData.push_back( { glm::vec3(-1.0f, -1.0f, 0.f), glm::vec2(0.f, 1.f)  }  );
         VertexData.push_back( { glm::vec3( 1.0f ,-1.0f, 0.f), glm::vec2(1.f, 1.f)  }  );
         VertexData.push_back( { glm::vec3( 0.0f , 1.0f, 0.f), glm::vec2(.5f, .0f)  }  );
 
+        IndexData.push_back(0);
+        IndexData.push_back(1);
+        IndexData.push_back(2);
         // Send the vertex data to the GPU.
-        ArrayBuffer G( VertexData );
+        ArrayBuffer        G( VertexData );
+        ElementArrayBuffer E( IndexData );
 
         // Create a VertexArray from the data
-        VertexArray VAO;
-        VAO.Attach<glm::vec3, glm::vec2>( VertexData );
+        VertexArray VAO = VertexArray::MakeVAO<glm::vec3, glm::vec2>( G, E);
+
         //================================================================
 
 
@@ -75,12 +80,12 @@ int main()
 
         // Or similarly using the macro which essentially does the same thing as the above
         // but reduces the amount you need to write
-        Img.g = IMAGE_EXPRESSION( glm::clamp(2*x*x*x + y,0.0f,1.0f) );
+        Img.b = IMAGE_EXPRESSION( glm::clamp(2*x + y,0.0f,1.0f) );
 
 
         // A texture in GLSL is called a Sampler2D, we send the data to the GPU
         // by creating a Sampler2D object and initializing it with the Image object
-        Sampler.PasteSubImage(uvec2(512,512), Img);
+        Sampler.PasteSubImage( uvec2(0,0), Img);
 
 
         //================================================================
@@ -102,7 +107,7 @@ int main()
 
         //================================================================
 
-        while (!glfwWindowShouldClose(gMainWindow) )
+        while ( !glfwWindowShouldClose(gMainWindow) )
         {
             // Set the triangle shader to be the one that we will use
             TriangleShader.Bind();
@@ -111,7 +116,7 @@ int main()
             Sampler.SetActive(0);
 
             // Tell the shader that we are using Texture Unit 0 for the sampler
-            TriangleShader.Uniform( TriangleShader.GetUniformLocation("uSampler"), 0 );
+            TriangleShader.Uniform( TriangleShader.GetUniformLocation("uSampler")  , 0           );
             TriangleShader.Uniform( TriangleShader.GetUniformLocation("uTransform"), glm::mat4() );
 
             // Draw the triangle.

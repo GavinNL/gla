@@ -50,6 +50,11 @@ class NormalizeFlags
         _19  = (1<<19)
     };
 
+    NormalizeFlags(unsigned int f)
+    {
+        _flags = f;
+    }
+
     NormalizeFlags( Flags flags)
     {
         _flags = static_cast<unsigned int>(flags);

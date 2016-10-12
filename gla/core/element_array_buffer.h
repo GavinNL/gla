@@ -33,13 +33,6 @@ class ElementArrayBuffer : public Buffer
             Buffer::Unbind(  BindTarget );
         }
 
-
-        //template<typename T>
-        //void operator << (const T & structure)
-        //{
-        //    Buffer::CopyData(structure);
-        //}
-
         template<typename VertexData>
         ElementArrayBuffer( const std::vector<VertexData> & data, BufferUsage usage = BufferUsage::STATIC_DRAW) : Buffer(data, usage)
         {
@@ -97,6 +90,21 @@ class ElementArrayBuffer : public Buffer
                             static_cast<GLenum>(m_Data),
                             static_cast<char*>(0)+first
                             );
+        }
+
+        template<bool BindFirst=true>
+        void DrawInstanced( Primitave p , std::size_t NumberOfIndices , std::size_t primcount, std::size_t first=0 )
+        {
+            if(BindFirst)
+                Bind();
+
+            glDrawElementsInstanced( static_cast<GLenum>(p),
+                            static_cast<GLsizei>(NumberOfIndices),
+                            static_cast<GLenum>(m_Data),
+                            static_cast<char*>(0)+first,
+                            static_cast<GLsizei>(primcount)
+                            );
+
         }
 
         DataType   m_Data;

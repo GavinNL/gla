@@ -64,7 +64,7 @@ int main()
         // Create a vertex array object.
         VertexArray VAO;
 
-        VAO.Attach<glm::vec3, glm::vec4>( E, G );
+        VAO.Attach<glm::vec3, glm::vec4>( G, E );
 
         G.Unbind();
         E.Unbind();

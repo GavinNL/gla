@@ -166,8 +166,13 @@ enum class SamplerFilter {
     LINEAR_MIPMAP_LINEAR   = GL_LINEAR_MIPMAP_LINEAR
 };
 
+struct Sampler2DInfo
+{
+    DataType   m_PixelDataType;
+    glm::uvec2 m_Size;
+};
 
-class Sampler2D :  public BaseHandle<GLuint, GenSampler2D, DestSampler2D>
+class Sampler2D :  public BaseHandle<GLuint, GenSampler2D, DestSampler2D,Sampler2DInfo>
 {
 public:
 
@@ -182,7 +187,7 @@ public:
                 ImageFormat       Format         =  ImageFormat::RGBA,
                 DataType          Type           =  DataType::UNSIGNED_BYTE,
                 bool              MipMaps        =  false
-              ) : BaseHandle<GLuint, GenSampler2D, DestSampler2D>()
+              ) : BaseHandle<GLuint, GenSampler2D, DestSampler2D, Sampler2DInfo>()
     {
         //Create(size, MipMaps, InternalFormat, Format, Type);
         Create(size,
@@ -258,16 +263,6 @@ public:
         Generate();
         Bind();
 
-
-       // if( !m_Handle.GetID() )
-       // {
-       //     return false;
-       // }
-
-        //auto & I = m_Handle.__GetInfo( );
-
-
-
         glTexImage2D(
                      GL_TEXTURE_2D,
                      0,
@@ -309,12 +304,12 @@ public:
 
        // auto & I = m_Handle.__GetInfo();
 
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, static_cast<GLuint>(Min) );
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, static_cast<GLuint>(Min) );
 
         if( Mag == SamplerFilter::LINEAR_MIPMAP_LINEAR)  Mag = SamplerFilter::LINEAR;
         if( Mag == SamplerFilter::LINEAR_MIPMAP_NEAREST) Mag = SamplerFilter::NEAREST;
 
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, static_cast<GLuint>(Mag));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, static_cast<GLuint>(Mag));
 
         //I.MagFilter = Mag;
         //I.MinFilter = Mag;
@@ -326,8 +321,8 @@ public:
     {
         Bind();
 
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLuint)S_direction);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLuint)T_direction);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLuint)S_direction);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLuint)T_direction);
 
         //I.S_Wrap = S_direction;
         //I.T_Wrap = T_direction;

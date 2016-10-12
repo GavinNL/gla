@@ -86,9 +86,9 @@ int main()
         // Set the red channel using a lambda function
         Tex3.r =  IMAGE_EXPRESSION( glm::perlin( vec2(x,y) * 4.0f, vec2(4.0,4.0) )*0.5 + 0.5f )
 
-                // Resize the textures so they match the TextureArray. This will throw an exception if
-                // the sizes do not match.
-                Tex1.resize( uvec2(256,256) );
+        // Resize the textures so they match the TextureArray. This will throw an exception if
+        // the sizes do not match.
+        Tex1.resize( uvec2(256,256) );
         Tex2.resize( uvec2(256,256) );
 
 

@@ -65,66 +65,123 @@ class BaseHandle
 {
 
 public:
-    using Handle = BaseHandle<HandleType, CallableCreate, CallableDestroy, SharedDataType>;
+    using Handle           = BaseHandle<HandleType, CallableCreate, CallableDestroy, SharedDataType>;
+    using SharedHandle     = std::shared_ptr< std::pair<HandleType, SharedDataType> >;
 
-    BaseHandle() : m_ID(0), ref_count( new SharedDataType() )
+    struct Deleter
     {
+        void operator()( std::pair<HandleType, SharedDataType> * h ) const
+        {
+            static CallableDestroy D;
+            if(h->first) D( h->first );
+
+            delete h;
+        }
+    };
+
+    BaseHandle() : m_ID( new std::pair<HandleType, SharedDataType>(),  Deleter() )//, ref_count( new SharedDataType() )
+    {
+        m_ID->first = 0;
     }
 
-	BaseHandle(const BaseHandle & B) : m_ID(B.m_ID), ref_count( B.ref_count)
-	{
+    BaseHandle(const BaseHandle & B) : m_ID( B.m_ID )//, ref_count( B.ref_count)
+    {
 
-	}
+    }
+
+    BaseHandle(BaseHandle && B)
+    {
+        m_ID = std::move( B.m_ID );
+    }
+
+    BaseHandle & operator=(const BaseHandle & B)
+    {
+        if( this != &B)
+        m_ID = B.m_ID;
+        return *this;
+    }
+
+    BaseHandle & operator=( BaseHandle && B)
+    {
+        if( this != &B)
+        m_ID = std::move(B.m_ID);
+    }
 
     ~BaseHandle()
     {
-        Release();
     }
 
 
+    /**
+     * @brief Get - returns the openGL handle type
+     * @return The OpenGL handle type (GLuint)
+     */
     HandleType Get() const
     {
-        return m_ID;
+        return m_ID->first;
     }
 
+    /**
+     * @brief Generate
+     * Generates the OpenGL handle. This will release the previous handle if it exists. Previous handles
+     * will not be deallocated unless there are no more references to it.
+     */
     void Generate()
     {
         Release();
 
         static CallableCreate C;
-        C(m_ID);
+        C(m_ID->first);
+    }
+
+    /**
+     * @brief Regenerate
+     * Regnerates the OpenGL handle. This will destroy the data and regenerate it. All references
+     * to the old handle will not point to the new handle.
+     */
+    void Regenerate()
+    {
+        static CallableDestroy D;
+        static CallableCreate C;
+
+        if(m_ID->first) D( m_ID->first );
+        C(m_ID->first);
     }
 
     void Release()
     {
-        if( ref_count.use_count() == 1)
-        {
-            if(m_ID)
-            {
-                static CallableDestroy D;
-                D(m_ID);
-            }
-        }
-        ref_count.reset( new SharedDataType() );
-        m_ID = 0;
-
+        m_ID.reset( new std::pair<HandleType, SharedDataType>() , Deleter() );
+        m_ID->first = 0;
     }
 
-    SharedDataType * SharedData()
+    SharedDataType & SharedData() const
     {
-        return ref_count.get();
+        return m_ID->second;//.get();
+    }
+
+    SharedDataType & SharedData()
+    {
+        return m_ID->second;//.get();
     }
 
     operator bool() const
     {
-        return m_ID != 0;
+        return m_ID->first != 0;
     }
 
+    long Use_Count() const {
+        return m_ID.use_count();
+    }
 
+    SharedHandle GetSharedHandle() const
+    {
+        return m_ID;
+    }
 
     protected:
-        HandleType                      m_ID = 0;
-        std::shared_ptr<SharedDataType> ref_count;
+        std::shared_ptr<
+        std::pair<HandleType, SharedDataType>
+        > m_ID;
 };
 
 

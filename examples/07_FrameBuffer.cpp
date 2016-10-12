@@ -48,13 +48,20 @@ int main()
 
 
         //====================== Create the geometry for the box ==============================
+//#define BOX
+#ifdef BOX
         auto BoxVertices = createBox();
         // Load the buffer into the GPU
         ArrayBuffer buff( BoxVertices );
 
         VertexArray VAO;
         VAO.Attach<glm::vec3, glm::vec2, glm::vec3>( buff );
-
+#else
+        auto SphereVertices = createCylinder(0.2, 5);
+        ArrayBuffer        Buff( SphereVertices.vertices );
+        ElementArrayBuffer Ind( SphereVertices.indices );
+        VertexArray VAO = VertexArray::MakeVAO<vec3,vec2,vec3>( Buff, Ind );
+#endif
         // Load some textures. And force using 3 components (r,g,b)
         Image Tex1("./resources/textures/rocks.jpg",  3 );
 
@@ -117,7 +124,7 @@ int main()
         T.SetPosition( {0,0,-3});
         Camera C;
         C.SetPosition( {0.0,0.0,0.0f});
-        C.Perspective(45.0, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1);
+        C.Perspective(45.0f, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1f);
 
         FrameBuffer FBO;
         FBO.Generate();
@@ -162,7 +169,12 @@ int main()
             GBufferShader.Uniform( GBufferShader.GetUniformLocation("uCamera"),  C.GetProjectionMatrix() );
 
             // Draw the triangle.
-            VAO.Draw(Primitave::TRIANGLES, 36);
+#ifdef BOX
+            VAO.Draw(Primitave::TRIANGLES, 36 );
+#else
+            VAO.Draw(Primitave::TRIANGLES, SphereVertices.indices.size() );
+            //VAO.DrawInstanced(Primitave::TRIANGLES, SphereVertices.indices.size(), 3 );
+#endif
 
             FBO.UnBind();
 
@@ -183,7 +195,7 @@ int main()
 
             GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gPosition")  , 0 );
             GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gNormal")    , 1 );
-            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gAlbedoSpec"),  i );
+            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gAlbedoSpec"), 2 );
             GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gDepth")     , 3 );
 
             PlaneVAO.Draw(Primitave::TRIANGLES, 6 );

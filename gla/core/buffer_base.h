@@ -69,6 +69,11 @@ struct DestBuff
 };
 
 
+struct BufferInfo
+{
+    std::size_t m_Offset  = 0;
+    std::size_t m_Reserve = 0;
+};
 
 //template<BufferBindTarget target>
 /**
@@ -76,36 +81,28 @@ struct DestBuff
  *
  * A buffer stored on the GPU that holds data.
  */
-class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
+class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff, BufferInfo>
 {
     public:
 
-        struct SubData
-        {
-            SubData(const Buffer & B) : buf(B){}
-
-            Buffer const & buf;
-        };
-
-
-        Buffer() : BaseHandle<GLuint, GenBuff,DestBuff>()
+        Buffer() : BaseHandle<GLuint, GenBuff,DestBuff,BufferInfo>()
         {
         }
 
-        Buffer(std::size_t size_in_bytes) : BaseHandle<GLuint, GenBuff,DestBuff>()
+        Buffer(std::size_t size_in_bytes) : BaseHandle<GLuint, GenBuff,DestBuff, BufferInfo>()
         {
             Reserve(size_in_bytes);
         }
 
 
         template<typename VertexData>
-        Buffer( const std::vector<VertexData> & data, BufferUsage usage = BufferUsage::STATIC_DRAW)
+        Buffer( const std::vector<VertexData> & data, BufferUsage usage = BufferUsage::STATIC_DRAW) : BaseHandle<GLuint, GenBuff,DestBuff,BufferInfo>()
         {
             Generate();
             Bind(  *this , BufferBindTarget::COPY_WRITE_BUFFER);
             glBufferData( static_cast<GLenum>(BufferBindTarget::COPY_WRITE_BUFFER) , data.size()*sizeof(VertexData), data.data() , static_cast<GLenum>(usage) );
-            m_Reserve   = data.size()*sizeof(VertexData);
-            m_Offset    = data.size()*sizeof(VertexData);
+            SharedData().m_Reserve   = data.size()*sizeof(VertexData);
+            SharedData().m_Offset    = data.size()*sizeof(VertexData);
             Unbind(BufferBindTarget::COPY_WRITE_BUFFER);
         }
 
@@ -127,7 +124,8 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
          * Gets the total size of the buffer.
          */
         std::size_t Size() const {
-            return m_Reserve;
+            return SharedData().m_Reserve;
+            //return m_Reserve;
         }
 
         /**
@@ -138,7 +136,8 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
          * be appended to. It indicates the start of unused data.
          */
         std::size_t Offset() const {
-            return m_Offset;
+            return SharedData().m_Offset;
+            //return m_Offset;
         }
 
         /**
@@ -149,7 +148,8 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
          */
         void Clear()
         {
-            m_Offset = 0;
+            //m_Offset = 0;
+            SharedData().m_Offset = 0;
         }
 
         //================================================
@@ -159,17 +159,16 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
          * @param size_in_bytes - number of bytes to allocate
          * @param usage
          *
-         * Reserves data on the GPU for storing raw data.  Reserve will destroy any old
-         * data and create a new handle. Any shared resources will be invalidated.
+         * Reserves data on the GPU for storing raw data.
          */
         void Reserve(std::size_t size_in_bytes, BufferUsage usage = BufferUsage::STATIC_DRAW)
         {
             auto const targ = BufferBindTarget::COPY_WRITE_BUFFER;
-            Generate( ); // generates a new handle, releases the old one.
+            Regenerate( ); // generates a new handle, releases the old one.
             Bind(  *this , targ);
             glBufferData( static_cast<GLenum>(targ) , size_in_bytes, NULL , static_cast<GLenum>(usage) );
-            m_Offset    = 0;
-            m_Reserve   = size_in_bytes;
+            SharedData().m_Offset    = 0;
+            SharedData().m_Reserve   = size_in_bytes;
         }
 
 
@@ -192,14 +191,14 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
 
             Bind(  *this , targ);
 
-            if( size + offset > m_Reserve )
+            if( size + offset > SharedData().m_Reserve )
                 throw std::runtime_error("Buffer is too small to hold all the data");
 
             glBufferSubData( static_cast<GLenum>(targ), offset, size, data);
 
-            if( size+offset > m_Offset )
+            if( size+offset > SharedData().m_Offset )
             {
-                m_Offset = size+offset;
+                SharedData().m_Offset = size+offset;
             }
             Unbind(targ);
         }
@@ -233,8 +232,8 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
         template<typename VertexType>
         std::size_t Append(const std::vector<VertexType> & V)
         {
-            auto offset = m_Offset;
-            CopyData(V, m_Offset);
+            auto offset = SharedData().m_Offset;
+            CopyData(V, offset);
             return offset;
         }
 
@@ -252,8 +251,8 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
         template<typename VertexType>
         std::size_t Append(const VertexType & V)
         {
-            auto offset = m_Offset;
-            CopyData(&V, m_Offset, 0);
+            auto offset = SharedData().m_Offset;
+            CopyData(&V, offset, 0);
             return offset;
         }
 
@@ -290,9 +289,10 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff>
             return sizeof(V)*V.size();
         }
 
-private:
-        std::size_t m_Offset    = 0;
-        std::size_t m_Reserve = 0;
+//private:
+//        std::size_t m_Offset  = 0;
+//        std::size_t m_Reserve = 0;
+
 };
 
 

@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include <vector>
+#include <cmath>
 
 namespace gla { namespace experimental {
 
@@ -14,17 +15,118 @@ struct Vertex_pun
     glm::vec3 n;
 };
 
+struct Mesh
+{
+    std::vector<Vertex_pun>   vertices;
+    std::vector<unsigned int> indices;
+};
 
+static Mesh createCylinder(float radius = 1.0 , unsigned int faces = 20)
+{
+    Mesh Cyl;
+    for(int i = 0 ; i < faces+1; i++)
+    {
+        float const s = static_cast<float>(i) / static_cast<float>(faces);
+        float const x = std::cos( 2*3.141592653589f * s );
+        float const z = std::sin( 2*3.141592653589f * s );
+        float const y = 0;
+        Cyl.vertices.push_back(  { vec3(x*radius,y,z*radius) , vec2( s, 0 ), vec3( z, 0, -x )} );
+    }
 
+    for(int i = 0 ; i < faces+1; i++)
+    {
+        float const s = static_cast<float>(i) / static_cast<float>(faces);
+        float const x = std::cos( 2*3.141592653589f * s );
+        float const z = std::sin( 2*3.141592653589f * s );
+        float const y = 1;
+        Cyl.vertices.push_back(  { vec3(x*radius,y,z*radius) , vec2( s, 1 ), vec3( z, 0, -x )} );
+    }
 
+    for(int i=0;i<faces;i++)
+    {
+        Cyl.indices.push_back( i           );
+        Cyl.indices.push_back( i+1         );
+        Cyl.indices.push_back( i+1+faces+1 );
+
+        Cyl.indices.push_back( i           );
+        Cyl.indices.push_back( i+faces+1+1 );
+        Cyl.indices.push_back( i+faces+1   );
+    }
+
+    // top cap
+    Cyl.vertices.push_back(  { vec3(0,1,0) , vec2( 0.5, 0.5 ), vec3( 0,  1, 0 )} );
+    auto S = Cyl.vertices.size();
+    for(int i = 0 ; i < faces; i++)
+    {
+        float const s = static_cast<float>(i) / static_cast<float>(faces);
+        float const x = std::cos( 2*3.141592653589f * s );
+        float const z = std::sin( 2*3.141592653589f * s );
+        float const y = 1;
+        Cyl.vertices.push_back(  { vec3(x*radius,y,z*radius) , vec2( 0.5+x*0.5, 0.5+z*0.5 ), vec3( 0, 1, 0 )} );
+
+        Cyl.indices.push_back( S     );
+        Cyl.indices.push_back( S+i+1 );
+        Cyl.indices.push_back( S+i+2 );
+    }
+
+    // bottom cap
+    Cyl.vertices.push_back(  { vec3(0,0,0) , vec2( 0.5, 0.5 ), vec3( 0,  -1, 0 )} );
+    S = Cyl.vertices.size();
+    for(int i = 0 ; i < faces; i++)
+    {
+        float const s = static_cast<float>(i) / static_cast<float>(faces);
+        float const x = std::cos( 2*3.141592653589f * s );
+        float const z = std::sin( 2*3.141592653589f * s );
+        float const y = 0;
+        Cyl.vertices.push_back(  { vec3(x*radius,y,z*radius) , vec2( 0.5+x*0.5, 0.5+z*0.5 ), vec3( 0, -1, 0 )} );
+
+        Cyl.indices.push_back( S+i+2 );
+        Cyl.indices.push_back( S+i+1 );
+        Cyl.indices.push_back( S     );
+    }
+    return Cyl;
+}
+
+static Mesh createSphere(float radius = 1.0, unsigned int rings=20, unsigned int sectors=20)
+{
+    Mesh Sphere;
+
+    float const R = 1.0f / (float)(rings-1);
+    float const S = 1.0f / (float)(sectors-1);
+    unsigned int r, s;
+
+    for(r = 0; r < rings; r++)
+        for(s = 0; s < sectors; s++) {
+            float const y = std::sin( -3.141592653589f*0.5f + 3.141592653589f * r * R );
+            float const x = std::cos(2*3.141592653589f * s * S) * std::sin( 3.141592653589f * r * R );
+            float const z = std::sin(2*3.141592653589f * s * S) * std::sin( 3.141592653589f * r * R );
+
+            Sphere.vertices.push_back(  {radius*vec3(x,y,z) ,
+                                   vec2(s*S, r*R),
+                                   vec3(x,y,z) } );
+    }
+
+    for(r = 0 ; r < rings   - 1 ; r++)
+    for(s = 0 ; s < sectors - 1 ; s++)
+    {
+        Sphere.indices.push_back(  (r+1) * sectors + s ); //0
+        Sphere.indices.push_back(  (r+1) * sectors + (s+1)  ); //1
+        Sphere.indices.push_back(   r * sectors + (s+1) ); //2
+
+        Sphere.indices.push_back(  (r+1) * sectors + s ); //0
+        Sphere.indices.push_back(   r * sectors + (s+1) ); //2
+        Sphere.indices.push_back(    r * sectors + s ); //3
+    }
+
+    GLA_DOUT  << "Returning from Sphere\n";
+    return Sphere;
+}
 
 
 static std::vector<Vertex_pun > createBox( const glm::vec3 & s = glm::vec3(1.0,1.0,1.0) )
 {
     using namespace glm;
     // always use quads for the time being
-
-
 
     {
         //VertexArrayObject Box(QUADS);
