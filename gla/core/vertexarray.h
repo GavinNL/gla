@@ -56,7 +56,7 @@ class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray,Ve
 
                 IndexArray.Bind();
                 m_Data = IndexArray.m_Data;
-
+                //std::cout << "Vertex Array attached an element buffer: data type: " << int(m_Data) << std::endl;
                 Attribute.Bind();
                 Attribute.EnableAttributes< GLM_Vec_Types... >( Normalize_Flags._flags);
 

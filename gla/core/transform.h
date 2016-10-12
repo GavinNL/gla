@@ -76,8 +76,9 @@ class Transform
          */
         static void Interpolate( Transform & out, Transform & in1, Transform & in2, float t)
         {
-            out.Position    = (1.0f-t)*in1.Position + t*in2.Position;
-            out.Scale       = (1.0f-t)*in1.Scale    + t*in2.Scale;
+            auto omt = 1.0f-t;
+            out.Position    = omt*in1.Position + t*in2.Position;
+            out.Scale       = omt*in1.Scale    + t*in2.Scale;
             out.Orientation = glm::slerp( in1.Orientation, in2.Orientation, t);
         }
 
