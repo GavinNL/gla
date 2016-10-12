@@ -48,7 +48,7 @@ int main()
 
 
         //====================== Create the geometry for the box ==============================
-#define BOX
+//#define BOX
 #ifdef BOX
         auto BoxVertices = createBox();
         // Load the buffer into the GPU
@@ -57,7 +57,7 @@ int main()
         VertexArray VAO;
         VAO.Attach<glm::vec3, glm::vec2, glm::vec3>( buff );
 #else
-        auto SphereVertices = createSphere();
+        auto SphereVertices = createCylinder();
         ArrayBuffer        Buff( SphereVertices.vertices );
         ElementArrayBuffer Ind( SphereVertices.indices );
         VertexArray VAO = VertexArray::MakeVAO<vec3,vec2,vec3>( Buff, Ind );
@@ -194,7 +194,7 @@ int main()
 
             GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gPosition")  , 0 );
             GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gNormal")    , 1 );
-            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gAlbedoSpec"),  i );
+            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gAlbedoSpec"), 2 );
             GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gDepth")     , 3 );
 
             PlaneVAO.Draw(Primitave::TRIANGLES, 6 );
