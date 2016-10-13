@@ -53,6 +53,7 @@ struct EnableAttributes<>
 {
     static void Enable(GLuint i, std::int32_t offset, std::uint32_t NormalizeFlags, int Stride_Leave_as_Default=-1)
     {
+        i;offset;NormalizeFlags;Stride_Leave_as_Default;
     }
 };
 
@@ -281,10 +282,10 @@ class ArrayBuffer : public Buffer
          * Use the BindFirst=false template paramter to not automatically bind before each call.
          * This is useful if are making a more optimized rendering engine.
          */
-        void Draw( Primitave p, std::size_t first, std::size_t NumberOfVertices) const
+        void Draw( Primitave p,  std::size_t NumberOfVertices, std::size_t first_vertex) const
         {
             if(BindFirst) Bind();
-            glDrawArrays( static_cast<GLenum>(p),  static_cast<GLint>(first),  static_cast<GLsizei>(NumberOfVertices) );
+            glDrawArrays( static_cast<GLenum>(p),  static_cast<GLint>(first_vertex),  static_cast<GLsizei>(NumberOfVertices) );
         }
 
         /**

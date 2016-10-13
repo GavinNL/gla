@@ -80,7 +80,7 @@ struct DestSampler2DArray
 
     inline Sampler2DArrayLayerRef & Sampler2DArrayLayerRef::operator=(const Image & img)
     {
-        ref->SetLayer( img , layer );
+        ref->SetLayer( img , static_cast<std::uint32_t>(layer) );
         return *this;
     }
 
