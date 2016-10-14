@@ -84,12 +84,18 @@ class ElementArrayBuffer : public Buffer
             if(BindFirst)
                 Bind();
 
-            //#define BUFFER_OFFSET(idx) (static_cast<char*>(0) + (idx))
-            glDrawElements( static_cast<GLenum>(p),
-                            static_cast<GLsizei>(NumberOfIndices),
-                            static_cast<GLenum>(m_Data),
-                            static_cast<char*>(0)+First_Index
+            gla::core::DrawElements( p,
+                            NumberOfIndices,
+                            m_Data,
+                            First_Index
                             );
+
+            //#define BUFFER_OFFSET(idx) (static_cast<char*>(0) + (idx))
+            //glDrawElements( static_cast<GLenum>(p),
+            //                static_cast<GLsizei>(NumberOfIndices),
+            //                static_cast<GLenum>(m_Data),
+            //                static_cast<char*>(0)+First_Index
+            //                );
         }
 
         template<bool BindFirst=true>

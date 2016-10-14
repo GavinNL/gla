@@ -13,7 +13,7 @@ uniform mat4 uCamera;
 
 void main()
 {
-    gl_Position = uCamera * uTransform * vec4(inPosition,1.0);
+    gl_Position = uCamera * uTransform * vec4(inPosition + vec3(gl_InstanceID),1.0);
     vec4 N4     = uTransform * vec4(inNormal,0.0);
 
     FragPos    = gl_Position.xyz;

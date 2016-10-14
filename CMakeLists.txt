@@ -143,6 +143,10 @@ target_link_libraries(06_UniformBuffer ${LIBS_GLAD})
              examples/07_FrameBuffer.cpp glad.cpp)
 target_link_libraries(07_FrameBuffer ${LIBS_GLAD})
 
+       add_executable(08_MeshBuffer
+             examples/08_MeshBuffer.cpp glad.cpp)
+target_link_libraries(08_MeshBuffer ${LIBS_GLAD})
+
 # This command b
 add_custom_command(
    TARGET 01_HelloTriangle POST_BUILD

@@ -26,8 +26,8 @@ struct VertexArrayInfo
 class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray,VertexArrayInfo>
 {
     public:
-        void Bind  () { glBindVertexArray( Get() ); }
-        void Unbind() { glBindVertexArray(  0    ); }
+        void Bind  () const { glBindVertexArray( Get() ); }
+        void Unbind() const { glBindVertexArray(  0    ); }
 
         VertexArray() {}
 
@@ -88,13 +88,10 @@ class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray,Ve
             if(BindFirst) Bind();
 
             m_Data==DataType::UNKNOWN ?
-                glDrawArrays( static_cast<GLenum>(p),  static_cast<GLint>(First_Index_To_Draw_From),  static_cast<GLsizei>(NumberOfIndices) )
+                gla::core::DrawArrays( p,  NumberOfIndices, First_Index_To_Draw_From  )
+                //glDrawArrays( static_cast<GLenum>(p),  static_cast<GLint>(First_Index_To_Draw_From),  static_cast<GLsizei>(NumberOfIndices) )
                       :
-                glDrawElements( static_cast<GLenum>(p),
-                                static_cast<GLsizei>(NumberOfIndices),
-                                static_cast<GLenum>(m_Data),
-                                static_cast<char*>(0)+First_Index_To_Draw_From
-                                );
+                gla::core::DrawElements( p,NumberOfIndices, m_Data, First_Index_To_Draw_From);
         }
 
         template<bool BindFirst=true>
@@ -103,14 +100,9 @@ class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray,Ve
             if(BindFirst) Bind();
 
             m_Data==DataType::UNKNOWN ?
-                glDrawArraysInstanced( static_cast<GLenum>(p),  static_cast<GLint>(First_Index_To_Draw_From),  static_cast<GLsizei>(NumberOfIndices), static_cast<GLsizei>(primcount) )
+                gla::core::DrawArraysInstanced( p,  NumberOfIndices, First_Index_To_Draw_From, primcount )
                       :
-                glDrawElementsInstanced( static_cast<GLenum>(p),
-                                static_cast<GLsizei>(NumberOfIndices),
-                                static_cast<GLenum>(m_Data),
-                                static_cast<char*>(0)+First_Index_To_Draw_From,
-                                static_cast<GLsizei>(primcount)
-                                );
+                gla::core::DrawElementsInstanced( p, NumberOfIndices,m_Data,First_Index_To_Draw_From, primcount );
         }
 
         template<typename ...GLM_Types>

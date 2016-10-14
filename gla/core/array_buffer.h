@@ -3,6 +3,7 @@
 
 
 #include "buffer_base.h"
+#include "draw.h"
 #include <type_traits>
 #include <cstdint>
 
@@ -285,7 +286,8 @@ class ArrayBuffer : public Buffer
         void Draw( Primitave p,  std::size_t NumberOfVertices, std::size_t first_vertex) const
         {
             if(BindFirst) Bind();
-            glDrawArrays( static_cast<GLenum>(p),  static_cast<GLint>(first_vertex),  static_cast<GLsizei>(NumberOfVertices) );
+            gla::core::DrawArrays( p,  NumberOfVertices,  first_vertex );
+            //glDrawArrays( static_cast<GLenum>(p),  static_cast<GLint>(first_vertex),  static_cast<GLsizei>(NumberOfVertices) );
         }
 
         /**

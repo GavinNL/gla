@@ -30,8 +30,8 @@ namespace core
         glDrawElementsInstanced( static_cast<GLenum>(p),
                         static_cast<GLsizei>(NumIndices),
                         static_cast<GLenum>(IndexType),
-                        static_cast<char*>(0)+StartIndex),
-                        static_cast<GLsizei>(primcount);
+                        static_cast<char*>(0)+StartIndex,
+                        static_cast<GLsizei>(primcount) ) ;
     }
 
     static void DrawArraysInstanced( Primitave p, std::size_t NumVertices, std::size_t StartVertex, std::size_t primcount)
@@ -45,13 +45,26 @@ namespace core
 
     static void DrawElementsBaseVertex( Primitave p, std::size_t NumIndices, DataType IndexType, std::size_t StartIndex, std::size_t BaseVertex)
     {
+
+
         glDrawElementsBaseVertex( static_cast<GLenum>(p),
                         static_cast<GLsizei>(NumIndices),
                         static_cast<GLenum>(IndexType),
-                        static_cast<char*>(0)+StartIndex),
-                        static_cast<GLint>(BaseVertex);
+                        static_cast<char*>(0)+StartIndex,
+                        static_cast<GLint>(BaseVertex) );
     }
 
+    static void DrawElementsInstancedBaseVertex( Primitave p, std::size_t NumIndices, DataType IndexType, std::size_t StartIndex, std::size_t BaseVertex, std::size_t primcount)
+    {
+
+
+        glDrawElementsInstancedBaseVertex( static_cast<GLenum>(p),
+                        static_cast<GLsizei>(NumIndices),
+                        static_cast<GLenum>(IndexType),
+                        static_cast<char*>(0)+StartIndex,
+                        static_cast<GLsizei>(primcount),
+                        static_cast<GLint>(BaseVertex) );
+    }
 }
 
 }

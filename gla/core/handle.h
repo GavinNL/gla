@@ -105,6 +105,7 @@ public:
     {
         if( this != &B)
         m_ID = std::move(B.m_ID);
+        return *this;
     }
 
     ~BaseHandle()

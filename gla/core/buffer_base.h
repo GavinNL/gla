@@ -169,6 +169,7 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff, BufferInfo>
             glBufferData( static_cast<GLenum>(targ) , size_in_bytes, NULL , static_cast<GLenum>(usage) );
             SharedData().m_Offset    = 0;
             SharedData().m_Reserve   = size_in_bytes;
+            std::cout << "Buffer: Reserved Size: " << size_in_bytes << std::endl;
         }
 
 
