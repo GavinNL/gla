@@ -1,3 +1,28 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) [year] [fullname]
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+
 /*! \mainpage GLA: openGL Assistant
  *
  * \section intro_sec Introduction
@@ -105,23 +130,28 @@
 #ifndef GLA_H
 #define GLA_H
 
-#include <gla/geometry/geometry.h>
-#include <gla/global.h>
-#include <gla/camera.h>
-#include <gla/texture.h>
-#include <gla/timer.h>
-#include <gla/shader.h>
-#include <gla/gputexturearray.h>
-#include <gla/vertexarrayobject.h>
-#include <gla/framebufferobject.h>
-#include <gla/solids.h>
-#include <gla/uniformbuffer.h>
+#include <gla/core/timer.h>
+#include <gla/core/buffers.h>
+#include <gla/core/camera.h>
 
-namespace gla {
+#include <gla/core/image.h>
+#include <gla/core/sampler2d.h>
+#include <gla/core/sampler2darray.h>
+
+#include <gla/core/framebuffer.h>
+#include <gla/core/geometry.h>
+#include <gla/core/shader.h>
 
 
-
-
+namespace gla
+{
+    namespace core
+    {
+        using namespace experimental;
+    }
 }
+
+
+
 
 #endif // GLA_H

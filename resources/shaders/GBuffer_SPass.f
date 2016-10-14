@@ -5,6 +5,7 @@ in  vec2 TexCoords;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
+uniform sampler2D gDepth;
 
 struct Light
 {
@@ -21,7 +22,8 @@ const int NR_LIGHTS = 2;
 
 layout (std140) uniform LightBlock140
 {
-    Light LightInfo[NR_LIGHTS];
+    Light LightInfo
+    [NR_LIGHTS];
 
     vec3 CameraPosition;
 };
@@ -35,7 +37,9 @@ void main()
     vec3 Normal    = texture(gNormal, TexCoords).rgb;
     vec3 Diffuse   = texture(gAlbedoSpec, TexCoords).rgb;
     float Specular = texture(gAlbedoSpec, TexCoords).a;
+    float Depth    = texture(gDepth,      TexCoords).r;
 
+/*
     // Then calculate lighting as usual
     vec3 lighting  = Diffuse * 0.2; // hard-coded ambient component
     vec3 viewDir   = normalize(CameraPosition - FragPos);
@@ -71,8 +75,8 @@ void main()
 
 
 
-    }
-    FragColor = vec4(lighting, 1.0);
- //   FragColor = vec4( vec3(LightInfo[1].Position), 1.0)-FragColor;
-    //FragColor = vec4( TexCoords.x, 1.0,1.0, 1.0);
+    }*/
+
+    FragColor = vec4( Diffuse,1.0);
+
 }

@@ -238,7 +238,7 @@ inline void GPUTextureArray::Create(uvec2 size, unsigned int depth, unsigned int
     //printf("Generated textures\n");
     if( !m_Handle.GetID() )
     {
-        throw gla::GLA_EXCEPTION("ERROR: error generating textures for TextureArray2D");
+        throw std::runtime_error("ERROR: error generating textures for TextureArray2D");
     }
 
     m_Handle.Bind();
@@ -277,9 +277,7 @@ inline void GPUTextureArray::Create(uvec2 size, unsigned int depth, unsigned int
     //auto id = mID;
     //mInfo = std::shared_ptr<GPUTextureArrayInfo>( new GPUTextureArrayInfo, [=](GPUTextureArrayInfo* a){ delete a; glDeleteTextures(1, &id); GLA_DOUT  << "Deleting Texture Array: " << id << std::endl; } );
 
-};
-
-
+}
 
 
 }

@@ -1,7 +1,8 @@
-build
+build*
 _old
 glre*
+glm*
+GLFW*
+deps*
 CMakeLists.txt.user
-gla.pro*
 .*orig
-resources/*

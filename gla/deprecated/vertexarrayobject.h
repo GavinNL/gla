@@ -164,7 +164,6 @@ namespace gla
 
     };
 
-
     template <typename... attrb>
     class InterleavedVAO
     {
@@ -211,15 +210,15 @@ namespace gla
 
             }
 
-            void InsertElement(const uvec4 & quad)
-            {
-
-                mElementBuffer.Insert(quad.x);
-                mElementBuffer.Insert(quad.y);
-                mElementBuffer.Insert(quad.z);
-                mElementBuffer.Insert(quad.w);
-                mDefaultPrim = Primitave::QUADS;
-            }
+            //void InsertElement(const uvec4 & quad)
+            //{
+            //
+            //    mElementBuffer.Insert(quad.x);
+            //    mElementBuffer.Insert(quad.y);
+            //    mElementBuffer.Insert(quad.z);
+            //    mElementBuffer.Insert(quad.w);
+            //    mDefaultPrim = Primitave::QUADS;
+            //}
 
             //template<class V>
             //bool InsertElement(const V & item)

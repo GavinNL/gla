@@ -2,7 +2,7 @@
 #define GLA_SHADER_H
 
 #include <gla/types.h>
-#include <gla/uniformbuffer.h>
+//#include <gla/uniformbuffer.h>
 #include <gla/handle.h>
 #include <iostream>
 #include <fstream>
@@ -46,13 +46,18 @@ class ShaderUnit
         {
             std::ifstream v(shader_path, std::ifstream::in);
 
+            if( !v )
+            {
+                throw std::runtime_error(std::string("Cannot find file: ") + shader_path);
+            }
+
             std::string V( (std::istreambuf_iterator<char>(v)),
                             std::istreambuf_iterator<char>() );
 
             //GLA_DOUT  << "========================================" << std::endl;
             //GLA_DOUT  << " Compiling: " << shader_path << std::endl;
 
-            compileFromString( V );
+            return compileFromString( V );
         }
 
         GLuint compileFromString(const std::string & shader_code)
@@ -72,6 +77,8 @@ class ShaderUnit
             if(check)
             {
                 GLA_DOUT  << "Shader compiled sucessfully:" << V << std::endl;
+            } else {
+
             }
 
             mShaderID   = V;
@@ -147,9 +154,9 @@ public:
 
 public:
 
-    void Bind()     { m_Handle.Bind();    }
-    void Unbind()   { m_Handle.Unbind();  }
-    void Release()  { m_Handle.Release(); }
+        void Bind()     { m_Handle.Bind();    }
+        void Unbind()   { m_Handle.Unbind();  }
+        void Release()  { m_Handle.Release(); }
 
         inline static GLuint Invalid_Block_Index()
         {
@@ -262,9 +269,69 @@ public:
         }
         //========================================================
 
+        static ShaderProgram Load(const std::string & path, const std::map<std::string, std::string> & Replacements = std::map<std::string, std::string>())
+        {
+            std::ifstream v(path, std::ifstream::in);
+
+            if( !v )    throw std::runtime_error(std::string("Cannot find file: ") + path);
+
+            std::string source_code( (std::istreambuf_iterator<char>(v))   , std::istreambuf_iterator<char>() );
+
+            for(auto & m : Replacements)
+            {
+                source_code = FindAndReplace( source_code, m.first, m.second);
+            }
+
+            auto vertex_shader               = get_shader_sub_code( source_code, "vertex")                  ;
+            auto fragment_shader             = get_shader_sub_code( source_code, "fragment")                ;
+            auto geometry_shader             = get_shader_sub_code( source_code, "geometry")                ;
+            auto tessellation_control_shader = get_shader_sub_code( source_code, "tessellation_control")    ;
+            auto tessellation_eval_shader    = get_shader_sub_code( source_code, "tessellation_evaluation") ;
+
+            int mask = 0;
+            if( vertex_shader               != "") mask |= 1;
+            if( fragment_shader             != "") mask |= 2;
+            if( geometry_shader             != "") mask |= 4;
+            if( tessellation_control_shader != "") mask |= 8;
+            if( tessellation_eval_shader    != "") mask |= 16;
+
+            gla::ShaderProgram P;
+
+            switch(mask)
+            {
+                case 1|2:
+                    P.AttachShaders(
+                                gla::VertexShader(vertex_shader, true ),
+                                gla::FragmentShader(fragment_shader, true ) );
+                    break;
+
+                case 1|2|4:
+                    P.AttachShaders(
+                                gla::VertexShader(vertex_shader, true ),
+                                gla::FragmentShader(fragment_shader, true ),
+                                gla::GeometryShader(geometry_shader, true ));
+                    break;
+
+                case 1|2|4|8|16:
+
+                    P.AttachShaders(
+                                gla::VertexShader(vertex_shader, true ),
+                                gla::FragmentShader(fragment_shader, true ),
+                                gla::GeometryShader(geometry_shader, true ),
+                                gla::TessellationControlShader(tessellation_control_shader, true ),
+                                gla::TessellationEvaluationShader(tessellation_eval_shader, true ));
+                    break;
+
+                default:
+                        break;
+            }
+
+            return P;
+
+        }
 
 
-        inline GLuint GetUniformBlockIndex(const char * name)
+        inline GLuint GetUniformBlockIndex( const char * name )
         {
           auto block_index = glGetUniformBlockIndex( m_Handle.GetID(), name);
           return block_index;
@@ -311,11 +378,11 @@ public:
         }
 
 
-        inline void BindUniformBuffer(GPUUniformBuffer & buffer, GLuint BlockIndex, GLuint BindPoint)
-        {
-            glUniformBlockBinding(m_Handle.GetID(), BlockIndex, BindPoint);
-            buffer.BindBase(BindPoint);
-        }
+      //  inline void BindUniformBuffer(GPUUniformBuffer & buffer, GLuint BlockIndex, GLuint BindPoint)
+      //  {
+      //      glUniformBlockBinding(m_Handle.GetID(), BlockIndex, BindPoint);
+      //      buffer.BindBase(BindPoint);
+      //  }
 
 
         //========================================================================================
@@ -375,6 +442,44 @@ public:
         //===============================================================================================
 
 
+
+        static std::string FindAndReplace(std::string s,
+                                   std::string Find,
+                                   std::string Replace)
+        {
+            try
+            {
+
+                auto start = s.find(Find);
+                while(start != std::string::npos)
+                {
+                    s = s.replace( start, Find.length(), Replace);
+                    start = s.find(Find);
+                }
+                return s;
+
+
+            } catch( std::exception & e)
+            {
+                return s;
+            }
+
+        }
+
+        static std::string get_shader_sub_code(const std::string & full_shader_code, const std::string & tag_value)
+        {
+            std::string opening = std::string("<") + tag_value + ">";
+            std::string closing = std::string("</") + tag_value + ">";
+
+
+            auto first = full_shader_code.find(opening);
+            auto last  = full_shader_code.rfind(closing);
+
+
+            if( first == std::string::npos || first == std::string::npos) return "";
+
+            return full_shader_code.substr(first+opening.size(), last-first-opening.size());
+        }
 };
 
 

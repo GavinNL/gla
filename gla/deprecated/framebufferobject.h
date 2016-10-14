@@ -209,6 +209,7 @@ class FrameBufferObject
             //GLuint attachments[A.size()];
             std::vector<GLuint> attachments;
             int i=0;
+
             for(auto & a : A)
             {
                 if( (GLuint)a.first != (GLuint)FBOAttachment::DEPTH)
