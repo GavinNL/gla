@@ -539,6 +539,7 @@ namespace gla { namespace experimental {
               OPERATOR( * )
               OPERATOR( / )
 
+             #undef OPERATOR
 
         public:
 			void _handleRawPixels(unsigned char * buffer, std::uint32_t width, std::uint32_t height)
