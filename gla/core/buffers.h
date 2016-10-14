@@ -6,4 +6,11 @@
 #include <gla/core/vertexarray.h>
 #include <gla/core/uniformbuffer.h>
 
+namespace gla
+{
+namespace core
+{
+    using namespace experimental;
+}
+}
 #endif

@@ -5,6 +5,8 @@
 #include "glad.h"
 
 #include <gla/gla.h>
+#include <gla/eng/atlas.h>
+#include <gla/eng/mesh_buffer.h>
 //#include <gla/timer.h>
 //#include <gla/exper/shader.h>
 //#include <gla/exper/sampler2darray.h>
