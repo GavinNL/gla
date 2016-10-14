@@ -21,10 +21,11 @@ struct Mesh
     std::vector<unsigned int> indices;
 };
 
+
 static Mesh createCylinder(float radius = 1.0 , unsigned int faces = 20)
 {
     Mesh Cyl;
-    for(int i = 0 ; i < faces+1; i++)
+    for(auto i = 0u ; i < faces+1; i++)
     {
         float const s = static_cast<float>(i) / static_cast<float>(faces);
         float const x = std::cos( 2*3.141592653589f * s );
@@ -33,7 +34,7 @@ static Mesh createCylinder(float radius = 1.0 , unsigned int faces = 20)
         Cyl.vertices.push_back(  { vec3(x*radius,y,z*radius) , vec2( s, 0 ), vec3( z, 0, -x )} );
     }
 
-    for(int i = 0 ; i < faces+1; i++)
+    for(auto i = 0u ; i < faces+1; i++)
     {
         float const s = static_cast<float>(i) / static_cast<float>(faces);
         float const x = std::cos( 2*3.141592653589f * s );
@@ -42,7 +43,7 @@ static Mesh createCylinder(float radius = 1.0 , unsigned int faces = 20)
         Cyl.vertices.push_back(  { vec3(x*radius,y,z*radius) , vec2( s, 1 ), vec3( z, 0, -x )} );
     }
 
-    for(int i=0;i<faces;i++)
+    for(auto i=0u;i<faces;i++)
     {
         Cyl.indices.push_back( i           );
         Cyl.indices.push_back( i+1         );
@@ -55,8 +56,8 @@ static Mesh createCylinder(float radius = 1.0 , unsigned int faces = 20)
 
     // top cap
     Cyl.vertices.push_back(  { vec3(0,1,0) , vec2( 0.5, 0.5 ), vec3( 0,  1, 0 )} );
-    auto S = Cyl.vertices.size();
-    for(int i = 0 ; i < faces; i++)
+    unsigned int S = static_cast<unsigned int>( Cyl.vertices.size()) ;
+    for(auto i = 0u ; i < faces; i++)
     {
         float const s = static_cast<float>(i) / static_cast<float>(faces);
         float const x = std::cos( 2*3.141592653589f * s );
@@ -71,8 +72,8 @@ static Mesh createCylinder(float radius = 1.0 , unsigned int faces = 20)
 
     // bottom cap
     Cyl.vertices.push_back(  { vec3(0,0,0) , vec2( 0.5, 0.5 ), vec3( 0,  -1, 0 )} );
-    S = Cyl.vertices.size();
-    for(int i = 0 ; i < faces; i++)
+    S = static_cast<unsigned int>( Cyl.vertices.size()) ;
+    for(auto i = 0u ; i < faces; i++)
     {
         float const s = static_cast<float>(i) / static_cast<float>(faces);
         float const x = std::cos( 2*3.141592653589f * s );

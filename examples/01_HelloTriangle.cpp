@@ -96,7 +96,7 @@ int main(int argc, char **argv)
             // Now draw the triangle.
             // we are drawing Triangles, starting at Vertex Index 0
             // and we are drawing 3 vertices (because 3 vertices make a triangle)
-            g.Draw(Primitave::TRIANGLES, 0, 3);
+            g.Draw(Primitave::TRIANGLES, 3, 0);
 
 
             glfwSwapBuffers(gMainWindow);

@@ -159,7 +159,7 @@ inline void FrameBuffer::Use( std::vector<FrameBufferAttachment> attach)
     //const GLenum * p = static_cast<const GLenum*>( attach.data() );
     Bind();
     const void * p = attach.data();
-    glDrawBuffers( attach.size(),  static_cast<const GLenum*>( p ) );
+    glDrawBuffers( static_cast<GLsizei>(attach.size()),  static_cast<const GLenum*>( p ) );
 }
 
 inline void FrameBuffer::Attach( const Sampler2D & texture, FrameBufferAttachment attachment)

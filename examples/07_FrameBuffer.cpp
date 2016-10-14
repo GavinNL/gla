@@ -5,6 +5,8 @@
 #include "glad.h"
 
 #include <gla/gla.h>
+#include <gla/eng/atlas.h>
+#include <gla/eng/mesh_buffer.h>
 //#include <gla/timer.h>
 //#include <gla/exper/shader.h>
 //#include <gla/exper/sampler2darray.h>
@@ -57,7 +59,7 @@ int main()
         VertexArray VAO;
         VAO.Attach<glm::vec3, glm::vec2, glm::vec3>( buff );
 #else
-        auto SphereVertices = createCylinder(0.2, 5);
+        auto SphereVertices = createCylinder(0.2f, 5);
         ArrayBuffer        Buff( SphereVertices.vertices );
         ElementArrayBuffer Ind( SphereVertices.indices );
         VertexArray VAO = VertexArray::MakeVAO<vec3,vec2,vec3>( Buff, Ind );

@@ -49,6 +49,7 @@ int main()
         VertexBuffer.push_back( { glm::vec3( 0.0f , 1.0f, 0.f), glm::vec4(0.f, 0.f, 1.f, 1.0f)  }  );
 
 
+
         // Create a buffer on the GPU using the data from the standard vector
         ArrayBuffer         G( VertexBuffer );
         //================================================================

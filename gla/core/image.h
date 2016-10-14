@@ -492,7 +492,7 @@ namespace gla { namespace experimental {
                 for(auto x=0u;x<siz.x;x++)
                 for(auto z=0u;z<C;z++)
                 {
-                    T(x,y,z) = (*this)(x,y,z) * c;
+                    T(x,y,z) = static_cast<unsigned char>((*this)(x,y,z) * c);
                 }
 
                return T;
@@ -509,7 +509,7 @@ namespace gla { namespace experimental {
                 for(auto x=0u;x<siz.x;x++)
                 for(auto z=0u;z<C;z++)
                 {
-                    T(x,y,z) = (*this)(x,y,z) / c;
+                    T(x,y,z) = static_cast<unsigned char>((*this)(x,y,z) / c);
                 }
 
                return T;
@@ -620,8 +620,8 @@ namespace gla { namespace experimental {
         ChannelRef& operator=(  std::function<float(float,float) > F)
         {
             uvec2 S = mParent->size();
-            float W = 1.0 / (float)S.x;
-            float H = 1.0 / (float)S.y;
+            float W = 1.0f / (float)S.x;
+            float H = 1.0f / (float)S.y;
             for(auto y =0u; y < S.y; y++)
                 for(auto x=0u; x < S.x; x++)
                 {

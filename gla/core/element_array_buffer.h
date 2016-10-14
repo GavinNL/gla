@@ -79,7 +79,7 @@ class ElementArrayBuffer : public Buffer
         }
 
         template<bool BindFirst=true>
-        void Draw( Primitave p, std::size_t NumberOfIndices, std::size_t first=0 )
+        void Draw( Primitave p, std::size_t NumberOfIndices, std::size_t First_Index=0 )
         {
             if(BindFirst)
                 Bind();
@@ -88,12 +88,12 @@ class ElementArrayBuffer : public Buffer
             glDrawElements( static_cast<GLenum>(p),
                             static_cast<GLsizei>(NumberOfIndices),
                             static_cast<GLenum>(m_Data),
-                            static_cast<char*>(0)+first
+                            static_cast<char*>(0)+First_Index
                             );
         }
 
         template<bool BindFirst=true>
-        void DrawInstanced( Primitave p , std::size_t NumberOfIndices , std::size_t primcount, std::size_t first=0 )
+        void DrawInstanced( Primitave p , std::size_t NumberOfIndices , std::size_t primcount, std::size_t First_Index=0 )
         {
             if(BindFirst)
                 Bind();
@@ -101,7 +101,7 @@ class ElementArrayBuffer : public Buffer
             glDrawElementsInstanced( static_cast<GLenum>(p),
                             static_cast<GLsizei>(NumberOfIndices),
                             static_cast<GLenum>(m_Data),
-                            static_cast<char*>(0)+first,
+                            static_cast<char*>(0)+First_Index,
                             static_cast<GLsizei>(primcount)
                             );
 
