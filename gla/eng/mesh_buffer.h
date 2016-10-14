@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) [year] [fullname]
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #ifndef GLA_MESH_BUFFER
 #define GLA_MESH_BUFFER
 
@@ -118,6 +142,8 @@ public:
     Mesh_T Append( const std::vector<VertexStruct> & V, const std::vector<index_type> & I)
     {
 
+        static_assert( sizeof(VertexStruct) == vertex_size , "The struct used to hold the vertex is not the same size as the template parameter arguments of the MeshBuffer");
+
         auto v_byte = vertex_buffer.Append( V ); // insert the data and return the byte index of where it was placed.
         auto i_byte = index_buffer.Append( I );  // insert the data and return the byte index of where it was placed.
 
@@ -148,15 +174,6 @@ public:
         std::cout << "   Base Vertex: " << M.base_vertex << std::endl;
         std::cout << "   Indices: " << M.count << std::endl;
         std::cout << "   VAO: " << M.vao.Get() << std::endl;
-
-
-        // when drawing the mesh, we will have to draw it as follows:
-        //glDrawElementsBaseVertex(GL_TRIANGLES,
-        //    M.count,
-        //    M.index_type,
-        //    static_cast<char*>(0)+M.base_index,
-        //    M.base_vertex);
-
 
         return M;
     }

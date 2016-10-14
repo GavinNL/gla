@@ -4,7 +4,7 @@ project(gla)
 
 FILE(GLOB_RECURSE HeaderFiles   "./gla/*" "./examples")
 FILE(GLOB_RECURSE ResourceFiles "./resources/*")
-FILE(GLOB_RECURSE OtherFiles    "./README" "Doxygen.cfg" ".gitignore")
+FILE(GLOB_RECURSE OtherFiles    "./README.md" "Doxygen.cfg" ".gitignore")
 
 add_custom_target(headers   SOURCES ${HeaderFiles})
 add_custom_target(resources SOURCES ${ResourceFiles})

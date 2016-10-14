@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) [year] [fullname]
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include <stdio.h>
 
 #include "glad.h"
@@ -18,7 +42,7 @@ using namespace gla;
 //=================================================================================
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 480
-#define WINDOW_TITLE  "Framebuffers and Differed Rendering"
+#define WINDOW_TITLE  "Mesh Buffers"
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
@@ -39,18 +63,34 @@ int main()
         //===========================================================================
 
 
-        //====================== Create the geometry for the box ==============================
+        // Create an indexed mesh buffer which will be used to hold vertices with 3 attributes:
+        //   vec3 - position,   vec2 - UV coords,   vec3 - normals
+        //
+        // and use an unsigned int as the index type
+        gla::eng::MeshBuffer< unsigned int, vec3, vec2, vec3> MB;
 
+
+        MB.ReserveIndices(10000); // Allocate enough memory on the GPU to hold 10,000 vertices
+        MB.ReserveVertices(1000); // Allocate enough memory on the GPu to hold 1000 indices
+
+        //====================== Create the geometry for the box ==============================
+        // These all exist on the CPU, not on the GPU
         Mesh CylVertices    = createCylinder(0.2f, 10);
         Mesh SphereVertices = createSphere(0.5);
+        //=====================================================================================
 
 
-        gla::eng::MeshBuffer< unsigned int, vec3, vec2, vec3> MB;
-        MB.ReserveIndices(10000);
-        MB.ReserveVertices(1000);
-
+        // Add each of the meshs to the buffer
+        // Returns a Mesh_T type which can be used to draw
+        //
         gla::eng::Mesh_T Sm = MB.Append( SphereVertices.vertices , SphereVertices.indices);
         gla::eng::Mesh_T Cm = MB.Append( CylVertices.vertices    , CylVertices.indices);
+
+
+        //=====================================================================================
+        // Load some textures and set up the differred rendering method like we did in
+        // example 07_FrameBuffer.cpp
+        //=====================================================================================
 
         // Load some textures. And force using 3 components (r,g,b)
         Image Tex1("./resources/textures/rocks.jpg",  3 );
