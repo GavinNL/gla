@@ -49,21 +49,21 @@ does not allow you to pass inappropriate data to the OpenGL driver.
 ## Core Features
 
 * Classes:
-..* Transforms
-..* Cameras
-..* Timers
-..* Images
-..* Simple Geometry (boxes, spheres, etc)
+  * Transforms
+  * Cameras
+  * Timers
+  * Images
+  * Simple Geometry (boxes, spheres, etc)
 * OpenGL Classes:
-⋅⋅* Shaders
-⋅⋅* Buffers
-..* ArrayBuffers
-..* ArrayElementBuffers
-..* UniformBuffers
-..* FrameBuffers
-..* Sampler2D
-..* Sampler2DArray
-..* More coming soon.
+  * Shaders
+  * Buffers
+  * ArrayBuffers
+  * ArrayElementBuffers
+  * UniformBuffers
+  * FrameBuffers
+  * Sampler2D
+  * Sampler2DArray
+  * More coming soon.
 
 
 ## Engine Features
@@ -71,8 +71,8 @@ The "eng" namespace provides some extra features built on top of the core librar
 intention to provide some higher functionality objects that most common rendering engines.
 
 * Classes
-..* MeshBuffer   - provides a conveneint way to store many meshes in a single buffer
-..* TextureAtlas - provides a virtual texture mechanism (coming soon)
+  * MeshBuffer   - provides a conveneint way to store many meshes in a single buffer
+  * TextureAtlas - provides a virtual texture mechanism (coming soon)
 
 
 # Code Snippets
