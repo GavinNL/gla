@@ -53,7 +53,7 @@
  *  this is a test poage
  *
  */
-namespace gla { namespace experimental {
+namespace gla {
 
     class ChannelRef;
     class ImageBase;
@@ -953,7 +953,7 @@ namespace gla { namespace experimental {
 
 
 }
-}
+
 
 
 #endif // Image_H

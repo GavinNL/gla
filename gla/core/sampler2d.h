@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-#ifndef EXP_Sample2d
-#define EXP_Sample2d
+#ifndef EXP_SAMPLER2D
+#define EXP_SAMPLER2D
 
 
 #include "types.h"
@@ -37,8 +37,7 @@
 #include <type_traits>
 
 
-namespace gla { namespace experimental
-{
+namespace gla {
 
 struct GenSampler2D
 {
@@ -442,6 +441,6 @@ inline void Sampler2D::PasteSubImage( const uvec2 & xy, const ImageBase & T, int
 
 }
 
-}}
+}
 
 #endif

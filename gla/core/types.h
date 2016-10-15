@@ -42,7 +42,7 @@
 #define GLA_DOUT std::cout
 #endif
 
-namespace gla { namespace experimental {
+namespace gla {
 
 class NormalizeFlags
 {
@@ -218,6 +218,6 @@ using col4  = glm::vec4  ;
 using col3  = glm::vec3  ;
 using col2  = glm::vec2  ;
 
-}}
+}
 
 #endif

@@ -29,7 +29,7 @@
 #include <gla/core/handle.h>
 #include <gla/core/element_array_buffer.h>
 
-namespace gla { namespace experimental {
+namespace gla {
 
 struct GenVertexArray
 {
@@ -117,10 +117,10 @@ class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray,Ve
             if(BindFirst) Bind();
 
             m_Data==DataType::UNKNOWN ?
-                gla::core::DrawArrays( p,  NumberOfIndices, First_Index_To_Draw_From  )
+                gla::DrawArrays( p,  NumberOfIndices, First_Index_To_Draw_From  )
                 //glDrawArrays( static_cast<GLenum>(p),  static_cast<GLint>(First_Index_To_Draw_From),  static_cast<GLsizei>(NumberOfIndices) )
                       :
-                gla::core::DrawElements( p,NumberOfIndices, m_Data, First_Index_To_Draw_From);
+                gla::DrawElements( p,NumberOfIndices, m_Data, First_Index_To_Draw_From);
         }
 
         template<bool BindFirst=true>
@@ -129,9 +129,9 @@ class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray,Ve
             if(BindFirst) Bind();
 
             m_Data==DataType::UNKNOWN ?
-                gla::core::DrawArraysInstanced( p,  NumberOfIndices, First_Index_To_Draw_From, primcount )
+                gla::DrawArraysInstanced( p,  NumberOfIndices, First_Index_To_Draw_From, primcount )
                       :
-                gla::core::DrawElementsInstanced( p, NumberOfIndices,m_Data,First_Index_To_Draw_From, primcount );
+                gla::DrawElementsInstanced( p, NumberOfIndices,m_Data,First_Index_To_Draw_From, primcount );
         }
 
         template<typename ...GLM_Types>
@@ -221,6 +221,6 @@ class VertexArray_T : public BaseHandle<GLuint, GenVertexArray, DestVertexArray>
 
 };
 
-} }
+}
 
 #endif

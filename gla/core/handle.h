@@ -27,8 +27,7 @@
 
 #include <iostream>
 #include <memory>
-namespace gla { namespace experimental
-{
+namespace gla {
 
 
 class RefCounter
@@ -215,7 +214,7 @@ public:
 
 
 
-} }
+}
 
 
 #endif

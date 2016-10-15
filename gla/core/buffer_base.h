@@ -38,8 +38,7 @@
 #include <type_traits>
 
 
-namespace gla { namespace experimental
-{
+namespace gla {
 
 // GPU object
 
@@ -380,6 +379,6 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff, BufferInfo>
 
 
 
-}}
+}
 
 #endif

@@ -35,7 +35,7 @@ GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
 
-using namespace gla::experimental;
+using namespace gla;
 
 int main()
 {

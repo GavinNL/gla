@@ -36,7 +36,7 @@
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
-using namespace gla::experimental;
+using namespace gla;
 
 int main()
 {
@@ -112,14 +112,8 @@ int main()
         //  separated by xml tags:  <vertex>, <fragment> <geometry> <tessellation_control>
         //  and <tessellation_evaluation>
         //================================================================
-
-#if 0
-        ShaderProgram TriangleShader;
-        TriangleShader.AttachShaders(  VertexShader(  "../resources/shaders/Textures.v"),
-                                       FragmentShader("../resources/shaders/Textures.f"));
-#else
         auto TriangleShader = ShaderProgram::Load("./resources/shaders/Textures.s");
-#endif
+
 
         //================================================================
 

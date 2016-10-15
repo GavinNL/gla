@@ -31,8 +31,7 @@
 #include <type_traits>
 #include <cstdint>
 
-namespace gla { namespace experimental
-{
+namespace gla {
 
 template<typename T, typename ...Tail>
 struct type_size
@@ -193,7 +192,7 @@ struct EnableAttributes_T<FirstType, VecTypes...>
 template <typename... GLM_Vec_Types>
 static void EnableAttributes( NormalizeFlags normalizeFlags = NormalizeFlags::none )
 {
-    gla::experimental::EnableAttributes_T<GLM_Vec_Types...>::Enable(0, 0, normalizeFlags._flags);
+    gla::EnableAttributes_T<GLM_Vec_Types...>::Enable(0, 0, normalizeFlags._flags);
 }
 
 class ArrayBuffer : public Buffer
@@ -240,7 +239,7 @@ class ArrayBuffer : public Buffer
         void Draw( Primitave p,  std::size_t NumberOfVertices, std::size_t first_vertex) const
         {
             if(BindFirst) Bind();
-            gla::core::DrawArrays( p,  NumberOfVertices,  first_vertex );
+            gla::DrawArrays( p,  NumberOfVertices,  first_vertex );
             //glDrawArrays( static_cast<GLenum>(p),  static_cast<GLint>(first_vertex),  static_cast<GLsizei>(NumberOfVertices) );
         }
 
@@ -262,8 +261,8 @@ class ArrayBuffer : public Buffer
         void EnableAttributes( NormalizeFlags normalizeFlags = NormalizeFlags::none ) const
         {
             Bind();
-            gla::experimental::EnableAttributes<GLM_Vec_Types...>(normalizeFlags);
-            //gla::experimental::EnableAttributes<GLM_Vec_Types...>::Enable(0, 0, normalizeFlags._flags);
+            gla::EnableAttributes<GLM_Vec_Types...>(normalizeFlags);
+            //gla::EnableAttributes<GLM_Vec_Types...>::Enable(0, 0, normalizeFlags._flags);
         }
 
 };
@@ -271,6 +270,6 @@ class ArrayBuffer : public Buffer
 
 
 
-}}
+}
 
 #endif

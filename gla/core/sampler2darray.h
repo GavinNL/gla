@@ -29,7 +29,7 @@
 #include "handle.h"
 #include "sampler2d.h"
 
-namespace gla { namespace experimental {
+namespace gla {
 
 struct GenSampler2DArray
 {
@@ -226,6 +226,6 @@ struct DestSampler2DArray
     }
 }
 
-}
+
 
 #endif

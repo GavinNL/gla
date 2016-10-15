@@ -42,7 +42,7 @@
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
-using namespace gla::core;
+using namespace gla;
 
 int main()
 {

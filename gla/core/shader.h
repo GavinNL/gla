@@ -38,9 +38,7 @@
 #include <unordered_map>
 #include <utility>
 
-namespace gla { namespace experimental
-{
-
+namespace gla {
 
 template<GLenum SHADER_TYPE>
 struct GenShaderUnit
@@ -551,7 +549,7 @@ public:
 
 
 }
-}
+
 
 #endif // SHADER_H
 

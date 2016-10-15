@@ -143,15 +143,4 @@
 #include <gla/core/shader.h>
 
 
-namespace gla
-{
-    namespace core
-    {
-        using namespace experimental;
-    }
-}
-
-
-
-
 #endif // GLA_H

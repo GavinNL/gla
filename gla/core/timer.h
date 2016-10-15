@@ -29,7 +29,7 @@
 #include <chrono>
 #include <ctime>
 
-namespace gla { namespace experimental {
+namespace gla {
 
     template<typename FloatOrDouble>
     class Timer_T {
@@ -68,6 +68,6 @@ namespace gla { namespace experimental {
             std::chrono::time_point<std::chrono::system_clock> mStart;
     };
 
-} }
+}
 
 #endif // TIMER_H
