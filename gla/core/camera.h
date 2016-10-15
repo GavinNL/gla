@@ -27,7 +27,7 @@
 
 #include "transform.h"
 
-namespace gla { namespace experimental {
+namespace gla {
 
 
 class Camera : public Transform
@@ -100,6 +100,6 @@ class Camera : public Transform
 
 };
 
-} }
+}
 
 #endif // CAMERA_H

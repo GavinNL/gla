@@ -53,7 +53,7 @@
  *  this is a test poage
  *
  */
-namespace gla { namespace experimental {
+namespace gla {
 
     class ChannelRef;
     class ImageBase;
@@ -688,6 +688,7 @@ namespace gla { namespace experimental {
 
 
     #define IMAGE_EXPRESSION( A ) [] (float x, float y) { return A; };
+    #define IMG_EXPR( A ) [] (float x, float y) { return A; };
 
     class Image : public ImageBase
     {
@@ -952,7 +953,7 @@ namespace gla { namespace experimental {
 
 
 }
-}
+
 
 
 #endif // Image_H

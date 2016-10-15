@@ -36,7 +36,7 @@
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
-using namespace gla::experimental;
+using namespace gla;
 
 int main()
 {
@@ -49,11 +49,6 @@ int main()
       // this scope here will make the gla objects destroy themselves before terminate gets called.
 
         glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-
-        ShaderProgram TriangleShader;
-        TriangleShader.AttachShaders(  VertexShader("./resources/shaders/HelloTriangle.v"),
-                                       FragmentShader("./resources/shaders/HelloTriangle.f")  );
 
 
         //================================================================
@@ -92,6 +87,14 @@ int main()
         ElementArrayBuffer E( IndexBuffer );
         //================================================================
 
+
+
+        //================================================================
+        // 3. Load the triangle shader
+        //================================================================
+        ShaderProgram TriangleShader;
+        TriangleShader.AttachShaders(  VertexShader("./resources/shaders/HelloTriangle.v"),
+                                       FragmentShader("./resources/shaders/HelloTriangle.f")  );
 
         while (!glfwWindowShouldClose(gMainWindow) )
         {

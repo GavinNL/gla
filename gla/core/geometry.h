@@ -29,7 +29,7 @@
 #include <vector>
 #include <cmath>
 
-namespace gla { namespace experimental {
+namespace gla {
 
 
 struct Vertex_pun
@@ -220,6 +220,6 @@ static std::vector<Vertex_pun > createBox( const glm::vec3 & s = glm::vec3(1.0,1
     }
 }
 
-}}
+}
 
 #endif

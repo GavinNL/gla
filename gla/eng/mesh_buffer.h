@@ -32,6 +32,7 @@ namespace gla {
 
 namespace eng {
 
+
 struct Mesh_T
 {
 
@@ -41,22 +42,22 @@ struct Mesh_T
 
     std::size_t            base_vertex;
 
-    gla::core::DataType    index_type;
-    gla::core::VertexArray vao;
+    gla::DataType    index_type;
+    gla::VertexArray vao;
 
     template<bool bind_first=true>
-    void Draw() const
+    void Draw( gla::Primitave prim = gla::Primitave::TRIANGLES) const
     {
         if(bind_first) vao.Bind();
-        gla::core::DrawElementsBaseVertex(gla::core::Primitave::TRIANGLES, count, index_type, base_index_location, base_vertex);
+        gla::DrawElementsBaseVertex( prim, count, index_type, base_index_location, base_vertex);
         //std::cout << count << std::endl;
     }
 
     template<bool bind_first=true>
-    void DrawInstanced( std::size_t draw_count) const
+    void DrawInstanced( std::size_t draw_count=1, gla::Primitave prim = gla::Primitave::TRIANGLES) const
     {
         if(bind_first) vao.Bind();
-        gla::core::DrawElementsInstancedBaseVertex(gla::core::Primitave::TRIANGLES, count, index_type, base_index_location, base_vertex, draw_count);
+        gla::DrawElementsInstancedBaseVertex(prim, count, index_type, base_index_location, base_vertex, draw_count);
     }
 
 };
@@ -150,7 +151,7 @@ public:
 
         if( !vao )
         {
-            vao = gla::core::VertexArray::MakeVAO<GLM_Types...>( vertex_buffer, index_buffer);
+            vao = gla::VertexArray::MakeVAO<GLM_Types...>( vertex_buffer, index_buffer);
         }
         Mesh_T M;
 
@@ -159,12 +160,12 @@ public:
         M.count       = I.size();
 
 
-        if( std::is_same< index_type, std::uint8_t >::value  ) M.index_type = gla::core::DataType::UNSIGNED_BYTE;
-        if( std::is_same< index_type, std::uint16_t >::value ) M.index_type = gla::core::DataType::UNSIGNED_SHORT;
-        if( std::is_same< index_type, std::uint32_t >::value ) M.index_type = gla::core::DataType::UNSIGNED_INT;
-        if( std::is_same< index_type, std::int8_t >::value   ) M.index_type = gla::core::DataType::BYTE;
-        if( std::is_same< index_type, std::int16_t >::value  ) M.index_type = gla::core::DataType::SHORT;
-        if( std::is_same< index_type, std::int32_t >::value  ) M.index_type = gla::core::DataType::INT;
+        if( std::is_same< index_type, std::uint8_t >::value  ) M.index_type = gla::DataType::UNSIGNED_BYTE;
+        if( std::is_same< index_type, std::uint16_t >::value ) M.index_type = gla::DataType::UNSIGNED_SHORT;
+        if( std::is_same< index_type, std::uint32_t >::value ) M.index_type = gla::DataType::UNSIGNED_INT;
+        if( std::is_same< index_type, std::int8_t >::value   ) M.index_type = gla::DataType::BYTE;
+        if( std::is_same< index_type, std::int16_t >::value  ) M.index_type = gla::DataType::SHORT;
+        if( std::is_same< index_type, std::int32_t >::value  ) M.index_type = gla::DataType::INT;
 
         M.vao = vao;
 
@@ -178,9 +179,9 @@ public:
         return M;
     }
 
-    gla::core::VertexArray         vao;
-    gla::core::ArrayBuffer         vertex_buffer;
-    gla::core::ElementArrayBuffer  index_buffer;
+    gla::VertexArray         vao;
+    gla::ArrayBuffer         vertex_buffer;
+    gla::ElementArrayBuffer  index_buffer;
 
 };
 

@@ -35,7 +35,7 @@ GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
 
-using namespace gla::experimental;
+using namespace gla;
 
 int main()
 {
@@ -57,11 +57,11 @@ int main()
 
 
 
-        ShaderProgram TriangleShader;
-        TriangleShader.AttachShaders(  VertexShader("./resources/shaders/HelloTriangle.v"),  FragmentShader("./resources/shaders/HelloTriangle.f")  );
-
-
-        //====
+        //================================================================
+        // 1. Create the vertices of the triangle using our vertex structure
+        //    The vertex strucutre contains positions and colours of each
+        //    vertex in the triangle.
+        //================================================================
         struct MyVertex
         {
             glm::vec3 p;
@@ -73,22 +73,35 @@ int main()
         VertexBuffer.push_back( { glm::vec3( 1.0f ,-1.0f, 0.f), glm::vec4(0.f, 1.f, 0.f, 1.0f)  }  );
         VertexBuffer.push_back( { glm::vec3( 0.0f , 1.0f, 0.f), glm::vec4(0.f, 0.f, 1.f, 1.0f)  }  );
 
-        // Create a triangle from vertex 0 1 and 2
+        // Send to GPU
+        ArrayBuffer         G( VertexBuffer );
+
+        //================================================================
+        // 2. Create an index buffer that will indicate which vertices
+        //    in the Array_Buffer will make up the triangles
+        //================================================================
         std::vector< glm::uvec3 > IndexBuffer;
         IndexBuffer.push_back( glm::uvec3( 0 ,1, 2) );
 
-        // Send the vertex buffer to the GPU
-        ArrayBuffer         G( VertexBuffer );
+        // Send the index buffer to the GPU
         ElementArrayBuffer  E( IndexBuffer );
 
-        // Create a vertex array object.
+        //================================================================
+        // 3. Create the VertexArrayObject.
+        //================================================================
         VertexArray VAO;
-
         VAO.Attach<glm::vec3, glm::vec4>( G, E );
 
-        G.Unbind();
-        E.Unbind();
+        // We can no use the VAO objec to draw the triangle
 
+
+
+        //================================================================
+        // 4. Load the triangle shader
+        //================================================================
+        ShaderProgram TriangleShader;
+        TriangleShader.AttachShaders(  VertexShader("./resources/shaders/HelloTriangle.v"),
+                                       FragmentShader("./resources/shaders/HelloTriangle.f")  );
 
         //====
 
@@ -98,7 +111,7 @@ int main()
             // Set the triangle shader to be the one that we will use
             TriangleShader.Bind();
 
-            // Bind the VertexBuffer and tell openGL that
+            // Bind the VertexBuffer and tell openGL to draw 3 indices (3 indices make 1 triangle)
             VAO.Draw( Primitave::TRIANGLES, 3 );
 
             glfwSwapBuffers(gMainWindow);

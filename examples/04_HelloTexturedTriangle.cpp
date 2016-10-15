@@ -36,19 +36,13 @@
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
-using namespace gla::experimental;
+using namespace gla;
 
 int main()
 {
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
 
-    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize OpenGL context" << std::endl;
-        return -1;
-    }
-
-     { // adding an extra scope here because we want all gla objects automatically destroyed when they go out of scope
+      { // adding an extra scope here because we want all gla objects automatically destroyed when they go out of scope
       // calling glfwTerminate before destroying the openGL objects will cause a segfault, so putting
       // this scope here will make the gla objects destroy themselves before terminate gets called.
 
@@ -59,6 +53,7 @@ int main()
         // 1. Create the vertices of the triangle using our vertex structure
         //    The vertex strucutre contains positions and UV coords of each
         //    vertex in the triangle.
+        //    We will use a vertex array object
         //================================================================
         struct MyVertex
         {
@@ -93,7 +88,11 @@ int main()
 
         Img.loadFromPath("./resources/textures/rocks1024.jpg" );
 
+
+        // A texture in GLSL is called a Sampler2D, we send the data to the GPU
+        // by creating a Sampler2D object and initializing it with the Image object
         Sampler2D Sampler(Img);
+
 
         // We can modify the red channel using a lambda function
         Img.r = [] (float x, float y) { return (float)(0.5f * glm::perlin( glm::vec2(x,y)*8.0f ) + 0.5);  };
@@ -102,28 +101,19 @@ int main()
         // but reduces the amount you need to write
         Img.b = IMAGE_EXPRESSION( glm::clamp(2*x + y,0.0f,1.0f) );
 
-
-        // A texture in GLSL is called a Sampler2D, we send the data to the GPU
-        // by creating a Sampler2D object and initializing it with the Image object
+        // We can update the sampler with the new data
         Sampler.PasteSubImage( uvec2(0,0), Img);
 
 
         //================================================================
-        // 3. Load the shader we want to use when drawsing the triangle
+        // 3. Load the shader we want to use when drawing the triangle
         //         Can use one or the other.
         //  The .s shader file has each component of the shader
         //  separated by xml tags:  <vertex>, <fragment> <geometry> <tessellation_control>
         //  and <tessellation_evaluation>
         //================================================================
-
-#if 0
-        ShaderProgram TriangleShader;
-        TriangleShader.AttachShaders(  VertexShader(  "../resources/shaders/Textures.v"),
-                                       FragmentShader("../resources/shaders/Textures.f"));
-#else
-        //auto TriangleShader = ShaderProgram::Load("../resources/shaders/Textures.s");
         auto TriangleShader = ShaderProgram::Load("./resources/shaders/Textures.s");
-#endif
+
 
         //================================================================
 
@@ -160,12 +150,13 @@ int main()
 //=============================================================================
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow()
 {
+
     //    glewExperimental = GL_TRUE;
 
     if (!glfwInit())
         exit(EXIT_FAILURE);
 
-    auto gMainWindow = glfwCreateWindow(640, 480, "Hello Triangle", NULL, NULL);
+    auto gMainWindow = glfwCreateWindow(640, 480, WINDOW_TITLE, NULL, NULL);
 
     if (!gMainWindow)
     {
@@ -177,6 +168,12 @@ GLFWwindow* SetupOpenGLLibrariesAndCreateWindow()
     int width, height;
     glfwGetFramebufferSize(gMainWindow, &width, &height);
     //    GLenum err = glewInit();
+
+    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
+    {
+        std::cout << "Failed to initialize OpenGL context" << std::endl;
+        return NULL;
+    }
 
     return(gMainWindow);
 

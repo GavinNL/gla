@@ -27,9 +27,7 @@
 
 #include "array_buffer.h"
 
-namespace gla { namespace experimental
-{
-
+namespace gla {
 
 /**
  * @brief The ElementArrayBuffer class
@@ -108,7 +106,7 @@ class ElementArrayBuffer : public Buffer
             if(BindFirst)
                 Bind();
 
-            gla::core::DrawElements( p,
+            gla::DrawElements( p,
                             NumberOfIndices,
                             m_Data,
                             First_Index
@@ -140,6 +138,6 @@ class ElementArrayBuffer : public Buffer
         DataType   m_Data;
 };
 
-}}
+}
 
 #endif

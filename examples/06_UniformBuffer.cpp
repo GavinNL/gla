@@ -42,7 +42,7 @@
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
-using namespace gla::core;
+using namespace gla;
 
 int main()
 {
@@ -53,14 +53,11 @@ int main()
     { // create a scope around the main GL calls so that glfwTerminate is not called before
         // the gla objects are automatically destroyed.
 
-        //===========================================================================
-        // GLA code.
-        //===========================================================================
-
-        //---------------------------------------------------------------------------
-        // Create two buffers on the CPU to hold position and colour information
-        //---------------------------------------------------------------------------
-        // Also create an index buffer.
+        //================================================================
+        // 1. Create the vertices of the triangle using our vertex structure
+        //    The vertex strucutre contains positions and UV of each
+        //    vertex in the triangle.
+        //================================================================
         struct MyVertex
         {
             vec3 p;
@@ -74,12 +71,11 @@ int main()
         VertexBuffer.push_back( { vec3( 1.0f , 1.0f, 0.f), vec2( 1.f, 1.f )} );
         VertexBuffer.push_back( { vec3(-1.0f , 1.0f, 0.f), vec2( 0.f, 1.f )} );
 
-        // Load teh buffer into the GPU
+        // Load the buffer into the GPU
         ArrayBuffer buff( VertexBuffer );
 
 
         VertexArray VAO = VertexArray::MakeVAO<vec3,vec2>( buff );
-      //  VAO.Attach<vec3, vec2>( buff );
 
         // Load some textures. And force using 3 components (r,g,b)
         Image Tex1("./resources/textures/rocks.jpg",  3 );
@@ -87,13 +83,11 @@ int main()
         Image Tex3(256,256, 3);
 
 
-        std::cout << "Attempting release" << std::endl;
         buff.Release();
 
 
         //=========================================================================================
-        // Create the Texture array on the GPU.
-        //   Note: Any objects that start with GPU mean they are initialized on the GPU
+        //2. Create the Texture array
         //=========================================================================================
         Sampler2DArray TexArray2D;
 
@@ -133,22 +127,15 @@ int main()
 
 
 
-        //---------------------------------------------------------------------------
-        // Create a shader
-        //---------------------------------------------------------------------------
-
-        // Create the two shaders. The second argument is set to true because we are
-        // compiling the shaders straight from a string. If we were compiling from a file
-        // we'd just do:  VertexShader vs(Path_to_file);
-        ShaderProgram UniformBufferShader;
-        UniformBufferShader.AttachShaders(  VertexShader("./resources/shaders/UniformBuffer.v"),  FragmentShader("./resources/shaders/UniformBuffer.f")  );
-
-        //==========================================================
+        //================================================================
+        // 3. Load the shader
+        //================================================================
+        ShaderProgram UniformBufferShader = ShaderProgram::Load( "./resources/shaders/UniformBuffer.s"  );
 
 
-        Timer_T<float> Timer;
-
-
+        //================================================================
+        // 4. Create the Uniform Buffer
+        //================================================================
         // This is the structure that we will create a buffer for
         // Note: the alignment of structs and the alignment of uniform blocks in the shader
         // are NOT the same. vec3 are are aligned to vec4, so you will need to pad
@@ -158,28 +145,30 @@ int main()
             float         padding1;  // we need this padding because vec3 in the shader is aligned to vec4, that is the amount of space
             vec4          colour;
         };
+        UniformBufferStruct140 UniformData; // Create an instance of the struct in memory.
 
-        UniformBufferStruct140 UniformData; // allocate the memory on the CPU
 
-        // Here we create a uniform buffer on the gpu, we pass the size of the struct
-        // into the input parameter.
-        //  GPUUniformBuffer MyGPUUniformBuffer(sizeof(UniformBufferStruct140));
-
+        // Now create uniform buffer.
         UniformBuffer uniform_buffer;
 
+        // Reserve just enough space to hold the structure
         uniform_buffer.Reserve( sizeof(UniformBufferStruct140) );
 
         // We first need to get the block index of the "Uniform140" block in the shader.
         auto BlockIndex = UniformBufferShader.GetUniformBlockIndex("Uniform140");
 
+        // Get the block size;
+        auto BlockSize  = UniformBufferShader.GetUniformBlockSize("Uniform140");
 
-        GLA_DOUT  << "Block Index                     : " << BlockIndex << std::endl;
-        GLA_DOUT  << "Max Buffer Bind Points          : " << UniformBuffer::Get_MaxUniformBufferBindings() << std::endl;
-        GLA_DOUT  << "Max Buffer block size           : " << UniformBuffer::Get_MaxUniformBlockSize() << std::endl;
-        GLA_DOUT  << "Max Combined Uniform block size : " << UniformBuffer::Get_MaxCombinedUniformBlocks() << std::endl;
+        // If these two are not the same, then it means some of the
+        // member variables in UniformBufferStruct140 are miss aligned
+        assert( BlockSize == sizeof(UniformBufferStruct140) );
 
-        GLA_DOUT  << "Uniform Block  Size: " << UniformBufferShader.GetUniformBlockSize("Uniform140") << std::endl;
-        GLA_DOUT  << "Uniform Struct Size: " << sizeof(UniformBufferStruct140) << std::endl;
+
+        std::cout << "Max Buffer Bind Points          : " << UniformBuffer::Get_MaxUniformBufferBindings() << std::endl;
+        std::cout << "Max Buffer block size           : " << UniformBuffer::Get_MaxUniformBlockSize() << std::endl;
+        std::cout << "Max Combined Uniform block size : " << UniformBuffer::Get_MaxCombinedUniformBlocks() << std::endl;
+
 
         // Bind the UniformBuffer to the UniformBlock in the shader.
         // Both must be bound to the same location.
@@ -187,6 +176,7 @@ int main()
         UniformBufferShader.BindUniformBlock(BlockIndex, 1);
         //--------------------------------------------------------------------
 
+        Timer_T<float> Timer;
         while (!glfwWindowShouldClose(gMainWindow) )
         {
 
@@ -196,25 +186,16 @@ int main()
 
             auto t = Timer.getElapsedTime();
 
-            UniformData.Dir_Speed = vec3{ cos(t), sin(t), cos(t)*sin(t) };
-            UniformData.colour    = vec4{ cos(t)*cos(t), 0,0,1};
+            UniformData.Dir_Speed = vec3( cos(t), sin(t), cos(t)*sin(t) );
+            UniformData.colour    = vec4( cos(t)*cos(t), 0,0,1 );
 
-            // Copy the data over
+            // Copy the data over by using the () operator
+            // The UniformBufferShader will now contain the new values of UniformData
             uniform_buffer( UniformData );
 
-            // Here we send Uniform data to the shader
-            //  The first argument is an user defined index. Depending on the number of uniforms you have, you should always
-            //  start at 0 and then increase sequentially.
-            //  The second parameter is the name of the  uniform in the shader
-            //  And the third parameter is the value we want to send. In our case we want to send 0, because we set our texture to be in texture unit 0.
-            //
-            //  sendUniform will only query the shader the first time and then store the shader uniform location in an array at index 0 (the first parameter)
-            //  the next time we call sendUniform(0, "uSampler", X), it will use the cached value.
-            //UniformBufferShader.sendUniform(0, "uTextureArray", TextureIndex);
             UniformBufferShader.Uniform( UniformBufferShader.GetUniformLocation("uTextureArray"), TextureIndex);
 
             VAO.Draw(Primitave::TRIANGLE_FAN, 4);
-
 
             glfwSwapBuffers(gMainWindow);
             glfwPollEvents();

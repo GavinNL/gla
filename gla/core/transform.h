@@ -32,7 +32,7 @@
 
 #include "types.h"
 
-namespace gla { namespace experimental {
+namespace gla {
 
 /**
  * @brief The Transform class represents the scaling, rotation and translation Transform.
@@ -164,6 +164,6 @@ inline Transform operator/(const Transform& ws, const Transform& ps)
 }
 
 
-}}
+}
 
 #endif // Transform_H

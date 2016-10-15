@@ -27,8 +27,8 @@
 
 #include "buffer_base.h"
 
-namespace gla { namespace experimental
-{
+namespace gla {
+
 
     class UniformBuffer : public Buffer
     {
@@ -83,6 +83,6 @@ namespace gla { namespace experimental
 
     };
 
-} }
+}
 
 #endif

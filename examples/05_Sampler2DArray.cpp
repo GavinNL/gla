@@ -47,26 +47,28 @@ GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
 
-using namespace gla::experimental;
+using namespace gla;
 
 int main()
 {
-    //GLA_DOUT  << &X << "   " << &X[0][0] << "   " << &X[0] << std::endl;
-    //return 0;
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
+
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 
     { // create a scope around the main GL calls so that glfwTerminate is not called before
       // the gla objects are automatically destroyed.
 
-        //===========================================================================
-        // GLA code.
-        //===========================================================================
-
-        //---------------------------------------------------------------------------
-        // Create two buffers on the CPU to hold position and colour information
-        //---------------------------------------------------------------------------
+        //================================================================
+        // 1. Create the vertices of the triangle using our vertex structure
+        //    The vertex strucutre contains positions and UV of each
+        //    vertex in the triangle.
+        //
+        //    We are not going to use an index array this time.
+        //
+        //    We are also going to render a quad by rendering the
+        //    4 vertices as a Triangle Fan
+        //================================================================
         // Also create an index buffer.
         struct MyVertex
         {
@@ -76,39 +78,40 @@ int main()
 
         std::vector< MyVertex > VertexBuffer;
 
+        // create the vertices in counter clockwise order
+        VertexBuffer.push_back( { vec3(-1.0f, -1.0f, 0.f), vec2( 0.f, 0.f )} ); // bottom left
+        VertexBuffer.push_back( { vec3( 1.0f ,-1.0f, 0.f), vec2( 1.f, 0.f )} ); // bottom right
+        VertexBuffer.push_back( { vec3( 1.0f , 1.0f, 0.f), vec2( 1.f, 1.f )} ); // top right
+        VertexBuffer.push_back( { vec3(-1.0f , 1.0f, 0.f), vec2( 0.f, 1.f )} ); // top left
 
-        VertexBuffer.push_back( { vec3(-1.0f, -1.0f, 0.f), vec2( 0.f, 0.f )} );
-        VertexBuffer.push_back( { vec3( 1.0f ,-1.0f, 0.f), vec2( 1.f, 0.f )} );
-        VertexBuffer.push_back( { vec3( 1.0f , 1.0f, 0.f), vec2( 1.f, 1.f )} );
-        VertexBuffer.push_back( { vec3(-1.0f , 1.0f, 0.f), vec2( 0.f, 1.f )} );
-
-        // Load teh buffer into the GPU
+        // Load the buffer into the GPU
         ArrayBuffer buff( VertexBuffer );
-
 
         VertexArray VAO;
         VAO.Attach<glm::vec3, glm::vec2>( buff );
 
-        // Load some textures. And force using 3 components (r,g,b)
-        Image Tex1("./resources/textures/rocks.jpg",  3 );
+        buff.Release();  // we can release this, because it is attached to the VAO, it will not be
+                         // destroyed on the GPU until VAO is released.
+
+
+        //================================================================
+        // 2. Load some images and force them to use 3 colour components
+        //================================================================
+        Image Tex1("./resources/textures/rocks.jpg"    ,  3 );
         Image Tex2("./resources/textures/rocks1024.jpg", 3 );
-        Image Tex3(256,256, 3);
+        Image Tex3(256,256, 3); // empty texture
 
+        // Set the red channel using a lambda function
+        Tex3.r =  IMAGE_EXPRESSION( glm::perlin( vec2(x,y) * 4.0f, vec2(4.0,4.0) )*0.5 + 0.5f )
 
-        buff.Release();
-
-
-        //=========================================================================================
-        // Create the Texture array on the GPU.
-        //   Note: Any objects that start with GPU mean they are initialized on the GPU
-        //=========================================================================================
+        //================================================================
+        // 3. Create the Texture Array
+        //================================================================
         Sampler2DArray TexArray2D;
 
         // Create the GPUTexture array with 3 layers that hold 256x256 images with 3 components each, and 2 mipmaps.
         TexArray2D.Create( uvec2(256,256), 3, 3 , 2);
 
-        // Set the red channel using a lambda function
-        Tex3.r =  IMAGE_EXPRESSION( glm::perlin( vec2(x,y) * 4.0f, vec2(4.0,4.0) )*0.5 + 0.5f )
 
         // Resize the textures so they match the TextureArray. This will throw an exception if
         // the sizes do not match.
@@ -127,8 +130,8 @@ int main()
 
         // Alternatively, one can use the following
         //   TexArray2D.SetLayer( Tex1, 0, uvec2(0 ,0) );
-        //   TexArray2D.SetLayer( Tex2, 0, uvec2(0 ,0) );
-        //   TexArray2D.SetLayer( Tex3, 0, uvec2(0 ,0) );
+        //   TexArray2D.SetLayer( Tex2, 1, uvec2(0 ,0) );
+        //   TexArray2D.SetLayer( Tex3, 2, uvec2(0 ,0) );
 
         //===============================================================
 
@@ -140,34 +143,29 @@ int main()
 
 
 
-        //---------------------------------------------------------------------------
-        // Create a shader
-        //---------------------------------------------------------------------------
+        //================================================================
+        // 4. Load the Texture Array shader
+        //================================================================
+        ShaderProgram TextureArrayShader = ShaderProgram::Load(  "./resources/shaders/TextureArray.s" );
 
-        // Create the two shaders. The second argument is set to true because we are
-        // compiling the shaders straight from a string. If we were compiling from a file
-        // we'd just do:  VertexShader vs(Path_to_file);
-        ShaderProgram TextureArrayShader;
-        TextureArrayShader.AttachShaders(  VertexShader("./resources/shaders/TextureArray.v"),  FragmentShader("./resources/shaders/TextureArray.f")  );
-
-        //==========================================================
-
-        Timer_T<float> Timer;
-
-        std::cout << "Starting main loop" << std::endl;
-
+        // Get the IDs of the uniform variables inside the shader.
         auto uTextureArrayID = TextureArrayShader.GetUniformLocation("uTextureArray");
         auto uSpeedID        = TextureArrayShader.GetUniformLocation("uSpeed");
+        //==========================================================
+
+
+        // timer object
+        Timer_T<float> Timer;
 
         while (!glfwWindowShouldClose(gMainWindow) )
         {
             TextureArrayShader.Bind();
 
-            // Set the GPu as the current texture 0;
+            // Set the TextureArray as the current texture 0;
             TexArray2D.SetActive(0);
 
-            vec2 Speed = Timer.getElapsedTime() * vec2(0.15,0.4) * 0.2f;
 
+            vec2 Speed = Timer.getElapsedTime() * vec2(0.15,0.4) * 0.2f;
 
             // Send the Uniforms to the shader.
             TextureArrayShader.Uniform( uTextureArrayID, 0);      //which texture unit our Sampler2D array is bound to

@@ -29,9 +29,7 @@
 
 namespace gla
 {
-namespace core
-{
-    using namespace gla::experimental;
+
 
     static void DrawElements( Primitave p, std::size_t NumIndices, DataType IndexType, std::size_t StartIndex)
     {
@@ -91,6 +89,6 @@ namespace core
     }
 }
 
-}
+
 
 #endif

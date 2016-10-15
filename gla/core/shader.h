@@ -38,9 +38,7 @@
 #include <unordered_map>
 #include <utility>
 
-namespace gla { namespace experimental
-{
-
+namespace gla {
 
 template<GLenum SHADER_TYPE>
 struct GenShaderUnit
@@ -397,7 +395,7 @@ public:
           return block_index;
         }
 
-        inline GLint GetUniformBlockSize(const char * name )
+        inline std::size_t GetUniformBlockSize(const char * name )
         {
             auto index = GetUniformBlockIndex(name);
             GLint params;
@@ -405,7 +403,7 @@ public:
             glGetActiveUniformBlockiv(Get(), index, GL_UNIFORM_BLOCK_DATA_SIZE, &params);
 
 
-            return params;
+            return static_cast<std::size_t>(params);
 
         }
 
@@ -551,7 +549,7 @@ public:
 
 
 }
-}
+
 
 #endif // SHADER_H
 

@@ -38,8 +38,7 @@
 #include <type_traits>
 
 
-namespace gla { namespace experimental
-{
+namespace gla {
 
 // GPU object
 
@@ -140,6 +139,63 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff, BufferInfo>
             glBindBuffer( static_cast<GLenum>(targ), 0);
         }
 
+
+        void CopyBufferData( const Buffer & Other, std::size_t read_offset, std::size_t write_offset, std::size_t size)
+        {
+            if( !Other )
+            {
+                throw std::runtime_error("Other buffer does not exist, there is no data to copy over.");
+            }
+            if( !(*this) )
+            {
+                Reserve( size );
+            }
+
+            Bind( *this, BufferBindTarget::COPY_WRITE_BUFFER );
+            Bind( Other, BufferBindTarget::COPY_READ_BUFFER );
+
+            if( read_offset+size >= Size() )
+            {
+                throw std::runtime_error("Attempting to copy data into buffer of smaller size");
+            }
+
+            glCopyBufferSubData(static_cast<GLenum    >( BufferBindTarget::COPY_READ_BUFFER ) ,
+                                static_cast<GLenum    >( BufferBindTarget::COPY_WRITE_BUFFER) ,
+                                static_cast<GLintptr  >( read_offset ) ,
+                                static_cast<GLintptr  >( write_offset) ,
+                                static_cast<GLsizeiptr>( size       ) );
+
+            Unbind( BufferBindTarget::COPY_WRITE_BUFFER );
+            Unbind( BufferBindTarget::COPY_READ_BUFFER );
+        }
+
+
+        void CopyBufferData( const Buffer & Other )
+        {
+            CopyBufferData( Other, 0, 0, Other.Size() );
+        }
+
+        // reallocates more space for the data
+        void Resize(std::size_t size)
+        {
+            Buffer B;
+            B.Reserve(size);
+
+            std::cout << "Resizing Buffer: " << m_ID->first << std::endl;
+            std::cout << "Copying " << std::min(size, B.Size() ) << " bytes" << std::endl;
+
+            B.CopyBufferData(*this, 0, 0, std::min(size, Size() ) );
+            std::swap( this->m_ID->first, B.m_ID->first );
+
+
+            SharedData().m_Reserve = B.SharedData().m_Reserve;
+            SharedData().m_Offset = std::min( SharedData().m_Reserve, SharedData().m_Offset);
+
+            std::cout << "        New Reserve Size: " << SharedData().m_Reserve << std::endl;
+            std::cout << "        New Offset  Size: " << SharedData().m_Offset << std::endl;
+            std::cout << "        New Id          : " << m_ID->first << std::endl;
+
+        }
 
         /**
          * @brief Size
@@ -323,6 +379,6 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff, BufferInfo>
 
 
 
-}}
+}
 
 #endif
