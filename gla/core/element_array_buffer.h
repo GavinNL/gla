@@ -44,6 +44,7 @@ class ElementArrayBuffer : public Buffer
         {
 
         }
+
         ElementArrayBuffer( std::size_t size ) : Buffer(size){}
 
         void Bind() const
@@ -111,13 +112,6 @@ class ElementArrayBuffer : public Buffer
                             m_Data,
                             First_Index
                             );
-
-            //#define BUFFER_OFFSET(idx) (static_cast<char*>(0) + (idx))
-            //glDrawElements( static_cast<GLenum>(p),
-            //                static_cast<GLsizei>(NumberOfIndices),
-            //                static_cast<GLenum>(m_Data),
-            //                static_cast<char*>(0)+First_Index
-            //                );
         }
 
         template<bool BindFirst=true>

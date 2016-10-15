@@ -99,6 +99,7 @@ private:
     };
 
 public:
+    using buffer_interval = std::pair< std::size_t, std::size_t>;
     static const std::size_t vertex_size = type_size<GLM_Types...>::sum;
 
     MeshBuffer()
@@ -140,7 +141,7 @@ public:
     }
 
     template<typename VertexStruct>
-    Mesh_T Append( const std::vector<VertexStruct> & V, const std::vector<index_type> & I)
+    Mesh_T Insert( const std::vector<VertexStruct> & V, const std::vector<index_type> & I)
     {
 
         static_assert( sizeof(VertexStruct) == vertex_size , "The struct used to hold the vertex is not the same size as the template parameter arguments of the MeshBuffer");
@@ -148,16 +149,16 @@ public:
         auto v_byte = vertex_buffer.Append( V ); // insert the data and return the byte index of where it was placed.
         auto i_byte = index_buffer.Append( I );  // insert the data and return the byte index of where it was placed.
 
-
         if( !vao )
         {
             vao = gla::VertexArray::MakeVAO<GLM_Types...>( vertex_buffer, index_buffer);
         }
+
         Mesh_T M;
 
-        M.base_vertex = v_byte / sizeof(VertexStruct );  // determine which index the base vertex is actually at
+        M.base_vertex          = v_byte / sizeof(VertexStruct );  // determine which index the base vertex is actually at
         M.base_index_location  = i_byte ;     // determine which index the base index is actually at
-        M.count       = I.size();
+        M.count                = I.size();
 
 
         if( std::is_same< index_type, std::uint8_t >::value  ) M.index_type = gla::DataType::UNSIGNED_BYTE;
@@ -179,9 +180,19 @@ public:
         return M;
     }
 
-    gla::VertexArray         vao;
-    gla::ArrayBuffer         vertex_buffer;
-    gla::ElementArrayBuffer  index_buffer;
+
+
+protected:
+
+
+    std::shared_ptr<
+    std::vector< buffer_interval>
+    >                                m_FreeData;     //! A vector of freely available data
+
+    gla::VertexArray                 vao;
+    gla::ArrayBuffer                 vertex_buffer;
+
+    gla::ElementArrayBuffer          index_buffer;
 
 };
 

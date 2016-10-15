@@ -32,6 +32,7 @@
 
 #include <GLFW/glfw3.h> // GLFW helper library
 
+#include <gla/eng/multi_object_buffer.h>
 
 using namespace gla;
 
@@ -51,9 +52,31 @@ int main()
 {
 
 
+    auto MOB = gla::eng::MultiObjectBuffer::Create();
+
+    MOB->Reserve(1000);
+
+    for(int i=0;i<10;i++)
+    {
+        std::vector<vec3> D;
+        D.resize( rand()%10+1);
+
+        auto r1 = MOB->Insert( D );
+        for(int j=0;j<5;j++)
+        {
+
+            auto r2 = MOB->Insert( D );
+            r1 = r2;
+
+        }
+
+        MOB->print_free_space();
+    }
+
+
+    return 0;
+
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
-
-
     { // create a scope around the main GL calls so that glfwTerminate is not called before
         // the gla objects are automatically destroyed.
 
@@ -94,8 +117,8 @@ int main()
         // Add each of the meshs to the buffer
         // Returns a Mesh_T type which can be used to draw
         //
-        gla::eng::Mesh_T SphereMesh = MB.Append( SphereVertices.vertices , SphereVertices.indices);
-        gla::eng::Mesh_T CylMesh    = MB.Append( CylVertices.vertices    , CylVertices.indices);
+        gla::eng::Mesh_T SphereMesh = MB.Insert( SphereVertices.vertices , SphereVertices.indices);
+        gla::eng::Mesh_T CylMesh    = MB.Insert( CylVertices.vertices    , CylVertices.indices);
 
 
 
