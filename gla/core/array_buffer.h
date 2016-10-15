@@ -66,7 +66,7 @@ struct type_size<T,Head,Tail...>
 };
 
 template<typename ...VecTypes>
-struct EnableAttributes
+struct EnableAttributes_T
 {
     static void Enable(GLuint i, std::int32_t offset, std::uint32_t NormalizeFlags, int Stride_Leave_as_Default=-1)
     {
@@ -74,7 +74,7 @@ struct EnableAttributes
 };
 
 template<>
-struct EnableAttributes<>
+struct EnableAttributes_T<>
 {
     static void Enable(GLuint i, std::int32_t offset, std::uint32_t NormalizeFlags, int Stride_Leave_as_Default=-1)
     {
@@ -83,7 +83,7 @@ struct EnableAttributes<>
 };
 
 template<typename FirstType, typename ...VecTypes>
-struct EnableAttributes<FirstType, VecTypes...>
+struct EnableAttributes_T<FirstType, VecTypes...>
 {
     static void Enable(GLuint i, std::int32_t offset, std::uint32_t NormalizeFlags, int Stride_Leave_as_Default=-1)
     {
@@ -185,86 +185,16 @@ struct EnableAttributes<FirstType, VecTypes...>
 
         glEnableVertexAttribArray(i);
 
-        EnableAttributes<VecTypes...>::Enable(i+1, offset + sizeof(FirstType) , NormalizeFlags , Stride_Leave_as_Default);
+        EnableAttributes_T<VecTypes...>::Enable(i+1, offset + sizeof(FirstType) , NormalizeFlags , Stride_Leave_as_Default);
     }
 };
 
-/*
-template<std::size_t I = 0, typename TupleType, std::size_t tuplesize>
-static inline typename std::enable_if<I == std::tuple_size<TupleType>::value, int>::type
-EnableVertexAttribArrayFromTuple(std::int32_t offset, const std::array<bool, tuplesize > & normalized)
+
+template <typename... GLM_Vec_Types>
+static void EnableAttributes( NormalizeFlags normalizeFlags = NormalizeFlags::none )
 {
-    return 0;
+    gla::experimental::EnableAttributes_T<GLM_Vec_Types...>::Enable(0, 0, normalizeFlags._flags);
 }
-
-
-
-
-template<std::size_t I = 0, typename TupleType, std::size_t tuplesize>
-static inline typename std::enable_if< I < std::tuple_size<TupleType>::value, int>::type
-EnableVertexAttribArrayFromTuple( std::int32_t offset, const std::array<bool, tuplesize > & normalized)
-{
-    using NextElement = typename std::tuple_element<I, TupleType>::type;
-    using BaseType    = typename NextElement::value_type;
-
-    int num_components = sizeof( NextElement ) / sizeof( typename NextElement::value_type);
-
-    const int SizeOfBaseType = sizeof(BaseType);
-
-    GLenum GlBaseType;
-
-    if( std::is_floating_point<BaseType>::value )
-    {
-
-        if( SizeOfBaseType == sizeof(std::int32_t) )
-        {
-            GlBaseType = GL_FLOAT;
-        }
-        else if( SizeOfBaseType == sizeof(std::int64_t) )
-        {
-            GlBaseType = GL_DOUBLE;
-        } else {
-            throw std::runtime_error("Unknown format! Make sure to use only the glm:vec_types");
-        }
-    }
-    else
-    {
-        if( std::is_signed<BaseType>::value )
-        {
-            if( SizeOfBaseType == sizeof(std::int8_t) )       GlBaseType = GL_BYTE;
-            else if( SizeOfBaseType == sizeof(std::int16_t) ) GlBaseType = GL_SHORT;
-            else if( SizeOfBaseType == sizeof(std::int32_t) ) GlBaseType = GL_INT;
-            else {
-                throw std::runtime_error("Unknown format! Make sure to use only the glm:vec_types");
-            }
-        } else {
-            if( SizeOfBaseType == sizeof(std::int8_t) )  GlBaseType = GL_UNSIGNED_BYTE;
-            if( SizeOfBaseType == sizeof(std::int16_t) ) GlBaseType = GL_UNSIGNED_SHORT;
-            if( SizeOfBaseType == sizeof(std::int32_t) ) GlBaseType = GL_UNSIGNED_INT;
-            else {
-                throw std::runtime_error("Unknown format! Make sure to use only the glm:vec_types");
-            }
-        }
-
-    }
-
-    #define BUFFER_OFFSET(idx) (static_cast<char*>(0) + (idx))
-
-
-     glVertexAttribPointer( GLuint(I),
-                            num_components ,
-                            GlBaseType,
-                            normalized[I] ,
-                            sizeof(TupleType),
-                            BUFFER_OFFSET(offset));
-     glEnableVertexAttribArray(I);
-
-    return EnableVertexAttribArrayFromTuple<I+1, TupleType>( offset + sizeof(NextElement) , normalized );
-
-}
-*/
-//============================
-
 
 class ArrayBuffer : public Buffer
 {
@@ -332,7 +262,8 @@ class ArrayBuffer : public Buffer
         void EnableAttributes( NormalizeFlags normalizeFlags = NormalizeFlags::none ) const
         {
             Bind();
-            gla::experimental::EnableAttributes<GLM_Vec_Types...>::Enable(0, 0, normalizeFlags._flags);
+            gla::experimental::EnableAttributes<GLM_Vec_Types...>(normalizeFlags);
+            //gla::experimental::EnableAttributes<GLM_Vec_Types...>::Enable(0, 0, normalizeFlags._flags);
         }
 
 };

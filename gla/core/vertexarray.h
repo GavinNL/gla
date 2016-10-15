@@ -87,6 +87,9 @@ class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray,Ve
 
             Unbind();
 
+            Attribute.Unbind();
+            IndexArray.Unbind();
+
         }
 
         template <typename... GLM_Vec_Types>
@@ -105,6 +108,7 @@ class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray,Ve
                 Attribute.EnableAttributes< GLM_Vec_Types... >( Normalize_Flags );
             Unbind();
 
+            Attribute.Unbind();
         }
 
         template<bool BindFirst=true>
@@ -210,7 +214,7 @@ class VertexArray_T : public BaseHandle<GLuint, GenVertexArray, DestVertexArray>
             vao.Bind();
                 Vertex.Bind( );
                 Element.Bind( );
-                EnableAttributes<GLM_Types...>::Enable(0,0,Normalize_Flags);
+                EnableAttributes<GLM_Types...>(Normalize_Flags);
             vao.Unbind();
             return vao;
         }

@@ -30,7 +30,6 @@
 #include <gla/eng/atlas.h>
 #include <gla/eng/mesh_buffer.h>
 
-
 #include <GLFW/glfw3.h> // GLFW helper library
 
 
@@ -42,7 +41,7 @@ using namespace gla;
 //=================================================================================
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 480
-#define WINDOW_TITLE  "Mesh Buffers"
+#define WINDOW_TITLE  "Framebuffers and Differed Rendering"
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
@@ -50,7 +49,7 @@ using namespace gla::experimental;
 
 int main()
 {
-    std::cout << sizeof(std::size_t) << std::endl;
+
 
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
 
@@ -63,6 +62,18 @@ int main()
         //===========================================================================
 
 
+        //================================================================
+        // 1. Create a MeshBuffer object which holds information about
+        //    a particualr type of mesh.
+        //    The mesh buffer is essentially a single VertexBuffer,
+        //    a single IndexBuffer wraped up inot a VertexArray Object
+        //    You can store multiple different drawable meshes in it
+        //    as long they all have the same vertex attributes.
+        //
+        //    Using this reduces the number of times you need to bind
+        //    different buffers and reduces the CPU->GPU calls
+        //
+        //================================================================
         // Create an indexed mesh buffer which will be used to hold vertices with 3 attributes:
         //   vec3 - position,   vec2 - UV coords,   vec3 - normals
         //
@@ -83,20 +94,26 @@ int main()
         // Add each of the meshs to the buffer
         // Returns a Mesh_T type which can be used to draw
         //
-        gla::eng::Mesh_T Sm = MB.Append( SphereVertices.vertices , SphereVertices.indices);
-        gla::eng::Mesh_T Cm = MB.Append( CylVertices.vertices    , CylVertices.indices);
+        gla::eng::Mesh_T SphereMesh = MB.Append( SphereVertices.vertices , SphereVertices.indices);
+        gla::eng::Mesh_T CylMesh    = MB.Append( CylVertices.vertices    , CylVertices.indices);
 
 
-        //=====================================================================================
-        // Load some textures and set up the differred rendering method like we did in
-        // example 07_FrameBuffer.cpp
-        //=====================================================================================
+
+        //================================================================
+        // The rest of all the initialization is the same as the
+        // FrameBuffer example. Procede to the render loop to see
+        // what's different.
+        //================================================================
 
         // Load some textures. And force using 3 components (r,g,b)
         Image Tex1("./resources/textures/rocks.jpg",  3 );
 
+        // send the image to the GPU
+        Sampler2D Samp1(Tex1);
 
-        //====================== Create the Plane =============================================
+        //================================================================
+        // 2. Create the plane to use during the second render pass
+        //================================================================
         struct MyVertex
         {
             glm::vec3 p;
@@ -117,45 +134,28 @@ int main()
 
         PlaneVAO.Attach<glm::vec3, glm::vec2>(PlaneBuff);
 
-        //=========================================================================================
-        // Create the Texture array on the GPU.
-        //   Note: Any objects that start with GPU mean they are initialized on the GPU
-        //=========================================================================================
-        Sampler2D Samp1(Tex1);
 
-        //===============================================================
-
-
-        //---------------------------------------------------------------------------
-        // Create a shader
-        //---------------------------------------------------------------------------
-
-        // Create the two shaders. The second argument is set to true because we are
-        // compiling the shaders straight from a string. If we were compiling from a file
-        // we'd just do:  VertexShader vs(Path_to_file);
-        ShaderProgram GBufferShader;
-        GBufferShader.AttachShaders(  VertexShader(  "./resources/shaders/GBuffer.v"),
-                                      FragmentShader("./resources/shaders/GBuffer.f")  );
+        //================================================================
+        // 3. Load the two shaders we are going to use
+        //       - The G Buffer Shader used to draw geometry
+        //       - The Shader pass
+        //================================================================
+        ShaderProgram GBufferShader = ShaderProgram::Load( "./resources/shaders/GBuffer.s" );
 
 
-        ShaderProgram GBufferSPass_Shader;
-        GBufferSPass_Shader.AttachShaders(  VertexShader(  "./resources/shaders/GBuffer_SPass.v"),
-                                            FragmentShader("./resources/shaders/GBuffer_SPass.f")  );
+        ShaderProgram GBufferSPass_Shader = ShaderProgram::Load( "./resources/shaders/GBuffer_SPass.s" );
 
-        //==========================================================
+         //==========================================================
 
-        glEnable(GL_DEPTH_TEST);
-        Timer_T<float> Timer;
-        Timer_T<float> Timer2;
 
-        Transform T;
-
-      //  T.SetEuler( { 0.3f, 4.,-2.2});
-        T.SetPosition( {0,0,-3});
-        Camera C;
-        C.SetPosition( {0.0,0.0,0.0f});
-        C.Perspective(45.0f, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1f);
-
+        //================================================================
+        // 4. Create the Frame Buffer object
+        //    we will use a frame buffer to store the following per-pixel values
+        //         position
+        //         normals
+        //         colours
+        //         depth
+        //================================================================
         FrameBuffer FBO;
         FBO.Generate();
         FBO.Bind();
@@ -167,49 +167,90 @@ int main()
         auto Depth     = FrameBuffer::CreateBufferTexture_Depth16F( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
 
         //FBO.Bind();
-        FBO.Attach(Positions, FrameBufferAttachment::COLOR0);
-        FBO.Attach(Normals,   FrameBufferAttachment::COLOR1);
-        FBO.Attach(Colours,   FrameBufferAttachment::COLOR2);
-        FBO.Attach(Depth  ,   FrameBufferAttachment::DEPTH);
+        FBO.Attach(Positions, FrameBuffer::COLOR0);
+        FBO.Attach(Normals,   FrameBuffer::COLOR1);
+        FBO.Attach(Colours,   FrameBuffer::COLOR2);
+        FBO.Attach(Depth  ,   FrameBuffer::DEPTH);
 
-        FBO.Use( {FrameBufferAttachment::COLOR0 , FrameBufferAttachment::COLOR1, FrameBufferAttachment::COLOR2} );
+        FBO.Use( {FrameBuffer::COLOR0 , FrameBuffer::COLOR1, FrameBuffer::COLOR2} );
 
-        if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        // Check if the frame buffer is complete
+        if( FBO.Check() != FrameBuffer::COMPLETE )
             std::cout << "ERROR!!!" << std::endl;
+        //==========================================================================
 
 
+
+        //================================================================
+        // 5. Create a transform structure used to transform the
+        //    position/orientation of the 3d object
+        //================================================================
+        Transform T1;
+        Transform T2;
+
+        T1.SetPosition( { 1,0,-3});
+        T2.SetPosition( {-1,0,-3});
+
+        //================================================================
+        // 6. Create a camera Object to help position the camera
+        //================================================================
+        Camera C;
+        C.SetPosition( {0.0,0.0,0.0f});
+        C.Perspective(45.0f, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1f);
+
+
+
+        Timer_T<float> Timer;
+        Timer_T<float> Timer2;
 
         while (!glfwWindowShouldClose(gMainWindow) )
         {
-            FBO.Bind();
-            glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+            //================================================================
+            // 7. Perform the GBuffer pass
+            //================================================================
+            FBO.Bind(); // bind the FBO so we render to the FBO textures
 
+            glEnable(GL_DEPTH_TEST);
+            glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            // Set the triangle shader to be the one that we will use
+
+            // Use the GBufferShader
             GBufferShader.Bind();
 
             // Attach the Sampler to Texture Unit 0.
             Samp1.SetActive(0);
 
-            T.SetEuler( { Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0 } );
+            T1.SetEuler( { Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0 } );
+            T2.SetEuler( { Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0 } );
 
             // Tell the shader that we are using Texture Unit 0 for the sampler
             GBufferShader.Uniform( GBufferShader.GetUniformLocation("uSampler"), 0 );
-            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uTransform"),  T.GetMatrix() );
             GBufferShader.Uniform( GBufferShader.GetUniformLocation("uCamera"),  C.GetProjectionMatrix() );
 
-            Sm.Draw<true>();
+            //================================================================
+            // 7.1. Draw the two meshs
+            //
+            //  Each of these meshs belong to the same VertexArrayObject.
+            //  So you only need to bind the first one you draw, by setting
+            //  the template paramter to true. Setting it to false will
+            //  not bind the VAO.
+            //================================================================
+            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uTransform"),  T1.GetMatrix() );
+            SphereMesh.Draw<true>();  // bind the first one
 
+            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uTransform"),  T2.GetMatrix() );
+            CylMesh.Draw<false>();    // no need to bind again.
 
-            Cm.DrawInstanced<false>(3); // use the false template paramter to make sure we do not bind the vao again. Since Sm and Cm both
-                              // belong to the same buffer, if we are not changing the buffer, we do not need to rebind
-
-
-
+            // Unbind the FBO so we now render to the actual screen
             FBO.UnBind();
 
-            GBufferSPass_Shader.Bind();
+            //================================================================
+            // 8. Perform the pixel pass
+            //================================================================
+            glDisable(GL_DEPTH_TEST);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            GBufferSPass_Shader.Bind();
 
             Positions.SetActive(0);
             Normals.SetActive(1);
@@ -233,11 +274,6 @@ int main()
             glfwSwapBuffers(gMainWindow);
             glfwPollEvents();
         }
-
-        // Clear the VAO
-        // Since we had flagged the array buffers for deletion ,they will now be
-        // cleared as well since they are no longer bound to any VAOs
-        //VAO.Release();
 
     }
     glfwDestroyWindow(gMainWindow);

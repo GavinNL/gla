@@ -688,6 +688,7 @@ namespace gla { namespace experimental {
 
 
     #define IMAGE_EXPRESSION( A ) [] (float x, float y) { return A; };
+    #define IMG_EXPR( A ) [] (float x, float y) { return A; };
 
     class Image : public ImageBase
     {

@@ -51,11 +51,6 @@ int main()
         glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 
-        ShaderProgram TriangleShader;
-        TriangleShader.AttachShaders(  VertexShader("./resources/shaders/HelloTriangle.v"),
-                                       FragmentShader("./resources/shaders/HelloTriangle.f")  );
-
-
         //================================================================
         // 1. Create the vertices of the triangle using our vertex structure
         //    The vertex strucutre contains positions and colours of each
@@ -92,6 +87,14 @@ int main()
         ElementArrayBuffer E( IndexBuffer );
         //================================================================
 
+
+
+        //================================================================
+        // 3. Load the triangle shader
+        //================================================================
+        ShaderProgram TriangleShader;
+        TriangleShader.AttachShaders(  VertexShader("./resources/shaders/HelloTriangle.v"),
+                                       FragmentShader("./resources/shaders/HelloTriangle.f")  );
 
         while (!glfwWindowShouldClose(gMainWindow) )
         {

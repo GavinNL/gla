@@ -32,6 +32,7 @@ namespace gla {
 
 namespace eng {
 
+
 struct Mesh_T
 {
 
@@ -45,18 +46,18 @@ struct Mesh_T
     gla::core::VertexArray vao;
 
     template<bool bind_first=true>
-    void Draw() const
+    void Draw( gla::core::Primitave prim = gla::core::Primitave::TRIANGLES) const
     {
         if(bind_first) vao.Bind();
-        gla::core::DrawElementsBaseVertex(gla::core::Primitave::TRIANGLES, count, index_type, base_index_location, base_vertex);
+        gla::core::DrawElementsBaseVertex( prim, count, index_type, base_index_location, base_vertex);
         //std::cout << count << std::endl;
     }
 
     template<bool bind_first=true>
-    void DrawInstanced( std::size_t draw_count) const
+    void DrawInstanced( std::size_t draw_count=1, gla::core::Primitave prim = gla::core::Primitave::TRIANGLES) const
     {
         if(bind_first) vao.Bind();
-        gla::core::DrawElementsInstancedBaseVertex(gla::core::Primitave::TRIANGLES, count, index_type, base_index_location, base_vertex, draw_count);
+        gla::core::DrawElementsInstancedBaseVertex(prim, count, index_type, base_index_location, base_vertex, draw_count);
     }
 
 };

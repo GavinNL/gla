@@ -44,7 +44,6 @@ int main(int argc, char **argv)
 
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
 
-    EnableAttributes<vec3, vec2, uvec2, glm::u8vec3>::Enable(0,0,2);
 
     { // adding an extra scope here because we want all gla objects automatically destroyed when they go out of scope
       // calling glfwTerminate before destroying the openGL objects will cause a segfault, so putting
@@ -54,24 +53,17 @@ int main(int argc, char **argv)
 
 
 
-        ShaderProgram TriangleShader;
-//        VertexShader   V("../resources/shaders/HelloTriangle.v");
-//        FragmentShader F("../resources/shaders/HelloTriangle.f");
-//        TriangleShader.AttachShaders( V , F );
-
-        TriangleShader.AttachShaders( VertexShader  ("./resources/shaders/HelloTriangle.v"),
-                                      FragmentShader("./resources/shaders/HelloTriangle.f") );
 
         //================================================================
         // 1. Create the vertices of the triangle using our vertex structure
         //    The vertex strucutre contains positions and colours of each
         //    vertex in the triangle.
         //================================================================
-        struct MyVertex   // You don't actually need to create a struct for the vertex
-        {                 // as long as you keep the positions and colour values
-            glm::vec3 p;  // in their proper order...eg:
-            glm::vec4 c;  // p1,c1,p2,c2,p3,c3...etc
-        };                //
+        struct MyVertex
+        {
+            glm::vec3 p;
+            glm::vec4 c;
+        };
 
         // Populate a standard vector of the vertices with the appropriate information
         std::vector< MyVertex > CpuBuffer;
@@ -79,26 +71,28 @@ int main(int argc, char **argv)
         CpuBuffer.push_back( { glm::vec3( 1.0f ,-1.0f, 0.f), glm::vec4(0.f, 1.f, 0.f, 1.0f)  }  );
         CpuBuffer.push_back( { glm::vec3( 0.0f , 1.0f, 0.f), glm::vec4(0.f, 0.f, 1.f, 1.0f)  }  );
 
-        // Create a buffer on the GPU using the data from the standard vector
-        ArrayBuffer  G( static_cast<std::size_t>(CpuBuffer.size() * 2 * sizeof(MyVertex)) );
-
-        //G.Reserve( CpuBuffer.size() * 2 * sizeof(MyVertex) );
+        // Create an Array Buffer on the GPU using the data from the standard vector
+        ArrayBuffer  vertices( CpuBuffer );
 
 
+        // Copy the buffer to another buffer, this only references the new buffer
+        // Both instances point to the same data on the GPU.
+        ArrayBuffer another_buffer_reference;
+        another_buffer_reference = vertices;
 
-        std::size_t Offset1 = G << CpuBuffer;  // copy the vector into the buffer
-        std::size_t Offset2 = G << CpuBuffer;  // append the vector to the end of the buffer
+        // Release the original buffer, because the buffers are reference counted. It wont
+        // release the data on the GPU. You can still use another_buffer_reference
+        vertices.Release();
 
 
-        ArrayBuffer g;
 
-        g = G;
-
-        std::cout << "Releasing One reference" << std::endl;
-        G.Release();
-
-        //====
-
+        //================================================================
+        // 2. Load the Shader program from files. We will use two shaders
+        //    a vertex and a fragment shader.
+        //================================================================
+        ShaderProgram TriangleShader;
+        TriangleShader.AttachShaders( VertexShader  ("./resources/shaders/HelloTriangle.v"),
+                                      FragmentShader("./resources/shaders/HelloTriangle.f") );
 
         while (!glfwWindowShouldClose(gMainWindow) )
         {
@@ -107,16 +101,20 @@ int main(int argc, char **argv)
             TriangleShader.Bind();
 
 
-            // Tell OpenGL that the data in the buffer
+            // Tell OpenGL that each vertex
             // consists of one vec3 and one vec4 that are both un-normalized.
             // This function will automatically bind the array buffer and set the
             // attributes.
-            g.EnableAttributes<vec3, vec4>();
+            another_buffer_reference.EnableAttributes<vec3, vec4>();
+
+            // If you want to normalize the data, for example for surface normals, you can use
+            // Which says that attribute 1 (ie: the vec4) should be noramlized data
+            //== another_buffer_reference.EnableAttributes<vec3, vec4>( NormalizeFlags::_1 ); ==
 
             // Now draw the triangle.
             // we are drawing Triangles, starting at Vertex Index 0
             // and we are drawing 3 vertices (because 3 vertices make a triangle)
-            g.Draw(Primitave::TRIANGLES, 3, 0);
+            another_buffer_reference.Draw(Primitave::TRIANGLES, 3, 0);
 
 
             glfwSwapBuffers(gMainWindow);
