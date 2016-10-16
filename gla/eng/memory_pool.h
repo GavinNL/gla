@@ -43,36 +43,11 @@ namespace eng {
  * Use the MeshBuffer if you have lots of different meshes that use the same vertex attributes
  * eg:  positions,UV, normals     or positions,uv,normals,colours
  */
-class MultiObjectBuffer : public std::enable_shared_from_this<MultiObjectBuffer>
+class MemoryPool
 {
 
-
-private:
-    // meta function for determining the max and min size type in
-    // a parameter pack.
-    template<typename T, typename ...Tail>
-    struct type_size{};
-
-    template<typename T, typename Head>
-    struct type_size<T,Head>
-    {
-        static const std::size_t max   = sizeof(T)>sizeof(Head) ? sizeof(T) : sizeof(Head);
-        static const std::size_t min   = sizeof(T)<sizeof(Head) ? sizeof(T) : sizeof(Head);
-        static const std::size_t sum   = sizeof(T) + sizeof(Head);
-    };
-
-    template<typename T, typename Head, typename ...Tail>
-    struct type_size<T,Head,Tail...>
-    {
-        static const std::size_t max = sizeof(T) > type_size<Head,Tail...>::max ? sizeof(T) : type_size<Head,Tail...>::max;
-        static const std::size_t min = sizeof(T) < type_size<Head,Tail...>::min ? sizeof(T) : type_size<Head,Tail...>::min;
-        static const std::size_t sum = sizeof(T) + type_size<Head,Tail...>::sum;
-
-    };
-
-
 public:
-    MultiObjectBuffer()
+    MemoryPool()
     {
 
     }
@@ -80,22 +55,7 @@ public:
 
     using buffer_interval = std::pair< std::size_t, std::size_t>;
 
-    class Ref
-    {
-        public:
-            gla::Buffer                           buffer;
-            std::shared_ptr<MultiObjectBuffer>    parent;
-            std::shared_ptr<std::size_t>          mem;
-    };
-
-
-
-    static std::shared_ptr<MultiObjectBuffer> Create()
-    {
-        return std::make_shared<MultiObjectBuffer>();
-    }
-
-    ~MultiObjectBuffer()
+    ~MemoryPool()
     {
 
     }
@@ -106,35 +66,6 @@ public:
         m_FreeData.insert( buffer_interval(0,bytes) );
         //buffer.Reserve( bytes );
         print_free_space();
-    }
-
-    template<typename VertexStruct>
-    Ref Insert( const std::vector<VertexStruct> & V )
-    {
-        auto size = sizeof(VertexStruct) * V.size();
-        auto mem  = Malloc( size );
-
-        assert( mem != std::numeric_limits<std::size_t>::max() );
-
-     //   buffer.CopyData(V , mem);
-
-
-        Ref R;
-
-        R.parent    = shared_from_this();
-
-        auto ptr = R.parent;
-        R.mem = std::shared_ptr<std::size_t>( new std::size_t(mem),
-                                             [ptr](std::size_t * b)
-        {
-            std::cout << "Ref: Freeing space: " << *b << std::endl;
-            ptr->Free(*b);
-            delete b;
-        }
-
-                                             );
-
-        return R;
     }
 
 
@@ -244,8 +175,6 @@ protected:
 
     std::set< buffer_interval>  m_FreeData;     //! A vector of freely available data
     std::set< buffer_interval>  m_UsedData;     //! A vector of freely available data
-
-    gla::Buffer                 buffer;
 
 };
 

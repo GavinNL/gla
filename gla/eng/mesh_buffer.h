@@ -27,24 +27,39 @@
 
 #include<gla/core/buffers.h>
 
+#include "memory_pool.h"
 
 namespace gla {
 
 namespace eng {
 
 
-struct Mesh_T
+/**
+ * @brief The Mesh_T class
+ *
+ * A reference counted object that exists on the GPU.
+ *
+ * A Mesh_T is a wrapper around a vertex buffer, index buffer and encapsulated
+ * in a single VertexArrayObject.
+ *
+ * This object is created by a MeshBuffer object which manages the vertex and index buffers
+ * as well as deals with freeing the data when no more references are available.
+ */
+class Mesh_T
 {
 
+protected:
     std::size_t            first;
     std::size_t            count;
     std::size_t            base_index_location;
-
     std::size_t            base_vertex;
 
-    gla::DataType    index_type;
-    gla::VertexArray vao;
+    gla::DataType          index_type;
+    gla::VertexArray       vao;
 
+    std::shared_ptr< std::pair<std::size_t,std::size_t> > mem; //
+
+public:
     template<bool bind_first=true>
     void Draw( gla::Primitave prim = gla::Primitave::TRIANGLES) const
     {
@@ -60,6 +75,8 @@ struct Mesh_T
         gla::DrawElementsInstancedBaseVertex(prim, count, index_type, base_index_location, base_vertex, draw_count);
     }
 
+    template<typename index_type, typename ...GLM_Types>
+        friend class MeshBuffer;
 };
 
 //template<typename VertexStruct, typename index_type=unsigned int>
@@ -102,7 +119,7 @@ public:
     using buffer_interval = std::pair< std::size_t, std::size_t>;
     static const std::size_t vertex_size = type_size<GLM_Types...>::sum;
 
-    MeshBuffer()
+    MeshBuffer() : m_VertexPool( new MemoryPool() ),  m_IndexPool( new MemoryPool() )
     {
 
     }
@@ -115,6 +132,7 @@ public:
     void ReserveVertices(std::size_t num_vertices)
     {
         vertex_buffer.Reserve( vertex_size * num_vertices);
+        m_VertexPool->Reserve(vertex_size * num_vertices);
     }
 
     void ReserveIndices(std::size_t num_indices)
@@ -128,6 +146,8 @@ public:
         std::is_same< index_type, std::int32_t >::value , "Not correct index type" );
 
         index_buffer.Reserve( sizeof(index_type) * num_indices);
+
+        m_IndexPool->Reserve( sizeof(index_type) * num_indices);
     }
 
     std::size_t VertexBufferSize() const
@@ -146,8 +166,21 @@ public:
 
         static_assert( sizeof(VertexStruct) == vertex_size , "The struct used to hold the vertex is not the same size as the template parameter arguments of the MeshBuffer");
 
-        auto v_byte = vertex_buffer.Append( V ); // insert the data and return the byte index of where it was placed.
-        auto i_byte = index_buffer.Append( I );  // insert the data and return the byte index of where it was placed.
+        auto vertex_size= V.size() * sizeof(VertexStruct);
+        auto index_size = I.size() * sizeof(index_type);
+
+        auto v_byte = m_VertexPool->Malloc(vertex_size);
+        auto i_byte =  m_IndexPool->Malloc(index_size);
+
+        assert(v_byte != std::numeric_limits<std::size_t>::max() );
+        assert(i_byte != std::numeric_limits<std::size_t>::max() );
+
+        vertex_buffer.CopyData(V, v_byte);
+        index_buffer.CopyData(I,  i_byte);
+
+
+        //auto v_byte = vertex_buffer.Append( V ); // insert the data and return the byte index of where it was placed.
+        //auto i_byte = index_buffer.Append( I );  // insert the data and return the byte index of where it was placed.
 
         if( !vao )
         {
@@ -160,6 +193,17 @@ public:
         M.base_index_location  = i_byte ;     // determine which index the base index is actually at
         M.count                = I.size();
 
+        auto ipool = m_IndexPool;
+        auto vpool = m_VertexPool;
+        M.mem = std::shared_ptr< std::pair< std::size_t, std::size_t> >( new std::pair<std::size_t,std::size_t>(v_byte, i_byte),
+                                                                         [ipool, vpool](std::pair<std::size_t,std::size_t> * p)
+                                                                         {
+                                                                            std::cout << "Freeing Data!:" << std::endl;
+                                                                            std::cout << "  vertex  Data!:" << vpool->Free(p->first) << std::endl;
+                                                                            std::cout << "  index   Data!:" << ipool->Free(p->second) << std::endl;
+                                                                            delete p;
+                                                                         }
+                                                                         );
 
         if( std::is_same< index_type, std::uint8_t >::value  ) M.index_type = gla::DataType::UNSIGNED_BYTE;
         if( std::is_same< index_type, std::uint16_t >::value ) M.index_type = gla::DataType::UNSIGNED_SHORT;
@@ -191,8 +235,10 @@ protected:
 
     gla::VertexArray                 vao;
     gla::ArrayBuffer                 vertex_buffer;
-
     gla::ElementArrayBuffer          index_buffer;
+
+    std::shared_ptr<MemoryPool>                       m_VertexPool;
+    std::shared_ptr<MemoryPool>                       m_IndexPool;
 
 };
 

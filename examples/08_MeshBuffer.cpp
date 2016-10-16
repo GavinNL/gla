@@ -32,7 +32,6 @@
 
 #include <GLFW/glfw3.h> // GLFW helper library
 
-#include <gla/eng/multi_object_buffer.h>
 
 using namespace gla;
 
@@ -52,29 +51,6 @@ int main()
 {
 
 
-    auto MOB = gla::eng::MultiObjectBuffer::Create();
-
-    MOB->Reserve(1000);
-
-    for(int i=0;i<10;i++)
-    {
-        std::vector<vec3> D;
-        D.resize( rand()%10+1);
-
-        auto r1 = MOB->Insert( D );
-        for(int j=0;j<5;j++)
-        {
-
-            auto r2 = MOB->Insert( D );
-            r1 = r2;
-
-        }
-
-        MOB->print_free_space();
-    }
-
-
-    return 0;
 
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
     { // create a scope around the main GL calls so that glfwTerminate is not called before
@@ -121,7 +97,7 @@ int main()
         gla::eng::Mesh_T CylMesh    = MB.Insert( CylVertices.vertices    , CylVertices.indices);
 
 
-
+        SphereMesh = gla::eng::Mesh_T();
         //================================================================
         // The rest of all the initialization is the same as the
         // FrameBuffer example. Procede to the render loop to see
