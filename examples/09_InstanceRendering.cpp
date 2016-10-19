@@ -224,7 +224,7 @@ class Instance_Rendering_App : public gla::utils::GLFW_App
 
     }
 
-    gla::eng::MeshBuffer<unsigned int, vec3,vec2,vec3> m_MeshBuffer;
+    gla::MeshBuffer<unsigned int, vec3,vec2,vec3> m_MeshBuffer;
 
     FrameBuffer m_FBO;
     Sampler2D m_fb_Positions;
@@ -233,7 +233,7 @@ class Instance_Rendering_App : public gla::utils::GLFW_App
     Sampler2D m_fb_Depth    ;
 
     std::vector<Sampler2D>        m_Sampler;
-    std::vector<gla::eng::Mesh_T> m_Meshs;
+    std::vector<gla::Mesh_T> m_Meshs;
     std::vector<gla::Transform>   m_Transforms;
 
     gla::Camera                   m_Camera;

@@ -155,34 +155,6 @@ struct Frustum
         return true;
     }
 
-//    bool Intersects_1(const gre::AABB & B)
-//    {
-//        auto s = B.Size();
-
-//        // if the vertex of the frustum is inside the boudning box, then the bounding
-//        // box intersects the frustum
-//        if( B.Contains(p) ) return true;
-
-//        const glm::vec3 p[] =
-//        {
-//            glm::vec3( B.min.x, B.min.y, B.min.z),
-//            glm::vec3( B.min.x, B.min.y, B.max.z),
-//            glm::vec3( B.min.x, B.max.y, B.min.z),
-//            glm::vec3( B.min.x, B.max.y, B.max.z),
-//            glm::vec3( B.max.x, B.min.y, B.min.z),
-//            glm::vec3( B.max.x, B.min.y, B.max.z),
-//            glm::vec3( B.max.x, B.max.y, B.min.z),
-//            glm::vec3( B.max.x, B.max.y, B.max.z)
-//        };
-
-
-//        for(int i=0 ; i<8 ; i++)
-//        {
-//            if( Intersects( p[i] ) ) return true;
-//        }
-
-//        return false;
-//    }
 
     /**
      * @brief Intersects

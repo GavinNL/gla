@@ -29,8 +29,6 @@
 
 namespace gla
 {
-namespace eng
-{
 
 /**
  * @brief The Atlas2D class
@@ -57,6 +55,5 @@ class Atlas2D
 };
 
 
-}
 }
 #endif

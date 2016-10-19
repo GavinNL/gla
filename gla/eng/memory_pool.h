@@ -30,8 +30,6 @@
 
 namespace gla {
 
-namespace eng {
-
 
 //template<typename VertexStruct, typename index_type=unsigned int>
 /**
@@ -177,6 +175,6 @@ protected:
 
 };
 
-} // namespace eng
+
 } // namespace gla
 #endif

@@ -75,7 +75,7 @@ int main()
         //   vec3 - position,   vec2 - UV coords,   vec3 - normals
         //
         // and use an unsigned int as the index type
-        gla::eng::MeshBuffer< unsigned int, vec3, vec2, vec3> MB;
+        gla::MeshBuffer< unsigned int, vec3, vec2, vec3> MB;
 
 
         MB.ReserveIndices(10000); // Allocate enough memory on the GPU to hold 10,000 vertices
@@ -91,11 +91,11 @@ int main()
         // Add each of the meshs to the buffer
         // Returns a Mesh_T type which can be used to draw
         //
-        gla::eng::Mesh_T SphereMesh = MB.Insert( SphereVertices.vertices , SphereVertices.indices);
-        gla::eng::Mesh_T CylMesh    = MB.Insert( CylVertices.vertices    , CylVertices.indices);
+        gla::Mesh_T SphereMesh = MB.Insert( SphereVertices.vertices , SphereVertices.indices);
+        gla::Mesh_T CylMesh    = MB.Insert( CylVertices.vertices    , CylVertices.indices);
 
         {
-            gla::eng::Mesh_T CylMesh2    = MB.Insert( CylVertices.vertices    , CylVertices.indices);
+            gla::Mesh_T CylMesh2    = MB.Insert( CylVertices.vertices    , CylVertices.indices);
             // CylMesh2 should free itself after this!
         }
 

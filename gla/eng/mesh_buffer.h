@@ -31,8 +31,6 @@
 
 namespace gla {
 
-namespace eng {
-
 
 /**
  * @brief The Mesh_T class
@@ -296,6 +294,6 @@ protected:
 
 };
 
-} // namespace eng
+
 } // namespace gla
 #endif
