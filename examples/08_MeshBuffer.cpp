@@ -50,8 +50,6 @@ using namespace gla;
 int main()
 {
 
-
-
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
     { // create a scope around the main GL calls so that glfwTerminate is not called before
         // the gla objects are automatically destroyed.
@@ -96,8 +94,13 @@ int main()
         gla::eng::Mesh_T SphereMesh = MB.Insert( SphereVertices.vertices , SphereVertices.indices);
         gla::eng::Mesh_T CylMesh    = MB.Insert( CylVertices.vertices    , CylVertices.indices);
 
+        {
+            gla::eng::Mesh_T CylMesh2    = MB.Insert( CylVertices.vertices    , CylVertices.indices);
+            // CylMesh2 should free itself after this!
+        }
 
-        SphereMesh = gla::eng::Mesh_T();
+
+
         //================================================================
         // The rest of all the initialization is the same as the
         // FrameBuffer example. Procede to the render loop to see
@@ -160,10 +163,10 @@ int main()
         FBO.Bind();
 
         // Use framebuffer helper functions to create textures to be used for holding paricular types of data
-        auto Positions = FrameBuffer::CreateBufferTexture_Vec3_16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
-        auto Normals   = FrameBuffer::CreateBufferTexture_Vec3_16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
-        auto Colours   = FrameBuffer::CreateBufferTexture_RGBA(     glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
-        auto Depth     = FrameBuffer::CreateBufferTexture_Depth16F( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
+        Sampler2D Positions = FrameBuffer::CreateBufferTexture_Vec3_16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
+        Sampler2D Normals   = FrameBuffer::CreateBufferTexture_Vec3_16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
+        Sampler2D Colours   = FrameBuffer::CreateBufferTexture_RGBA(     glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
+        Sampler2D Depth     = FrameBuffer::CreateBufferTexture_Depth16F( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
 
         //FBO.Bind();
         FBO.Attach(Positions, FrameBuffer::COLOR0);
@@ -262,6 +265,8 @@ int main()
                 i = (i+1)%4;
                 Timer2.reset();
             }
+
+
 
             GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gPosition")  , 0 );
             GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gNormal")    , 1 );

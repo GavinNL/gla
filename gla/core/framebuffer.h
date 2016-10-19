@@ -155,6 +155,11 @@ public:
         glBindFramebuffer(GL_FRAMEBUFFER,  Get());
     }
 
+    void Unbind()
+    {
+        UnBind();
+    }
+
     void UnBind()
     {
         glBindFramebuffer(GL_FRAMEBUFFER,  0);

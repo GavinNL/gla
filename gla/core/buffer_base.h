@@ -76,8 +76,8 @@ struct GenBuff
     {
         glGenBuffers(1, &x);
 
-        std::cout << "Buffer Generated: " << x << std::endl;
-        std::cout << "Error: " << glGetError() << std::endl;
+        GLA_LOG << "Buffer Generated: " << x << std::endl
+                << "    Error: " << glGetError() << std::endl;
     }
 };
 
@@ -85,7 +85,7 @@ struct DestBuff
 {
     void operator()(GLuint & x)
     {
-        std::cout << "Destroying Buffer: " << x << std::endl;
+        GLA_LOG << "Destroying Buffer: " << x << std::endl;
         glDeleteBuffers( 1, &x );
         x = 0;
     }
@@ -181,19 +181,18 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff, BufferInfo>
             Buffer B;
             B.Reserve(size);
 
-            std::cout << "Resizing Buffer: " << m_ID->first << std::endl;
-            std::cout << "Copying " << std::min(size, B.Size() ) << " bytes" << std::endl;
+            GLA_LOG << "Resizing Buffer: " << m_ID->first << std::endl;
+            GLA_LOG << "   Copying " << std::min(size, B.Size() ) << " bytes" << std::endl;
 
             B.CopyBufferData(*this, 0, 0, std::min(size, Size() ) );
             std::swap( this->m_ID->first, B.m_ID->first );
 
-
             SharedData().m_Reserve = B.SharedData().m_Reserve;
             SharedData().m_Offset = std::min( SharedData().m_Reserve, SharedData().m_Offset);
 
-            std::cout << "        New Reserve Size: " << SharedData().m_Reserve << std::endl;
-            std::cout << "        New Offset  Size: " << SharedData().m_Offset << std::endl;
-            std::cout << "        New Id          : " << m_ID->first << std::endl;
+            GLA_LOG << "        New Reserve Size: " << SharedData().m_Reserve << std::endl;
+            GLA_LOG << "        New Offset  Size: " << SharedData().m_Offset << std::endl ;
+            GLA_LOG << "        New Id          : " << m_ID->first << std::endl;
 
         }
 

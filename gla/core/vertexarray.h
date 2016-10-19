@@ -33,13 +33,13 @@ namespace gla {
 
 struct GenVertexArray
 {
-    void operator()(GLuint & h) const { glGenVertexArrays(1, &h);  std::cout << "VOA generated: " << h << std::endl;}
+    void operator()(GLuint & h) const { glGenVertexArrays(1, &h);  GLA_LOG << "VOA generated: " << h << std::endl;}
 };
 
 
 struct DestVertexArray
 {
-    void operator()(GLuint & h) const { std::cout << "VOA destroyed: " << h << std::endl; glDeleteVertexArrays(1, &h); }
+    void operator()(GLuint & h) const { GLA_LOG << "VOA destroyed: " << h << std::endl; glDeleteVertexArrays(1, &h); }
 };
 
 struct VertexArrayInfo

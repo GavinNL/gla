@@ -77,7 +77,6 @@ namespace gla
     static void DrawElementsInstancedBaseVertex( Primitave p, std::size_t NumIndices, DataType IndexType, std::size_t StartIndex, std::size_t BaseVertex, std::size_t primcount)
     {
 
-
         glDrawElementsInstancedBaseVertex( static_cast<GLenum>(p),
                         static_cast<GLsizei>(NumIndices),
                         static_cast<GLenum>(IndexType),
@@ -85,6 +84,8 @@ namespace gla
                         static_cast<GLsizei>(primcount),
                         static_cast<GLint>(BaseVertex) );
     }
+
+
 }
 
 

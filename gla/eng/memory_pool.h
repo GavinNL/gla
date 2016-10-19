@@ -88,7 +88,7 @@ public:
         }
     }
 
-    void defragment()
+    void Defragment()
     {
         std::set< buffer_interval>::iterator i = m_FreeData.begin();
 
@@ -119,7 +119,6 @@ public:
             }
 
         }
-
     }
 
     std::size_t Free(std::size_t address)
@@ -134,7 +133,7 @@ public:
                 m_FreeData.insert( *i );
                 auto s = i->second;
                 m_UsedData.erase(i);
-                defragment();
+                Defragment();
                 return s;
             }
             else
@@ -158,6 +157,8 @@ public:
         return in.first;
     }
 
+
+protected:
     buffer_interval FindOpenSpace( std::size_t bytes )
     {
         for(auto & i : m_FreeData)
@@ -170,8 +171,6 @@ public:
 
         return buffer_interval( std::numeric_limits<std::size_t>::max() ,0);
     }
-
-protected:
 
     std::set< buffer_interval>  m_FreeData;     //! A vector of freely available data
     std::set< buffer_interval>  m_UsedData;     //! A vector of freely available data

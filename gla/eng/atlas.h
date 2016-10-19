@@ -47,10 +47,13 @@ class Atlas2D
      */
     class Ref
     {
-
+        Sampler2D m_Sampler;
+        glm::vec2 m_uv_xy;
+        glm::vec2 m_uv_wh;
     };
 
 
+    Sampler2D m_Sampler;
 };
 
 

@@ -37,6 +37,10 @@
 #define GLM_FORCE_RADIANS
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <iostream>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
 
 #ifndef GLA_DOUT
 #define GLA_DOUT std::cout
@@ -121,79 +125,6 @@ enum class Primitave
 
 };
 
-enum class AttributeTypes
-{
-    v1 ,
-    v1n, // normalized
-    v2 ,
-    v2n, // normalized
-    v3 ,
-    v3n, // normalized
-    v4 ,
-    v4n, // normalized
-
-    // Integer
-    iv1 ,
-    iv1n, // normalized
-    iv2 ,
-    iv2n, // normalized
-    iv3 ,
-    iv3n, // normalized
-    iv4 ,
-    iv4n, // normalized
-
-    // unsigned int
-    uv1 ,
-    uv1n, // normalized
-    uv2 ,
-    uv2n, // normalized
-    uv3 ,
-    uv3n, // normalized
-    uv4 ,
-    uv4n, // normalized
-
-    // short
-    i16v1 ,
-    i16v1n, // normalized
-    i16v2 ,
-    i16v2n, // normalized
-    i16v3 ,
-    i16v3n, // normalized
-    i16v4 ,
-    i16v4n, // normalized
-
-    // unsigned short
-    u16v1 ,
-    u16v1n, // normalized
-    u16v2 ,
-    u16v2n, // normalized
-    u16v3 ,
-    u16v3n, // normalized
-    u16v4 ,
-    u16v4n, // normalized
-
-    // byte
-    i8v1 ,
-    i8v1n, // normalized
-    i8v2 ,
-    i8v2n, // normalized
-    i8v3 ,
-    i8v3n, // normalized
-    i8v4 ,
-    i8v4n, // normalized
-
-    // unsigned byte
-    u8v1 ,
-    u8v1n, // normalized
-    u8v2 ,
-    u8v2n, // normalized
-    u8v3 ,
-    u8v3n, // normalized
-    u8v4 ,
-    u8v4n // normalized
-};
-
-
 using bvec2 = glm::bvec2 ;
 using bvec3 = glm::bvec3 ;
 using bvec4 = glm::bvec4 ;
@@ -218,6 +149,46 @@ using col4  = glm::vec4  ;
 using col3  = glm::vec3  ;
 using col2  = glm::vec2  ;
 
+static std::ostream& print_time()
+{
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+    std::cout << "[" << std::put_time(std::localtime(&now_c), "%F %T") << "] - ";
+
+    return std::cout;
 }
+
+#ifndef GLA_LOGGING
+#define GLA_LOGGING 1
+#endif
+
+#ifndef GLA_LOGGING_ALL
+#define GLA_LOGGING_ALL 1
+#endif
+
+#define GLA_LOG   if(GLA_LOGGING) print_time()
+
+#define PRINT_ONCE(  A )       \
+    {                          \
+        static bool ____iii____=true;    \
+        if(____iii____)                  \
+        {                      \
+            ____iii____=false;           \
+            A                  \
+        }                      \
+    }
+
+#define PRINT_EVERY( N , A )       \
+    {                          \
+        static int ____iii____=0;    \
+        if( (____iii____++)%N==0)                  \
+        {                      \
+            A                  \
+        }                      \
+    }
+}
+
+
+
 
 #endif

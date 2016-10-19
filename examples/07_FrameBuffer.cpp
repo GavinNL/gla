@@ -72,18 +72,15 @@ int main()
 
         auto Vertices = createBox();  // returns a vector of vertices. It does not use an index buffer
 
-        ArrayBuffer        Buff( Vertices );
-
-        VertexArray VAO = VertexArray::MakeVAO<vec3,vec2,vec3>( Buff );
 #else
 
         auto Vertices = createCylinder(0.2f, 5); // returns a mesh structure, which contains vertices and index info
 
+#endif
         ArrayBuffer        Buff( Vertices.vertices );
         ElementArrayBuffer Ind(  Vertices.indices );
 
         VertexArray VAO = VertexArray::MakeVAO<vec3,vec2,vec3>( Buff, Ind );
-#endif
 
 
         // Load some textures. And force using 3 components (r,g,b)
@@ -158,6 +155,8 @@ int main()
         // Check if the frame buffer is complete
         if( FBO.Check() != FrameBuffer::COMPLETE )
             std::cout << "ERROR!!!" << std::endl;
+
+
         //==========================================================================
 
 
@@ -206,11 +205,8 @@ int main()
             GBufferShader.Uniform( GBufferShader.GetUniformLocation("uCamera"),  C.GetProjectionMatrix() );
 
             // Draw the 3d Object
-#ifdef BOX
-            VAO.Draw(Primitave::TRIANGLES, Vertices.size() );
-#else
+
             VAO.Draw(Primitave::TRIANGLES, Vertices.indices.size() );
-#endif
 
             // Unbind the FBO so we now render to the actual screen
             FBO.UnBind();

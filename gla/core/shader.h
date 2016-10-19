@@ -46,7 +46,7 @@ struct GenShaderUnit
     void operator()(GLuint & x)
     {
         x = glCreateShader( SHADER_TYPE );
-        std::cout << "Shader Unit Generated: " << x << std::endl;
+        GLA_LOG << "Shader Unit Generated: " << x << std::endl;
     }
 };
 
@@ -54,7 +54,7 @@ struct DestShaderUnit
 {
     void operator()(GLuint & x)
     {
-        std::cout << "Destroying Shader Unit: " << x << std::endl;
+        GLA_LOG << "Destroying Shader Unit: " << x << std::endl;
         glDeleteShader( x );
         x = 0;
         //glDeleteFramebuffers( 1, &x );

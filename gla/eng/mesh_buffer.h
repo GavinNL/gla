@@ -48,24 +48,76 @@ namespace eng {
 class Mesh_T
 {
 
-protected:
-    std::size_t            first;
-    std::size_t            count;
-    std::size_t            base_index_location;
-    std::size_t            base_vertex;
-
-    gla::DataType          index_type;
+public:
+    //std::size_t            first=0;
+    std::size_t            count=0;
+    std::size_t            base_index_location=0;
+    std::size_t            base_vertex=0;
+    gla::DataType          index_type=gla::DataType::UNKNOWN;
     gla::VertexArray       vao;
-
     std::shared_ptr< std::pair<std::size_t,std::size_t> > mem; //
 
+    Mesh_T(){}
+    Mesh_T(const Mesh_T & other) :
+       //first               (other.first),
+       count               (other.count),
+       base_index_location (other.base_index_location),
+       base_vertex         (other.base_vertex),
+       index_type          (other.index_type),
+       vao                 (other.vao),
+       mem                 (other.mem)
+    {
+    }
+
+    Mesh_T( Mesh_T && other) :
+       //first               ( std::move(other.first)),
+       count               ( std::move(other.count)),
+       base_index_location ( std::move(other.base_index_location)),
+       base_vertex         ( std::move(other.base_vertex)),
+       index_type          ( std::move(other.index_type)),
+       vao                 ( std::move(other.vao)),
+       mem                 ( std::move(other.mem))
+    {
+    }
+
+    Mesh_T& operator=( const Mesh_T & other)
+    {
+        if( this != &other)
+        {
+       //first               = (other.first);
+       count               = (other.count);
+       base_index_location = (other.base_index_location);
+       base_vertex         = (other.base_vertex);
+       index_type          = (other.index_type);
+       vao                 = (other.vao);
+       mem                 = (other.mem);
+        }
+        return *this;
+    }
+
+    Mesh_T& operator=( Mesh_T && other)
+    {
+        if( this != &other)
+        {
+       //first               = std::move(other.first);
+       count               = std::move(other.count);
+       base_index_location = std::move(other.base_index_location);
+       base_vertex         = std::move(other.base_vertex);
+       index_type          = std::move(other.index_type);
+       vao                 = std::move(other.vao);
+       mem                 = std::move(other.mem);
+        }
+        return *this;
+    }
+
 public:
+
+
     template<bool bind_first=true>
     void Draw( gla::Primitave prim = gla::Primitave::TRIANGLES) const
     {
         if(bind_first) vao.Bind();
         gla::DrawElementsBaseVertex( prim, count, index_type, base_index_location, base_vertex);
-        //std::cout << count << std::endl;
     }
 
     template<bool bind_first=true>
@@ -198,9 +250,9 @@ public:
         M.mem = std::shared_ptr< std::pair< std::size_t, std::size_t> >( new std::pair<std::size_t,std::size_t>(v_byte, i_byte),
                                                                          [ipool, vpool](std::pair<std::size_t,std::size_t> * p)
                                                                          {
-                                                                            std::cout << "Freeing Data!:" << std::endl;
-                                                                            std::cout << "  vertex  Data!:" << vpool->Free(p->first) << std::endl;
-                                                                            std::cout << "  index   Data!:" << ipool->Free(p->second) << std::endl;
+                                                                            GLA_LOG << "Freeing Data!:" << std::endl;
+                                                                            GLA_LOG << "  vertex  Data!:" << vpool->Free(p->first) << std::endl;
+                                                                            GLA_LOG << "  index   Data!:" << ipool->Free(p->second) << std::endl;
                                                                             delete p;
                                                                          }
                                                                          );
@@ -214,12 +266,14 @@ public:
 
         M.vao = vao;
 
-        std::cout << "Mesh Generated:" << std::endl;
-        std::cout << "   Base Vertex Byte location: " << v_byte<< std::endl;
-        std::cout << "   Base Index Byte location: " << i_byte<< std::endl;
-        std::cout << "   Base Vertex: " << M.base_vertex << std::endl;
-        std::cout << "   Indices: " << M.count << std::endl;
-        std::cout << "   VAO: " << M.vao.Get() << std::endl;
+        GLA_LOG << "Mesh Generated:" << std::endl;
+        GLA_LOG << "   Base Vertex Byte location: " << v_byte<< std::endl;
+        GLA_LOG << "   Base Index Byte location: " << i_byte<< std::endl;
+        GLA_LOG << "   Base Vertex: " << M.base_vertex << std::endl;
+        GLA_LOG << "   Indices: " << M.count << std::endl;
+        GLA_LOG << "   VAO: " << M.vao.Get() << std::endl;
+        GLA_LOG << "   Vertex Bytes Allocated: " << vertex_size << std::endl;
+        GLA_LOG << "   Index Bytes Allocated: " << index_size  << std::endl;
 
         return M;
     }

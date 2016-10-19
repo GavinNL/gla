@@ -58,22 +58,8 @@ namespace gla {
     class ChannelRef;
     class ImageBase;
 
-    class GPUImageInfo
-    {
-        int temp;
-    };
 
-    inline std::vector<unsigned int> & GetActiveImages()
-    {
-        static auto s = std::make_shared< std::vector<unsigned int> > ();
-        static bool init = false;
-        if(!init)
-        {
-            s->resize(128);
-            init = true;
-        }
-        return *s;
-    }
+
 
 
 
