@@ -136,17 +136,17 @@ int main()
         //===============================================================
 
 
-        // we dont need the cpu texture anymore, so we can clear it.
+        // We dont need the cpu texture anymore, so we can clear it.
         Tex1.clear();
         Tex2.clear();
         Tex3.clear();
 
-
-
         //================================================================
         // 4. Load the Texture Array shader
         //================================================================
-        ShaderProgram TextureArrayShader = ShaderProgram::Load(  "./resources/shaders/TextureArray.s" );
+        ShaderProgram TextureArrayShader = ShaderProgram::Load( "./resources/shaders/TextureArray.s" );
+
+
 
         // Get the IDs of the uniform variables inside the shader.
         auto uTextureArrayID = TextureArrayShader.GetUniformLocation("uTextureArray");

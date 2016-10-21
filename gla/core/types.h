@@ -28,7 +28,7 @@
 
 
 
-#include <GL/gl.h>
+//#include <GL/gl.h>
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -46,7 +46,8 @@
 #define GLA_DOUT std::cout
 #endif
 
-namespace gla {
+namespace gla
+{
 
 class NormalizeFlags
 {
@@ -124,6 +125,9 @@ enum class Primitave
     PATCHES                 = GL_PATCHES
 
 };
+
+
+using sizei = GLsizei;
 
 using bvec2 = glm::bvec2 ;
 using bvec3 = glm::bvec3 ;

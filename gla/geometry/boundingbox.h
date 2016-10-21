@@ -82,7 +82,7 @@ struct BoundingBox
     }
 
 
-    BoundingBox<T> Transform(const gla::mat4 & M) const
+    BoundingBox<T> Transform(const glm::mat4 & M) const
     {
         auto s = this->Size();
 

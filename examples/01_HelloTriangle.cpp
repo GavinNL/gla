@@ -85,7 +85,6 @@ int main(int argc, char **argv)
         vertices.Release();
 
 
-
         //================================================================
         // 2. Load the Shader program from files. We will use two shaders
         //    a vertex and a fragment shader.

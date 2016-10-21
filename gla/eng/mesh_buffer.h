@@ -47,10 +47,10 @@ class Mesh_T
 {
 
 public:
-    //std::size_t            first=0;
-    std::size_t            count=0;
-    std::size_t            base_index_location=0;
-    std::size_t            base_vertex=0;
+    //std::size_t          first=0;
+    std::size_t            count = 0;
+    std::size_t            base_index_location = 0;
+    std::size_t            base_vertex = 0;
     gla::DataType          index_type=gla::DataType::UNKNOWN;
     gla::VertexArray       vao;
     std::shared_ptr< std::pair<std::size_t,std::size_t> > mem; //
@@ -115,14 +115,21 @@ public:
     void Draw( gla::Primitave prim = gla::Primitave::TRIANGLES) const
     {
         if(bind_first) vao.Bind();
-        gla::DrawElementsBaseVertex( prim, count, index_type, base_index_location, base_vertex);
+
+        index_type==gla::DataType::UNKNOWN ?
+                    gla::DrawArrays( prim, count, base_vertex) :
+                    gla::DrawElementsBaseVertex( prim, count, index_type, base_index_location, base_vertex);
     }
 
     template<bool bind_first=true>
     void DrawInstanced( std::size_t draw_count=1, gla::Primitave prim = gla::Primitave::TRIANGLES) const
     {
         if(bind_first) vao.Bind();
-        gla::DrawElementsInstancedBaseVertex(prim, count, index_type, base_index_location, base_vertex, draw_count);
+
+        index_type==gla::DataType::UNKNOWN ?
+                    gla::DrawArraysInstanced( prim, count, base_vertex, draw_count) :
+                    gla::DrawElementsInstancedBaseVertex(prim, count, index_type, base_index_location, base_vertex, draw_count);
+
     }
 
     template<typename index_type, typename ...GLM_Types>
@@ -138,6 +145,10 @@ public:
  *
  * Use the MeshBuffer if you have lots of different meshes that use the same vertex attributes
  * eg:  positions,UV, normals     or positions,uv,normals,colours
+ *
+ * Careful when calling the MeshBuffer's destructor. All mesh's created by the buffer
+ * are still active and will not be released until all references to the underlying
+ * arraybuffers, index buffers and vertexarrayobjects are released.
  */
 template<typename index_type, typename ...GLM_Types>
 class MeshBuffer
@@ -176,7 +187,9 @@ public:
 
     ~MeshBuffer()
     {
-
+//        vertex_buffer.ForceDelete();
+//        index_buffer.ForceDelete();
+//        vao.ForceDelete();
     }
 
     void ReserveVertices(std::size_t num_vertices)
@@ -198,6 +211,8 @@ public:
         index_buffer.Reserve( sizeof(index_type) * num_indices);
 
         m_IndexPool->Reserve( sizeof(index_type) * num_indices);
+
+        //index_buffer.Resize();
     }
 
     std::size_t VertexBufferSize() const
@@ -208,6 +223,57 @@ public:
     std::size_t IndexBufferSize() const
     {
         return index_buffer.Size();
+    }
+
+
+    template<typename VertexStruct>
+    Mesh_T Insert( const std::vector<VertexStruct> & V )
+    {
+
+        static_assert( sizeof(VertexStruct) == vertex_size , "The struct used to hold the vertex is not the same size as the template parameter arguments of the MeshBuffer");
+
+        auto vertex_size= V.size() * sizeof(VertexStruct);
+
+
+        auto v_byte = m_VertexPool->Malloc(vertex_size);
+
+
+        assert(v_byte != std::numeric_limits<std::size_t>::max() );
+
+        vertex_buffer.CopyData(V, v_byte);
+
+        if( !vao )
+        {
+            vao = gla::VertexArray::MakeVAO<GLM_Types...>( vertex_buffer );
+        }
+
+        Mesh_T M;
+
+        M.base_vertex          = v_byte / sizeof(VertexStruct );  // determine which index the base vertex is actually at
+        M.count                = V.size();
+
+        auto vpool = m_VertexPool;
+        M.mem = std::shared_ptr< std::pair< std::size_t, std::size_t> >( new std::pair<std::size_t,std::size_t>(v_byte, 0),
+                                                                         [vpool](std::pair<std::size_t,std::size_t> * p)
+                                                                         {
+                                                                            GLA_LOG << "Freeing Data!:" << std::endl;
+                                                                            GLA_LOG << "  vertex  Data!:" << vpool->Free(p->first) << std::endl;
+                                                                            delete p;
+                                                                         }
+                                                                         );
+
+        M.index_type = gla::DataType::UNKNOWN;
+
+        M.vao = vao;
+
+        GLA_LOG << "Non-Indexed Mesh Generated:" << std::endl;
+        GLA_LOG << "   Base Vertex Byte location: " << v_byte<< std::endl;
+        GLA_LOG << "   Base Vertex: " << M.base_vertex << std::endl;
+        GLA_LOG << "   Num Vert:" << M.count << std::endl;
+        GLA_LOG << "   VAO: " << M.vao.Get() << std::endl;
+        GLA_LOG << "   Vertex Bytes Allocated: " << vertex_size << std::endl;
+
+        return M;
     }
 
     template<typename VertexStruct>
@@ -293,6 +359,8 @@ protected:
     std::shared_ptr<MemoryPool>                       m_IndexPool;
 
 };
+
+
 
 
 } // namespace gla

@@ -178,6 +178,15 @@ public:
         m_ID->first = 0;
     }
 
+    void ForceDelete()
+    {
+        static CallableDestroy D;
+
+        if(m_ID->first) D( m_ID->first );
+
+        m_ID->second = SharedDataType();
+    }
+
     SharedDataType & SharedData() const
     {
         return m_ID->second;//.get();
@@ -186,6 +195,16 @@ public:
     SharedDataType & SharedData()
     {
         return m_ID->second;//.get();
+    }
+
+    const HandleType & GetHandle() const
+    {
+        return m_ID->first;
+    }
+
+    HandleType & GetHandle()
+    {
+        return m_ID->first;
     }
 
     operator bool() const

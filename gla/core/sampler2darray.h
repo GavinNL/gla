@@ -56,6 +56,7 @@ struct DestSampler2DArray
             Sampler2DArrayLayerRef & operator=(const Image & img);
             Sampler2DArrayLayerRef(Sampler2DArray* R, std::size_t l):ref(R),layer(l){}
 
+            Sampler2DArrayLayerRef & operator=(const Sampler2DArrayLayerRef & img) = delete;
         private:
             Sampler2DArray *ref;
             std::size_t     layer;

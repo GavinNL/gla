@@ -75,7 +75,10 @@ int main()
         //   vec3 - position,   vec2 - UV coords,   vec3 - normals
         //
         // and use an unsigned int as the index type
-        gla::MeshBuffer< unsigned int, vec3, vec2, vec3> MB;
+        using MyMeshBuffer = gla::MeshBuffer< unsigned int, vec3, vec2, vec3>;
+
+        auto * mb = new MyMeshBuffer();
+        gla::MeshBuffer< unsigned int, vec3, vec2, vec3> & MB = *mb;
 
 
         MB.ReserveIndices(10000); // Allocate enough memory on the GPU to hold 10,000 vertices
@@ -83,24 +86,21 @@ int main()
 
         //====================== Create the geometry for the box ==============================
         // These all exist on the CPU, not on the GPU
-        Mesh CylVertices    = createCylinder(0.2f, 10);
+        //Mesh CylVertices    = createCylinder(0.2f, 10);
+        Mesh CylVertices    = createBox();
+
         Mesh SphereVertices = createSphere(0.5);
         //=====================================================================================
 
 
         // Add each of the meshs to the buffer
         // Returns a Mesh_T type which can be used to draw
-        //
-        gla::Mesh_T SphereMesh = MB.Insert( SphereVertices.vertices , SphereVertices.indices);
-        gla::Mesh_T CylMesh    = MB.Insert( CylVertices.vertices    , CylVertices.indices);
 
-        {
-            gla::Mesh_T CylMesh2    = MB.Insert( CylVertices.vertices    , CylVertices.indices);
-            // CylMesh2 should free itself after this!
-        }
+        gla::Mesh_T SphereMesh = MB.Insert( SphereVertices.vertices , SphereVertices.indices);  // create a mesh using vertices + indices
+        gla::Mesh_T CylMesh    = MB.Insert( CylVertices.vertices  );                            // create a mesh using only vertices.
 
 
-
+        delete mb;
         //================================================================
         // The rest of all the initialization is the same as the
         // FrameBuffer example. Procede to the render loop to see
@@ -204,6 +204,8 @@ int main()
 
         Timer_T<float> Timer;
         Timer_T<float> Timer2;
+
+
 
         while (!glfwWindowShouldClose(gMainWindow) )
         {

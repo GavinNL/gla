@@ -111,6 +111,11 @@ int main()
         //  The .s shader file has each component of the shader
         //  separated by xml tags:  <vertex>, <fragment> <geometry> <tessellation_control>
         //  and <tessellation_evaluation>
+        //
+        //  You can also provide a string map to automatically replace
+        //  text in the shader to something else
+        //   map<std::string, std::string> Replace;
+        //  Replace["
         //================================================================
         auto TriangleShader = ShaderProgram::Load("./resources/shaders/Textures.s");
 

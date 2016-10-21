@@ -112,6 +112,12 @@ target_link_libraries(08_MeshBuffer ${LIBS_GLAD})
        add_executable(09_InstanceRendering
              examples/09_InstanceRendering.cpp glad.cpp)
 target_link_libraries(09_InstanceRendering ${LIBS_GLAD})
+
+
+
+       add_executable(octree_test
+                      octree_test.cpp )
+target_link_libraries(octree_test ${LIBS_GLAD})
 # This command b
 add_custom_command(
    TARGET 01_HelloTriangle POST_BUILD

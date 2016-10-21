@@ -27,6 +27,7 @@
 
 #include <gla/geometry/boundingbox.h>
 #include <gla/geometry/line3d.h>
+//#include <gla/core/camera.h>
 
 namespace gla {
 /*
@@ -40,6 +41,12 @@ struct Frustum
     {
 
     }
+
+
+    //Frustum(const gla::Camera & camera) : Frustum( camera.GetProjectionMatrix() )
+    //{
+    //    Transform( camera.GetMatrix() );
+    //}
 
     /**
      * @brief Frustum
@@ -125,7 +132,7 @@ struct Frustum
         // for each plane, check if the corners of the bounding box are on the same side of the plane
         gla::Line3d * L = &top;
 
-        const glm::vec3 p[] =
+        const glm::vec3 P[] =
         {
             glm::vec3( B.min.x, B.min.y, B.min.z),
             glm::vec3( B.min.x, B.min.y, B.max.z),
@@ -141,14 +148,14 @@ struct Frustum
         for(int i=0 ; i<6 ; i++)
         {
             int c = 0;
-            c += (glm::dot( p[0] -L[i].p, L[i].v) / glm::length(L[i].v) ) > 0;
-            c += (glm::dot( p[1] -L[i].p, L[i].v) / glm::length(L[i].v) ) > 0;
-            c += (glm::dot( p[2] -L[i].p, L[i].v) / glm::length(L[i].v) ) > 0;
-            c += (glm::dot( p[3] -L[i].p, L[i].v) / glm::length(L[i].v) ) > 0;
-            c += (glm::dot( p[4] -L[i].p, L[i].v) / glm::length(L[i].v) ) > 0;
-            c += (glm::dot( p[5] -L[i].p, L[i].v) / glm::length(L[i].v) ) > 0;
-            c += (glm::dot( p[6] -L[i].p, L[i].v) / glm::length(L[i].v) ) > 0;
-            c += (glm::dot( p[7] -L[i].p, L[i].v) / glm::length(L[i].v) ) > 0;
+            c += (glm::dot( P[0] -L[i].p, L[i].v) / glm::length(L[i].v) ) > 0;
+            c += (glm::dot( P[1] -L[i].p, L[i].v) / glm::length(L[i].v) ) > 0;
+            c += (glm::dot( P[2] -L[i].p, L[i].v) / glm::length(L[i].v) ) > 0;
+            c += (glm::dot( P[3] -L[i].p, L[i].v) / glm::length(L[i].v) ) > 0;
+            c += (glm::dot( P[4] -L[i].p, L[i].v) / glm::length(L[i].v) ) > 0;
+            c += (glm::dot( P[5] -L[i].p, L[i].v) / glm::length(L[i].v) ) > 0;
+            c += (glm::dot( P[6] -L[i].p, L[i].v) / glm::length(L[i].v) ) > 0;
+            c += (glm::dot( P[7] -L[i].p, L[i].v) / glm::length(L[i].v) ) > 0;
 
             if(c==8) return false;
         }
@@ -161,13 +168,13 @@ struct Frustum
      * @param point
      * @return true if the point is within the furstrum
      */
-    bool Intersects(const glm::vec3 & p )
+    bool Intersects(const glm::vec3 & P )
     {
         gla::Line3d * L = &top;
 
         for(int i=0;i<6;i++)
         {
-            const float d = glm::dot( p-L[i].p, L[i].v) / glm::length(L[i].v);
+            const float d = glm::dot( P-L[i].p, L[i].v) / glm::length(L[i].v);
             if( d > 0) return false;
         }
         return true;

@@ -124,9 +124,9 @@ inline Line3d Line3d::Displacement(const Line3d & P) const
 
 
 
-inline float     Line3d::Distance(const Point3d & p) const
+inline float     Line3d::Distance(const Point3d & P) const
 {
-	return Displacement(p).length();
+    return Displacement(P).length();
 }
 
 inline glm::vec3 Line3d::Displacement(const Point3d & P) const

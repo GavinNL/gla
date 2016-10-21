@@ -47,26 +47,26 @@ class Camera : public Transform
              mProj        = glm::perspective(FOV, AspectRatio, zMin,zMax);
         }
 
-        mat4 & GetProjectionMatrix() { return mProj; }
+        glm::mat4 & GetProjectionMatrix() { return mProj; }
 
-        inline mat4 GetMatrix()
+        inline glm::mat4 GetMatrix()
         {
             //auto mLook = mTransform.GetOrientation() * vec3(0, 0,-1) + mTransform.GetPosition();
             //auto mUp   = mTransform.GetOrientation() * vec3(0, 1, 0);
             //
             //mView = glm::lookAt( mTransform.GetPosition(), mLook, mUp);
 
-            return glm::scale( mat4(1.0), 1.0f/Scale) * glm::mat4_cast( glm::inverse(Orientation) ) *  glm::translate(mat4(1.0f), -Position);
+            return glm::scale( glm::mat4(1.0), 1.0f/Scale) * glm::mat4_cast( glm::inverse(Orientation) ) *  glm::translate(glm::mat4(1.0f), -Position);
 
             //return glm::inverse( Transform::GetMatrix() );
             //return mView;
         }
 
-        vec3 GetDirection()
+        glm::vec3 GetDirection()
         {
             //auto mLook = mTransform.GetOrientation() * vec3(0, 0,-1);// + mTransform.getPosition();
 
-            return Orientation * vec3(0, 0,-1);// + mTransform.getPosition();
+            return Orientation * glm::vec3(0, 0,-1);// + mTransform.getPosition();
             //return mLook;
         }
 
@@ -90,8 +90,8 @@ class Camera : public Transform
        // Transform & GetTransform() { return mTransform; }
 
     private:
-            mat4  mProj;
-            mat4  mView;
+            glm::mat4  mProj;
+            glm::mat4  mView;
 
             float mFOV;
             float mAspectRatio;
