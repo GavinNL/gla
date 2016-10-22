@@ -77,7 +77,8 @@ namespace gla
     static void DrawElementsInstancedBaseVertex( Primitave p, std::size_t NumIndices, DataType IndexType, std::size_t StartIndex, std::size_t BaseVertex, std::size_t primcount)
     {
 
-        glDrawElementsInstancedBaseVertex( static_cast<GLenum>(p),
+        glDrawElementsInstancedBaseVertex(
+                        static_cast<GLenum>(p),
                         static_cast<GLsizei>(NumIndices),
                         static_cast<GLenum>(IndexType),
                         static_cast<char*>(0)+StartIndex,
@@ -85,7 +86,39 @@ namespace gla
                         static_cast<GLint>(BaseVertex) );
     }
 
+    static void DrawElementsInstancedBaseVertexBaseInstance( Primitave p, std::size_t NumIndices, DataType IndexType, std::size_t StartIndex, std::size_t BaseVertex, std::size_t primcount, std::size_t baseinstance)
+    {
 
+        glDrawElementsInstancedBaseVertexBaseInstance(  static_cast<GLenum>(p),
+                                                        static_cast<GLsizei>(NumIndices),
+                                                        static_cast<GLenum>(IndexType),
+                                                        static_cast<char*>(0)+StartIndex,
+                                                        static_cast<GLsizei>(primcount),
+                                                        static_cast<GLint>(BaseVertex),
+                                                        static_cast<GLuint>(baseinstance) );
+
+
+
+    }
+
+    struct MultiDrawElementsIndirectCommand
+    {
+        uint  count        = 0;
+        uint  instanceCount= 0;
+        uint  firstIndex   = 0;
+        uint  baseVertex   = 0;
+        uint  baseInstance = 0;
+    };
+
+    static void MultiDrawElementsIndirect(Primitave p, DataType IndexType, MultiDrawElementsIndirectCommand * commands, std::size_t num_commands)
+    {
+        glMultiDrawElementsIndirect( static_cast<GLenum>(p),
+                                     static_cast<GLenum>(IndexType),
+                                     static_cast<const void*>(commands),
+                                     num_commands,
+                                     0*sizeof(MultiDrawElementsIndirectCommand)
+                                     );
+    }
 
 
 }

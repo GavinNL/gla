@@ -47,7 +47,7 @@ struct GenSampler2D
         //x = ++i;
         //std::cout << "glGenBuffers(1, &m_ID)" << std::endl;
         glGenTextures(1, &x);
-        GLA_LOG << "Sampler2D Generated: " << x << std::endl;
+        GLA_LOGD << "Sampler2D Generated: " << x << std::endl;
     }
 };
 
@@ -55,7 +55,7 @@ struct DestSampler2D
 {
     void operator()(GLuint & x)
     {
-        GLA_LOG << "Sampler2D destroyed: " << x << std::endl;
+        GLA_LOGD << "Sampler2D destroyed: " << x << std::endl;
         glDeleteTextures(1, &x);
     }
 };
@@ -237,7 +237,7 @@ public:
                                     ImageFormat::RGB ,
                                     ImageFormat::RGBA};
 
-        std::cout << "Creating Sampler: " << img.size().x << ", " << img.size().y << std::endl;
+        GLA_LOGD << "Creating Sampler: " << img.size().x << ", " << img.size().y << std::endl;
         //std::cout << "                : " << img.size().x << ", " << img.size().y << std::endl;
 
         Create( img.size(),

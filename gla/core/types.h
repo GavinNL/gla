@@ -28,7 +28,7 @@
 
 
 
-//#include <GL/gl.h>
+
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -162,37 +162,128 @@ static std::ostream& print_time()
     return std::cout;
 }
 
-#ifndef GLA_LOGGING
-#define GLA_LOGGING 1
+
+
+#ifdef GLA_LOG_ALL
+    #define GLA_INFO 1
+    #define GLA_DEBUG 1
+    #define GLA_VERBOSE 1
+    #define GLA_TIMER 1
 #endif
 
-#ifndef GLA_LOGGING_ALL
-#define GLA_LOGGING_ALL 1
+
+#ifdef GLA_INFO
+    #define GLA_INFO 1
+#else
+    #define GLA_INFO 0
 #endif
 
-#define GLA_LOG   if(GLA_LOGGING) print_time()
+#ifdef GLA_DEBUG
+    #define GLA_DEBUG 1
+#else
+    #define GLA_DEBUG 0
+#endif
 
-#define PRINT_ONCE(  A )       \
+#ifdef GLA_VERBOSE
+    #define GLA_VERBOSE 1
+#else
+    #define GLA_VERBOSE 0
+#endif
+
+#ifdef GLA_TIMER
+    #define GLA_TIMER 1
+#else
+    #define GLA_TIMER 0
+#endif
+
+#if 0
+#include <iostream>
+#include <windows.h>
+
+using namespace std;
+HANDLE hCon;
+
+enum Color { DARKBLUE = 1, DARKGREEN, DARKTEAL, DARKRED, DARKPINK, DARKYELLOW, GRAY, DARKGRAY, BLUE, GREEN, TEAL, RED, PINK, YELLOW, WHITE };
+
+void SetColor(Color c){
+        if(hCon == NULL)
+                hCon = GetStdHandle(STD_OUTPUT_HANDLE);
+
+}
+
+#endif
+
+static const std::string default_console = "\033[0m";
+static const std::string color           = "\033[0;1m";
+
+static const std::string c_black_b      = "\033[1;30m";
+static const std::string c_red_b        = "\033[1;31m";
+static const std::string c_green_b      = "\033[1;32m";
+static const std::string c_brown_b      = "\033[1;33m";
+static const std::string c_blue_b       = "\033[1;34m";
+static const std::string c_magenta_b    = "\033[1;35m";
+static const std::string c_cyan_b       = "\033[1;36m";
+static const std::string c_lightgray_b  = "\033[1;37m";
+
+static const std::string c_black      = "\033[0;30m";
+static const std::string c_red        = "\033[0;31m";
+static const std::string c_green      = "\033[0;32m";
+static const std::string c_brown      = "\033[0;33m";
+static const std::string c_blue       = "\033[0;34m";
+static const std::string c_magenta    = "\033[0;35m";
+static const std::string c_cyan       = "\033[0;36m";
+static const std::string c_lightgray  = "\033[0;37m";
+
+#define GLA_LOGD  if(GLA_DEBUG  && (std::cout<<c_red_b))     gla::print_time() <<  "[Debug] - "
+#define GLA_LOGI  if(GLA_INFO   && (std::cout<<c_green_b))   gla::print_time() << "[Info] - "
+#define GLA_LOGV  if(GLA_VERBOSE&& (std::cout<<c_cyan_b))    gla::print_time() << "[Verbose] - "
+#define GLA_LOGT  if(GLA_TIMER&& (std::cout<<c_magenta_b))    gla::print_time() << "[Timer] - "
+
+
+
+#define DO_ONCE(  A )       \
     {                          \
         static bool ____iii____=true;    \
         if(____iii____)                  \
         {                      \
-            ____iii____=false;           \
+            ____iii____=false;
+
+#define END_ONCE \
             A                  \
         }                      \
     }
 
-#define PRINT_EVERY( N , A )       \
-    {                          \
-        static int ____iii____=0;    \
-        if( (____iii____++)%N==0)                  \
-        {                      \
-            A                  \
+#define DO_EVERY( seconds  )              \
+    {                               \
+        static std::chrono::system_clock::time_point start = std::chrono::system_clock::now(); \
+        std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now()-start;\
+        if( elapsed_seconds.count() > seconds )   \
+        {   start = std::chrono::system_clock::now();                     \
+
+
+#define END_EVERY              \
+                               \
         }                      \
     }
-}
 
 
 
+
+#define START_TIMER()              \
+    {                               \
+        static std::chrono::system_clock::time_point start = std::chrono::system_clock::now(); \
+        {   start = std::chrono::system_clock::now();
+
+
+#define END_TIMER(Description)              \
+                               \
+            std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now()-start; \
+            GLA_LOGT << Description << " : " << elapsed_seconds.count() << " seconds" << std::endl; \
+        }\
+    }
+
+
+
+} // gla namespace
 
 #endif

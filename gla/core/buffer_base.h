@@ -76,8 +76,7 @@ struct GenBuff
     {
         glGenBuffers(1, &x);
 
-        GLA_LOG << "Buffer Generated: " << x << std::endl
-                << "    Error: " << glGetError() << std::endl;
+        GLA_LOGD << "Buffer Generated: " << x  << "    Error Response: " << glGetError() << std::endl;
     }
 };
 
@@ -85,7 +84,7 @@ struct DestBuff
 {
     void operator()(GLuint & x)
     {
-        GLA_LOG << "Destroying Buffer: " << x << std::endl;
+        GLA_LOGD << "Destroying Buffer: " << x << std::endl;
         glDeleteBuffers( 1, &x );
         x = 0;
     }
@@ -178,11 +177,13 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff, BufferInfo>
         // reallocates more space for the data
         void Resize(std::size_t size)
         {
+            GLA_LOGD << " ===== Buffer::Resize called  ======" << std::endl;
             Buffer B;
             B.Reserve(size);
 
-            GLA_LOG << "Resizing Buffer: " << m_ID->first << std::endl;
-            GLA_LOG << "   Copying " << std::min(size, B.Size() ) << " bytes" << std::endl;
+
+            GLA_LOGD << "Resizing Buffer: " << m_ID->first
+                    << "   to " << std::min(size, B.Size() ) << " bytes" << std::endl;
 
             B.CopyBufferData(*this, 0, 0, std::min(size, Size() ) );
             std::swap( this->m_ID->first, B.m_ID->first );
@@ -190,9 +191,11 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff, BufferInfo>
             SharedData().m_Reserve = B.SharedData().m_Reserve;
             SharedData().m_Offset = std::min( SharedData().m_Reserve, SharedData().m_Offset);
 
-            GLA_LOG << "        New Reserve Size: " << SharedData().m_Reserve << std::endl;
-            GLA_LOG << "        New Offset  Size: " << SharedData().m_Offset << std::endl ;
-            GLA_LOG << "        New Id          : " << m_ID->first << std::endl;
+            GLA_LOGD << "        New Reserve Size: " << SharedData().m_Reserve
+                    << "        New Offset  Size: " << SharedData().m_Offset
+                    << "        New Id          : " << m_ID->first << std::endl;
+
+            GLA_LOGD << " ===== Buffer::Resize ended  ======" << std::endl;
 
         }
 
@@ -249,7 +252,7 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff, BufferInfo>
             glBufferData( static_cast<GLenum>(targ) , size_in_bytes, NULL , static_cast<GLenum>(usage) );
             SharedData().m_Offset    = 0;
             SharedData().m_Reserve   = size_in_bytes;
-            std::cout << "Buffer: Reserved Size: " << size_in_bytes << std::endl;
+            GLA_LOGI << "Buffer: Reserved Size: " << size_in_bytes << std::endl;
         }
 
 

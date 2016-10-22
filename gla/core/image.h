@@ -258,7 +258,7 @@ namespace gla {
                 {
                     _handleRawPixels(img, static_cast<unsigned int>( x ), static_cast<unsigned int>( y ) );
                     mComponents = ForceNumberChannels!=0 ? ForceNumberChannels : comp;
-                    GLA_DOUT  << "ImageBase loaded with #components = " << mComponents << std::endl;
+                    GLA_LOGD  << "ImageBase loaded with #components = " << mComponents << std::endl;
 
                 } else {
                     //GLA_DOUT  << "Error loading Image: " << path << std::endl;

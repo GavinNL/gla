@@ -46,7 +46,7 @@ struct GenShaderUnit
     void operator()(GLuint & x)
     {
         x = glCreateShader( SHADER_TYPE );
-        GLA_LOG << "Shader Unit Generated: " << x << std::endl;
+        GLA_LOGD << "Shader Unit Generated: " << x << std::endl;
     }
 };
 
@@ -54,7 +54,7 @@ struct DestShaderUnit
 {
     void operator()(GLuint & x)
     {
-        GLA_LOG << "Destroying Shader Unit: " << x << std::endl;
+        GLA_LOGD << "Destroying Shader Unit: " << x << std::endl;
         glDeleteShader( x );
         x = 0;
         //glDeleteFramebuffers( 1, &x );
@@ -184,7 +184,7 @@ struct GenShaderProgram
     void operator()(GLuint & x)
     {
         x = glCreateProgram();
-        std::cout << "Shader Program Generated: " << x << std::endl;
+        GLA_LOGD << "Shader Program Generated: " << x << std::endl;
     }
 };
 
@@ -193,7 +193,7 @@ struct DestShaderProgram
     void operator()(GLuint & x)
     {
         glDeleteProgram(x);
-        std::cout << "Shader Program Destroyed: " << x << std::endl;
+        GLA_LOGD << "Shader Program Destroyed: " << x << std::endl;
         x = 0;
     }
 };
@@ -384,6 +384,7 @@ public:
                         break;
             }
 
+            GLA_LOGD << "Shader Loaded Successfully: " << path << std::endl;
             return P;
 
         }

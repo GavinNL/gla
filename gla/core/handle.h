@@ -135,7 +135,6 @@ public:
     {
     }
 
-
     /**
      * @brief Get - returns the openGL handle type
      * @return The OpenGL handle type (GLuint)
@@ -169,7 +168,7 @@ public:
         static CallableCreate C;
 
         if(m_ID->first) D( m_ID->first );
-        C(m_ID->first);
+        C( m_ID->first);
     }
 
     void Release()

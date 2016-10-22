@@ -36,7 +36,7 @@ struct GenFrameBuff
     void operator()(GLuint & x)
     {
         glGenFramebuffers(1, &x);
-        std::cout << "Frame Buffer Generated: " << x << std::endl;
+        GLA_LOGD << "Frame Buffer Generated: " << x << std::endl;
     }
 };
 
@@ -44,7 +44,7 @@ struct DestFrameBuff
 {
     void operator()(GLuint & x)
     {
-        std::cout << "Destroying Frame Buffer: " << x << std::endl;
+        GLA_LOGD << "Destroying Frame Buffer: " << x << std::endl;
         glDeleteFramebuffers( 1, &x );
         x = 0;
     }

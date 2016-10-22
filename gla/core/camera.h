@@ -49,7 +49,7 @@ class Camera : public Transform
 
         glm::mat4 & GetProjectionMatrix() { return mProj; }
 
-        inline glm::mat4 GetMatrix()
+        inline glm::mat4 GetMatrix() const override
         {
             //auto mLook = mTransform.GetOrientation() * vec3(0, 0,-1) + mTransform.GetPosition();
             //auto mUp   = mTransform.GetOrientation() * vec3(0, 1, 0);

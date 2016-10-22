@@ -109,7 +109,15 @@ public:
     }
 
 public:
+    void Bind()
+    {
+        vao.Bind();
+    }
 
+    void Unbind()
+    {
+        vao.Unbind();
+    }
 
     template<bool bind_first=true>
     void Draw( gla::Primitave prim = gla::Primitave::TRIANGLES) const
@@ -122,7 +130,7 @@ public:
     }
 
     template<bool bind_first=true>
-    void DrawInstanced( std::size_t draw_count=1, gla::Primitave prim = gla::Primitave::TRIANGLES) const
+    void DrawInstanced( gla::Primitave prim = gla::Primitave::TRIANGLES, std::size_t draw_count=1 ) const
     {
         if(bind_first) vao.Bind();
 
@@ -131,6 +139,11 @@ public:
                     gla::DrawElementsInstancedBaseVertex(prim, count, index_type, base_index_location, base_vertex, draw_count);
 
     }
+
+   // void DrawElementsInstancedBaseVertexBaseInstance( Primitave p, std::size_t BaseVertex, std::size_t primcount, std::size_t baseinstance)
+   // {
+   //     gla::DrawElementsInstancedBaseVertexBaseInstance( p, count, index_type, base_index_location, base_vertex, draw_count, base_instance);
+   // }
 
     template<typename index_type, typename ...GLM_Types>
         friend class MeshBuffer;
@@ -256,8 +269,8 @@ public:
         M.mem = std::shared_ptr< std::pair< std::size_t, std::size_t> >( new std::pair<std::size_t,std::size_t>(v_byte, 0),
                                                                          [vpool](std::pair<std::size_t,std::size_t> * p)
                                                                          {
-                                                                            GLA_LOG << "Freeing Data!:" << std::endl;
-                                                                            GLA_LOG << "  vertex  Data!:" << vpool->Free(p->first) << std::endl;
+                                                                            GLA_LOGD << "Freeing Data!:"
+                                                                                     <<  "  vertex  Data!:" << vpool->Free(p->first) << std::endl;
                                                                             delete p;
                                                                          }
                                                                          );
@@ -266,12 +279,12 @@ public:
 
         M.vao = vao;
 
-        GLA_LOG << "Non-Indexed Mesh Generated:" << std::endl;
-        GLA_LOG << "   Base Vertex Byte location: " << v_byte<< std::endl;
-        GLA_LOG << "   Base Vertex: " << M.base_vertex << std::endl;
-        GLA_LOG << "   Num Vert:" << M.count << std::endl;
-        GLA_LOG << "   VAO: " << M.vao.Get() << std::endl;
-        GLA_LOG << "   Vertex Bytes Allocated: " << vertex_size << std::endl;
+        GLA_LOGD << "Non-Indexed Mesh Generated:"   << std::endl;
+     GLA_LOGD  << "Base Vertex Byte location: "
+                << "| Base Vertex: "               << M.base_vertex
+                << "| Num Vert:"                   << M.count
+                << "| VAO: "                       << M.vao.Get()
+                << "| Vertex Bytes Allocated: "    << vertex_size << " |" << std::endl;
 
         return M;
     }
@@ -314,9 +327,9 @@ public:
         M.mem = std::shared_ptr< std::pair< std::size_t, std::size_t> >( new std::pair<std::size_t,std::size_t>(v_byte, i_byte),
                                                                          [ipool, vpool](std::pair<std::size_t,std::size_t> * p)
                                                                          {
-                                                                            GLA_LOG << "Freeing Data!:" << std::endl;
-                                                                            GLA_LOG << "  vertex  Data!:" << vpool->Free(p->first) << std::endl;
-                                                                            GLA_LOG << "  index   Data!:" << ipool->Free(p->second) << std::endl;
+                                                                            GLA_LOGD << "Freeing Data!:"
+                                                                                     << "  vertex  Data!:" << vpool->Free(p->first)
+                                                                                     << "  index   Data!:" << ipool->Free(p->second) << std::endl;
                                                                             delete p;
                                                                          }
                                                                          );
@@ -330,14 +343,14 @@ public:
 
         M.vao = vao;
 
-        GLA_LOG << "Mesh Generated:" << std::endl;
-        GLA_LOG << "   Base Vertex Byte location: " << v_byte<< std::endl;
-        GLA_LOG << "   Base Index Byte location: " << i_byte<< std::endl;
-        GLA_LOG << "   Base Vertex: " << M.base_vertex << std::endl;
-        GLA_LOG << "   Indices: " << M.count << std::endl;
-        GLA_LOG << "   VAO: " << M.vao.Get() << std::endl;
-        GLA_LOG << "   Vertex Bytes Allocated: " << vertex_size << std::endl;
-        GLA_LOG << "   Index Bytes Allocated: " << index_size  << std::endl;
+        GLA_LOGD << "Mesh Generated:" << std::endl;
+      GLA_LOGD  << "| Base Vertex Byte location: " << v_byte
+                << "| Base Index Byte location: " << i_byte
+                << "| Base Vertex: " << M.base_vertex
+                << "| Indices: " << M.count
+                << "| VAO: " << M.vao.Get()
+                << "| Vertex Bytes: " << vertex_size
+                << "| Index Bytes: " << index_size   << " |" << std::endl;
 
         return M;
     }

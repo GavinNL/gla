@@ -24,10 +24,12 @@
 
 #include <stdio.h>
 
-#define GLA_LOGGING 1
+#define GLA_INFO 1
+#define GLA_TIMER 1
 
 #include "glad.h"
-
+#include <iostream>
+#include <cstdlib>
 #include <gla/gla.h>
 #include <gla/eng/atlas.h>
 #include <gla/eng/mesh_buffer.h>
@@ -58,30 +60,42 @@ class Instance_Rendering_App : public gla::utils::GLFW_App
         m_MeshBuffer.ReserveIndices(1000000);
         m_MeshBuffer.ReserveVertices(1000000);
 
-        //Mesh BoxVertices    = createBox( );
-        Mesh BoxVertices    = createCone(1 , 0.2, 10);
-        Mesh SphereVertices = createSphere(0.5);
+        START_TIMER()
+            Mesh BoxVertices     = createBox( );
+            Mesh ConeVertices    = createCone(1 , 0.2, 10);
+            Mesh SphereVertices  = createSphere(0.5);
 
-        m_Meshs.emplace_back( m_MeshBuffer.Insert( SphereVertices.vertices , SphereVertices.indices) );
-        m_Meshs.emplace_back( m_MeshBuffer.Insert( BoxVertices.vertices    , BoxVertices.indices) );
+            m_Meshs.emplace_back( m_MeshBuffer.Insert( BoxVertices.vertices    , BoxVertices.indices) );
+            m_Meshs.emplace_back( m_MeshBuffer.Insert( SphereVertices.vertices , SphereVertices.indices) );
+            m_Meshs.emplace_back( m_MeshBuffer.Insert( SphereVertices.vertices , SphereVertices.indices) );
+
+            for(auto & M : m_Meshs)
+            {
+
+                GLA_LOGI <<  "count: "           << std::setw(6) << M.count
+                         <<  " |  base index: "  << std::setw(6) << M.base_index_location
+                         <<  " |  base_vertex: " << std::setw(6) << M.base_vertex
+                         <<  " |  vao: " << M.vao                       << std::endl;
+            }
+        END_TIMER("Loading Meshs")
 
 
-        for(auto & M : m_Meshs)
-        {
-            //GLA_LOG <<  "first: " << M.first               << std::endl;
-            GLA_LOG <<  "count: " << M.count               << std::endl;
-            GLA_LOG <<  "base index: " << M.base_index_location << std::endl;
-            GLA_LOG <<  "base_vertex: " << M.base_vertex         << std::endl;
-            GLA_LOG <<  "vao: " << M.vao                 << std::endl;
-        }
-
-        m_Camera.SetPosition( {0.0,0.0,0.0f});
+        m_Camera.SetPosition( {0.0, -2.0, 10.0f});
         m_Camera.Perspective(45.0f, (float)Width()/(float)Height(), 0.1f);
 
-        m_Transforms.resize(2);
+        m_Transforms.resize(10);
 
-        m_Transforms[0].SetPosition( { 1,0,-3});
-        m_Transforms[1].SetPosition( {-1,0,-3});
+        m_TransformsMat4.resize(m_Transforms.size());
+
+        for(int i=0;i<m_Transforms.size();i++)
+        {
+            float R = 4;
+            float t = (float(i) / float(m_Transforms.size()) )* 2*3.141592653589;
+            m_Transforms[i].SetPosition( { R*cos(t),1, R*sin(t) });
+        }
+
+        // maximum 10 transforms, (see the shader)
+        assert( m_Transforms.size() <= 10 );
 
         LoadShaders();
         SetupFrameBuffer();
@@ -109,26 +123,39 @@ class Instance_Rendering_App : public gla::utils::GLFW_App
         // Attach the Sampler to Texture Unit 0.
         m_Sampler[0].SetActive(0);
 
-        m_Transforms[0].SetEuler( { Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0 } );
-        m_Transforms[1].SetEuler( { Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0 } );
-
         // Tell the shader that we are using Texture Unit 0 for the sampler
         m_Shader_Gbuffer.Uniform( m_Shader_Gbuffer.GetUniformLocation("uSampler"), 0 );
-        m_Shader_Gbuffer.Uniform( m_Shader_Gbuffer.GetUniformLocation("uCamera"),  m_Camera.GetProjectionMatrix() );
+        m_Shader_Gbuffer.Uniform( m_Shader_Gbuffer.GetUniformLocation("uCamera"),  m_Camera.GetProjectionMatrix() * m_Camera.Camera::GetMatrix() );
 
-        //================================================================
-        // 7.1. Draw the two meshs
-        //
-        //  Each of these meshs belong to the same VertexArrayObject.
-        //  So you only need to bind the first one you draw, by setting
-        //  the template paramter to true. Setting it to false will
-        //  not bind the VAO.
-        //================================================================
-        m_Shader_Gbuffer.Uniform( m_Shader_Gbuffer.GetUniformLocation("uTransform"),  m_Transforms[0].GetMatrix() );
-        m_Meshs[0].Draw<true>();  // bind the first one
 
-        m_Shader_Gbuffer.Uniform( m_Shader_Gbuffer.GetUniformLocation("uTransform"),  m_Transforms[1].GetMatrix() );
-        m_Meshs[1].Draw<false>();    // no need to bind again.
+        // loop through all the tranforms and get a model matrix
+        // The model matrix will be stored in a contigious array so we can send
+        // all at the same time
+        for(int i=0;i<m_Transforms.size();i++)
+        {
+
+            float t = Timer.getElapsedTime();
+            m_Transforms[i].SetEuler( { Timer.getElapsedTime(), Timer.getElapsedTime() * i, -0.0 } );
+            m_Transforms[i].SetScale( {0.3,0.3,0.3});
+            m_Transforms[i].SetPosition( { i*cos(t* 1 / (1+i) ), 0, i*sin(t * 1/(i+1)) } );
+
+            m_TransformsMat4[i] = m_Transforms[i].GetMatrix();
+        }
+
+        static long long counter=0;
+        counter++;
+        DO_EVERY( 2.0 )
+                GLA_LOGI << "Avg FPS: " << ( counter/ 2)<<  std::endl;
+                counter=0;
+        END_EVERY
+
+        // Send all transformation matrice at once
+        m_Shader_Gbuffer.Uniform( m_Shader_Gbuffer.GetUniformLocation("uTransform[0]"),  m_TransformsMat4[0],  m_TransformsMat4.size() );
+
+        // Draw the mesh N times.
+
+        m_Meshs[0].DrawInstanced<true>(gla::Primitave::TRIANGLES, m_TransformsMat4.size());  // bind the first one
+
 
         m_FBO.UnBind();
         DoPixelPass();
@@ -161,19 +188,24 @@ class Instance_Rendering_App : public gla::utils::GLFW_App
 
     void LoadShaders()
     {
-        m_Shader_Gbuffer   = ShaderProgram::Load( "./resources/shaders/GBuffer.s" );
+        START_TIMER()
+        m_Shader_Gbuffer   = ShaderProgram::Load( "./resources/shaders/GBuffer_Instance.s" );
         m_Shader_PixelPass = ShaderProgram::Load( "./resources/shaders/GBuffer_SPass.s" );
+        END_TIMER("Loading Shaders")
     }
 
     void LoadTextures()
     {
+        START_TIMER()
         Image Tex1("./resources/textures/rocks.jpg",  3 );
 
         m_Sampler.emplace_back( Sampler2D(Tex1) );
+        END_TIMER("Loading Textures")
     }
 
     void SetupFrameBuffer()
     {
+        START_TIMER()
         //================================================================
         // 4. Create the Frame Buffer object
         //    we will use a frame buffer to store the following per-pixel values
@@ -221,7 +253,7 @@ class Instance_Rendering_App : public gla::utils::GLFW_App
         ArrayBuffer ab(VertexBuffer);
         m_Plane = VertexArray::MakeVAO<vec3,vec2>(  ab );
 
-
+        END_TIMER("Frame Buffer Setup")
     }
 
     gla::MeshBuffer<unsigned int, vec3,vec2,vec3> m_MeshBuffer;
@@ -233,8 +265,9 @@ class Instance_Rendering_App : public gla::utils::GLFW_App
     Sampler2D m_fb_Depth    ;
 
     std::vector<Sampler2D>        m_Sampler;
-    std::vector<gla::Mesh_T> m_Meshs;
+    std::vector<gla::Mesh_T>      m_Meshs;
     std::vector<gla::Transform>   m_Transforms;
+    std::vector<glm::mat4>        m_TransformsMat4;
 
     gla::Camera                   m_Camera;
     gla::VertexArray              m_Plane; // must be drawn as a triangle fan
@@ -249,7 +282,9 @@ int main()
 {
     Instance_Rendering_App A(1024,768, "Instance Rendering");
 
+    START_TIMER()
     A.run();
+    END_TIMER("Total Run Time")
     return 0;
 }
 //=============================================================================

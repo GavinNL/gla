@@ -69,20 +69,20 @@ public:
 
     void print_used_space()
     {
-        std::cout << "Used Space;" << std::endl;
+        GLA_LOGV << "Used Space;" << std::endl;
         for(auto & i : m_UsedData)
         {
-            std::cout << i.first << "  " << i.second << std::endl;
+            GLA_LOGV << i.first << "  " << i.second << std::endl;
         }
     }
 
 
     void print_free_space()
     {
-        std::cout << "Free Space;" << std::endl;
+        GLA_LOGV << "Free Space;" << std::endl;
         for(auto & i : m_FreeData)
         {
-            std::cout << i.first << "  " << i.second << std::endl;
+            GLA_LOGV << i.first << "  " << i.second << std::endl;
         }
     }
 
@@ -151,7 +151,7 @@ public:
         m_UsedData.insert( buffer_interval( in.first, bytes) );
         m_FreeData.insert( buffer_interval( in.first+bytes, in.second-bytes) );
 
-        std::cout << "Malloc: " << in.first << std::endl;
+        GLA_LOGV << "Malloc: " << in.first << std::endl;
         return in.first;
     }
 
