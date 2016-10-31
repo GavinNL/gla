@@ -65,9 +65,9 @@ class Instance_Rendering_App : public gla::utils::GLFW_App
             Mesh ConeVertices    = createCone(1 , 0.2, 10);
             Mesh SphereVertices  = createSphere(0.5);
 
+            m_Meshs.emplace_back( m_MeshBuffer.Insert( SphereVertices.vertices , SphereVertices.indices) );
             m_Meshs.emplace_back( m_MeshBuffer.Insert( BoxVertices.vertices    , BoxVertices.indices) );
-            m_Meshs.emplace_back( m_MeshBuffer.Insert( SphereVertices.vertices , SphereVertices.indices) );
-            m_Meshs.emplace_back( m_MeshBuffer.Insert( SphereVertices.vertices , SphereVertices.indices) );
+            m_Meshs.emplace_back( m_MeshBuffer.Insert( ConeVertices.vertices , ConeVertices.indices) );
 
             for(auto & M : m_Meshs)
             {

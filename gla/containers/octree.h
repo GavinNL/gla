@@ -16,7 +16,7 @@ namespace gla
 {
 
 
-#define NODE_EXPANSION_COEF 1.3f
+#define NODE_EXPANSION_COEF 1.3
 
 
 
@@ -82,7 +82,7 @@ public:
 
     NodeType* GetRootNode();
     NodeType* GetRootNode(const glm::ivec3 & id);
-    NodeType* GetRootNode(const glm::vec3 & position);
+    NodeType* GetRootNode(const vec_type & position);
 
     void Optimize();
     void Remove( object & obj);
@@ -107,7 +107,8 @@ public:
 
     using node_type = Octree<object, dim_type, Maxobject, Minobject>;
     using aabb_type = gla::BoundingBox<dim_type>;
- //   using scene_type= OctreeScene<object>;
+    using vec_type  = typename aabb_type::vec_type;
+
 
 
 private:
@@ -119,9 +120,6 @@ private:
 
     void                            *m_parent = nullptr;
     bool                             m_IsRootNode = true;
-
-//    static const int Maxobject = 8;
-//    static const int Minobject = 5;
 
 
 public:
@@ -152,7 +150,7 @@ public:
      * @param obj
      * @return
      *
-     * This method must be implemented by the user. Given a refernce to an object and
+     * This method must be implemented by the user. Given a reference to an object and
      * return a pointer to the node that this object belongs to, or nullptr if it
      * does not exist in a node
      */
@@ -161,19 +159,18 @@ public:
     bool IsRoot() const { return m_IsRootNode; }
 
 
-
     static int & total()
     {
         static int t=0;
         return t;
     }
 
-    Octree(float size) : m_aabb( glm::vec3( -size ), glm::vec3(size) )
+    Octree(float size) : m_aabb( vec_type( -size ), vec_type(size) )
     {
         ++total();
     }
 
-    Octree() : m_aabb( glm::vec3( -(1<<20) ), glm::vec3(1<<20) )
+    Octree() : m_aabb( vec_type( -(1<<20) ), vec_type(1<<20) )
     {
         ++total();
     }
@@ -211,50 +208,10 @@ public:
         return m_aabb;
     }
 
-    /**
-     * @brief CreateChildren
-     * @return
-     *
-     * Creates 8 child nodes, or returns false if the nodes are already created.
-     */
-    bool CreateChildren()
-    {
-        if( m_Children.size() ) return false;
-
-        float size = ( m_aabb.max.x  -  m_aabb.min.x ) * 0.5f;
-
-        m_Children.resize( 8 );
-
-        const glm::vec3 Node_Offsets[] = {
-                                            glm::vec3(0,0,0),
-                                            glm::vec3(0,0,1),
-                                            glm::vec3(0,1,0),
-                                            glm::vec3(0,1,1),
-                                            glm::vec3(1,0,0),
-                                            glm::vec3(1,0,1),
-                                            glm::vec3(1,1,0),
-                                            glm::vec3(1,1,1)
-                                        };
-
-        for( int i = 0 ; i < 8 ; i++ )
-        {
-            m_Children[i].m_aabb.min   = m_aabb.min + Node_Offsets[i]*size;
-            m_Children[i].m_aabb.max   = m_Children[i].m_aabb.min + glm::vec3(size);
-
-            m_Children[i].m_parent     = this;
-            m_Children[i].m_IsRootNode = false;
-
-            m_Children[i].m_aabb = m_Children[i].m_aabb*NODE_EXPANSION_COEF;
-        }
 
 
 
-        return true;
-    }
-
-
-
-    int GetClosestOctant( const glm::vec3  & p)
+    int GetClosestOctant( const vec_type  & p)
     {
         int i=0;
         auto c = m_aabb.Centre();
@@ -301,7 +258,6 @@ public:
 
         m_Children.clear();
     }
-
 
 
 
@@ -412,76 +368,7 @@ public:
         return false;
     }
 
-    /**
-     * @brief __InsertOrGiveToParent
-     * @param obj
-     * @param obj_bb
-     * @return
-     *
-     * Attemps to insert the object into the node, if it cannot fit
-     * in this node, it will pass the object to it's parent.
-     */
-    node_type* __InsertOrGiveToParent( object & obj, const aabb_type & obj_bb)
-    {
-        // first check if it can it into any of the children
-        for(auto & child : m_Children)
-        {
-            if( child.Contains(obj_bb) )
-            {
-                child.m_Obj.push_back(obj);
-                SetNode(obj, &child);
 
-                child.m_Totalobject++;
-
-                if( child.m_Obj.size() > Maxobject)
-                    child.Split();
-                return GetNode( obj);
-            }
-        }
-
-        // if it cant fit into any children, check if it can fit into itself
-        if( Contains(obj_bb) )
-        {
-            m_Obj.push_back(obj);
-            SetNode(obj, this);
-            if( m_Obj.size() > Maxobject)          // If we have too many object in the node
-                Split();                            //    attempt to split the node
-            return GetNode( obj);
-        }
-
-
-        // if the object cant fit into this node, then try to give it to the parent.
-        if( m_IsRootNode )
-        {
-            exit(1);
-            //return static_cast< scene_type* >(m_parent)->Insert( obj );
-        }
-        else
-        {
-            return static_cast< node_type* >(m_parent)->__InsertOrGiveToParent( obj , obj_bb);
-        }
-
-    }
-
-    /**
-     * @brief merge
-     * @param d
-     * Merges all objects into the new vector, but does not set the object's node.
-     */
-    void merge( std::vector<object> & d)
-    {
-        auto it = d.insert(
-            d.end(),
-            std::make_move_iterator(m_Obj.begin()),
-            std::make_move_iterator(m_Obj.end())
-          );
-
-       for(auto & c : m_Children)
-       {
-           c.merge( d );
-       }
-
-    }
 
 
     /**
@@ -594,6 +481,120 @@ public:
     }
 
     bool HasChildNodes() { return m_Children.size()!=0; }
+
+private:
+    /**
+     * @brief __InsertOrGiveToParent
+     * @param obj
+     * @param obj_bb
+     * @return
+     *
+     * Attemps to insert the object into the node, if it cannot fit
+     * in this node, it will pass the object to it's parent.
+     */
+    node_type* __InsertOrGiveToParent( object & obj, const aabb_type & obj_bb)
+    {
+        // first check if it can it into any of the children
+        for(auto & child : m_Children)
+        {
+            if( child.Contains(obj_bb) )
+            {
+                child.m_Obj.push_back(obj);
+                SetNode(obj, &child);
+
+                child.m_Totalobject++;
+
+                if( child.m_Obj.size() > Maxobject)
+                    child.Split();
+                return GetNode( obj);
+            }
+        }
+
+        // if it cant fit into any children, check if it can fit into itself
+        if( Contains(obj_bb) )
+        {
+            m_Obj.push_back(obj);
+            SetNode(obj, this);
+            if( m_Obj.size() > Maxobject)          // If we have too many object in the node
+                Split();                            //    attempt to split the node
+            return GetNode( obj);
+        }
+
+
+        // if the object cant fit into this node, then try to give it to the parent.
+        if( m_IsRootNode )
+        {
+            exit(1);
+            //return static_cast< scene_type* >(m_parent)->Insert( obj );
+        }
+        else
+        {
+            return static_cast< node_type* >(m_parent)->__InsertOrGiveToParent( obj , obj_bb);
+        }
+
+    }
+
+    /**
+     * @brief merge
+     * @param d
+     * Merges all objects into the new vector, but does not set the object's node.
+     */
+    void merge( std::vector<object> & d)
+    {
+        auto it = d.insert(
+            d.end(),
+            std::make_move_iterator(m_Obj.begin()),
+            std::make_move_iterator(m_Obj.end())
+          );
+
+       for(auto & c : m_Children)
+       {
+           c.merge( d );
+       }
+
+    }
+
+    /**
+     * @brief CreateChildren
+     * @return
+     *
+     * Creates 8 child nodes, or returns false if the nodes are already created.
+     */
+    bool CreateChildren()
+    {
+        if( m_Children.size() ) return false;
+
+        dim_type size = ( m_aabb.max.x  -  m_aabb.min.x ) * static_cast<dim_type>(0.5);
+
+        m_Children.resize( 8 );
+
+        const vec_type Node_Offsets[] = {
+                                            vec_type(0,0,0),
+                                            vec_type(0,0,1),
+                                            vec_type(0,1,0),
+                                            vec_type(0,1,1),
+                                            vec_type(1,0,0),
+                                            vec_type(1,0,1),
+                                            vec_type(1,1,0),
+                                            vec_type(1,1,1)
+                                        };
+
+        for( int i = 0 ; i < 8 ; i++ )
+        {
+            m_Children[i].m_aabb.min   = m_aabb.min + Node_Offsets[i]*size;
+            m_Children[i].m_aabb.max   = m_Children[i].m_aabb.min + vec_type(size);
+
+            m_Children[i].m_parent     = this;
+            m_Children[i].m_IsRootNode = false;
+
+            m_Children[i].m_aabb = m_Children[i].m_aabb * static_cast<dim_type>(NODE_EXPANSION_COEF);
+        }
+
+
+
+        return true;
+    }
+
 };
 
 #if 0
@@ -669,7 +670,7 @@ inline typename OctreeScene<object>::NodeType*  OctreeScene<object>::GetRootNode
     N->m_parent      = (void*)this;
     N->m_IsRootNode  = true;
     N->m_aabb        = N->m_aabb * 1.2f;
-    N->m_aabb       += glm::vec3((float)RootNodeSize*2.0f) * glm::vec3(id);
+    N->m_aabb       += vec_type((float)RootNodeSize*2.0f) * vec_type(id);
 
     m_RootNodes[ id ] = N;
 
@@ -678,10 +679,10 @@ inline typename OctreeScene<object>::NodeType*  OctreeScene<object>::GetRootNode
 
 
 template<typename object>
-inline typename OctreeScene<object>::NodeType*  OctreeScene<object>::GetRootNode(const glm::vec3 & position)
+inline typename OctreeScene<object>::NodeType*  OctreeScene<object>::GetRootNode(const vec_type & position)
 {
 
-    auto p = glm::vec3( position / (float(RootNodeSize) ) );
+    auto p = vec_type( position / (float(RootNodeSize) ) );
 
     glm::ivec3   id;
 

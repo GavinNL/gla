@@ -42,9 +42,7 @@
 #include <ctime>
 #include <iomanip>
 
-#ifndef GLA_DOUT
-#define GLA_DOUT std::cout
-#endif
+
 
 namespace gla
 {
@@ -234,10 +232,17 @@ static const std::string c_magenta    = "\033[0;35m";
 static const std::string c_cyan       = "\033[0;36m";
 static const std::string c_lightgray  = "\033[0;37m";
 
+#ifdef _WIN32
+#define GLA_LOGD  if(GLA_DEBUG   ) gla::print_time() << "[Debug] - "
+#define GLA_LOGI  if(GLA_INFO    ) gla::print_time() << "[Info] - "
+#define GLA_LOGV  if(GLA_VERBOSE ) gla::print_time() << "[Verbose] - "
+#define GLA_LOGT  if(GLA_TIMER   ) gla::print_time() << "[Timer] - "
+#else
 #define GLA_LOGD  if(GLA_DEBUG  && (std::cout<<c_red_b))     gla::print_time() <<  "[Debug] - "
 #define GLA_LOGI  if(GLA_INFO   && (std::cout<<c_green_b))   gla::print_time() << "[Info] - "
 #define GLA_LOGV  if(GLA_VERBOSE&& (std::cout<<c_cyan_b))    gla::print_time() << "[Verbose] - "
-#define GLA_LOGT  if(GLA_TIMER&& (std::cout<<c_magenta_b))    gla::print_time() << "[Timer] - "
+#define GLA_LOGT  if(GLA_TIMER&& (std::cout<<c_magenta_b))   gla::print_time() << "[Timer] - "
+#endif
 
 
 

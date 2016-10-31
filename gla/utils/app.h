@@ -278,7 +278,7 @@ class GLFW_App
 
             glfwGetFramebufferSize(gMainWindow, &_width, &_height);
             //    GLenum err = glewInit();
-            std::cout << "Window Created: " << Width() << "x" << Height() << std::endl;
+            //std::cout << "Window Created: " << Width() << "x" << Height() << std::endl;
 
             if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
             {

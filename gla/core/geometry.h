@@ -194,7 +194,7 @@ static Mesh createSphere(float radius = 1.0, unsigned int rings=20, unsigned int
         Sphere.indices.push_back(    r * sectors + s ); //3
     }
 
-    GLA_DOUT  << "Returning from Sphere\n";
+
     return Sphere;
 }
 
