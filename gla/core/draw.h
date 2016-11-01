@@ -103,11 +103,11 @@ namespace gla
 
     struct MultiDrawElementsIndirectCommand
     {
-        uint  count        = 0;
-        uint  instanceCount= 0;
-        uint  firstIndex   = 0;
-        uint  baseVertex   = 0;
-        uint  baseInstance = 0;
+        std::uint32_t  count        = 0;
+        std::uint32_t  instanceCount= 0;
+        std::uint32_t  firstIndex   = 0;
+        std::uint32_t  baseVertex   = 0;
+        std::uint32_t  baseInstance = 0;
     };
 
     static void MultiDrawElementsIndirect(Primitave p, DataType IndexType, MultiDrawElementsIndirectCommand * commands, std::size_t num_commands)

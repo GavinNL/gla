@@ -384,7 +384,8 @@ public:
                         break;
             }
 
-            GLA_LOGD << "Shader Loaded Successfully: " << path << std::endl;
+            GLA_LOGD << "Shader Loaded Successfully: " << path.c_str() << std::endl;
+            //std::cout << "Shader Loaded Successfully: " << path.c_str() << std::endl;
             return P;
 
         }

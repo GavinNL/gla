@@ -76,7 +76,7 @@ struct GenBuff
     {
         glGenBuffers(1, &x);
 
-        GLA_LOGD << "Buffer Generated: " << x  << "    Error Response: " << glGetError() << std::endl;
+        GLA_LOGV << "Buffer Generated: " << x  << "    Error Response: " << glGetError() << std::endl;
     }
 };
 
@@ -84,7 +84,7 @@ struct DestBuff
 {
     void operator()(GLuint & x)
     {
-        GLA_LOGD << "Destroying Buffer: " << x << std::endl;
+        GLA_LOGV << "Destroying Buffer: " << x << std::endl;
         glDeleteBuffers( 1, &x );
         x = 0;
     }

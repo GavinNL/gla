@@ -245,10 +245,10 @@ public:
 
         static_assert( sizeof(VertexStruct) == vertex_size , "The struct used to hold the vertex is not the same size as the template parameter arguments of the MeshBuffer");
 
-        auto vertex_size= V.size() * sizeof(VertexStruct);
+        auto vertex_buffer_size = V.size() * sizeof(VertexStruct);
 
 
-        auto v_byte = m_VertexPool->Malloc(vertex_size);
+        auto v_byte = m_VertexPool->Malloc(vertex_buffer_size);
 
 
         assert(v_byte != std::numeric_limits<std::size_t>::max() );
@@ -269,7 +269,7 @@ public:
         M.mem = std::shared_ptr< std::pair< std::size_t, std::size_t> >( new std::pair<std::size_t,std::size_t>(v_byte, 0),
                                                                          [vpool](std::pair<std::size_t,std::size_t> * p)
                                                                          {
-                                                                            GLA_LOGD << "Freeing Data!:"
+                                                                            GLA_LOGV << "Freeing Data!:"
                                                                                      <<  "  vertex  Data!:" << vpool->Free(p->first) << std::endl;
                                                                             delete p;
                                                                          }
@@ -279,12 +279,12 @@ public:
 
         M.vao = vao;
 
-        GLA_LOGD << "Non-Indexed Mesh Generated:"   << std::endl;
-     GLA_LOGD  << "Base Vertex Byte location: "
-                << "| Base Vertex: "               << M.base_vertex
-                << "| Num Vert:"                   << M.count
-                << "| VAO: "                       << M.vao.Get()
-                << "| Vertex Bytes Allocated: "    << vertex_size << " |" << std::endl;
+        GLA_LOGI << "Non-Indexed Mesh Generated:"   << std::endl;
+     GLA_LOGI  << "Base Vertex Byte location: "
+                << " | Base Vertex: "               << M.base_vertex
+                << " | Num Vert:"                   << M.count
+                << " | VAO: "                       << M.vao.Get()
+                << " | Vertex Bytes Allocated: "    << vertex_buffer_size << " |" << std::endl;
 
         return M;
     }
@@ -295,11 +295,11 @@ public:
 
         static_assert( sizeof(VertexStruct) == vertex_size , "The struct used to hold the vertex is not the same size as the template parameter arguments of the MeshBuffer");
 
-        auto vertex_size= V.size() * sizeof(VertexStruct);
-        auto index_size = I.size() * sizeof(index_type);
+        auto vertex_buffer_size= V.size() * sizeof(VertexStruct);
+        auto index_buffer_size = I.size() * sizeof(index_type);
 
-        auto v_byte = m_VertexPool->Malloc(vertex_size);
-        auto i_byte =  m_IndexPool->Malloc(index_size);
+        auto v_byte = m_VertexPool->Malloc(vertex_buffer_size);
+        auto i_byte =  m_IndexPool->Malloc(index_buffer_size);
 
         assert(v_byte != std::numeric_limits<std::size_t>::max() );
         assert(i_byte != std::numeric_limits<std::size_t>::max() );
@@ -327,7 +327,7 @@ public:
         M.mem = std::shared_ptr< std::pair< std::size_t, std::size_t> >( new std::pair<std::size_t,std::size_t>(v_byte, i_byte),
                                                                          [ipool, vpool](std::pair<std::size_t,std::size_t> * p)
                                                                          {
-                                                                            GLA_LOGD << "Freeing Data!:"
+                                                                            GLA_LOGV << "Freeing Data!:"
                                                                                      << "  vertex  Data!:" << vpool->Free(p->first)
                                                                                      << "  index   Data!:" << ipool->Free(p->second) << std::endl;
                                                                             delete p;
@@ -343,14 +343,14 @@ public:
 
         M.vao = vao;
 
-        GLA_LOGD << "Mesh Generated:" << std::endl;
-      GLA_LOGD  << "| Base Vertex Byte location: " << v_byte
-                << "| Base Index Byte location: " << i_byte
-                << "| Base Vertex: " << M.base_vertex
-                << "| Indices: " << M.count
-                << "| VAO: " << M.vao.Get()
-                << "| Vertex Bytes: " << vertex_size
-                << "| Index Bytes: " << index_size   << " |" << std::endl;
+        GLA_LOGI << "Mesh Generated:" << std::endl;
+      GLA_LOGI  << " | Base Vertex Byte location: " << v_byte
+                << " | Base Index Byte location: " << i_byte
+                << " | Base Vertex: " << M.base_vertex
+                << " | Indices: " << M.count
+                << " | VAO: " << M.vao.Get()
+                << " | Vertex Bytes: " << vertex_buffer_size
+                << " | Index Bytes: " << index_buffer_size   << " |" << std::endl;
 
         return M;
     }

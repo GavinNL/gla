@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+#define GLA_LOG_ALL
+
 #include "glad.h"
 
 #include <gla/gla.h>

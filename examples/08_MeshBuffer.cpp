@@ -22,6 +22,9 @@
  * SOFTWARE.
  */
 
+
+#define GLA_LOG_ALL
+
 #include <stdio.h>
 
 #include "glad.h"
@@ -36,16 +39,19 @@
 using namespace gla;
 
 
+
 //=================================================================================
 // Global Variables and Function Prototypes
 //=================================================================================
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 480
-#define WINDOW_TITLE  "Framebuffers and Differed Rendering"
+#define WINDOW_TITLE  "Mesh Buffer"
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
 using namespace gla;
+
+
 
 int main()
 {
@@ -91,6 +97,7 @@ int main()
 
         Mesh SphereVertices = createSphere(0.5);
         //=====================================================================================
+
 
 
         // Add each of the meshs to the buffer
