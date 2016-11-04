@@ -243,15 +243,15 @@ static const std::string c_lightgray  = "\033[0;37m";
 //#define GLA_LOGI  if(GLA_INFO    ) gla::print_time() << "[Info] - "
 //#define GLA_LOGV  if(GLA_VERBOSE ) gla::print_time() << "[Verbose] - "
 //#define GLA_LOGT  if(GLA_TIMER   ) gla::print_time() << "[Timer] - "
-#define GLA_LOGD  if(GLA_DEBUG   )  std::cout << c_red_b.c_str() << "[Debug] - "
-#define GLA_LOGI  if(GLA_INFO    )  std::cout << c_green_b.c_str() << "[Info] - "
-#define GLA_LOGV  if(GLA_VERBOSE )  std::cout << c_cyan_b.c_str() << "[Verbose] - "
-#define GLA_LOGT  if(GLA_TIMER   )  std::cout << c_magenta_b.c_str() << "[Timer] - "
+#define GLA_LOGD  if(GLA_DEBUG   )  std::cout << c_red_b.c_str()     << "[ Debug ] - "
+#define GLA_LOGI  if(GLA_INFO    )  std::cout << c_green_b.c_str()   << "[ Info  ] - "
+#define GLA_LOGV  if(GLA_VERBOSE )  std::cout << c_cyan_b.c_str()    << "[Verbose] - "
+#define GLA_LOGT  if(GLA_TIMER   )  std::cout << c_magenta_b.c_str() << "[ Timer ] - "
 #else
-#define GLA_LOGD  if(GLA_DEBUG  && (std::cout<<c_red_b))     gla::print_time() <<  "[Debug] - "
-#define GLA_LOGI  if(GLA_INFO   && (std::cout<<c_green_b))   gla::print_time() << "[Info] - "
-#define GLA_LOGV  if(GLA_VERBOSE&& (std::cout<<c_cyan_b))    gla::print_time() << "[Verbose] - "
-#define GLA_LOGT  if(GLA_TIMER&& (std::cout<<c_magenta_b))   gla::print_time() << "[Timer] - "
+#define GLA_LOGD  if(GLA_DEBUG   && (std::cout<<c_red_b))     gla::print_time() <<  "[Debug] - "
+#define GLA_LOGI  if(GLA_INFO    && (std::cout<<c_green_b))   gla::print_time() << "[Info] - "
+#define GLA_LOGV  if(GLA_VERBOSE && (std::cout<<c_cyan_b))    gla::print_time() << "[Verbose] - "
+#define GLA_LOGT  if(GLA_TIMER   && (std::cout<<c_magenta_b))   gla::print_time() << "[Timer] - "
 #endif
 
 

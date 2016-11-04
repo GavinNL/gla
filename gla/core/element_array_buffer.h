@@ -45,12 +45,13 @@ class ElementArrayBuffer : public Buffer
 
         }
 
-        ElementArrayBuffer( std::size_t size ) : Buffer(size){}
+        ElementArrayBuffer( std::size_t size ) : Buffer(size) { }
 
         void Bind() const
         {
             Buffer::Bind( *this, BindTarget);
         }
+
         void Unbind() const
         {
             Buffer::Unbind(  BindTarget );
@@ -114,7 +115,7 @@ class ElementArrayBuffer : public Buffer
                             );
         }
 
-        template<bool BindFirst=true>
+        template< bool BindFirst=true >
         void DrawInstanced( Primitave p , std::size_t NumberOfIndices , std::size_t primcount, std::size_t First_Index=0 )
         {
             if(BindFirst)

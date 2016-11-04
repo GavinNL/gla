@@ -61,9 +61,9 @@ class Instance_Rendering_App : public gla::utils::GLFW_App
         m_MeshBuffer.ReserveVertices(1000000);
 
         START_TIMER()
-            Mesh BoxVertices     = createBox( );
+            Mesh BoxVertices     = createBox( glm::vec3(1.45) );
+            Mesh SphereVertices  = createSphere(1.0);
             Mesh ConeVertices    = createCone(1 , 0.2, 10);
-            Mesh SphereVertices  = createSphere(0.5);
 
             m_Meshs.emplace_back( m_MeshBuffer.Insert( SphereVertices.vertices , SphereVertices.indices) );
             m_Meshs.emplace_back( m_MeshBuffer.Insert( BoxVertices.vertices    , BoxVertices.indices) );
@@ -87,7 +87,7 @@ class Instance_Rendering_App : public gla::utils::GLFW_App
 
         m_TransformsMat4.resize(m_Transforms.size());
 
-        for(int i=0;i<m_Transforms.size();i++)
+        for(int i=0 ; i<m_Transforms.size();i++)
         {
             float R = 4;
             float t = (float(i) / float(m_Transforms.size()) )* 2*3.141592653589;
@@ -153,8 +153,25 @@ class Instance_Rendering_App : public gla::utils::GLFW_App
         m_Shader_Gbuffer.Uniform( m_Shader_Gbuffer.GetUniformLocation("uTransform[0]"),  m_TransformsMat4[0],  m_TransformsMat4.size() );
 
         // Draw the mesh N times.
+        std::vector<gla::MultiDrawElementsIndirectCommand> cmd(2);
 
-        m_Meshs[0].DrawInstanced<true>(gla::Primitave::TRIANGLES, m_TransformsMat4.size());  // bind the first one
+        //MultiDrawElementsIndirectCommand cmd[2];
+        cmd[0].count         = m_Meshs[0].count;
+        cmd[0].baseVertex    = m_Meshs[0].base_vertex;
+        cmd[0].firstIndex    = m_Meshs[0].base_index_location/sizeof(unsigned int);
+        cmd[0].instanceCount = 3;
+        cmd[1].baseInstance  = 3;
+
+        cmd[1].count         = m_Meshs[1].count;
+        cmd[1].baseVertex    = m_Meshs[1].base_vertex;
+        cmd[1].firstIndex    = m_Meshs[1].base_index_location/sizeof(unsigned int);
+        cmd[1].instanceCount = 2;
+        cmd[1].baseInstance  = 2;
+
+        m_Meshs[0].vao.Bind();
+
+        gla::MultiDrawElementsIndirect( gla::Primitave::TRIANGLES , DataType::UNSIGNED_INT , cmd);
+        //m_Meshs[0].DrawInstanced<true>(gla::Primitave::TRIANGLES, m_TransformsMat4.size());  // bind the first one
 
 
         m_FBO.UnBind();

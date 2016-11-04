@@ -23,8 +23,8 @@ INCLUDEPATH += $$PWD/../
 #SOURCES  += ../examples/05_Sampler2DArray.cpp ../glad.cpp
 #SOURCES  += ../examples/06_UniformBuffer.cpp ../glad.cpp
 #SOURCES  += ../examples/07_FrameBuffer.cpp ../glad.cpp
-SOURCES  += ../examples/08_MeshBuffer.cpp ../glad.cpp
-#SOURCES  += ../examples/09_InstanceRendering.cpp ../glad.cpp
+#SOURCES  += ../examples/08_MeshBuffer.cpp ../glad.cpp
+SOURCES  += ../examples/09_InstanceRendering.cpp ../glad.cpp
 
 
 HEADERS += ../gla/*.h

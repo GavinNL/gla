@@ -39,7 +39,6 @@
 using namespace gla;
 
 
-
 //=================================================================================
 // Global Variables and Function Prototypes
 //=================================================================================
@@ -50,7 +49,6 @@ GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
 using namespace gla;
-
 
 
 int main()
@@ -211,6 +209,7 @@ int main()
 
         Timer_T<float> Timer;
         Timer_T<float> Timer2;
+
 
 
 

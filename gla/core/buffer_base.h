@@ -177,25 +177,44 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff, BufferInfo>
         // reallocates more space for the data
         void Resize(std::size_t size)
         {
+            // If a handle is already created, then we need to create a new buffer,
+            // Copy the old data to the new buffer, swap the handles
+            // then delete the old buffer.
             GLA_LOGD << " ===== Buffer::Resize called  ======" << std::endl;
-            Buffer B;
-            B.Reserve(size);
+            if( *this )
+            {
+                GLA_LOGD << "Buffer handle already exists" << std::endl;
+                Buffer B;
+                B.Reserve(size);
 
 
-            GLA_LOGD << "Resizing Buffer: " << m_ID->first
-                    << "   to " << std::min(size, B.Size() ) << " bytes" << std::endl;
+                //GLA_LOGI << "Resizing Buffer: " << m_ID->first
+                //         << "   to " << std::min(size, B.Size() ) << " bytes" << std::endl;
+                GLA_LOGI << "Copying old data over" << std::endl;
+                B.CopyBufferData(*this, 0, 0, std::min(size, Size() ) );
+                std::swap( this->m_ID->first, B.m_ID->first );
 
-            B.CopyBufferData(*this, 0, 0, std::min(size, Size() ) );
-            std::swap( this->m_ID->first, B.m_ID->first );
+                SharedData().m_Reserve = B.SharedData().m_Reserve;
+                SharedData().m_Offset  = std::min( SharedData().m_Reserve, SharedData().m_Offset);
 
-            SharedData().m_Reserve = B.SharedData().m_Reserve;
-            SharedData().m_Offset = std::min( SharedData().m_Reserve, SharedData().m_Offset);
+                GLA_LOGI << "        New Reserve Size: " << SharedData().m_Reserve
+                         << "        New Offset  Size: " << SharedData().m_Offset
+                         << "        New Id          : " << m_ID->first << std::endl;
 
-            GLA_LOGD << "        New Reserve Size: " << SharedData().m_Reserve
-                    << "        New Offset  Size: " << SharedData().m_Offset
-                    << "        New Id          : " << m_ID->first << std::endl;
+            }
+            // If a handle is not already created, then we need to
+            else
+            {
+                GLA_LOGD << "Buffer handle doesn't exist, creating new buffer" << std::endl;
+                auto const targ = BufferBindTarget::COPY_WRITE_BUFFER;
 
-            GLA_LOGD << " ===== Buffer::Resize ended  ======" << std::endl;
+                Regenerate( ); // generates a new handle, releases the old one.
+                Bind(  *this , targ);
+                glBufferData( static_cast<GLenum>(targ) , size, NULL , static_cast<GLenum>(BufferUsage::STATIC_DRAW) );
+                SharedData().m_Offset    = 0;
+                SharedData().m_Reserve   = size;
+                GLA_LOGI << "Buffer: Reserved Size: " << size << std::endl;
+            }
 
         }
 
@@ -247,7 +266,7 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff, BufferInfo>
         {
             auto const targ = BufferBindTarget::COPY_WRITE_BUFFER;
 
-            Regenerate( ); // generates a new handle, releases the old one.
+            Regenerate( ); // Generates a new handle, releases the old one.
             Bind(  *this , targ);
             glBufferData( static_cast<GLenum>(targ) , size_in_bytes, NULL , static_cast<GLenum>(usage) );
             SharedData().m_Offset    = 0;
