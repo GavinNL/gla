@@ -135,7 +135,7 @@ public:
         if(bind_first) vao.Bind();
 
         index_type==gla::DataType::UNKNOWN ?
-                    gla::DrawArraysInstanced( prim, count, base_vertex, draw_count) :
+                    gla::DrawArrays( prim, count, base_vertex, draw_count) :
                     gla::DrawElementsInstancedBaseVertex(prim, count, index_type, base_index_location, base_vertex, draw_count);
 
     }
@@ -205,6 +205,17 @@ public:
 //        vao.ForceDelete();
     }
 
+    void Bind() const
+    {
+        vao.Bind();
+    }
+
+    void Unbind() const
+    {
+        vao.Unbind();
+    }
+
+
     void ReserveVertices(std::size_t num_vertices)
     {
         vertex_buffer.Reserve( vertex_size * num_vertices);
@@ -245,10 +256,10 @@ public:
 
         static_assert( sizeof(VertexStruct) == vertex_size , "The struct used to hold the vertex is not the same size as the template parameter arguments of the MeshBuffer");
 
-        auto vertex_size= V.size() * sizeof(VertexStruct);
+        auto vertex_buffer_size = V.size() * sizeof(VertexStruct);
 
 
-        auto v_byte = m_VertexPool->Malloc(vertex_size);
+        auto v_byte = m_VertexPool->Malloc(vertex_buffer_size);
 
 
         assert(v_byte != std::numeric_limits<std::size_t>::max() );
@@ -269,7 +280,7 @@ public:
         M.mem = std::shared_ptr< std::pair< std::size_t, std::size_t> >( new std::pair<std::size_t,std::size_t>(v_byte, 0),
                                                                          [vpool](std::pair<std::size_t,std::size_t> * p)
                                                                          {
-                                                                            GLA_LOGD << "Freeing Data!:"
+                                                                            GLA_LOGV << "Freeing Data!:"
                                                                                      <<  "  vertex  Data!:" << vpool->Free(p->first) << std::endl;
                                                                             delete p;
                                                                          }
@@ -279,12 +290,12 @@ public:
 
         M.vao = vao;
 
-        GLA_LOGD << "Non-Indexed Mesh Generated:"   << std::endl;
-     GLA_LOGD  << "Base Vertex Byte location: "
-                << "| Base Vertex: "               << M.base_vertex
-                << "| Num Vert:"                   << M.count
-                << "| VAO: "                       << M.vao.Get()
-                << "| Vertex Bytes Allocated: "    << vertex_size << " |" << std::endl;
+        GLA_LOGI << "Non-Indexed Mesh Generated:"   << std::endl;
+     GLA_LOGI  << "Base Vertex Byte location: "
+                << " | Base Vertex: "               << M.base_vertex
+                << " | Num Vert:"                   << M.count
+                << " | VAO: "                       << M.vao.Get()
+                << " | Vertex Bytes Allocated: "    << vertex_buffer_size << " |" << std::endl;
 
         return M;
     }
@@ -295,11 +306,11 @@ public:
 
         static_assert( sizeof(VertexStruct) == vertex_size , "The struct used to hold the vertex is not the same size as the template parameter arguments of the MeshBuffer");
 
-        auto vertex_size= V.size() * sizeof(VertexStruct);
-        auto index_size = I.size() * sizeof(index_type);
+        auto vertex_buffer_size= V.size() * sizeof(VertexStruct);
+        auto index_buffer_size = I.size() * sizeof(index_type);
 
-        auto v_byte = m_VertexPool->Malloc(vertex_size);
-        auto i_byte =  m_IndexPool->Malloc(index_size);
+        auto v_byte = m_VertexPool->Malloc(vertex_buffer_size);
+        auto i_byte =  m_IndexPool->Malloc(index_buffer_size);
 
         assert(v_byte != std::numeric_limits<std::size_t>::max() );
         assert(i_byte != std::numeric_limits<std::size_t>::max() );
@@ -327,7 +338,7 @@ public:
         M.mem = std::shared_ptr< std::pair< std::size_t, std::size_t> >( new std::pair<std::size_t,std::size_t>(v_byte, i_byte),
                                                                          [ipool, vpool](std::pair<std::size_t,std::size_t> * p)
                                                                          {
-                                                                            GLA_LOGD << "Freeing Data!:"
+                                                                            GLA_LOGV << "Freeing Data!:"
                                                                                      << "  vertex  Data!:" << vpool->Free(p->first)
                                                                                      << "  index   Data!:" << ipool->Free(p->second) << std::endl;
                                                                             delete p;
@@ -343,18 +354,29 @@ public:
 
         M.vao = vao;
 
-        GLA_LOGD << "Mesh Generated:" << std::endl;
-      GLA_LOGD  << "| Base Vertex Byte location: " << v_byte
-                << "| Base Index Byte location: " << i_byte
-                << "| Base Vertex: " << M.base_vertex
-                << "| Indices: " << M.count
-                << "| VAO: " << M.vao.Get()
-                << "| Vertex Bytes: " << vertex_size
-                << "| Index Bytes: " << index_size   << " |" << std::endl;
+        GLA_LOGI << "Mesh Generated:" << std::endl;
+      GLA_LOGI  << " | Base Vertex Byte location: " << v_byte
+                << " | Base Index Byte location: " << i_byte
+                << " | Base Vertex: " << M.base_vertex
+                << " | Indices: " << M.count
+                << " | VAO: " << M.vao.Get()
+                << " | Vertex Bytes: " << vertex_buffer_size
+                << " | Index Bytes: " << index_buffer_size   << " |" << std::endl;
 
         return M;
     }
 
+
+    void MultiDraw( std::vector<gla::MultiDrawElementsIndirectCommand> & cmd, gla::Primitave p = gla::Primitave::TRIANGLES )
+    {
+       Bind();
+       if( std::is_same< index_type, std::uint8_t >::value  ) gla::MultiDrawElementsIndirect( p, gla::DataType::UNSIGNED_BYTE , cmd);
+       if( std::is_same< index_type, std::uint16_t >::value ) gla::MultiDrawElementsIndirect( p, gla::DataType::UNSIGNED_SHORT, cmd);
+       if( std::is_same< index_type, std::uint32_t >::value ) gla::MultiDrawElementsIndirect( p, gla::DataType::UNSIGNED_INT  , cmd);
+       if( std::is_same< index_type, std::int8_t >::value   ) gla::MultiDrawElementsIndirect( p, gla::DataType::BYTE          , cmd);
+       if( std::is_same< index_type, std::int16_t >::value  ) gla::MultiDrawElementsIndirect( p, gla::DataType::SHORT         , cmd);
+       if( std::is_same< index_type, std::int32_t >::value  ) gla::MultiDrawElementsIndirect( p, gla::DataType::INT           , cmd);
+    }
 
 
 protected:
@@ -368,8 +390,8 @@ protected:
     gla::ArrayBuffer                 vertex_buffer;
     gla::ElementArrayBuffer          index_buffer;
 
-    std::shared_ptr<MemoryPool>                       m_VertexPool;
-    std::shared_ptr<MemoryPool>                       m_IndexPool;
+    std::shared_ptr<MemoryPool>      m_VertexPool;
+    std::shared_ptr<MemoryPool>      m_IndexPool;
 
 };
 

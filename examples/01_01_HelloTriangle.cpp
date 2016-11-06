@@ -24,26 +24,29 @@
 
 #define GLA_LOG_ALL
 
+
 #include "glad.h"
-
 #include <gla/gla.h>
-
 #include <GLFW/glfw3.h>
+
 //=================================================================================
 // Global Variables and Function Prototypes
 //=================================================================================
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 480
-#define WINDOW_TITLE "Hello Indexed Triangle"
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
+
+//using namespace gla;
 using namespace gla;
 
-int main()
-{
-    GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
 
+
+int main(int argc, char **argv)
+{
+
+    GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
 
 
     { // adding an extra scope here because we want all gla objects automatically destroyed when they go out of scope
@@ -53,68 +56,66 @@ int main()
         glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 
+
+
         //================================================================
         // 1. Create the vertices of the triangle using our vertex structure
         //    The vertex strucutre contains positions and colours of each
         //    vertex in the triangle.
         //================================================================
-        struct MyVertex
-        {
-            glm::vec3 p;
-            glm::vec4 c;
-        };
 
-        std::vector< MyVertex > VertexBuffer;
-        VertexBuffer.push_back( { glm::vec3(-1.0f, -1.0f, 0.f), glm::vec4(1.f, 0.f, 0.f, 1.0f)  }  );
-        VertexBuffer.push_back( { glm::vec3( 1.0f ,-1.0f, 0.f), glm::vec4(0.f, 1.f, 0.f, 1.0f)  }  );
-        VertexBuffer.push_back( { glm::vec3( 0.0f , 1.0f, 0.f), glm::vec4(0.f, 0.f, 1.f, 1.0f)  }  );
+        // Populate a standard vector of the position and colours of each vertex
+        // We will use two separate buffers this time.
+        std::vector< glm::vec3 > Position;
+        std::vector< glm::vec4 > Colour;
 
 
+        Position.push_back( glm::vec3(-1.0f, -1.0f, 0.f) );
+        Position.push_back( glm::vec3( 1.0f ,-1.0f, 0.f) );
+        Position.push_back( glm::vec3( 0.0f , 1.0f, 0.f) );
 
-        // Create a buffer on the GPU using the data from the standard vector
-        ArrayBuffer         G( VertexBuffer );
-        //================================================================
-
-
-
-        //================================================================
-        // 2. Create an index buffer that will indicate which vertices
-        //    in the Array_Buffer will make up the triangles
-        //================================================================
-        // Create a triangle from vertex 0 1 and 2
-        std::vector< glm::uvec3 > IndexBuffer;
-        IndexBuffer.push_back( glm::uvec3( 0 ,1, 2) );
-
-        // Send the index buffer to the gpu.
-        ElementArrayBuffer E( IndexBuffer );
-        //================================================================
+        Colour.push_back( glm::vec4(1.f, 0.f, 0.f, 1.0f)  );
+        Colour.push_back( glm::vec4(0.f, 1.f, 0.f, 1.0f)  );
+        Colour.push_back( glm::vec4(0.f, 0.f, 1.f, 1.0f)  );
 
 
+        ArrayBuffer PosBuffer(Position);
+        ArrayBuffer ColBuffer(Colour);
 
         //================================================================
-        // 3. Load the triangle shader
+        // 2. Load the Shader program from files. We will use two shaders
+        //    a vertex and a fragment shader.
         //================================================================
         ShaderProgram TriangleShader;
-        TriangleShader.AttachShaders(  VertexShader("./resources/shaders/HelloTriangle.v"),
-                                       FragmentShader("./resources/shaders/HelloTriangle.f")  );
+        TriangleShader.AttachShaders( VertexShader  ("./resources/shaders/HelloTriangle.v"),
+                                      FragmentShader("./resources/shaders/HelloTriangle.f") );
+
+
+        PosBuffer.EnableAttributes<vec3, mat4, vec2>();
 
         while (!glfwWindowShouldClose(gMainWindow) )
         {
+
             // Set the triangle shader to be the one that we will use
             TriangleShader.Bind();
 
-            // Tell OpenGL that the data in the buffer
+
+            // Tell OpenGL that each vertex
             // consists of one vec3 and one vec4 that are both un-normalized.
             // This function will automatically bind the array buffer and set the
             // attributes.
-            G.EnableAttributes<glm::vec3, glm::vec4>( );
-            // (alternatively) G.EnableAttributes<glm::vec3, glm::vec4>(); // same as non-normlaized vectors
+            PosBuffer.EnableAttributes<vec3>(0);  // The first attribute will be a vec3
+            ColBuffer.EnableAttributes<vec4>(1);  // second attribute will be vec4
 
+            // If you want to normalize the data, for example for surface normals, you can use
+            // Which says that attribute 1 (ie: the vec4) should be noramlized data
+            //== another_buffer_reference.EnableAttributes<vec3, vec4>( NormalizeFlags::_1 ); ==
 
+            // Now draw the triangle.
+            // we are drawing Triangles, starting at Vertex Index 0
+            // and we are drawing 3 vertices (because 3 vertices make a triangle)
+            PosBuffer.Draw<false>(Primitave::TRIANGLES, 3, 0);
 
-            // Draw the Index Buffer, using every 3 indices to form a triangle.
-            // G will automatically be bound when calling EnableAttributes
-            E.Draw(Primitave::TRIANGLES, 3);
 
             glfwSwapBuffers(gMainWindow);
             glfwPollEvents();
@@ -134,13 +135,12 @@ int main()
 //=============================================================================
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow()
 {
-
     //    glewExperimental = GL_TRUE;
 
     if (!glfwInit())
         exit(EXIT_FAILURE);
 
-    auto gMainWindow = glfwCreateWindow(640, 480, WINDOW_TITLE, NULL, NULL);
+    auto gMainWindow = glfwCreateWindow(640, 480, "Hello Triangle", NULL, NULL);
 
     if (!gMainWindow)
     {

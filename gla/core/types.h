@@ -151,13 +151,19 @@ using col4  = glm::vec4  ;
 using col3  = glm::vec3  ;
 using col2  = glm::vec2  ;
 
+#ifdef _WIN32
+static void print_time()
+#else
 static std::ostream& print_time()
+#endif
 {
     std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
     std::time_t now_c = std::chrono::system_clock::to_time_t(now);
     std::cout << "[" << std::put_time(std::localtime(&now_c), "%F %T") << "] - ";
 
+#ifndef _WIN32
     return std::cout;
+#endif
 }
 
 
@@ -192,6 +198,12 @@ static std::ostream& print_time()
     #define GLA_TIMER 1
 #else
     #define GLA_TIMER 0
+#endif
+
+#ifdef GLA_ERROR
+    #define GLA_ERROR 1
+#else
+    #define GLA_ERROR 0
 #endif
 
 #if 0
@@ -233,15 +245,20 @@ static const std::string c_cyan       = "\033[0;36m";
 static const std::string c_lightgray  = "\033[0;37m";
 
 #ifdef _WIN32
-#define GLA_LOGD  if(GLA_DEBUG   ) gla::print_time() << "[Debug] - "
-#define GLA_LOGI  if(GLA_INFO    ) gla::print_time() << "[Info] - "
-#define GLA_LOGV  if(GLA_VERBOSE ) gla::print_time() << "[Verbose] - "
-#define GLA_LOGT  if(GLA_TIMER   ) gla::print_time() << "[Timer] - "
+//#define GLA_LOGD  if(GLA_DEBUG   ) gla::print_time() << "[Debug] - "
+//#define GLA_LOGI  if(GLA_INFO    ) gla::print_time() << "[Info] - "
+//#define GLA_LOGV  if(GLA_VERBOSE ) gla::print_time() << "[Verbose] - "
+//#define GLA_LOGT  if(GLA_TIMER   ) gla::print_time() << "[Timer] - "
+#define GLA_LOGD  if(GLA_DEBUG   )  std::cout << c_red_b.c_str()     << "[ Debug ] - "
+#define GLA_LOGI  if(GLA_INFO    )  std::cout << c_green_b.c_str()   << "[ Info  ] - "
+#define GLA_LOGV  if(GLA_VERBOSE )  std::cout << c_cyan_b.c_str()    << "[Verbose] - "
+#define GLA_LOGT  if(GLA_TIMER   )  std::cout << c_magenta_b.c_str() << "[ Timer ] - "
 #else
-#define GLA_LOGD  if(GLA_DEBUG  && (std::cout<<c_red_b))     gla::print_time() <<  "[Debug] - "
-#define GLA_LOGI  if(GLA_INFO   && (std::cout<<c_green_b))   gla::print_time() << "[Info] - "
-#define GLA_LOGV  if(GLA_VERBOSE&& (std::cout<<c_cyan_b))    gla::print_time() << "[Verbose] - "
-#define GLA_LOGT  if(GLA_TIMER&& (std::cout<<c_magenta_b))   gla::print_time() << "[Timer] - "
+#define GLA_LOGE  if(GLA_ERROR   && (std::cout<<c_red_b))       gla::print_time() << "[ERROR] - "
+#define GLA_LOGD  if(GLA_DEBUG   && (std::cout<<c_brown_b))       gla::print_time() << "[Debug] - "
+#define GLA_LOGI  if(GLA_INFO    && (std::cout<<c_green_b))     gla::print_time() << "[Info] - "
+#define GLA_LOGV  if(GLA_VERBOSE && (std::cout<<c_cyan_b))      gla::print_time() << "[Verbose] - "
+#define GLA_LOGT  if(GLA_TIMER   && (std::cout<<c_magenta_b))   gla::print_time() << "[Timer] - "
 #endif
 
 

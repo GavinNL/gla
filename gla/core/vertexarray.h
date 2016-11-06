@@ -33,13 +33,13 @@ namespace gla {
 
 struct GenVertexArray
 {
-    void operator()(GLuint & h) const { glGenVertexArrays(1, &h);  GLA_LOGD << "VOA generated: " << h << std::endl;}
+    void operator()(GLuint & h) const { glGenVertexArrays(1, &h);  GLA_LOGV << "VOA generated: " << h << std::endl;}
 };
 
 
 struct DestVertexArray
 {
-    void operator()(GLuint & h) const { GLA_LOGD << "VOA destroyed: " << h << std::endl; glDeleteVertexArrays(1, &h); }
+    void operator()(GLuint & h) const { GLA_LOGV << "VOA destroyed: " << h << std::endl; glDeleteVertexArrays(1, &h); }
 };
 
 struct VertexArrayInfo
@@ -129,9 +129,9 @@ class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray,Ve
             if(BindFirst) Bind();
 
             m_Data==DataType::UNKNOWN ?
-                gla::DrawArraysInstanced( p,  NumberOfIndices, First_Index_To_Draw_From, primcount )
+                gla::DrawArrays( p,  NumberOfIndices, First_Index_To_Draw_From, primcount )
                       :
-                gla::DrawElementsInstanced( p, NumberOfIndices,m_Data,First_Index_To_Draw_From, primcount );
+                gla::DrawElements( p, NumberOfIndices,m_Data,First_Index_To_Draw_From, primcount );
         }
 
         template<typename ...GLM_Types>
@@ -219,6 +219,19 @@ class VertexArray_T : public BaseHandle<GLuint, GenVertexArray, DestVertexArray>
             return vao;
         }
 
+
+
+        void MultiDraw( std::vector<gla::MultiDrawElementsIndirectCommand> & cmd )
+        {
+            Bind();
+            if( m_DataType == DataType::UNKNOWN)
+            {
+                GLA_LOGE << "Cannot MultiDrawElements because there is no ElementBuffer attached to this VAO" << std::endl;
+            }
+            else {
+                gla::MultiDrawElementsIndirect( gla::Primitave::TRIANGLES , m_DataType , cmd);
+            }
+        }
 };
 
 }

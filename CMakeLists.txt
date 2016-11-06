@@ -80,6 +80,10 @@ set(LIBS_GLAD
               examples/01_HelloTriangle.cpp glad.cpp)
 target_link_libraries (01_HelloTriangle ${LIBS_GLAD})
 
+        add_executable(01_01_HelloTriangle
+              examples/01_01_HelloTriangle.cpp glad.cpp)
+target_link_libraries (01_01_HelloTriangle ${LIBS_GLAD})
+
         add_executable(02_HelloTriangleIndexed
               examples/02_HelloTriangleIndexed.cpp glad.cpp)
 target_link_libraries (02_HelloTriangleIndexed ${LIBS_GLAD})
