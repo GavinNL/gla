@@ -9,7 +9,7 @@ using MyOctree   = gla::Octree< ObjectType , float, 8, 5>;
 
 struct MyObject
 {
-    glm::vec3                                  position;
+    glm::vec3                  position;
     MyOctree                 * node;
 
     MyObject( glm::vec3 p ) : position(p)
@@ -62,8 +62,8 @@ int main()
 
     gla::Camera C;
 
-    C.Perspective(160,4/3,1.0,10000);
-    C.SetPosition( glm::vec3(0,0,-200));
+    C.Perspective(160, 4/3,1.0,50);
+    C.SetPosition( glm::vec3(0,0,-10));
 
 
     gla::Frustum F( C.GetProjectionMatrix() );

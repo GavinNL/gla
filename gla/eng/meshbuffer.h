@@ -236,7 +236,6 @@ public:
 
         m_IndexPool->Reserve( sizeof(index_type) * num_indices);
 
-        //index_buffer.Resize();
     }
 
     std::size_t VertexBufferSize() const
@@ -300,6 +299,13 @@ public:
         return M;
     }
 
+    /**
+     * @brief Insert
+     * @param V - a vector of vertex information
+     * @param I - a vector of index
+     *
+     * @return a mesh object that can be used to draw the object
+     */
     template<typename VertexStruct>
     Mesh_T Insert( const std::vector<VertexStruct> & V, const std::vector<index_type> & I)
     {
@@ -316,7 +322,7 @@ public:
         assert(i_byte != std::numeric_limits<std::size_t>::max() );
 
         vertex_buffer.CopyData(V, v_byte);
-        index_buffer.CopyData(I,  i_byte);
+        index_buffer.CopyData( I, i_byte);
 
 
         //auto v_byte = vertex_buffer.Append( V ); // insert the data and return the byte index of where it was placed.
@@ -355,13 +361,13 @@ public:
         M.vao = vao;
 
         GLA_LOGI << "Mesh Generated:" << std::endl;
-      GLA_LOGI  << " | Base Vertex Byte location: " << v_byte
-                << " | Base Index Byte location: " << i_byte
-                << " | Base Vertex: " << M.base_vertex
-                << " | Indices: " << M.count
-                << " | VAO: " << M.vao.Get()
-                << " | Vertex Bytes: " << vertex_buffer_size
-                << " | Index Bytes: " << index_buffer_size   << " |" << std::endl;
+        GLA_LOGI << " | Base Vertex Byte location: " << v_byte
+                 << " | Base Index Byte location: " << i_byte
+                 << " | Base Vertex: " << M.base_vertex
+                 << " | Indices: " << M.count
+                 << " | VAO: " << M.vao.Get()
+                 << " | Vertex Bytes: " << vertex_buffer_size
+                 << " | Index Bytes: " << index_buffer_size   << " |" << std::endl;
 
         return M;
     }

@@ -27,7 +27,7 @@
 #define EXP_VERTEX_ARRAY
 
 #include <gla/core/handle.h>
-#include <gla/core/element_array_buffer.h>
+#include <gla/core/elementarraybuffer.h>
 
 namespace gla {
 

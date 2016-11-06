@@ -35,7 +35,7 @@
 #include <cstdlib>
 #include <gla/gla.h>
 #include <gla/eng/atlas.h>
-#include <gla/eng/mesh_buffer.h>
+#include <gla/eng/meshbuffer.h>
 
 #include <GLFW/glfw3.h> // GLFW helper library
 

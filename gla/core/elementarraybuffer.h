@@ -25,7 +25,7 @@
 #ifndef EXP_ELEMENT_ARRAY_BUFFER
 #define EXP_ELEMENT_ARRAY_BUFFER
 
-#include "array_buffer.h"
+#include "arraybuffer.h"
 
 namespace gla {
 
