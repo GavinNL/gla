@@ -367,6 +367,17 @@ public:
     }
 
 
+    void MultiDraw( std::vector<gla::MultiDrawElementsIndirectCommand> & cmd, gla::Primitave p = gla::Primitave::TRIANGLES )
+    {
+       Bind();
+       if( std::is_same< index_type, std::uint8_t >::value  ) gla::MultiDrawElementsIndirect( p, gla::DataType::UNSIGNED_BYTE , cmd);
+       if( std::is_same< index_type, std::uint16_t >::value ) gla::MultiDrawElementsIndirect( p, gla::DataType::UNSIGNED_SHORT, cmd);
+       if( std::is_same< index_type, std::uint32_t >::value ) gla::MultiDrawElementsIndirect( p, gla::DataType::UNSIGNED_INT  , cmd);
+       if( std::is_same< index_type, std::int8_t >::value   ) gla::MultiDrawElementsIndirect( p, gla::DataType::BYTE          , cmd);
+       if( std::is_same< index_type, std::int16_t >::value  ) gla::MultiDrawElementsIndirect( p, gla::DataType::SHORT         , cmd);
+       if( std::is_same< index_type, std::int32_t >::value  ) gla::MultiDrawElementsIndirect( p, gla::DataType::INT           , cmd);
+    }
+
 
 protected:
 
@@ -379,8 +390,8 @@ protected:
     gla::ArrayBuffer                 vertex_buffer;
     gla::ElementArrayBuffer          index_buffer;
 
-    std::shared_ptr<MemoryPool>                       m_VertexPool;
-    std::shared_ptr<MemoryPool>                       m_IndexPool;
+    std::shared_ptr<MemoryPool>      m_VertexPool;
+    std::shared_ptr<MemoryPool>      m_IndexPool;
 
 };
 

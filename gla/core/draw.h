@@ -143,7 +143,7 @@ namespace gla
     struct MultiDrawElementsIndirectCommand
     {
         std::uint32_t  count        = 0; // number of indices to draw
-        std::uint32_t  instanceCount= 0; // total number of instances of this object to draw
+        std::uint32_t  instanceCount= 1; // total number of instances of this object to draw
         std::uint32_t  firstIndex   = 0; // The first index in the element array to draw from
         std::uint32_t  baseVertex   = 0; // the value to add to the index obtained from the element array buffer
         std::uint32_t  baseInstance = 0; // the base instance???

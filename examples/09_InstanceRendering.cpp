@@ -196,10 +196,8 @@ class Instance_Rendering_App : public DiffRenderingApp
         cmd[1].instanceCount = 3;
         cmd[1].baseInstance  = 4;
 
-        m_MeshBuffer.Bind();
+        m_MeshBuffer.MultiDraw( cmd );
 
-        // Send the command to the GPU. which will draw a total of 5 objects, 2 of mesh1 and 3 of mesh2
-        gla::MultiDrawElementsIndirect( gla::Primitave::TRIANGLES , DataType::UNSIGNED_INT , cmd);
 
     }
 
