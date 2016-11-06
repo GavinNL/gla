@@ -135,7 +135,7 @@ public:
         if(bind_first) vao.Bind();
 
         index_type==gla::DataType::UNKNOWN ?
-                    gla::DrawArraysInstanced( prim, count, base_vertex, draw_count) :
+                    gla::DrawArrays( prim, count, base_vertex, draw_count) :
                     gla::DrawElementsInstancedBaseVertex(prim, count, index_type, base_index_location, base_vertex, draw_count);
 
     }
@@ -204,6 +204,17 @@ public:
 //        index_buffer.ForceDelete();
 //        vao.ForceDelete();
     }
+
+    void Bind() const
+    {
+        vao.Bind();
+    }
+
+    void Unbind() const
+    {
+        vao.Unbind();
+    }
+
 
     void ReserveVertices(std::size_t num_vertices)
     {

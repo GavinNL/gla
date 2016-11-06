@@ -77,9 +77,25 @@ struct EnableAttributes_T<>
 {
     static void Enable(GLuint i, std::int32_t offset, std::uint32_t NormalizeFlags, int Stride_Leave_as_Default=-1)
     {
-        i;offset;NormalizeFlags;Stride_Leave_as_Default;
+        i;offset;NormalizeFlags;Stride_Leave_as_Default; // to supress errors
     }
 };
+
+
+struct Instance_base
+{
+
+};
+
+template<typename glm_type, GLuint location=-1, GLuint div=-1>
+struct Attr : public Instance_base
+{
+    using type                  = glm_type;
+    static const GLuint index   = location;
+    static const GLuint divisor = div;
+};
+
+
 
 template<typename FirstType, typename ...VecTypes>
 struct EnableAttributes_T<FirstType, VecTypes...>
@@ -88,99 +104,139 @@ struct EnableAttributes_T<FirstType, VecTypes...>
     {
         #define BUFFER_OFFSET(idx) (static_cast<char*>(0) + (idx))
 
+
         const int total_size     = type_size<FirstType, VecTypes...>::sum;
 
         static_assert(
-            ( !std::is_same< FirstType, double       >::value )   ||
-            ( !std::is_same< FirstType, glm::dvec2    >::value )   ||
-            ( !std::is_same< FirstType, glm::dvec3    >::value )   ||
-            ( !std::is_same< FirstType, glm::dvec4    >::value )   ||
-            ( !std::is_same< FirstType, float        >::value )   ||
-            ( !std::is_same< FirstType, glm::vec2    >::value )   ||
-            ( !std::is_same< FirstType, glm::vec3    >::value )   ||
-            ( !std::is_same< FirstType, glm::vec4    >::value )   ||
-            ( !std::is_same< FirstType, std::int32_t >::value )   ||
-            ( !std::is_same< FirstType, glm::ivec2   >::value )   ||
-            ( !std::is_same< FirstType, glm::ivec3   >::value )   ||
-            ( !std::is_same< FirstType, glm::ivec4   >::value )   ||
-            ( !std::is_same< FirstType, std::uint32_t>::value )   ||
-            ( !std::is_same< FirstType, glm::uvec2   >::value )   ||
-            ( !std::is_same< FirstType, glm::uvec3   >::value )   ||
-            ( !std::is_same< FirstType, glm::uvec4   >::value )   ||
-            ( !std::is_same< FirstType, std::int16_t >::value )   ||
-            ( !std::is_same< FirstType, glm::i16vec2 >::value )   ||
-            ( !std::is_same< FirstType, glm::i16vec3 >::value )   ||
-            ( !std::is_same< FirstType, glm::i16vec4 >::value )   ||
-            ( !std::is_same< FirstType, std::uint16_t>::value )   ||
-            ( !std::is_same< FirstType, glm::u16vec2 >::value )   ||
-            ( !std::is_same< FirstType, glm::u16vec3 >::value )   ||
-            ( !std::is_same< FirstType, glm::u16vec4 >::value )   ||
-            ( !std::is_same< FirstType, std::int8_t  >::value )   ||
-            ( !std::is_same< FirstType, glm::i8vec2  >::value )   ||
-            ( !std::is_same< FirstType, glm::i8vec3  >::value )   ||
-            ( !std::is_same< FirstType, glm::i8vec4  >::value )   ||
-            ( !std::is_same< FirstType, std::uint8_t >::value )   ||
-            ( !std::is_same< FirstType, glm::u8vec2  >::value )   ||
-            ( !std::is_same< FirstType, glm::u8vec3  >::value )   ||
+            ( !std::is_same< FirstType, double       >::value ) ||
+            ( !std::is_same< FirstType, glm::dvec2   >::value ) ||
+            ( !std::is_same< FirstType, glm::dvec3   >::value ) ||
+            ( !std::is_same< FirstType, glm::dvec4   >::value ) ||
+            ( !std::is_same< FirstType, float        >::value ) ||
+            ( !std::is_same< FirstType, glm::vec2    >::value ) ||
+            ( !std::is_same< FirstType, glm::vec3    >::value ) ||
+            ( !std::is_same< FirstType, glm::vec4    >::value ) ||
+            ( !std::is_same< FirstType, std::int32_t >::value ) ||
+            ( !std::is_same< FirstType, glm::ivec2   >::value ) ||
+            ( !std::is_same< FirstType, glm::ivec3   >::value ) ||
+            ( !std::is_same< FirstType, glm::ivec4   >::value ) ||
+            ( !std::is_same< FirstType, std::uint32_t>::value ) ||
+            ( !std::is_same< FirstType, glm::uvec2   >::value ) ||
+            ( !std::is_same< FirstType, glm::uvec3   >::value ) ||
+            ( !std::is_same< FirstType, glm::uvec4   >::value ) ||
+            ( !std::is_same< FirstType, std::int16_t >::value ) ||
+            ( !std::is_same< FirstType, glm::i16vec2 >::value ) ||
+            ( !std::is_same< FirstType, glm::i16vec3 >::value ) ||
+            ( !std::is_same< FirstType, glm::i16vec4 >::value ) ||
+            ( !std::is_same< FirstType, std::uint16_t>::value ) ||
+            ( !std::is_same< FirstType, glm::u16vec2 >::value ) ||
+            ( !std::is_same< FirstType, glm::u16vec3 >::value ) ||
+            ( !std::is_same< FirstType, glm::u16vec4 >::value ) ||
+            ( !std::is_same< FirstType, std::int8_t  >::value ) ||
+            ( !std::is_same< FirstType, glm::i8vec2  >::value ) ||
+            ( !std::is_same< FirstType, glm::i8vec3  >::value ) ||
+            ( !std::is_same< FirstType, glm::i8vec4  >::value ) ||
+            ( !std::is_same< FirstType, std::uint8_t >::value ) ||
+            ( !std::is_same< FirstType, glm::u8vec2  >::value ) ||
+            ( !std::is_same< FirstType, glm::u8vec3  >::value ) ||
             ( !std::is_same< FirstType, glm::u8vec4  >::value )  ,
             "Unknown data type. Valid types are:  float ,glm::vec2 ,glm::vec3 ,glm::vec4 ,std::int32_t ,glm::ivec2 ,glm::ivec3 ,glm::ivec4 ,std::uint32_t ,glm::uvec2 ,glm::uvec3 ,glm::uvec4 ,std::int16_t ,glm::i16vec2 ,glm::i16vec3 ,glm::i16vec4 ,std::uint16_t ,glm::u16vec2 ,glm::u16vec3 ,glm::u16vec4 ,std::int8_t ,glm::i8vec2 ,glm::i8vec3 ,glm::i8vec4 ,std::uint8_t ,glm::u8vec2 ,glm::u8vec3 ,glm::u8vec4" );
 
 
         Stride_Leave_as_Default = Stride_Leave_as_Default==-1 ? total_size : Stride_Leave_as_Default;
 
-     //   std::cout << "Enabling attribute        : " << i << std::endl;
-     //   std::cout << "   totalsize              : " << Stride_Leave_as_Default << std::endl;
-     //   std::cout << "        size              : " << sizeof(FirstType) << std::endl;
-     //   std::cout << "        offset            : " << offset << std::endl;
-     //   std::cout << "        normal            : " << ((NormalizeFlags>>i)&01)<< std::endl;
-     //   std::cout << "        num_components    : " << num_components<< std::endl;
-     //   std::cout << "        base type         : " << GlBaseType << std::endl;
 
         // compile-time if statements, will be optimized
-        if( std::is_same< FirstType, double>::value )        glVertexAttribPointer( i,  1 , GL_DOUBLE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::dvec2>::value )     glVertexAttribPointer( i, 2 , GL_DOUBLE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::dvec3>::value )     glVertexAttribPointer( i, 3 , GL_DOUBLE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::dvec4>::value )     glVertexAttribPointer( i, 4 , GL_DOUBLE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, float>::value )          glVertexAttribPointer(  i, 1 ,          GL_FLOAT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::vec2>::value )      glVertexAttribPointer(  i, 2 ,          GL_FLOAT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::vec3>::value )      glVertexAttribPointer(  i, 3 ,          GL_FLOAT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::vec4>::value )      glVertexAttribPointer(  i, 4 ,          GL_FLOAT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
 
-        if( std::is_same< FirstType, float>::value )        glVertexAttribPointer( i,  1 , GL_FLOAT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::vec2>::value )     glVertexAttribPointer( i, 2 , GL_FLOAT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::vec3>::value )     glVertexAttribPointer( i, 3 , GL_FLOAT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::vec4>::value )     glVertexAttribPointer( i, 4 , GL_FLOAT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, double>::value )         glVertexAttribLPointer( i, 1 ,          GL_DOUBLE/*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::dvec2>::value )     glVertexAttribLPointer( i, 2 ,          GL_DOUBLE/*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::dvec3>::value )     glVertexAttribLPointer( i, 3 ,          GL_DOUBLE/*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::dvec4>::value )     glVertexAttribLPointer( i, 4 ,          GL_DOUBLE/*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+                                                                                                               /*                           */
+                                                                                                               /*                           */
+        if( std::is_same< FirstType, std::int32_t>::value )   glVertexAttribIPointer( i, 1 ,            GL_INT /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::ivec2>::value )     glVertexAttribIPointer( i, 2 ,            GL_INT /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::ivec3>::value )     glVertexAttribIPointer( i, 3 ,            GL_INT /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::ivec4>::value )     glVertexAttribIPointer( i, 4 ,            GL_INT /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, std::uint32_t>::value )  glVertexAttribIPointer( i, 1 ,   GL_UNSIGNED_INT /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::uvec2>::value )     glVertexAttribIPointer( i, 2 ,   GL_UNSIGNED_INT /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::uvec3>::value )     glVertexAttribIPointer( i, 3 ,   GL_UNSIGNED_INT /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::uvec4>::value )     glVertexAttribIPointer( i, 4 ,   GL_UNSIGNED_INT /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+                                                                                                               /*                           */
+        if( std::is_same< FirstType, std::int16_t>::value )   glVertexAttribIPointer( i, 1 ,          GL_SHORT /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::i16vec2>::value )   glVertexAttribIPointer( i, 2 ,          GL_SHORT /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::i16vec3>::value )   glVertexAttribIPointer( i, 3 ,          GL_SHORT /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::i16vec4>::value )   glVertexAttribIPointer( i, 4 ,          GL_SHORT /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, std::uint16_t>::value )  glVertexAttribIPointer( i, 1 , GL_UNSIGNED_SHORT /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::u16vec2>::value )   glVertexAttribIPointer( i, 2 , GL_UNSIGNED_SHORT /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::u16vec3>::value )   glVertexAttribIPointer( i, 3 , GL_UNSIGNED_SHORT /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::u16vec4>::value )   glVertexAttribIPointer( i, 4 , GL_UNSIGNED_SHORT /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+                                                                                                               /*                           */
+        if( std::is_same< FirstType, std::int8_t>::value )    glVertexAttribIPointer( i, 1 ,           GL_BYTE /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::i8vec2>::value )    glVertexAttribIPointer( i, 2 ,           GL_BYTE /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::i8vec3>::value )    glVertexAttribIPointer( i, 3 ,           GL_BYTE /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::i8vec4>::value )    glVertexAttribIPointer( i, 4 ,           GL_BYTE /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, std::uint8_t>::value )   glVertexAttribIPointer( i, 1 ,  GL_UNSIGNED_BYTE /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::u8vec2>::value )    glVertexAttribIPointer( i, 2 ,  GL_UNSIGNED_BYTE /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::u8vec3>::value )    glVertexAttribIPointer( i, 3 ,  GL_UNSIGNED_BYTE /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, glm::u8vec4>::value )    glVertexAttribIPointer( i, 4 ,  GL_UNSIGNED_BYTE /*, ((NormalizeFlags>>i)&01) */, Stride_Leave_as_Default, BUFFER_OFFSET(offset));
 
-        if( std::is_same< FirstType, std::int32_t>::value )  glVertexAttribPointer( i, 1 ,          GL_INT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::ivec2>::value )    glVertexAttribPointer( i, 2 ,          GL_INT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::ivec3>::value )    glVertexAttribPointer( i, 3 ,          GL_INT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::ivec4>::value )    glVertexAttribPointer( i, 4 ,          GL_INT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, std::uint32_t>::value ) glVertexAttribPointer( i, 1 , GL_UNSIGNED_INT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::uvec2>::value )    glVertexAttribPointer( i, 2 , GL_UNSIGNED_INT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::uvec3>::value )    glVertexAttribPointer( i, 3 , GL_UNSIGNED_INT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::uvec4>::value )    glVertexAttribPointer( i, 4 , GL_UNSIGNED_INT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        ///
 
-        if( std::is_same< FirstType, std::int16_t>::value )    glVertexAttribPointer( i, 1 ,          GL_SHORT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::i16vec2>::value )    glVertexAttribPointer( i, 2 ,          GL_SHORT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::i16vec3>::value )    glVertexAttribPointer( i, 3 ,          GL_SHORT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::i16vec4>::value )    glVertexAttribPointer( i, 4 ,          GL_SHORT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, std::uint16_t>::value )   glVertexAttribPointer( i, 1 , GL_UNSIGNED_SHORT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::u16vec2>::value )    glVertexAttribPointer( i, 2 , GL_UNSIGNED_SHORT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::u16vec3>::value )    glVertexAttribPointer( i, 3 , GL_UNSIGNED_SHORT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::u16vec4>::value )    glVertexAttribPointer( i, 4 , GL_UNSIGNED_SHORT, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
+        if( std::is_same< FirstType, double>::value )         GLA_LOGV << "glVertexAttribPointer(" << i << ", 1 ,          GL_DOUBLE," << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::dvec2>::value )     GLA_LOGV << "glVertexAttribPointer(" << i << ", 2 ,          GL_DOUBLE," << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::dvec3>::value )     GLA_LOGV << "glVertexAttribPointer(" << i << ", 3 ,          GL_DOUBLE," << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::dvec4>::value )     GLA_LOGV << "glVertexAttribPointer(" << i << ", 4 ,          GL_DOUBLE," << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, float>::value )          GLA_LOGV << "glVertexAttribPointer(" << i << ", 1 ,          GL_FLOAT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::vec2>::value )      GLA_LOGV << "glVertexAttribPointer(" << i << ", 2 ,          GL_FLOAT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::vec3>::value )      GLA_LOGV << "glVertexAttribPointer(" << i << ", 3 ,          GL_FLOAT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::vec4>::value )      GLA_LOGV << "glVertexAttribPointer(" << i << ", 4 ,          GL_FLOAT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, std::int32_t>::value )   GLA_LOGV << "glVertexAttribIPointer(" << i << ", 1 ,            GL_INT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::ivec2>::value )     GLA_LOGV << "glVertexAttribIPointer(" << i << ", 2 ,            GL_INT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::ivec3>::value )     GLA_LOGV << "glVertexAttribIPointer(" << i << ", 3 ,            GL_INT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::ivec4>::value )     GLA_LOGV << "glVertexAttribIPointer(" << i << ", 4 ,            GL_INT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, std::uint32_t>::value )  GLA_LOGV << "glVertexAttribIPointer(" << i << ", 1 ,   GL_UNSIGNED_INT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::uvec2>::value )     GLA_LOGV << "glVertexAttribIPointer(" << i << ", 2 ,   GL_UNSIGNED_INT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::uvec3>::value )     GLA_LOGV << "glVertexAttribIPointer(" << i << ", 3 ,   GL_UNSIGNED_INT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::uvec4>::value )     GLA_LOGV << "glVertexAttribIPointer(" << i << ", 4 ,   GL_UNSIGNED_INT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, std::int16_t>::value )   GLA_LOGV << "glVertexAttribIPointer(" << i << ", 1 ,          GL_SHORT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::i16vec2>::value )   GLA_LOGV << "glVertexAttribIPointer(" << i << ", 2 ,          GL_SHORT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::i16vec3>::value )   GLA_LOGV << "glVertexAttribIPointer(" << i << ", 3 ,          GL_SHORT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::i16vec4>::value )   GLA_LOGV << "glVertexAttribIPointer(" << i << ", 4 ,          GL_SHORT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, std::uint16_t>::value )  GLA_LOGV << "glVertexAttribIPointer(" << i << ", 1 , GL_UNSIGNED_SHORT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::u16vec2>::value )   GLA_LOGV << "glVertexAttribIPointer(" << i << ", 2 , GL_UNSIGNED_SHORT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::u16vec3>::value )   GLA_LOGV << "glVertexAttribIPointer(" << i << ", 3 , GL_UNSIGNED_SHORT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::u16vec4>::value )   GLA_LOGV << "glVertexAttribIPointer(" << i << ", 4 , GL_UNSIGNED_SHORT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, std::int8_t>::value )    GLA_LOGV << "glVertexAttribIPointer(" << i << ", 1 ,           GL_BYTE, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::i8vec2>::value )    GLA_LOGV << "glVertexAttribIPointer(" << i << ", 2 ,           GL_BYTE, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::i8vec3>::value )    GLA_LOGV << "glVertexAttribIPointer(" << i << ", 3 ,           GL_BYTE, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::i8vec4>::value )    GLA_LOGV << "glVertexAttribIPointer(" << i << ", 4 ,           GL_BYTE, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, std::uint8_t>::value )   GLA_LOGV << "glVertexAttribIPointer(" << i << ", 1 ,  GL_UNSIGNED_BYTE, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::u8vec2>::value )    GLA_LOGV << "glVertexAttribIPointer(" << i << ", 2 ,  GL_UNSIGNED_BYTE, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::u8vec3>::value )    GLA_LOGV << "glVertexAttribIPointer(" << i << ", 3 ,  GL_UNSIGNED_BYTE, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
+        if( std::is_same< FirstType, glm::u8vec4>::value )    GLA_LOGV << "glVertexAttribIPointer(" << i << ", 4 ,  GL_UNSIGNED_BYTE, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset) << " );" << std::endl;
 
-        if( std::is_same< FirstType, std::int8_t>::value )    glVertexAttribPointer( i, 1 ,          GL_BYTE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::i8vec2>::value )    glVertexAttribPointer( i, 2 ,          GL_BYTE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::i8vec3>::value )    glVertexAttribPointer( i, 3 ,          GL_BYTE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::i8vec4>::value )    glVertexAttribPointer( i, 4 ,          GL_BYTE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, std::uint8_t>::value )   glVertexAttribPointer( i, 1 , GL_UNSIGNED_BYTE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::u8vec2>::value )    glVertexAttribPointer( i, 2 , GL_UNSIGNED_BYTE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::u8vec3>::value )    glVertexAttribPointer( i, 3 , GL_UNSIGNED_BYTE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
-        if( std::is_same< FirstType, glm::u8vec4>::value )    glVertexAttribPointer( i, 4 , GL_UNSIGNED_BYTE, ((NormalizeFlags>>i)&01) , Stride_Leave_as_Default, BUFFER_OFFSET(offset));
 
 
-     //   glVertexAttribPointer( i,
-     //                          num_components ,
-     //                          GlBaseType,
-     //                          ((NormalizeFlags>>i)&01) ,
-     //                          Stride_Leave_as_Default,
-     //                          BUFFER_OFFSET(offset));
+
+        if( std::is_same< FirstType, glm::mat4>::value)
+        {
+            glVertexAttribPointer( i  , 4 , GL_FLOAT, GL_FALSE , Stride_Leave_as_Default, BUFFER_OFFSET(offset)  );
+            glVertexAttribPointer( i+1, 4 , GL_FLOAT, GL_FALSE , Stride_Leave_as_Default, BUFFER_OFFSET(offset + sizeof(GLfloat) * 4 * 1  ) );
+            glVertexAttribPointer( i+2, 4 , GL_FLOAT, GL_FALSE , Stride_Leave_as_Default, BUFFER_OFFSET(offset + sizeof(GLfloat) * 4 * 2  ) );
+            glVertexAttribPointer( i+3, 4 , GL_FLOAT, GL_FALSE , Stride_Leave_as_Default, BUFFER_OFFSET(offset + sizeof(GLfloat) * 4 * 3  ) );
+
+
+            GLA_LOGV << "glVertexAttribPointer(" << i   << ", 4 ,          GL_FLOAT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset)                             << ");" << std::endl;
+            GLA_LOGV << "glVertexAttribPointer(" << i+1 << ", 4 ,          GL_FLOAT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset + sizeof(GLfloat) * 4 * 1  ) << ");" << std::endl;
+            GLA_LOGV << "glVertexAttribPointer(" << i+2 << ", 4 ,          GL_FLOAT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset + sizeof(GLfloat) * 4 * 2  ) << ");" << std::endl;
+            GLA_LOGV << "glVertexAttribPointer(" << i+3 << ", 4 ,          GL_FLOAT, " << ((NormalizeFlags>>i)&01) << ", " << Stride_Leave_as_Default << ", " << (std::intptr_t)BUFFER_OFFSET(offset + sizeof(GLfloat) * 4 * 3  ) << ");" << std::endl;
+        }
+
 
         glEnableVertexAttribArray(i);
 
@@ -190,9 +246,9 @@ struct EnableAttributes_T<FirstType, VecTypes...>
 
 
 template <typename... GLM_Vec_Types>
-static void EnableAttributes( NormalizeFlags normalizeFlags = NormalizeFlags::none )
+static void EnableAttributes( NormalizeFlags normalizeFlags = NormalizeFlags::none, int start_attrib=0 )
 {
-    gla::EnableAttributes_T<GLM_Vec_Types...>::Enable(0, 0, normalizeFlags._flags);
+    gla::EnableAttributes_T<GLM_Vec_Types...>::Enable(start_attrib, 0, normalizeFlags._flags);
 }
 
 class ArrayBuffer : public Buffer
@@ -262,9 +318,24 @@ class ArrayBuffer : public Buffer
         {
             Bind();
             gla::EnableAttributes<GLM_Vec_Types...>(normalizeFlags);
-            //gla::EnableAttributes<GLM_Vec_Types...>::Enable(0, 0, normalizeFlags._flags);
         }
 
+
+        template <typename... GLM_Vec_Types>
+        void EnableAttributes( int StartAttrib, NormalizeFlags normalizeFlags = NormalizeFlags::none ) const
+        {
+            Bind();
+            gla::EnableAttributes<GLM_Vec_Types...>(normalizeFlags,StartAttrib);
+        }
+
+        template <typename GLM_Vec_Type>
+        void EnableDivisor( int AttribIndex, GLuint divisor ) const
+        {
+            Bind();
+            EnableAttributes<GLM_Vec_Type>( AttribIndex );
+            glVertexAttribDivisor(AttribIndex, divisor);
+            GLA_LOGV << "glVertexAttribDivisor(" << AttribIndex   << ", " << divisor << ");" << std::endl;
+        }
 };
 
 

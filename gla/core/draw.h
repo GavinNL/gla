@@ -49,6 +49,26 @@ namespace gla
     }
 
     /**
+     * @brief DrawElements
+     * @param p - the primative to draw
+     * @param NumIndices - total number of indices to draw
+     * @param IndexType - the index type, must be an integer type (BYTE,UNSIGNED_BYTE,SHORT,UNSIGNED_SHORT ,INT)
+     * @param StartIndex - start index in the ElementArrayBuffer to start drawing from
+     * @param primcount - total number of times to draw the set
+     *
+     * Draw the same set of primatives multiple times, each time incrementing the gl_InstanceID variable
+     * in the shader.  This is used to draw multiple objects of the same time with a single call.
+     */
+    static void DrawElements( Primitave p, std::size_t NumIndices, DataType IndexType, std::size_t StartIndexByteLocation, std::size_t primcount)
+    {
+        glDrawElementsInstanced( static_cast<GLenum>(p),
+                        static_cast<GLsizei>(NumIndices),
+                        static_cast<GLenum>(IndexType),
+                        static_cast<char*>(0)+StartIndexByteLocation,
+                        static_cast<GLsizei>(primcount) ) ;
+    }
+
+    /**
      * @brief DrawArrays
      * @param p - the type of primitave to draw
      * @param NumVertices - the total number of vertices to draw
@@ -64,72 +84,54 @@ namespace gla
 
     }
 
-
     /**
-     * @brief DrawElementsInstanced
-     * @param p - the primative to draw
-     * @param NumIndices - total number of indices to draw
-     * @param IndexType - the index type, must be an integer type (BYTE,UNSIGNED_BYTE,SHORT,UNSIGNED_SHORT ,INT)
-     * @param StartIndex - start index in the ElementArrayBuffer to start drawing from
-     * @param primcount - total number of times to draw the set
-     *
-     * Draw the same set of primatives multiple times, each time incrementing the gl_InstanceID variable
-     * in the shader.  This is used to draw multiple objects of the same time with a single call.
-     */
-    static void DrawElementsInstanced( Primitave p, std::size_t NumIndices, DataType IndexType, std::size_t StartIndexByteLocation, std::size_t primcount)
-    {
-        glDrawElementsInstanced( static_cast<GLenum>(p),
-                        static_cast<GLsizei>(NumIndices),
-                        static_cast<GLenum>(IndexType),
-                        static_cast<char*>(0)+StartIndexByteLocation,
-                        static_cast<GLsizei>(primcount) ) ;
-    }
-
-    /**
-     * @brief DrawArraysInstanced
+     * @brief DrawArrays
      * @param p
      * @param NumVertices
      * @param StartVertex
-     * @param primcount
+     * @param primcount - number of times to draw the set of vertices
+     *
+     *
      */
-    static void DrawArraysInstanced( Primitave p, std::size_t NumVertices, std::size_t StartVertex, std::size_t primcount)
+    static void DrawArrays( Primitave p, std::size_t NumVertices, std::size_t StartVertex, std::size_t primcount)
     {
 
         glDrawArraysInstanced( static_cast<GLenum>(p),
-                      static_cast<GLint>(StartVertex),
-                      static_cast<GLsizei>(NumVertices), static_cast<GLsizei>(primcount) );
+                               static_cast<GLint>(StartVertex),
+                               static_cast<GLsizei>(NumVertices),
+                               static_cast<GLsizei>(primcount) );
 
     }
 
 
-    static void DrawElementsBaseVertex( Primitave p, std::size_t NumIndices, DataType IndexType, std::size_t StartIndex, std::size_t BaseVertex)
+    static void DrawElementsBaseVertex( Primitave p, std::size_t NumIndices, DataType IndexType, std::size_t StartIndexByteLocation, std::size_t BaseVertex)
     {
         glDrawElementsBaseVertex( static_cast<GLenum>(p),
                         static_cast<GLsizei>(NumIndices),
                         static_cast<GLenum>(IndexType),
-                        static_cast<char*>(0)+StartIndex,
+                        static_cast<char*>(0)+StartIndexByteLocation,
                         static_cast<GLint>(BaseVertex) );
     }
 
-    static void DrawElementsInstancedBaseVertex( Primitave p, std::size_t NumIndices, DataType IndexType, std::size_t StartIndex, std::size_t BaseVertex, std::size_t primcount)
+    static void DrawElementsInstancedBaseVertex( Primitave p, std::size_t NumIndices, DataType IndexType, std::size_t StartIndexByteLocation, std::size_t BaseVertex, std::size_t primcount)
     {
 
         glDrawElementsInstancedBaseVertex(
                         static_cast<GLenum>(p),
                         static_cast<GLsizei>(NumIndices),
                         static_cast<GLenum>(IndexType),
-                        static_cast<char*>(0)+StartIndex,
+                        static_cast<char*>(0)+StartIndexByteLocation,
                         static_cast<GLsizei>(primcount),
                         static_cast<GLint>(BaseVertex) );
     }
 
-    static void DrawElementsInstancedBaseVertexBaseInstance( Primitave p, std::size_t NumIndices, DataType IndexType, std::size_t StartIndex, std::size_t BaseVertex, std::size_t primcount, std::size_t baseinstance)
+    static void DrawElementsInstancedBaseVertexBaseInstance( Primitave p, std::size_t NumIndices, DataType IndexType, std::size_t StartIndexByteLocation, std::size_t BaseVertex, std::size_t primcount, std::size_t baseinstance)
     {
 
         glDrawElementsInstancedBaseVertexBaseInstance(  static_cast<GLenum>(p),
                                                         static_cast<GLsizei>(NumIndices),
                                                         static_cast<GLenum>(IndexType),
-                                                        static_cast<char*>(0)+StartIndex,
+                                                        static_cast<char*>(0)+StartIndexByteLocation,
                                                         static_cast<GLsizei>(primcount),
                                                         static_cast<GLint>(BaseVertex),
                                                         static_cast<GLuint>(baseinstance) );

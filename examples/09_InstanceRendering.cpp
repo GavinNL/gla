@@ -24,8 +24,11 @@
 
 #include <stdio.h>
 
+#define GLA_VERBOSE 1
 #define GLA_INFO 1
 #define GLA_TIMER 1
+#define GLA_ERROR 1
+#define GLA_DEBUG 1
 
 #include "glad.h"
 #include <iostream>
@@ -36,8 +39,9 @@
 
 #include <GLFW/glfw3.h> // GLFW helper library
 
-#include <gla/utils/app.h>
 
+#include <gla/utils/app.h>
+#include "DiffRenderingApp.h"
 using namespace gla;
 
 
@@ -51,12 +55,20 @@ GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 using namespace gla;
 
 
-class Instance_Rendering_App : public gla::utils::GLFW_App
+class Instance_Rendering_App : public DiffRenderingApp
 {
     public:
 
-    Instance_Rendering_App(int w, int h, const char * title) : GLFW_App(w,h,title)
+    Instance_Rendering_App(int w, int h, const char * title) : DiffRenderingApp(w,h,title)
     {
+        // Load the Instance shader using the GBuffer approach of rendering
+        // to textures
+        m_MultiDrawShader   = ShaderProgram::Load( "./resources/shaders/GBuffer_Instance.s" );
+
+        // Load textures
+        Image Tex1("./resources/textures/rocks.jpg",  3 );
+        m_Sampler.emplace_back( Sampler2D(Tex1) );
+
         m_MeshBuffer.ReserveIndices(1000000);
         m_MeshBuffer.ReserveVertices(1000000);
 
@@ -69,14 +81,7 @@ class Instance_Rendering_App : public gla::utils::GLFW_App
             m_Meshs.emplace_back( m_MeshBuffer.Insert( BoxVertices.vertices    , BoxVertices.indices) );
             m_Meshs.emplace_back( m_MeshBuffer.Insert( ConeVertices.vertices , ConeVertices.indices) );
 
-            for(auto & M : m_Meshs)
-            {
 
-                GLA_LOGI <<  "count: "           << std::setw(6) << M.count
-                         <<  " |  base index: "  << std::setw(6) << M.base_index_location
-                         <<  " |  base_vertex: " << std::setw(6) << M.base_vertex
-                         <<  " |  vao: " << M.vao                       << std::endl;
-            }
         END_TIMER("Loading Meshs")
 
 
@@ -87,49 +92,68 @@ class Instance_Rendering_App : public gla::utils::GLFW_App
 
         m_TransformsMat4.resize(m_Transforms.size());
 
+
+        std::vector<int> drawids;
         for(int i=0 ; i<m_Transforms.size();i++)
         {
             float R = 4;
             float t = (float(i) / float(m_Transforms.size()) )* 2*3.141592653589;
             m_Transforms[i].SetPosition( { R*cos(t),1, R*sin(t) });
+            drawids.push_back(i);
         }
 
         // maximum 10 transforms, (see the shader)
         assert( m_Transforms.size() <= 10 );
 
-        LoadShaders();
-        SetupFrameBuffer();
-        LoadTextures();
+
+
+        //=====================================================================================================
+        // The Mesh Buffer uses a single arraybuffer to store
+        // the positions,normals and UV coords. Each of these attributes
+        // are listed in the shader under input layout 0,1 and 2.
+        //
+        // We are going to use a separate array buffer to sure
+        // the instance values, they will be under layout attribute 3 (see the shader source)
+        //
+        //
+        //=====================================================================================================
+        m_DrawIDBuffers.CopyData( drawids );
+
+        m_MeshBuffer.Bind(); // bind the mesh buffer (it's a VAO)
+        m_DrawIDBuffers.EnableDivisor< int >(3, 1); // tell openGL that layout 3 will consist of a single int
+                                                    // that will be incremented once per instance call
+                                                    // because the VAO is bound, this attribute will be enabled
+                                                    // for all meshes in this meshbuffer
+
+        m_DrawIDBuffers.Unbind();                   // unbind the VAO so that we dont accidently make changes to it.
+
+
+        m_MeshBuffer.Unbind();
+
     }
 
-    virtual void OnKey(int k, int scancode, int action ,int mods)
-    {
 
-    }
-
-    void onFrame(double dt)
+    void onRender(double dt)
     {
         static gla::Timer_T<float> Timer;
-
-        m_FBO.Bind(); // bind the FBO so we render to the FBO textures
 
         glEnable(GL_DEPTH_TEST);
         glViewport(0, 0, Width(), Height());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Use the GBufferShader
-        m_Shader_Gbuffer.Bind();
+        m_MultiDrawShader.Bind();
 
         // Attach the Sampler to Texture Unit 0.
         m_Sampler[0].SetActive(0);
 
         // Tell the shader that we are using Texture Unit 0 for the sampler
-        m_Shader_Gbuffer.Uniform( m_Shader_Gbuffer.GetUniformLocation("uSampler"), 0 );
-        m_Shader_Gbuffer.Uniform( m_Shader_Gbuffer.GetUniformLocation("uCamera"),  m_Camera.GetProjectionMatrix() * m_Camera.Camera::GetMatrix() );
+        m_MultiDrawShader.Uniform( m_MultiDrawShader.GetUniformLocation("uSampler"), 0 );
+        m_MultiDrawShader.Uniform( m_MultiDrawShader.GetUniformLocation("uCamera"),  m_Camera.GetProjectionMatrix() * m_Camera.Camera::GetMatrix() );
 
 
         // loop through all the tranforms and get a model matrix
-        // The model matrix will be stored in a contigious array so we can send
+        // The model matrix will be stored in a continious array so we can send
         // all at the same time
         for(int i=0;i<m_Transforms.size();i++)
         {
@@ -142,136 +166,44 @@ class Instance_Rendering_App : public gla::utils::GLFW_App
             m_TransformsMat4[i] = m_Transforms[i].GetMatrix();
         }
 
-        static long long counter=0;
-        counter++;
-        DO_EVERY( 2.0 )
-                GLA_LOGI << "Avg FPS: " << ( counter/ 2)<<  std::endl;
-                counter=0;
-        END_EVERY
 
         // Send all transformation matrice at once
-        m_Shader_Gbuffer.Uniform( m_Shader_Gbuffer.GetUniformLocation("uTransform[0]"),  m_TransformsMat4[0],  m_TransformsMat4.size() );
+        m_MultiDrawShader.Uniform( m_MultiDrawShader.GetUniformLocation("uTransform[0]"),  m_TransformsMat4[0],  m_TransformsMat4.size() );
 
+
+        //=====================================================================================================
+        // Create a command vector for the MultiDrawElementsIndirect function
+        //
+        // MultidrawElementsIndirect can draw multple meshes from the same buffer, we are going to draw
+        // two different meshes.
+        // The uniform values for each instance of the mesh is stored in an array in the shader
+        // called uTransform[], to determine which index we need to use we use a vertex attribute called
+        // "inDrawID" (see the shader code).  This value is updated once per instance, rather that once
+        // per vertex. (Refer to the Constructor to see how this is set up)
+        //=====================================================================================================
         // Draw the mesh N times.
         std::vector<gla::MultiDrawElementsIndirectCommand> cmd(2);
 
-        //MultiDrawElementsIndirectCommand cmd[2];
-        cmd[0].count         = m_Meshs[0].count;
-        cmd[0].baseVertex    = m_Meshs[0].base_vertex;
-        cmd[0].firstIndex    = m_Meshs[0].base_index_location/sizeof(unsigned int);
-        cmd[0].instanceCount = 3;
-        cmd[1].baseInstance  = 3;
+        cmd[0].count         = m_Meshs[0].count;                                       // number of triangles to draw
+        cmd[0].baseVertex    = m_Meshs[0].base_vertex;                                 // the base vertex to start from
+        cmd[0].firstIndex    = m_Meshs[0].base_index_location/sizeof(unsigned int);    // the first INDEX (not byte location)
+        cmd[0].instanceCount = 4;                                                      // number of times to draw this mesh
+        cmd[1].baseInstance  = 0;                                                      // which Instance value to start form
 
         cmd[1].count         = m_Meshs[1].count;
         cmd[1].baseVertex    = m_Meshs[1].base_vertex;
         cmd[1].firstIndex    = m_Meshs[1].base_index_location/sizeof(unsigned int);
-        cmd[1].instanceCount = 2;
-        cmd[1].baseInstance  = 2;
+        cmd[1].instanceCount = 3;
+        cmd[1].baseInstance  = 4;
 
-        m_Meshs[0].vao.Bind();
+        m_MeshBuffer.Bind();
 
+        // Send the command to the GPU. which will draw a total of 5 objects, 2 of mesh1 and 3 of mesh2
         gla::MultiDrawElementsIndirect( gla::Primitave::TRIANGLES , DataType::UNSIGNED_INT , cmd);
-        //m_Meshs[0].DrawInstanced<true>(gla::Primitave::TRIANGLES, m_TransformsMat4.size());  // bind the first one
 
-
-        m_FBO.UnBind();
-        DoPixelPass();
     }
 
 
-    void DoPixelPass()
-    {
-        //================================================================
-        // 8. Perform the pixel pass
-        //================================================================
-        glDisable(GL_DEPTH_TEST);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        m_Shader_PixelPass.Bind();
-
-        m_fb_Positions.SetActive(0);
-        m_fb_Normals.SetActive(1);
-        m_fb_Colours.SetActive(2);
-        m_fb_Depth.SetActive(3);
-
-
-        m_Shader_PixelPass.Uniform( m_Shader_PixelPass.GetUniformLocation("gPosition")  , 0 );
-        m_Shader_PixelPass.Uniform( m_Shader_PixelPass.GetUniformLocation("gNormal")    , 1 );
-        m_Shader_PixelPass.Uniform( m_Shader_PixelPass.GetUniformLocation("gAlbedoSpec"), 2 );
-        m_Shader_PixelPass.Uniform( m_Shader_PixelPass.GetUniformLocation("gDepth")     , 3 );
-
-        m_Plane.Draw<true>(Primitave::TRIANGLE_FAN,4);
-    }
-
-    void LoadShaders()
-    {
-        START_TIMER()
-        m_Shader_Gbuffer   = ShaderProgram::Load( "./resources/shaders/GBuffer_Instance.s" );
-        m_Shader_PixelPass = ShaderProgram::Load( "./resources/shaders/GBuffer_SPass.s" );
-        END_TIMER("Loading Shaders")
-    }
-
-    void LoadTextures()
-    {
-        START_TIMER()
-        Image Tex1("./resources/textures/rocks.jpg",  3 );
-
-        m_Sampler.emplace_back( Sampler2D(Tex1) );
-        END_TIMER("Loading Textures")
-    }
-
-    void SetupFrameBuffer()
-    {
-        START_TIMER()
-        //================================================================
-        // 4. Create the Frame Buffer object
-        //    we will use a frame buffer to store the following per-pixel values
-        //         position
-        //         normals
-        //         colours
-        //         depth
-        //================================================================
-        m_FBO.Generate();
-        m_FBO.Bind();
-
-        // Use framebuffer helper functions to create textures to be used for holding paricular types of data
-        m_fb_Positions = FrameBuffer::CreateBufferTexture_Vec3_16f( glm::uvec2{Width(), Height() }  );
-        m_fb_Normals   = FrameBuffer::CreateBufferTexture_Vec3_16f( glm::uvec2{Width(), Height() }  );
-        m_fb_Colours   = FrameBuffer::CreateBufferTexture_RGBA(     glm::uvec2{Width(), Height() }  );
-        m_fb_Depth     = FrameBuffer::CreateBufferTexture_Depth16F( glm::uvec2{Width(), Height() }  );
-
-        //FBO.Bind();
-        m_FBO.Attach(m_fb_Positions, FrameBuffer::COLOR0);
-        m_FBO.Attach(m_fb_Normals,   FrameBuffer::COLOR1);
-        m_FBO.Attach(m_fb_Colours,   FrameBuffer::COLOR2);
-        m_FBO.Attach(m_fb_Depth  ,   FrameBuffer::DEPTH);
-        m_FBO.Use( {FrameBuffer::COLOR0 , FrameBuffer::COLOR1, FrameBuffer::COLOR2} );
-
-        // Check if the frame buffer is complete
-        if( m_FBO.Check() != FrameBuffer::COMPLETE )
-            std::cout << "ERROR!!!" << std::endl;
-
-        m_FBO.UnBind();
-        //=========================================================================
-        struct MyVertex
-        {
-            glm::vec3 p;
-            glm::vec2 uv;
-        };
-        std::vector< MyVertex > VertexBuffer;
-
-        VertexBuffer.push_back( { glm::vec3(-1.0,  1.0, 0.0) , glm::vec2(0.0,0.0) }); // 3
-        VertexBuffer.push_back( { glm::vec3(-1.0, -1.0, 0.0) , glm::vec2(0.0,1.0) }); // 0
-        VertexBuffer.push_back( { glm::vec3( 1.0, -1.0, 0.0) , glm::vec2(1.0,1.0) }); // 1
-        VertexBuffer.push_back( { glm::vec3( 1.0,  1.0, 0.0) , glm::vec2(1.0,0.0) }); // 2
-
-        std::vector<unsigned int> IndexBuffer;
-
-        ArrayBuffer ab(VertexBuffer);
-        m_Plane = VertexArray::MakeVAO<vec3,vec2>(  ab );
-
-        END_TIMER("Frame Buffer Setup")
-    }
 
     gla::MeshBuffer<unsigned int, vec3,vec2,vec3> m_MeshBuffer;
 
@@ -286,11 +218,11 @@ class Instance_Rendering_App : public gla::utils::GLFW_App
     std::vector<gla::Transform>   m_Transforms;
     std::vector<glm::mat4>        m_TransformsMat4;
 
+    gla::ArrayBuffer              m_DrawIDBuffers;
     gla::Camera                   m_Camera;
-    gla::VertexArray              m_Plane; // must be drawn as a triangle fan
 
-    ShaderProgram m_Shader_Gbuffer;
-    ShaderProgram m_Shader_PixelPass;
+
+    ShaderProgram m_MultiDrawShader;
 
 
 };

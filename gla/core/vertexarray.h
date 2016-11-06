@@ -129,9 +129,9 @@ class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray,Ve
             if(BindFirst) Bind();
 
             m_Data==DataType::UNKNOWN ?
-                gla::DrawArraysInstanced( p,  NumberOfIndices, First_Index_To_Draw_From, primcount )
+                gla::DrawArrays( p,  NumberOfIndices, First_Index_To_Draw_From, primcount )
                       :
-                gla::DrawElementsInstanced( p, NumberOfIndices,m_Data,First_Index_To_Draw_From, primcount );
+                gla::DrawElements( p, NumberOfIndices,m_Data,First_Index_To_Draw_From, primcount );
         }
 
         template<typename ...GLM_Types>

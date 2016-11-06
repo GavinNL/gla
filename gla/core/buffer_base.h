@@ -299,6 +299,7 @@ class Buffer : public BaseHandle<GLuint, GenBuff, DestBuff, BufferInfo>
 
             glBufferSubData( static_cast<GLenum>(targ), offset, size, data);
 
+            GLA_LOGV << "Data Copied into Buffer, index: " << offset << "  Size: " << size << std::endl;
             if( size+offset > SharedData().m_Offset )
             {
                 SharedData().m_Offset = size+offset;
