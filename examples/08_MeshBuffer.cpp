@@ -92,6 +92,7 @@ int main()
         // These all exist on the CPU, not on the GPU
         //Mesh CylVertices    = createCylinder(0.2f, 10);
         Mesh CylVertices    = createBox();
+        //Mesh CylVertices    = createPlane(5,5);
 
         Mesh SphereVertices = createSphere(0.5);
         //=====================================================================================
@@ -102,7 +103,7 @@ int main()
         // Returns a Mesh_T type which can be used to draw
 
         gla::Mesh_T SphereMesh = MB.Insert( SphereVertices.vertices , SphereVertices.indices);  // create a mesh using vertices + indices
-        gla::Mesh_T CylMesh    = MB.Insert( CylVertices.vertices  );                            // create a mesh using only vertices.
+        gla::Mesh_T CylMesh    = MB.Insert( CylVertices.vertices    , CylVertices.indices );                            // create a mesh using only vertices.
 
 
         delete mb;
@@ -195,14 +196,14 @@ int main()
         Transform T1;
         Transform T2;
 
-        T1.SetPosition( { 1,0,-3});
-        T2.SetPosition( {-1,0,-3});
+        T1.SetPosition( { 1,1,-3});
+        T2.SetPosition( {-1,1,-3});
 
         //================================================================
         // 6. Create a camera Object to help position the camera
         //================================================================
         Camera C;
-        C.SetPosition( {0.0,0.0,0.0f});
+        C.SetPosition( {0.0,0.0,1.0f});
         C.Perspective(45.0f, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1f);
 
 
@@ -231,11 +232,12 @@ int main()
             Samp1.SetActive(0);
 
             T1.SetEuler( { Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0 } );
-            T2.SetEuler( { Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0 } );
+            T2.SetEuler( {0*Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0 } );
+
 
             // Tell the shader that we are using Texture Unit 0 for the sampler
             GBufferShader.Uniform( GBufferShader.GetUniformLocation("uSampler"), 0 );
-            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uCamera"),  C.GetProjectionMatrix() );
+            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uCamera"),  C.GetProjectionMatrix() * C.GetMatrix() );
 
             //================================================================
             // 7.1. Draw the two meshs
@@ -248,7 +250,7 @@ int main()
             GBufferShader.Uniform( GBufferShader.GetUniformLocation("uTransform"),  T1.GetMatrix() );
             SphereMesh.Draw<true>();  // bind the first one
 
-            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uTransform"),  T2.GetMatrix() );
+            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uTransform"),  T2.GetMatrix()  );
             CylMesh.Draw<false>();    // no need to bind again.
 
             // Unbind the FBO so we now render to the actual screen
@@ -267,13 +269,12 @@ int main()
             Colours.SetActive(2);
             Depth.SetActive(3);
 
-            static int i=0;
+            static int i = 0;
             if( Timer2.getElapsedTime() > 2.0 )
             {
                 i = (i+1)%4;
                 Timer2.reset();
             }
-
 
 
             GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gPosition")  , 0 );
@@ -288,8 +289,10 @@ int main()
         }
 
     }
+
     glfwDestroyWindow(gMainWindow);
     glfwTerminate();
+
     return 0;
 }
 

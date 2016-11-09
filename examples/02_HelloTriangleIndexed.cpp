@@ -91,6 +91,7 @@ int main()
 
 
 
+
         //================================================================
         // 3. Load the triangle shader
         //================================================================
@@ -115,6 +116,9 @@ int main()
             // Draw the Index Buffer, using every 3 indices to form a triangle.
             // G will automatically be bound when calling EnableAttributes
             E.Draw(Primitave::TRIANGLES, 3);
+
+            //std::cout << "Currently Bound E: " << E.CurrentlyBound() << std::endl;
+            //std::cout << "Currently Bound V: " << G.CurrentlyBound() << std::endl;
 
             glfwSwapBuffers(gMainWindow);
             glfwPollEvents();

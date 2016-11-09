@@ -54,6 +54,13 @@ class VertexArray : public BaseHandle<GLuint, GenVertexArray, DestVertexArray,Ve
         void Bind  () const { glBindVertexArray( Get() ); }
         void Unbind() const { glBindVertexArray(  0    ); }
 
+        GL_id_type CurrentlyBound() const
+        {
+            GLint id;
+            glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &id );
+            return id;
+        }
+
         VertexArray() {}
 
         template <typename... GLM_Vec_Types>

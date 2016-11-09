@@ -45,6 +45,52 @@ struct Mesh
     std::vector<unsigned int> indices;
 };
 
+static Mesh createPlane(float width ,float height, unsigned int x_segments=3, unsigned int z_segments=3)
+{
+    Mesh plane;
+
+    for(int i=0;i<z_segments;i++)
+    {
+        for(int j=0;j<x_segments;j++)
+        {
+            float u = float(j) / float(x_segments-1);
+            float v = float(i) / float(z_segments-1);
+            float x = (u-0.5f) * width;
+            float z = (v-0.5f) * height;
+
+            std::cout << "p: " << x << " , " << z << std::endl;
+            plane.vertices.push_back(  { glm::vec3(x,0,z) ,  glm::vec2(u,v) , glm::vec3(0,1,0) }  );
+        }
+    }
+
+    unsigned int cols = x_segments;
+    unsigned int rows = z_segments;
+
+    for(int i=0;i<z_segments-1;i++)
+    {
+        for(int j=0;j<x_segments-1;j++)
+        {
+            unsigned int index1 = (cols) * i + j;
+            unsigned int index2 = (cols) * i + j+1;
+            unsigned int index3 = (cols) * (i+1) + j+1;
+            unsigned int index4 = (cols) * (i+1) + j;
+
+            plane.indices.push_back( index1);
+            plane.indices.push_back( index2);
+            plane.indices.push_back( index3);
+
+            std::cout << index1 << ", " << index2 << ", " << index3 << std::endl;
+            plane.indices.push_back( index1 );
+            plane.indices.push_back( index3 );
+            plane.indices.push_back( index4 );
+            std::cout << index1 << ", " << index3 << ", " << index4 << std::endl;
+
+        }
+    }
+    return plane;
+}
+
+
 static Mesh createCone(float height = 1.0, float radius = 1.0 , unsigned int faces = 20)
 {
     Mesh Cyl;

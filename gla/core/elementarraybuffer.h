@@ -57,6 +57,13 @@ class ElementArrayBuffer : public Buffer
             Buffer::Unbind(  BindTarget );
         }
 
+        GL_id_type CurrentlyBound() const
+        {
+            GLint id;
+            glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &id );
+            return id;
+        }
+
         template<typename VertexData>
         ElementArrayBuffer( const std::vector<VertexData> & data, BufferUsage usage = BufferUsage::STATIC_DRAW) : Buffer(data, usage)
         {

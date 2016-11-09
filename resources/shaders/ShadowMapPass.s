@@ -1,3 +1,5 @@
+<vertex>
+
 #version 330 core
 
 // Input vertex data, different for all executions of this shader.
@@ -14,3 +16,21 @@ void main()
 	// Same, but with the light's view matrix
     gl_Position =  depthMVP * uModel vec4(vertexPosition_modelspace,1);
 }
+</vertex>
+
+
+
+
+
+<fragment>
+
+#version 330 core
+// Ouput data
+layout(location = 0) out float fragmentdepth;
+
+void main(){
+    // Not really needed, OpenGL does it anyway
+    fragmentdepth = gl_FragCoord.z;
+}
+
+</fragment>

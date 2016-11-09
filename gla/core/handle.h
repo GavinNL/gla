@@ -88,6 +88,7 @@ class BaseHandle
 {
 
 public:
+    using GL_id_type       = HandleType;
     using Handle           = BaseHandle<HandleType, CallableCreate, CallableDestroy, SharedDataType>;
     using SharedHandle     = std::shared_ptr< std::pair<HandleType, SharedDataType> >;
 

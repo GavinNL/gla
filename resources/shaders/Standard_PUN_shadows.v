@@ -20,7 +20,7 @@ void main()
 
     gl_Position    = uProjMatrix * MTransform * vec4( in_Position, 1 );
 
-	fs_ShadowCoord = uDepthBias * vec4(in_Position,1);
+    fs_ShadowCoord = uDepthBias * vec4(in_Position,1);
 
     fs_TexCoord0 = in_TexCoord;
 

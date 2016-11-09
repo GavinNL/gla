@@ -282,6 +282,14 @@ class ArrayBuffer : public Buffer
             Buffer::Unbind(  BindTarget );
         }
 
+        GL_id_type CurrentlyBound() const
+        {
+            GLint id;
+            glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &id );
+            return id;
+        }
+
+
         template<bool BindFirst=true>
         /**
          * @brief Draw
@@ -296,7 +304,6 @@ class ArrayBuffer : public Buffer
         {
             if(BindFirst) Bind();
             gla::DrawArrays( p,  NumberOfVertices,  first_vertex );
-            //glDrawArrays( static_cast<GLenum>(p),  static_cast<GLint>(first_vertex),  static_cast<GLsizei>(NumberOfVertices) );
         }
 
         /**
