@@ -226,7 +226,7 @@ class VertexArray_T : public BaseHandle<GLuint, GenVertexArray, DestVertexArray>
             Bind();
             if( m_DataType == DataType::UNKNOWN)
             {
-                GLA_LOGE << "Cannot MultiDrawElements because there is no ElementBuffer attached to this VAO" << std::endl;
+                GLA_LOGD << "Cannot MultiDrawElements because there is no ElementBuffer attached to this VAO" << std::endl;
             }
             else {
                 gla::MultiDrawElementsIndirect( gla::Primitave::TRIANGLES , m_DataType , cmd);
