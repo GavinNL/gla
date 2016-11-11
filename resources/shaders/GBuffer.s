@@ -10,14 +10,17 @@ out vec3 FragPos;
 out vec3 Normal;
 
 uniform mat4 uTransform;
-uniform mat4 uCamera;
+uniform mat4 uCameraView;
+uniform mat4 uCameraProj;
 
 void main()
 {
-    gl_Position = uCamera * uTransform * vec4(inPosition + vec3(gl_InstanceID),1.0);
+
+    vec4 p      = uTransform * vec4(inPosition,1.0);
+    gl_Position = uCameraProj * uCameraView * p;
     vec4 N4     = uTransform * vec4(inNormal,0.0);
 
-    FragPos    = gl_Position.xyz;
+    FragPos    = p.xyz;
     TexCoords  = inUV;
     Normal     = N4.xyz;
 }

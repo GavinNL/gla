@@ -385,6 +385,14 @@ public:
             }
 
             GLA_LOGD << "Shader Loaded Successfully: " << path.c_str() << std::endl;
+
+            auto s = P.GetNumUniforms();
+            for(int i=0;i< s ; i++)
+            {
+                auto name  = P.GetUniformName(i);
+
+                GLA_LOGI << "Uniform [" << name << "] - location: " << P.GetUniformLocation( name.c_str() ) << std::endl;
+            }
             //std::cout << "Shader Loaded Successfully: " << path.c_str() << std::endl;
             return P;
 

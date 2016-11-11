@@ -22,215 +22,326 @@
  * SOFTWARE.
  */
 
+#define GLA_LOG_ALL
+
 #include <stdio.h>
 
-#define GLA_VERBOSE 1
-#define GLA_INFO 1
-#define GLA_TIMER 1
-#define GLA_ERROR 1
-#define GLA_DEBUG 1
-
 #include "glad.h"
-#include <iostream>
-#include <cstdlib>
+
 #include <gla/gla.h>
 #include <gla/eng/atlas.h>
 #include <gla/eng/meshbuffer.h>
-
+#include <gla/eng/rendertotexture.h>
 #include <GLFW/glfw3.h> // GLFW helper library
 
 
-#include <gla/utils/app.h>
-#include "DiffRenderingApp.h"
-using namespace gla;
+/**
+ * This is the same as 07_FrameBuffers, but uses the
+ * RenderToTexture helper class to build the framebuffers.
+ */
 
+
+using namespace gla;
 
 //=================================================================================
 // Global Variables and Function Prototypes
 //=================================================================================
+#define WINDOW_WIDTH  1920
+#define WINDOW_HEIGHT 1080
 #define WINDOW_TITLE  "Framebuffers and Differed Rendering"
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
 using namespace gla;
 
-
-class Instance_Rendering_App : public DiffRenderingApp
-{
-    public:
-
-    Instance_Rendering_App(int w, int h, const char * title) : DiffRenderingApp(w,h,title)
-    {
-        // Load the Instance shader using the GBuffer approach of rendering
-        // to textures
-        m_MultiDrawShader   = ShaderProgram::Load( "./resources/shaders/GBuffer_Instance.s" );
-
-        // Load textures
-        Image Tex1("./resources/textures/rocks.jpg",  3 );
-        m_Sampler.emplace_back( Sampler2D(Tex1) );
-
-        m_MeshBuffer.ReserveIndices(1000000);
-        m_MeshBuffer.ReserveVertices(1000000);
-
-        START_TIMER()
-            Mesh BoxVertices     = createBox( glm::vec3(1.45) );
-            //Mesh SphereVertices  = createSphere(1.0);
-            //Mesh ConeVertices    = createCone(1 , 0.2, 10);
-
-            Mesh PlaneVertices   = createPlane(5,5);
-
-            m_Meshs.emplace_back( m_MeshBuffer.Insert( Plane.vertices , PlaneVertices.indices) );
-            m_Meshs.emplace_back( m_MeshBuffer.Insert( BoxVertices.vertices    , BoxVertices.indices) );
-
-
-        END_TIMER("Loading Meshs")
-
-
-        m_Camera.SetPosition( {0.0, -2.0, 10.0f});
-        m_Camera.Perspective(45.0f, (float)Width()/(float)Height(), 0.1f);
-
-        m_Transforms.resize(10);
-        m_TransformsMat4.resize(m_Transforms.size());
-
-        std::vector<int> drawids;
-        for(int i=0 ; i<m_Transforms.size();i++)
-        {
-            float R = 4;
-            float t = (float(i) / float(m_Transforms.size()) )* 2*3.141592653589;
-            m_Transforms[i].SetPosition( { R*cos(t),1, R*sin(t) });
-            drawids.push_back(i);
-        }
-
-        // maximum 10 transforms, (see the shader)
-        assert( m_Transforms.size() <= 10 );
-
-
-
-        //=====================================================================================================
-        // The Mesh Buffer uses a single arraybuffer to store
-        // the positions,normals and UV coords. Each of these attributes
-        // are listed in the shader under input layout 0,1 and 2.
-        //
-        // We are going to use a separate array buffer to sure
-        // the instance values, they will be under layout attribute 3 (see the shader source)
-        //
-        //
-        //=====================================================================================================
-        m_DrawIDBuffers.CopyData( drawids );
-
-        m_MeshBuffer.Bind(); // bind the mesh buffer (it's a VAO)
-        m_DrawIDBuffers.EnableDivisor< int >(3, 1); // tell openGL that layout 3 will consist of a single int
-                                                    // that will be incremented once per instance call
-                                                    // because the VAO is bound, this attribute will be enabled
-                                                    // for all meshes in this meshbuffer
-
-        m_DrawIDBuffers.Unbind();                   // unbind the VAO so that we dont accidently make changes to it.
-
-
-        m_MeshBuffer.Unbind();
-
-    }
-
-
-    void onRender(double dt)
-    {
-        static gla::Timer_T<float> Timer;
-
-        glEnable(GL_DEPTH_TEST);
-        glViewport(0, 0, Width(), Height());
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // Use the GBufferShader
-        m_MultiDrawShader.Bind();
-
-        // Attach the Sampler to Texture Unit 0.
-        m_Sampler[0].SetActive(0);
-
-        // Tell the shader that we are using Texture Unit 0 for the sampler
-        m_MultiDrawShader.Uniform( m_MultiDrawShader.GetUniformLocation("uSampler"), 0 );
-        m_MultiDrawShader.Uniform( m_MultiDrawShader.GetUniformLocation("uCamera"),  m_Camera.GetProjectionMatrix() * m_Camera.Camera::GetMatrix() );
-
-
-        // loop through all the tranforms and get a model matrix
-        // The model matrix will be stored in a continious array so we can send
-        // all at the same time
-        for(int i=0;i<m_Transforms.size();i++)
-        {
-
-            float t = Timer.getElapsedTime();
-            m_Transforms[i].SetEuler( { Timer.getElapsedTime(), Timer.getElapsedTime() * i, -0.0 } );
-            m_Transforms[i].SetScale( {0.3,0.3,0.3});
-            m_Transforms[i].SetPosition( { i*cos(t* 1 / (1+i) ), 0, i*sin(t * 1/(i+1)) } );
-
-            m_TransformsMat4[i] = m_Transforms[i].GetMatrix();
-        }
-
-
-        // Send all transformation matrice at once
-        m_MultiDrawShader.Uniform( m_MultiDrawShader.GetUniformLocation("uTransform[0]"),  m_TransformsMat4[0],  m_TransformsMat4.size() );
-
-
-        //=====================================================================================================
-        // Create a command vector for the MultiDrawElementsIndirect function
-        //
-        // MultidrawElementsIndirect can draw multple meshes from the same buffer, we are going to draw
-        // two different meshes.
-        // The uniform values for each instance of the mesh is stored in an array in the shader
-        // called uTransform[], to determine which index we need to use we use a vertex attribute called
-        // "inDrawID" (see the shader code).  This value is updated once per instance, rather that once
-        // per vertex. (Refer to the Constructor to see how this is set up)
-        //=====================================================================================================
-        // Draw the mesh N times.
-        std::vector<gla::MultiDrawElementsIndirectCommand> cmd(2);
-
-        cmd[0].count         = m_Meshs[0].count;                                       // number of triangles to draw
-        cmd[0].baseVertex    = m_Meshs[0].base_vertex;                                 // the base vertex to start from
-        cmd[0].firstIndex    = m_Meshs[0].base_index_location/sizeof(unsigned int);    // the first INDEX (not byte location)
-        cmd[0].instanceCount = 4;                                                      // number of times to draw this mesh
-        cmd[1].baseInstance  = 0;                                                      // which Instance value to start form
-
-        cmd[1].count         = m_Meshs[1].count;
-        cmd[1].baseVertex    = m_Meshs[1].base_vertex;
-        cmd[1].firstIndex    = m_Meshs[1].base_index_location/sizeof(unsigned int);
-        cmd[1].instanceCount = 3;
-        cmd[1].baseInstance  = 4;
-
-        m_MeshBuffer.MultiDraw( cmd );
-
-
-    }
-
-
-
-    gla::MeshBuffer<unsigned int, vec3,vec2,vec3> m_MeshBuffer;
-
-    FrameBuffer m_FBO;
-    Sampler2D m_fb_Positions;
-    Sampler2D m_fb_Normals  ;
-    Sampler2D m_fb_Colours  ;
-    Sampler2D m_fb_Depth    ;
-
-    std::vector<Sampler2D>        m_Sampler;
-    std::vector<gla::Mesh_T>      m_Meshs;
-    std::vector<gla::Transform>   m_Transforms;
-    std::vector<glm::mat4>        m_TransformsMat4;
-
-    gla::ArrayBuffer              m_DrawIDBuffers;
-    gla::Camera                   m_Camera;
-
-
-    ShaderProgram m_MultiDrawShader;
-
-
-};
-
 int main()
 {
-    Instance_Rendering_App A(1024,768, "Instance Rendering");
 
-    START_TIMER()
-    A.run();
-    END_TIMER("Total Run Time")
+
+    GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
+
+
+    { // create a scope around the main GL calls so that glfwTerminate is not called before
+        // the gla objects are automatically destroyed.
+
+        //===========================================================================
+        // GLA code.
+        //===========================================================================
+
+
+        //================================================================
+        // 1. Use some of the helper functions to create vertices for
+        //    some basic geometric objects
+        //
+        //================================================================
+        MeshBuffer<unsigned int, vec3, vec2, vec3> m_MeshBuffer;
+        m_MeshBuffer.ReserveIndices(10000);
+        m_MeshBuffer.ReserveVertices(10000);
+
+        auto BoxVertices   = createBox();  // returns a vector of vertices. It does not use an index buffer
+        auto PlaneVertices = createPlane(50,50);
+
+        auto m_BoxMesh   = m_MeshBuffer.Insert( BoxVertices.vertices, BoxVertices.indices);
+        auto m_PlaneMesh = m_MeshBuffer.Insert( PlaneVertices.vertices, PlaneVertices.indices);
+
+
+        // Load some textures. And force using 3 components (r,g,b)
+        Image Tex1("./resources/textures/rocks.jpg",  3 );
+
+        // send the image to the GPU
+        Sampler2D Samp1(Tex1);
+
+        //================================================================
+        // 2. Create the plane to use during the second render pass
+        //================================================================
+        struct MyVertex
+        {
+            glm::vec3 p;
+            glm::vec2 uv;
+        };
+        std::vector< MyVertex > VertexBuffer;
+
+        VertexBuffer.push_back( { glm::vec3(-1.0,  1.0, 0.0) , glm::vec2(0.0,1.0) }); // 3
+        VertexBuffer.push_back( { glm::vec3(-1.0, -1.0, 0.0) , glm::vec2(0.0,0.0) }); // 0
+        VertexBuffer.push_back( { glm::vec3( 1.0, -1.0, 0.0) , glm::vec2(1.0,0.0) }); // 1
+
+        VertexBuffer.push_back( { glm::vec3(-1.0,  1.0, 0.0) , glm::vec2(0.0,1.0) }); // 0
+        VertexBuffer.push_back( { glm::vec3( 1.0, -1.0, 0.0) , glm::vec2(1.0,0.0) }); // 2
+        VertexBuffer.push_back( { glm::vec3( 1.0,  1.0, 0.0) , glm::vec2(1.0,1.0) }); // 2
+
+        VertexArray  PlaneVAO;
+        ArrayBuffer  PlaneBuff( VertexBuffer );
+
+        PlaneVAO.Attach<glm::vec3, glm::vec2>(PlaneBuff);
+
+
+        //================================================================
+        // 3. Load the two shaders we are going to use
+        //       - The G Buffer Shader used to draw geometry
+        //       - The Shader pass
+        //================================================================
+        ShaderProgram mShadowMapShader            = ShaderProgram::Load( "./resources/shaders/ShadowMap.s" );
+        ShaderProgram mShadowMapShader_ShadowPass = ShaderProgram::Load( "./resources/shaders/ShadowMapPass.s" );
+
+        ShaderProgram GBufferShader       = ShaderProgram::Load( "./resources/shaders/GBuffer.s" );
+        ShaderProgram GBufferSPass_Shader = ShaderProgram::Load( "./resources/shaders/GBuffer_SPass.s" );
+
+
+        //==========================================================
+
+
+        //==========================================================
+        // Create the Shadow map
+        //==========================================================
+        RenderToTexture mShadowMap;
+        mShadowMap.CreateTexture( RenderToTexture::DEPTH , glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}, RenderToTexture::depth_16f);
+       // mShadowMap.Bind();
+
+
+
+        //================================================================
+        // 4. We will use the RenderToTexture class to help construct
+        // the framebuffers and textures needed to render geometry
+        // to a texture.
+        //================================================================
+        RenderToTexture RTT;
+
+        // Create two textures that will hold some kind fo floating point value
+        RTT.CreateTexture( RenderToTexture::COLOR0, glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}, RenderToTexture::vec3_16f);
+        RTT.CreateTexture( RenderToTexture::COLOR1, glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}, RenderToTexture::vec3_16f);
+
+        // create a texture that will hold the colour value
+        RTT.CreateTexture( RenderToTexture::COLOR2, glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}, RenderToTexture::rgba);
+
+        // Create a depth texture that will render the depth information to
+        RTT.CreateTexture( RenderToTexture::DEPTH , glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}, RenderToTexture::depth_16f);
+
+
+        //==========================================================================
+
+
+
+        //================================================================
+        // 5. Create a transform structure used to transform the
+        //    position/orientation of the 3d object
+        //================================================================
+        Transform m_BoxT;
+        Transform m_PlaneT;
+
+
+        vec3 LightPosition = glm::vec3(-2.0f, 4.0f, -1.0f);
+        GLfloat near_plane = 1.0f, far_plane = 500.5f;
+        glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+        glm::mat4 lightView       = glm::lookAt(LightPosition,
+                                          glm::vec3( 0.0f, 0.0f,  0.0f),
+                                          glm::vec3( 0.0f, 1.0f,  0.0f));
+
+
+
+
+        m_BoxT.SetPosition(   { 0 ,     1 , -0  } );
+        m_PlaneT.SetPosition( { 0 ,    -1 , -0 } );
+
+        //================================================================
+        // 6. Create a camera Object to help position the camera
+        //================================================================
+        Camera C;
+        C.SetPosition( {1.0, 3.0, 10.0f});
+        C.Perspective(45.0f, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1f);
+
+        Camera L;
+        L.Perspective(90.0f, 1.0, near_plane, far_plane);
+
+
+        Timer_T<float> Timer;
+
+        while (!glfwWindowShouldClose(gMainWindow) )
+        {
+            auto t = Timer.getElapsedTime()*0.1;
+            m_BoxT.SetEuler( { Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0 } );
+
+            if(1)
+            {
+                mShadowMap.Bind(); // Bind the RenderToTexture object (basically a framebuffer object)
+                glEnable(GL_DEPTH_TEST);
+                glClear( GL_DEPTH_BUFFER_BIT );
+                // Shadow Pass
+
+                mShadowMapShader.Bind();
+
+
+
+                //glm::mat4 m_LightMatrix = L.GetProjectionMatrix() * lightView;
+                glm::mat4 m_LightMatrix = lightProjection * lightView;
+
+                mShadowMapShader.Uniform( mShadowMapShader.GetUniformLocation("u_LightMatrix"), m_LightMatrix );
+
+
+                mShadowMapShader.Uniform( mShadowMapShader.GetUniformLocation("u_ModelMatrix"), m_PlaneT.GetMatrix() );
+                    m_PlaneMesh.Draw();
+                mShadowMapShader.Uniform( mShadowMapShader.GetUniformLocation("u_ModelMatrix"), m_BoxT.GetMatrix() );
+                    m_BoxMesh.Draw();
+
+
+                mShadowMap.Unbind();
+
+           // } else {
+
+                RTT.Bind();
+                glEnable(GL_DEPTH_TEST);
+                glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+                // Use the GBufferShader
+                mShadowMapShader_ShadowPass.Bind();
+
+                // Attach the Sampler to Texture Unit 0.
+
+
+
+                 // Tell the shader that we are using Texture Unit 0 for the sampler
+                mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_LightSpaceMatrix"), m_LightMatrix );
+
+
+
+                mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_ViewMatrix"),    C.GetMatrix() );
+                mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_ProjMatrix"),    C.GetProjectionMatrix() );
+
+
+                Samp1.SetActive(0);
+                mShadowMap[RenderToTexture::DEPTH].SetActive(1);
+
+                mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_Diffuse")  , 0 );
+                mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_ShadowMap"), 1 );
+
+                mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_LightPos"),  LightPosition);
+                mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_ViewPos"),  C.GetPosition() );
+
+
+                mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_ModelMatrix"), m_PlaneT.GetMatrix() );
+                m_PlaneMesh.Draw();
+
+                mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_ModelMatrix"), m_BoxT.GetMatrix() );
+                m_BoxMesh.Draw();
+
+                //VAO.Draw(Primitave::TRIANGLES, Vertices.indices.size() );
+
+                // Unbind the RenderToTexture so we now render to the actual screen
+                RTT.Unbind();
+
+                RTT[RenderToTexture::COLOR0].SetActive(0);//Positions.SetActive(0);
+                RTT[RenderToTexture::COLOR1].SetActive(1);//Normals.SetActive(1);
+                RTT[RenderToTexture::COLOR2].SetActive(2);//Colours.SetActive(2);
+                RTT[RenderToTexture::DEPTH] .SetActive(3);//Depth.SetActive(3);
+                mShadowMap[RenderToTexture::DEPTH].SetActive(4);//Depth.SetActive(3);
+            }
+            //================================================================
+            // 8. Perform the pixel pass
+            //================================================================
+            glDisable(GL_DEPTH_TEST);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            GBufferSPass_Shader.Bind();
+
+            // Access the individual textures by referring to them by
+            // their attachment. It will throw an exception if
+            // that attachment does not exist.
+
+            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gPosition")  , 0 );
+            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gNormal")    , 1 );
+            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gAlbedoSpec"), 2 );
+            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gDepth")     , 3 );
+
+            PlaneVAO.Draw(Primitave::TRIANGLES, 6 );
+
+            glfwSwapBuffers(gMainWindow);
+            glfwPollEvents();
+        }
+
+        // Clear the VAO
+        // Since we had flagged the array buffers for deletion ,they will now be
+        // cleared as well since they are no longer bound to any VAOs
+        //VAO.Release();
+
+    }
+    glfwDestroyWindow(gMainWindow);
+    glfwTerminate();
     return 0;
+}
+
+
+
+//=============================================================================
+// Set up GLFW and GLEW
+//=============================================================================
+GLFWwindow* SetupOpenGLLibrariesAndCreateWindow()
+{
+    //    glewExperimental = GL_TRUE;
+
+    if (!glfwInit())
+        exit(EXIT_FAILURE);
+
+    auto gMainWindow = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE, NULL, NULL);
+
+    if (!gMainWindow)
+    {
+        glfwTerminate();
+        exit(EXIT_FAILURE);
+    }
+    glfwMakeContextCurrent(gMainWindow);
+
+    int width, height;
+    glfwGetFramebufferSize(gMainWindow, &width, &height);
+    //    GLenum err = glewInit();
+
+    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
+    {
+        std::cout << "Failed to initialize OpenGL context" << std::endl;
+        return NULL;
+    }
+
+
+    return(gMainWindow);
+
 }
 //=============================================================================

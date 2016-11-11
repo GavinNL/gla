@@ -188,6 +188,13 @@ public:
      * Generates a depth texture that can be used with FrameBuffers
      *
      */
+    static Sampler2D CreateBufferTexture_Depth( const glm::uvec2 & size)
+    {
+        gla::Sampler2D Depth( size , gla::SamplerFormat::DEPTH_COMPONENT,  gla::ImageFormat::DEPTH_COMPONENT, gla::DataType::FLOAT);
+        Depth.SetFilter( gla::SamplerFilter::NEAREST , gla::SamplerFilter::NEAREST );
+        return Depth;
+    }
+
     static Sampler2D CreateBufferTexture_Depth16F( const glm::uvec2 & size)
     {
         gla::Sampler2D Depth( size , gla::SamplerFormat::DEPTH_COMPONENT16,  gla::ImageFormat::DEPTH_COMPONENT, gla::DataType::FLOAT);

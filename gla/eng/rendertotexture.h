@@ -57,6 +57,7 @@ public:
         vec3_32f,
         vec4_16f,
         vec4_32f,
+        depth,
         depth_16f,
         depth_24f,
         depth_32f,
@@ -107,6 +108,8 @@ public:
                     S = FrameBuffer::CreateBufferTexture_Vec4_16f(size); break;
                 case vec4_32f :
                     S = FrameBuffer::CreateBufferTexture_Vec4_32f(size); break;
+                case depth:
+                    S = FrameBuffer::CreateBufferTexture_Depth(size); break;
                 case depth_16f:
                     S = FrameBuffer::CreateBufferTexture_Depth16F(size); break;
                 case depth_24f:
@@ -114,7 +117,10 @@ public:
 //                case depth_32f:
 //                    S = FrameBuffer::CreateBufferTexture_Depth32F(size); break;
                 case stencil  :
-                    GLA_LOGD << "No stencil buffer implementation yet."; break;
+                    GLA_LOGE << "[RenderToTexture]  No stencil buffer implementation yet."; break;
+                default:
+                    GLA_LOGE << "[RenderToTexture] - Unknown texture type."; break;
+                break;
             }
 
             m_FBO.Attach(S, static_cast<FrameBuffer::Attachment>(Targ) );
@@ -131,10 +137,28 @@ public:
 
             for(auto & T : m_Samplers)
             {
-               if(T.first != DEPTH && T.first != STENCIL) D.push_back( static_cast<FrameBuffer::Attachment>(T.first ) );
+               if(T.first != DEPTH && T.first != STENCIL)
+               {
+                   D.push_back( static_cast<FrameBuffer::Attachment>(T.first ) );
+               }
             }
-            std::cout << D.size() << std::endl;
-            m_FBO.Use( D );
+
+            if( D.size() )
+            {
+                m_FBO.Use( D );
+             //   glDrawBuffer(GL_NONE);
+             //   glReadBuffer(GL_NONE);
+            }
+            else
+            {
+                if( m_Samplers.count(DEPTH) )
+                {
+                    glDrawBuffer(GL_NONE);
+                    glReadBuffer(GL_NONE);
+
+                    std::cout << "Only Depth attachment avaialble" << std::endl;
+                }
+            }
 
             auto ch = m_FBO.Check();
             if( ch != FrameBuffer::COMPLETE )

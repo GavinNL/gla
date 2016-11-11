@@ -35,8 +35,13 @@
 #include <GLFW/glfw3.h> // GLFW helper library
 
 
-using namespace gla;
+/**
+ * This is the same as 07_FrameBuffers, but uses the
+ * RenderToTexture helper class to build the framebuffers.
+ */
 
+
+using namespace gla;
 
 //=================================================================================
 // Global Variables and Function Prototypes
@@ -101,13 +106,13 @@ int main()
         };
         std::vector< MyVertex > VertexBuffer;
 
-        VertexBuffer.push_back( { glm::vec3(-1.0,  1.0, 0.0) , glm::vec2(0.0,0.0) }); // 3
-        VertexBuffer.push_back( { glm::vec3(-1.0, -1.0, 0.0) , glm::vec2(0.0,1.0) }); // 0
-        VertexBuffer.push_back( { glm::vec3( 1.0, -1.0, 0.0) , glm::vec2(1.0,1.0) }); // 1
+        VertexBuffer.push_back( { glm::vec3(-1.0,  1.0, 0.0) , glm::vec2(0.0,1.0) }); // 3
+        VertexBuffer.push_back( { glm::vec3(-1.0, -1.0, 0.0) , glm::vec2(0.0,0.0) }); // 0
+        VertexBuffer.push_back( { glm::vec3( 1.0, -1.0, 0.0) , glm::vec2(1.0,0.0) }); // 1
 
-        VertexBuffer.push_back( { glm::vec3(-1.0,  1.0, 0.0) , glm::vec2(0.0,0.0) }); // 0
-        VertexBuffer.push_back( { glm::vec3( 1.0, -1.0, 0.0) , glm::vec2(1.0,1.0) }); // 2
-        VertexBuffer.push_back( { glm::vec3( 1.0,  1.0, 0.0) , glm::vec2(1.0,0.0) }); // 2
+        VertexBuffer.push_back( { glm::vec3(-1.0,  1.0, 0.0) , glm::vec2(0.0,1.0) }); // 0
+        VertexBuffer.push_back( { glm::vec3( 1.0, -1.0, 0.0) , glm::vec2(1.0,0.0) }); // 2
+        VertexBuffer.push_back( { glm::vec3( 1.0,  1.0, 0.0) , glm::vec2(1.0,1.0) }); // 2
 
         VertexArray  PlaneVAO;
         ArrayBuffer  PlaneBuff( VertexBuffer );
@@ -174,7 +179,7 @@ int main()
             //================================================================
             // 7. Perform the GBuffer pass
             //================================================================
-            RTT.Bind(); // bind the FBO so we render to the FBO textures
+            RTT.Bind(); // Bind the RenderToTexture object (basically a framebuffer object)
 
             glEnable(GL_DEPTH_TEST);
             glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -197,7 +202,7 @@ int main()
 
             VAO.Draw(Primitave::TRIANGLES, Vertices.indices.size() );
 
-            // Unbind the FBO so we now render to the actual screen
+            // Unbind the RenderToTexture so we now render to the actual screen
             RTT.Unbind();
 
             //================================================================
@@ -208,17 +213,20 @@ int main()
 
             GBufferSPass_Shader.Bind();
 
+            // Access the individual textures by referring to them by
+            // their attachment. It will throw an exception if
+            // that attachment does not exist.
             RTT[RenderToTexture::COLOR0].SetActive(0);//Positions.SetActive(0);
             RTT[RenderToTexture::COLOR1].SetActive(1);//Normals.SetActive(1);
             RTT[RenderToTexture::COLOR2].SetActive(2);//Colours.SetActive(2);
             RTT[RenderToTexture::DEPTH] .SetActive(3);//Depth.SetActive(3);
 
             static int i=0;
-            if( Timer2.getElapsedTime() > 2.0 )
+            DO_EVERY(2.0)
             {
                 i = (i+1)%4;
-                Timer2.reset();
             }
+            END_EVERY
 
             GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gPosition")  , 0 );
             GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gNormal")    , 1 );
