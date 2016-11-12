@@ -74,6 +74,14 @@ public:
 
         void Bind()  { m_FBO.Bind();   }
         void Unbind(){ m_FBO.UnBind(); }
+        void Generate()
+        {
+            if( !m_FBO)
+            {
+                GLA_LOGV << "Frame buffer not created. Creating one now!" << std::endl;
+                m_FBO.Generate();
+            }
+        }
 
         /**
          * @brief Create
@@ -123,12 +131,43 @@ public:
                 break;
             }
 
-            m_FBO.Attach(S, static_cast<FrameBuffer::Attachment>(Targ) );
+            //m_FBO.Attach(S, static_cast<FrameBuffer::Attachment>(Targ) );
+            //m_Samplers[Targ] = S;
 
-            m_Samplers[Targ] = S;
+            Attach(S, Targ);
 
-            Update();
+           // Update();
             m_FBO.UnBind();
+        }
+
+        void Attach( const Sampler2D & S, Target targ = COLOR0)
+        {
+            if( !m_FBO)
+            {
+                GLA_LOGV << "Frame buffer not created. Creating one now!" << std::endl;
+                m_FBO.Generate();
+            }
+
+            m_Samplers[ targ ]  = S;
+            m_FBO.Attach(S, static_cast<FrameBuffer::Attachment>(targ) );
+            Update();
+        }
+
+        void Clear()
+        {
+            for(auto & a : m_Samplers)
+            {
+                m_FBO.Detach( static_cast<FrameBuffer::Attachment>(a.first) );
+            }
+            m_Samplers.clear();
+            Update();
+        }
+
+        void Clear(Target targ)
+        {
+            m_Samplers.erase(targ);
+            m_FBO.Detach( static_cast<FrameBuffer::Attachment>(targ) );
+            Update();
         }
 
         void Update()

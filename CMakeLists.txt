@@ -104,13 +104,13 @@ target_link_libraries(05_Sampler2DArray ${LIBS_GLAD})
              examples/06_UniformBuffer.cpp glad.cpp)
 target_link_libraries(06_UniformBuffer ${LIBS_GLAD})
 
-       add_executable(07_FrameBuffer
-             examples/07_FrameBuffer.cpp glad.cpp)
-target_link_libraries(07_FrameBuffer ${LIBS_GLAD})
+       add_executable(07_01_FrameBuffer
+             examples/07_01_FrameBuffer.cpp glad.cpp)
+target_link_libraries(07_01_FrameBuffer ${LIBS_GLAD})
 
-       add_executable(07_01_RenderToTexture
-             examples/07_01_RenderToTexture.cpp glad.cpp)
-target_link_libraries(07_01_RenderToTexture ${LIBS_GLAD})
+       add_executable(07_02_RenderToTexture
+             examples/07_02_RenderToTexture.cpp glad.cpp)
+target_link_libraries(07_02_RenderToTexture ${LIBS_GLAD})
 
 
        add_executable(08_MeshBuffer
@@ -127,6 +127,14 @@ target_link_libraries(09_InstanceRendering ${LIBS_GLAD})
 target_link_libraries(10_Shadows ${LIBS_GLAD})
 
 
+       add_executable(11_01_Filters
+             examples/11_01_Filters.cpp glad.cpp)
+target_link_libraries(11_01_Filters ${LIBS_GLAD})
+
+
+       add_executable(11_02_Sampler2dFilter
+             examples/11_02_Sampler2dFilter.cpp glad.cpp)
+target_link_libraries(11_02_Sampler2dFilter ${LIBS_GLAD})
 
        add_executable(octree_test
                       octree_test.cpp )

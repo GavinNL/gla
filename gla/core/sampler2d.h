@@ -250,12 +250,12 @@ public:
     }
 
 
-    void Bind()
+    void Bind() const
     {
         glBindTexture(GL_TEXTURE_2D, Get() );
     }
 
-    void Unbind()
+    void Unbind() const
     {
         glBindTexture(GL_TEXTURE_2D, 0 );
     }
@@ -302,9 +302,11 @@ public:
         }
 
 
-        m_PixelDataType = Type;
-        m_Size          = size;
+        //m_PixelDataType = Type;
+        //m_Size          = size;
 
+        SharedData().m_Size = size;
+        SharedData().m_PixelDataType = Type;
         SetWrap( SamplerWrap::REPEAT, SamplerWrap::REPEAT);
         SetFilter(SamplerFilter::LINEAR_MIPMAP_LINEAR, SamplerFilter::LINEAR_MIPMAP_LINEAR);
 
@@ -340,6 +342,16 @@ public:
         Unbind();
     }
 
+    inline void Repeat()
+    {
+        SetWrap(SamplerWrap::REPEAT,SamplerWrap::REPEAT);
+    }
+
+    inline void ClampToEdge()
+    {
+        SetWrap(SamplerWrap::CLAMP_TO_EDGE,SamplerWrap::CLAMP_TO_EDGE);
+    }
+
     inline void SetWrap( SamplerWrap S_direction, SamplerWrap T_direction)
     {
         Bind();
@@ -353,7 +365,7 @@ public:
         Unbind();
     }
 
-    void SetActive( unsigned int unit)
+    void SetActive( unsigned int unit) const
     {
         glActiveTexture(GL_TEXTURE0+unit);
         Bind();
@@ -382,10 +394,76 @@ public:
         glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max);
         return max;
     }
+    //================================================================
 
-    private:
-        DataType   m_PixelDataType;
-        glm::uvec2 m_Size;
+
+    static Sampler2D DepthTexture( const glm::uvec2 & size)
+    {
+        gla::Sampler2D Depth( size , gla::SamplerFormat::DEPTH_COMPONENT,  gla::ImageFormat::DEPTH_COMPONENT, gla::DataType::FLOAT);
+        Depth.SetFilter( gla::SamplerFilter::NEAREST , gla::SamplerFilter::NEAREST );
+        return Depth;
+    }
+
+    static Sampler2D DepthTexture16f( const glm::uvec2 & size)
+    {
+        gla::Sampler2D Depth( size , gla::SamplerFormat::DEPTH_COMPONENT16,  gla::ImageFormat::DEPTH_COMPONENT, gla::DataType::FLOAT);
+        Depth.SetFilter( gla::SamplerFilter::NEAREST , gla::SamplerFilter::NEAREST );
+        return Depth;
+    }
+
+    static Sampler2D DepthTexture24f( const glm::uvec2 & size)
+    {
+        gla::Sampler2D Depth( size , gla::SamplerFormat::DEPTH_COMPONENT24,  gla::ImageFormat::DEPTH_COMPONENT, gla::DataType::FLOAT);
+        Depth.SetFilter( gla::SamplerFilter::NEAREST , gla::SamplerFilter::NEAREST );
+        return Depth;
+    }
+
+    static Sampler2D RGBTexture( const glm::uvec2 & size)
+    {
+        gla::Sampler2D Colours( size );
+        Colours.SetFilter( gla::SamplerFilter::NEAREST , gla::SamplerFilter::NEAREST );
+        return Colours;
+    }
+
+    static Sampler2D RGBATexture( const glm::uvec2 & size)
+    {
+        gla::Sampler2D Colours( size , gla::SamplerFormat::RGBA,  gla::ImageFormat::RGBA, gla::DataType::UNSIGNED_BYTE);
+        Colours.SetFilter( gla::SamplerFilter::NEAREST , gla::SamplerFilter::NEAREST );
+        return Colours;
+    }
+
+    static Sampler2D Vec3Texture16f( const glm::uvec2 & size)
+    {
+        gla::Sampler2D Depth( size , gla::SamplerFormat::RGB16F,  gla::ImageFormat::RGB, gla::DataType::FLOAT);
+        Depth.SetFilter( gla::SamplerFilter::NEAREST , gla::SamplerFilter::NEAREST );
+        return Depth;
+    }
+
+    static Sampler2D Vec4Texture16f( const glm::uvec2 & size)
+    {
+        gla::Sampler2D Depth( size , gla::SamplerFormat::RGBA16F,  gla::ImageFormat::RGBA, gla::DataType::FLOAT);
+        Depth.SetFilter( gla::SamplerFilter::NEAREST , gla::SamplerFilter::NEAREST );
+        return Depth;
+    }
+
+    static Sampler2D Vec3Texture32f( const glm::uvec2 & size)
+    {
+        gla::Sampler2D Depth( size , gla::SamplerFormat::RGB32F,  gla::ImageFormat::RGB, gla::DataType::FLOAT);
+        Depth.SetFilter( gla::SamplerFilter::NEAREST , gla::SamplerFilter::NEAREST );
+        return Depth;
+    }
+
+    static Sampler2D Vec4Texture32f( const glm::uvec2 & size)
+    {
+        gla::Sampler2D Depth( size , gla::SamplerFormat::RGBA32F,  gla::ImageFormat::RGBA, gla::DataType::FLOAT);
+        Depth.SetFilter( gla::SamplerFilter::NEAREST , gla::SamplerFilter::NEAREST );
+        return Depth;
+    }
+
+
+   // private:
+   //     DataType   m_PixelDataType;
+   //     glm::uvec2 m_Size;
 };
 
 
@@ -432,7 +510,7 @@ inline void Sampler2D::PasteSubImage( const uvec2 & xy, const ImageBase & T, int
                     T.size().y,
                     static_cast<GLenum>(imformat[T.getChannels()-1]),
                     //Format[T.getChannels()-1],
-                    (GLenum)m_PixelDataType,
+                    (GLenum)SharedData().m_PixelDataType,
                     d );
 
     glGenerateMipmap(GL_TEXTURE_2D);

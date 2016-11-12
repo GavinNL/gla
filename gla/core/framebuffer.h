@@ -167,6 +167,8 @@ public:
 
     void Attach(const Sampler2D & Tex,  FrameBuffer::Attachment attachment);
 
+    void Detach(Attachment attachment);
+
     void Use( std::vector<FrameBuffer::Attachment> attach);
 
     Status Check()
@@ -250,6 +252,7 @@ public:
         Depth.SetFilter( gla::SamplerFilter::NEAREST , gla::SamplerFilter::NEAREST );
         return Depth;
     }
+
 };
 
 
@@ -267,6 +270,13 @@ inline void FrameBuffer::Attach( const Sampler2D & texture, Attachment attachmen
     Bind();
     //texture.Bind();
     glFramebufferTexture2D(GL_FRAMEBUFFER, static_cast<GLenum>(attachment), GL_TEXTURE_2D, texture.Get(), 0);
+}
+
+inline void FrameBuffer::Detach( Attachment attachment)
+{
+    Bind();
+    //texture.Bind();
+    glFramebufferTexture2D(GL_FRAMEBUFFER, static_cast<GLenum>(attachment), GL_TEXTURE_2D, 0, 0);
 }
 
 }

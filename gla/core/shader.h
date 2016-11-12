@@ -317,6 +317,76 @@ public:
             Bind() ; // <<---- Use Program
         }
 
+        static ShaderProgram LoadFromString(const std::string & source_code, const std::map<std::string, std::string> & Replacements = std::map<std::string, std::string>() )
+        {
+            auto vertex_shader               = get_shader_sub_code( source_code, "vertex")                  ;
+            auto fragment_shader             = get_shader_sub_code( source_code, "fragment")                ;
+            auto geometry_shader             = get_shader_sub_code( source_code, "geometry")                ;
+            auto tessellation_control_shader = get_shader_sub_code( source_code, "tessellation_control")    ;
+            auto tessellation_eval_shader    = get_shader_sub_code( source_code, "tessellation_evaluation") ;
+
+            int mask = 0;
+            if( vertex_shader               != "") mask |= 1;
+            if( fragment_shader             != "") mask |= 2;
+            if( geometry_shader             != "") mask |= 4;
+            if( tessellation_control_shader != "") mask |= 8;
+            if( tessellation_eval_shader    != "") mask |= 16;
+
+            ShaderProgram P;
+
+            switch(mask)
+            {
+                case 1|2:
+                    P.AttachShaders(
+                                VertexShader(vertex_shader, true ),
+                                FragmentShader(fragment_shader, true ) );
+                    P.SharedData().hasFragmentShader = true;
+                    P.SharedData().hasVertexShader = true;
+                    break;
+
+                case 1|2|4:
+                    P.AttachShaders(
+                                VertexShader(vertex_shader, true ),
+                                FragmentShader(fragment_shader, true ),
+                                GeometryShader(geometry_shader, true ));
+                    P.SharedData().hasFragmentShader = true;
+                    P.SharedData().hasVertexShader = true;
+                    P.SharedData().hasGeometryShader = true;
+                    break;
+
+                case 1|2|4|8|16:
+
+                    P.AttachShaders(
+                                VertexShader(vertex_shader, true ),
+                                FragmentShader(fragment_shader, true ),
+                                GeometryShader(geometry_shader, true ),
+                                TessellationControlShader(tessellation_control_shader, true ),
+                                TessellationEvaluationShader(tessellation_eval_shader, true ));
+                    P.SharedData().hasFragmentShader = true;
+                    P.SharedData().hasVertexShader = true;
+                    P.SharedData().hasGeometryShader = true;
+                    P.SharedData().hasTEShader = true;
+                    P.SharedData().hasTCShader = true;
+                    break;
+
+                default:
+                        break;
+            }
+
+            GLA_LOGD << "Shader Loaded Successfully:" << std::endl;
+            GLA_LOGV << source_code << std::endl;
+
+            auto s = P.GetNumUniforms();
+            for(int i=0;i< s ; i++)
+            {
+                auto name  = P.GetUniformName(i);
+
+                GLA_LOGI << "Uniform [" << name << "] - location: " << P.GetUniformLocation( name.c_str() ) << std::endl;
+            }
+            //std::cout << "Shader Loaded Successfully: " << path.c_str() << std::endl;
+            return P;
+        }
+
         static ShaderProgram Load(const std::string & path, const std::map<std::string, std::string> & Replacements = std::map<std::string, std::string>())
         {
             std::ifstream v(path, std::ifstream::in);

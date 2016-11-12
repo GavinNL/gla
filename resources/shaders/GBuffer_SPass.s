@@ -54,8 +54,6 @@ void main()
     // Retrieve data from gbuffer
 
 
-
-
     float Depth    = texture(gDepth,      TexCoords ).r;
     vec3 FragPos   = texture2D(gPosition, TexCoords ).rgb;
     vec3 Normal    = texture(gNormal,     TexCoords ).rgb;

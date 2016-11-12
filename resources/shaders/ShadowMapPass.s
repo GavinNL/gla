@@ -30,8 +30,6 @@ void main()
 
     f_PosLightSpace = u_LightSpaceMatrix * vec4(f_Position,1.0);
 
-	// Same, but with the light's view matrix
-  //  gl_Position =  depthMVP * uModel vec4(vertexPosition_modelspace,1);
 }
 </vertex>
 
@@ -83,32 +81,53 @@ float ShadowCalculation(vec4 fragPosLightSpace, sampler2D shadow_map)
 
 
 
+//vec3 lightDir = normalize(light_position - position)
+//vec3 viewDir  = normalize(camera_position - position);
+
+float CalculateDiffuse( vec3 lightDir, vec3 normal)
+{
+    //vec3 lightDir = normalize(light_position - position)
+
+    float diff    = max(dot(lightDir, normal), 0.0);
+    //vec3 diffuse  = diff;
+
+    return diff;
+}
+
+float CalculateSpecular(vec3 lightDir, vec3 viewDir, vec3 normal)
+{
+    // Specular
+    //vec3 viewDir    = normalize(camera_position - position);
+
+    float spec      = 0.0;
+    vec3 halfwayDir = normalize(lightDir + viewDir);
+
+    spec            = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
+
+    return spec;
+}
+
+
+
 void main()
 {
     vec3 color      = texture( u_Diffuse, f_TexCoord).rgb;
     vec3 normal     = normalize(f_Normal);
-    vec3 lightColor = vec3(1.0);
+    vec3 lightColor = vec3(1.0,1,1);
 
-    // Ambient
-    vec3 ambient = 0.15 * color;
 
-    // Diffuse
     vec3 lightDir = normalize(u_LightPos - f_Position);
-
-    float diff = max(dot(lightDir, f_Normal), 0.0);
-    vec3 diffuse = diff * lightColor;
+    vec3 viewDir  = normalize(u_ViewPos - f_Position);
 
 
-    // Specular
-    vec3 viewDir = normalize(u_ViewPos - f_Position);
-    float spec   = 0.0;
-    vec3 halfwayDir = normalize(lightDir + viewDir);
-    spec = pow(max(dot(f_Normal, halfwayDir), 0.0), 64.0);
-    vec3 specular = spec * lightColor;
+    vec3 ambient  = 0.15 * color;
+
+    vec3 diffuse  = CalculateDiffuse(  lightDir , f_Normal) * lightColor;
+    vec3 specular = CalculateSpecular( lightDir , viewDir, f_Normal) * lightColor;
+
 
     // Calculate shadow
     float shadow = ShadowCalculation( f_PosLightSpace, u_ShadowMap);
-
 
 
     vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;

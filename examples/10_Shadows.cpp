@@ -134,7 +134,7 @@ int main()
         // Create the Shadow map
         //==========================================================
         RenderToTexture mShadowMap;
-        mShadowMap.CreateTexture( RenderToTexture::DEPTH , glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}, RenderToTexture::depth_16f);
+        mShadowMap.CreateTexture( RenderToTexture::DEPTH , glm::uvec2{1024, 768}, RenderToTexture::depth_16f);
        // mShadowMap.Bind();
 
 
@@ -169,8 +169,9 @@ int main()
         Transform m_PlaneT;
 
 
-        vec3 LightPosition = glm::vec3(-2.0f, 4.0f, -1.0f);
-        GLfloat near_plane = 1.0f, far_plane = 500.5f;
+        vec3 LightPosition        = glm::vec3(-2.0f, 4.0f, -1.0f);
+        GLfloat near_plane        = 1.0f, far_plane = 500.5f;
+
         glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
         glm::mat4 lightView       = glm::lookAt(LightPosition,
                                           glm::vec3( 0.0f, 0.0f,  0.0f),
@@ -203,6 +204,7 @@ int main()
             if(1)
             {
                 mShadowMap.Bind(); // Bind the RenderToTexture object (basically a framebuffer object)
+                glViewport(0, 0, 1024, 768);
                 glEnable(GL_DEPTH_TEST);
                 glClear( GL_DEPTH_BUFFER_BIT );
                 // Shadow Pass
@@ -211,8 +213,8 @@ int main()
 
 
 
-                //glm::mat4 m_LightMatrix = L.GetProjectionMatrix() * lightView;
-                glm::mat4 m_LightMatrix = lightProjection * lightView;
+                glm::mat4 m_LightMatrix = L.GetProjectionMatrix() * lightView;
+                //glm::mat4 m_LightMatrix = lightProjection * lightView;
 
                 mShadowMapShader.Uniform( mShadowMapShader.GetUniformLocation("u_LightMatrix"), m_LightMatrix );
 
