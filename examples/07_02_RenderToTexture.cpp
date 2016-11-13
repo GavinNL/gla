@@ -169,8 +169,6 @@ int main()
         C.SetPosition( {0.0,0.0,0.0f});
         C.Perspective(45.0f, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1f);
 
-
-
         Timer_T<float> Timer;
         Timer_T<float> Timer2;
 
@@ -216,10 +214,10 @@ int main()
             // Access the individual textures by referring to them by
             // their attachment. It will throw an exception if
             // that attachment does not exist.
-            RTT[RenderToTexture::COLOR0].SetActive(0);//Positions.SetActive(0);
-            RTT[RenderToTexture::COLOR1].SetActive(1);//Normals.SetActive(1);
-            RTT[RenderToTexture::COLOR2].SetActive(2);//Colours.SetActive(2);
-            RTT[RenderToTexture::DEPTH] .SetActive(3);//Depth.SetActive(3);
+            RTT.Sampler(RenderToTexture::COLOR0).SetActive(0);//Positions.SetActive(0);
+            RTT.Sampler(RenderToTexture::COLOR1).SetActive(1);//Normals.SetActive(1);
+            RTT.Sampler(RenderToTexture::COLOR2).SetActive(2);//Colours.SetActive(2);
+            RTT.Sampler(RenderToTexture::DEPTH ).SetActive(3);//Depth.SetActive(3);
 
             static int i=0;
             DO_EVERY(2.0)
@@ -228,10 +226,10 @@ int main()
             }
             END_EVERY
 
-            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gPosition")  , 0 );
-            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gNormal")    , 1 );
-            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gAlbedoSpec"), i );
-            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gDepth")     , 3 );
+            GBufferSPass_Shader.Uniform( "gPosition"   , 0 );
+            GBufferSPass_Shader.Uniform( "gNormal"     , 1 );
+            GBufferSPass_Shader.Uniform( "gAlbedoSpec" , i );
+            GBufferSPass_Shader.Uniform( "gDepth"      , 3 );
 
             PlaneVAO.Draw(Primitave::TRIANGLES, 6 );
 

@@ -53,9 +53,9 @@ endif (UNIX)
 find_package(OpenGL REQUIRED)
 #find_package(GLEW REQUIRED)
 find_package(glfw3 REQUIRED)
-#find_package(PkgConfig REQUIRED)
+find_package(PkgConfig REQUIRED)
 
-#pkg_search_module(GLFW REQUIRED glfw3)
+pkg_search_module(GLFW REQUIRED glfw3)
 
 include_directories(${OpenGL_INCLUDE_DIRS})
 #include_directories(${GLEW_INCLUDE_DIRS})
@@ -71,18 +71,20 @@ set(LIBS_FULL
 set(LIBS_GLAD
     ${GLFW_STATIC_LIBRARIES}
     ${OPENGL_gl_LIBRARY}
+ #   glfw3
 )
 
 
 
 
-        add_executable(01_HelloTriangle
-              examples/01_HelloTriangle.cpp glad.cpp)
-target_link_libraries (01_HelloTriangle ${LIBS_GLAD})
 
         add_executable(01_01_HelloTriangle
               examples/01_01_HelloTriangle.cpp glad.cpp)
 target_link_libraries (01_01_HelloTriangle ${LIBS_GLAD})
+
+        add_executable(01_02_HelloTriangleMultiBuffer
+              examples/01_02_HelloTriangleMultiBuffer.cpp glad.cpp)
+target_link_libraries (01_02_HelloTriangleMultiBuffer ${LIBS_GLAD})
 
         add_executable(02_HelloTriangleIndexed
               examples/02_HelloTriangleIndexed.cpp glad.cpp)
@@ -139,6 +141,7 @@ target_link_libraries(11_02_Sampler2dFilter ${LIBS_GLAD})
        add_executable(octree_test
                       octree_test.cpp )
 target_link_libraries(octree_test ${LIBS_GLAD})
+
 # This command b
 add_custom_command(
    TARGET 01_HelloTriangle POST_BUILD

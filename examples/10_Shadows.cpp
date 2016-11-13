@@ -146,6 +146,7 @@ int main()
         //================================================================
         RenderToTexture RTT;
 
+#if 0
         // Create two textures that will hold some kind fo floating point value
         RTT.CreateTexture( RenderToTexture::COLOR0, glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}, RenderToTexture::vec3_16f);
         RTT.CreateTexture( RenderToTexture::COLOR1, glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}, RenderToTexture::vec3_16f);
@@ -153,10 +154,20 @@ int main()
         // create a texture that will hold the colour value
         RTT.CreateTexture( RenderToTexture::COLOR2, glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}, RenderToTexture::rgba);
 
+
         // Create a depth texture that will render the depth information to
         RTT.CreateTexture( RenderToTexture::DEPTH , glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}, RenderToTexture::depth_16f);
 
+#else
 
+        // Can also attach samplers to each target manually. The RTT will store a refernce to the samplers
+        // so they won't be destroyed
+        RTT[RenderToTexture::COLOR0] = Sampler2D::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
+        RTT[RenderToTexture::COLOR1] = Sampler2D::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
+        RTT[RenderToTexture::COLOR2] = Sampler2D::RGBATexture( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}    );
+        RTT[RenderToTexture::DEPTH ] = Sampler2D::DepthTexture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
+
+#endif
         //==========================================================================
 
 
@@ -251,19 +262,21 @@ int main()
 
 
                 Samp1.SetActive(0);
-                mShadowMap[RenderToTexture::DEPTH].SetActive(1);
 
-                mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_Diffuse")  , 0 );
-                mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_ShadowMap"), 1 );
+                mShadowMap.Sampler(RenderToTexture::DEPTH).SetActive(1);
 
-                mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_LightPos"),  LightPosition);
-                mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_ViewPos"),  C.GetPosition() );
+                mShadowMapShader_ShadowPass.Uniform( "u_Diffuse"   , 0 );
+                mShadowMapShader_ShadowPass.Uniform( "u_ShadowMap" , 1 );
+
+                mShadowMapShader_ShadowPass.Uniform( "u_LightPos",  LightPosition);
+                mShadowMapShader_ShadowPass.Uniform( "u_ViewPos" ,  C.GetPosition() );
 
 
-                mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_ModelMatrix"), m_PlaneT.GetMatrix() );
+                mShadowMapShader_ShadowPass.Uniform( "u_ModelMatrix", m_PlaneT.GetMatrix() );
                 m_PlaneMesh.Draw();
 
-                mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_ModelMatrix"), m_BoxT.GetMatrix() );
+                mShadowMapShader_ShadowPass.Uniform( "u_ModelMatrix", m_BoxT.GetMatrix() );
+                //mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_ModelMatrix"), m_BoxT.GetMatrix() );
                 m_BoxMesh.Draw();
 
                 //VAO.Draw(Primitave::TRIANGLES, Vertices.indices.size() );
@@ -271,11 +284,12 @@ int main()
                 // Unbind the RenderToTexture so we now render to the actual screen
                 RTT.Unbind();
 
-                RTT[RenderToTexture::COLOR0].SetActive(0);//Positions.SetActive(0);
-                RTT[RenderToTexture::COLOR1].SetActive(1);//Normals.SetActive(1);
-                RTT[RenderToTexture::COLOR2].SetActive(2);//Colours.SetActive(2);
-                RTT[RenderToTexture::DEPTH] .SetActive(3);//Depth.SetActive(3);
-                mShadowMap[RenderToTexture::DEPTH].SetActive(4);//Depth.SetActive(3);
+                RTT.Sampler(RenderToTexture::COLOR0).SetActive(0);//Positions.SetActive(0);
+                RTT.Sampler(RenderToTexture::COLOR1).SetActive(1);//Normals.SetActive(1);
+                RTT.Sampler(RenderToTexture::COLOR2).SetActive(2);//Colours.SetActive(2);
+                RTT.Sampler(RenderToTexture::DEPTH ) .SetActive(3);//Depth.SetActive(3);
+
+                mShadowMap.Sampler(RenderToTexture::DEPTH).SetActive(4);//Depth.SetActive(3);
             }
             //================================================================
             // 8. Perform the pixel pass

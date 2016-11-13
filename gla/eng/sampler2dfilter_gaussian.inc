@@ -1,4 +1,4 @@
-const std::string gaussian_src = R"foo(
+R"foo(
 
 <vertex>
 #version 330 core

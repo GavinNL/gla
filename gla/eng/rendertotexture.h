@@ -105,25 +105,25 @@ public:
             switch(texture_type)
             {
                 case rgb      :
-                    S = FrameBuffer::CreateBufferTexture_RGB(size); break;
+                    S = Sampler2D::RGBATexture(size); break;
                 case rgba     :
-                    S = FrameBuffer::CreateBufferTexture_RGBA(size); break;
+                    S = Sampler2D::RGBATexture(size); break;
                 case vec3_16f :
-                    S = FrameBuffer::CreateBufferTexture_Vec3_16f(size); break;
+                    S = Sampler2D::Vec3Texture16f(size); break;
                 case vec3_32f :
-                    S = FrameBuffer::CreateBufferTexture_Vec3_32f(size); break;
+                    S = Sampler2D::Vec3Texture32f(size); break;
                 case vec4_16f :
-                    S = FrameBuffer::CreateBufferTexture_Vec4_16f(size); break;
+                    S = Sampler2D::Vec4Texture16f(size); break;
                 case vec4_32f :
-                    S = FrameBuffer::CreateBufferTexture_Vec4_32f(size); break;
+                    S = Sampler2D::Vec4Texture32f(size); break;
                 case depth:
-                    S = FrameBuffer::CreateBufferTexture_Depth(size); break;
+                    S = Sampler2D::DepthTexture(size); break;
                 case depth_16f:
-                    S = FrameBuffer::CreateBufferTexture_Depth16F(size); break;
+                    S = Sampler2D::DepthTexture16f(size); break;
                 case depth_24f:
-                    S = FrameBuffer::CreateBufferTexture_Depth24F(size); break;
-//                case depth_32f:
-//                    S = FrameBuffer::CreateBufferTexture_Depth32F(size); break;
+                    S = Sampler2D::DepthTexture24f(size); break;
+                case depth_32f:
+                    S = Sampler2D::DepthTexture32f(size); break;
                 case stencil  :
                     GLA_LOGE << "[RenderToTexture]  No stencil buffer implementation yet."; break;
                 default:
@@ -174,13 +174,31 @@ public:
         {
             std::vector<FrameBuffer::Attachment> D;
 
-            for(auto & T : m_Samplers)
+            for(auto it = m_Samplers.begin(); it != m_Samplers.end(); )
             {
-               if(T.first != DEPTH && T.first != STENCIL)
-               {
-                   D.push_back( static_cast<FrameBuffer::Attachment>(T.first ) );
-               }
+                auto & T = *it;
+
+                if( !T.second )
+                {
+                    std::cout << "Target texture not available. erasing" << std::endl;
+                    it = m_Samplers.erase(it);
+                    continue;
+                }
+
+                if(T.first != DEPTH && T.first != STENCIL)
+                {
+                    D.push_back( static_cast<FrameBuffer::Attachment>(T.first ) );
+                }
+                ++it;
             }
+
+            //for(auto & T : m_Samplers)
+            //{
+            //   if(T.first != DEPTH && T.first != STENCIL)
+            //   {
+            //       D.push_back( static_cast<FrameBuffer::Attachment>(T.first ) );
+            //   }
+            //}
 
             if( D.size() )
             {
@@ -208,14 +226,50 @@ public:
             m_FBO.Unbind();
         }
 
-        Sampler2D & operator[] (Target t)
+
+
+        Sampler2D & Sampler(Target t)
         {
             return m_Samplers.at(t);
         }
 
+private:
+        struct SamplerAttacher
+        {
+
+            ~SamplerAttacher()
+            {
+                rtt.Update();
+            }
+
+            void operator=(const Sampler2D & T)
+            {
+                rtt.Attach(T, targ);
+            }
+
+            Target            targ;
+            RenderToTexture & rtt;
+
+            SamplerAttacher(Target t,  RenderToTexture & r) : targ(t), rtt(r)
+            {
+            }
+        };
+public:
+        SamplerAttacher operator[](Target t)
+        {
+            return SamplerAttacher(t, *this);
+        }
+
+        //Sampler2D & operator[] (Target t)
+        //{
+        //    return m_Samplers.at(t);
+        //}
     protected:
         FrameBuffer                 m_FBO;
         std::map<Target, Sampler2D> m_Samplers;
+        friend class RenderToTexture::SamplerAttacher;
+
+
 };
 
 }

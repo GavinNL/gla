@@ -35,10 +35,10 @@ class Sampler2DFilter
 
             const glm::vec2 texel_size = 1.0f / vec2( InputSize );
 
-            GLA_LOGV << "Null Shader" << std::endl
-                     << "Input id    : " << Input.Get() << std::endl
-                     << "Input  size : " << InputSize.x << ", " << InputSize.y << std::endl
-                     << "texel_size  : " << texel_size.x << ", " << texel_size.y << std::endl;
+//            GLA_LOGV << "Null Shader" << std::endl
+//                     << "Input id    : " << Input.Get() << std::endl
+//                     << "Input  size : " << InputSize.x << ", " << InputSize.y << std::endl
+//                     << "texel_size  : " << texel_size.x << ", " << texel_size.y << std::endl;
 
             Input.SetActive(0);
             m_GaussianShader.Bind();
@@ -72,13 +72,12 @@ class Sampler2DFilter
 
             glViewport(0, 0, OutputSize.x, OutputSize.y);
 
-            const glm::vec2 texel_size = 1.0f / vec2( InputSize );
-            GLA_LOGV << "Null Shader" << std::endl
-                     << "Input id    : " << Input.Get() << std::endl
-                     << "Output id   : " << Input.Get() << std::endl
-                     << "Input  size : " << InputSize.x << ", " << InputSize.y << std::endl
-                     << "Output_size : " << OutputSize.x << ", " << OutputSize.y << std::endl
-                     << "texel_size  : " << texel_size.x << ", " << texel_size.y << std::endl;
+//            GLA_LOGV << "Null Shader" << std::endl
+//                     << "Input id    : " << Input.Get() << std::endl
+//                     << "Output id   : " << Input.Get() << std::endl
+//                     << "Input  size : " << InputSize.x << ", " << InputSize.y << std::endl
+//                     << "Output_size : " << OutputSize.x << ", " << OutputSize.y << std::endl
+//                     << "texel_size  : " << texel_size.x << ", " << texel_size.y << std::endl;
 
             Input.SetActive(0);
             m_GaussianShader.Bind();
@@ -114,13 +113,14 @@ class Sampler2DFilter
             glViewport(0, 0, OutputSize.x, OutputSize.y);
 
             const glm::vec2 texel_size = 1.0f / vec2( InputSize );
-            GLA_LOGV << "Guassian Blurr" << std::endl
-                     <<   "Input id:  " << Input.Get() << std::endl
-                     <<   "Output id: " << Input.Get() << std::endl
-                     << "Input  size : " << InputSize.x << ", " << InputSize.y << std::endl
-                     << "Output_size : " << OutputSize.x << ", " << OutputSize.y << std::endl
-                     << "texel_size : " << texel_size.x << ", " << texel_size.y << std::endl
-                     << "dir        : " << dir.x << ", " << dir.y << std::endl;
+
+//            GLA_LOGV << "Guassian Blurr" << std::endl
+//                     <<   "Input id:  " << Input.Get() << std::endl
+//                     <<   "Output id: " << Input.Get() << std::endl
+//                     << "Input  size : " << InputSize.x << ", " << InputSize.y << std::endl
+//                     << "Output_size : " << OutputSize.x << ", " << OutputSize.y << std::endl
+//                     << "texel_size : " << texel_size.x << ", " << texel_size.y << std::endl
+//                     << "dir        : " << dir.x << ", " << dir.y << std::endl;
 
             Input.SetActive(0);
             m_GaussianShader.Bind();
@@ -172,13 +172,15 @@ class Sampler2DFilter
         {
             if( !m_GaussianShader )
             {
+                const std::string src =
                 #include "sampler2dfilter_gaussian.inc"
-                m_GaussianShader = ShaderProgram::LoadFromString( gaussian_src );
+                m_GaussianShader = ShaderProgram::LoadFromString( src );
             }
             if( !m_NullShader )
             {
+                const std::string src =
                 #include "sampler2d_filter_null.inc"
-                m_NullShader = ShaderProgram::LoadFromString( null_src );
+                m_NullShader = ShaderProgram::LoadFromString( src );
             }
         }
 

@@ -418,6 +418,14 @@ public:
         return Depth;
     }
 
+    static Sampler2D DepthTexture32f( const glm::uvec2 & size)
+    {
+        gla::Sampler2D Depth( size , gla::SamplerFormat::DEPTH_COMPONENT32,  gla::ImageFormat::DEPTH_COMPONENT, gla::DataType::FLOAT);
+        Depth.SetFilter( gla::SamplerFilter::NEAREST , gla::SamplerFilter::NEAREST );
+        return Depth;
+    }
+
+
     static Sampler2D RGBTexture( const glm::uvec2 & size)
     {
         gla::Sampler2D Colours( size );

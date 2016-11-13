@@ -29,6 +29,9 @@
 #include "glad.h"
 
 #include <gla/gla.h>
+#include <gla/eng/atlas.h>
+#include <gla/eng/meshbuffer.h>
+#include <gla/eng/rendertotexture.h>
 #include <gla/eng/sampler2dfilter.h>
 #include <GLFW/glfw3.h> // GLFW helper library
 

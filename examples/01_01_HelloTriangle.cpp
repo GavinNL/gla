@@ -21,10 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
-#define GLA_LOG_ALL
-
-
 #include "glad.h"
 #include <gla/gla.h>
 #include <GLFW/glfw3.h>
@@ -63,24 +59,31 @@ int main(int argc, char **argv)
         //    The vertex strucutre contains positions and colours of each
         //    vertex in the triangle.
         //================================================================
+        struct MyVertex
+        {
+            glm::vec3 p;
+            glm::vec4 c;
+        };
 
-        // Populate a standard vector of the position and colours of each vertex
-        // We will use two separate buffers this time.
-        std::vector< glm::vec3 > Position;
-        std::vector< glm::vec4 > Colour;
+        // Populate a standard vector of the vertices with the appropriate information
+        std::vector< MyVertex > CpuBuffer;
+        CpuBuffer.push_back( { glm::vec3(-1.0f, -1.0f, 0.f), glm::vec4(1.f, 0.f, 0.f, 1.0f)  }  );
+        CpuBuffer.push_back( { glm::vec3( 1.0f ,-1.0f, 0.f), glm::vec4(0.f, 1.f, 0.f, 1.0f)  }  );
+        CpuBuffer.push_back( { glm::vec3( 0.0f , 1.0f, 0.f), glm::vec4(0.f, 0.f, 1.f, 1.0f)  }  );
+
+        // Create an Array Buffer on the GPU using the data from the standard vector
+        ArrayBuffer  vertices( CpuBuffer );
 
 
-        Position.push_back( glm::vec3(-1.0f, -1.0f, 0.f) );
-        Position.push_back( glm::vec3( 1.0f ,-1.0f, 0.f) );
-        Position.push_back( glm::vec3( 0.0f , 1.0f, 0.f) );
+        // Copy the buffer to another buffer, this only references the new buffer
+        // Both instances point to the same data on the GPU.
+        ArrayBuffer another_buffer_reference;
+        another_buffer_reference = vertices;
 
-        Colour.push_back( glm::vec4(1.f, 0.f, 0.f, 1.0f)  );
-        Colour.push_back( glm::vec4(0.f, 1.f, 0.f, 1.0f)  );
-        Colour.push_back( glm::vec4(0.f, 0.f, 1.f, 1.0f)  );
+        // Release the original buffer, because the buffers are reference counted. It wont
+        // release the data on the GPU. You can still use another_buffer_reference
+        vertices.Release();
 
-
-        ArrayBuffer PosBuffer(Position);
-        ArrayBuffer ColBuffer(Colour);
 
         //================================================================
         // 2. Load the Shader program from files. We will use two shaders
@@ -89,9 +92,6 @@ int main(int argc, char **argv)
         ShaderProgram TriangleShader;
         TriangleShader.AttachShaders( VertexShader  ("./resources/shaders/HelloTriangle.v"),
                                       FragmentShader("./resources/shaders/HelloTriangle.f") );
-
-
-        PosBuffer.EnableAttributes<vec3, mat4, vec2>();
 
         while (!glfwWindowShouldClose(gMainWindow) )
         {
@@ -104,8 +104,7 @@ int main(int argc, char **argv)
             // consists of one vec3 and one vec4 that are both un-normalized.
             // This function will automatically bind the array buffer and set the
             // attributes.
-            PosBuffer.EnableAttributes<vec3>(0);  // The first attribute will be a vec3
-            ColBuffer.EnableAttributes<vec4>(1);  // second attribute will be vec4
+            another_buffer_reference.EnableAttributes<vec3, vec4>();
 
             // If you want to normalize the data, for example for surface normals, you can use
             // Which says that attribute 1 (ie: the vec4) should be noramlized data
@@ -114,7 +113,7 @@ int main(int argc, char **argv)
             // Now draw the triangle.
             // we are drawing Triangles, starting at Vertex Index 0
             // and we are drawing 3 vertices (because 3 vertices make a triangle)
-            PosBuffer.Draw<false>(Primitave::TRIANGLES, 3, 0);
+            another_buffer_reference.Draw(Primitave::TRIANGLES, 3, 0);
 
 
             glfwSwapBuffers(gMainWindow);
