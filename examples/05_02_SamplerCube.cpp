@@ -28,6 +28,8 @@
 
 #include <gla/gla.h>
 
+
+
 #include <glm/gtc/noise.hpp> // for glm::perlin
 
 #include <GLFW/glfw3.h>
@@ -42,7 +44,7 @@ using namespace gla;
 //=================================================================================
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 480
-#define WINDOW_TITLE "Sampler 2D Array"
+#define WINDOW_TITLE "Sampler Cube"
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
@@ -97,31 +99,24 @@ int main()
         //================================================================
         // 2. Load some images and force them to use 3 colour components
         //================================================================
-        Image Tex1("./resources/textures/rocks.jpg"    ,  3 );
+        Image Tex1("./resources/textures/rocks.jpg"    , 3 );
         Image Tex2("./resources/textures/rocks1024.jpg", 3 );
-        Image Tex3(256,256, 3); // empty texture
-
-        // Set the red channel using a lambda function
-        Tex3.r =  IMAGE_EXPRESSION( glm::perlin( vec2(x,y) * 4.0f, vec2(4.0,4.0) )*0.5 + 0.5f )
+        Image Tex3("./resources/textures/marble.jpg"   , 3 );
 
         //================================================================
         // 3. Create the Texture Array
         //================================================================
-        #if 0
-        Sampler2DArray TexArray2D;
+        //SamplerCube Cube;
+        Sampler Cube;
+
         // Create the GPUTexture array with 3 layers that hold 256x256 images with 3 components each, and 2 mipmaps.
-        TexArray2D.Create( uvec2(256,256), 3, 3 , 2);
-        #else
-        Sampler        TexArray2D;
-        TexArray2D.CreateTexture2DArray( uvec2(256,256), 3, Sampler::RGB8  );
-        #endif
-
-
+        Cube.CreateTextureCubeMap( uvec2(256,256), Sampler::RGB8);
 
         // Resize the textures so they match the TextureArray. This will throw an exception if
         // the sizes do not match.
         Tex1.resize( uvec2(256,256) );
         Tex2.resize( uvec2(256,256) );
+        Tex3.resize( uvec2(256,256) );
 
 
         // Copy the textures into the appropriate layer. This will throw an exception if
@@ -129,14 +124,21 @@ int main()
         //   Note: If the Image does not match the Sampler2D dimensions, it will be rescaled
         //         to the appropriate dimensions and channels. If that is not desired
         //          use TexArray2D.SetLayer(Tex1, 0, uvec2(0,0);
-        TexArray2D[0] << Tex1;
-        TexArray2D[1] << Tex2;
-        TexArray2D[2] << Tex3;
+        Cube[0] << Tex1; // positive x
+        Cube[1] << Tex2; // negative x
+        Cube[2] << Tex3; // positive y
 
-        // Alternatively, one can use the following
-        //   TexArray2D.SetLayer( Tex1, 0, uvec2(0 ,0) );
-        //   TexArray2D.SetLayer( Tex2, 1, uvec2(0 ,0) );
-        //   TexArray2D.SetLayer( Tex3, 2, uvec2(0 ,0) );
+        Tex1.g = Tex1.r;
+        Tex1.b = Tex1.r;
+        Tex2.g = Tex2.r;
+        Tex2.b = Tex2.r;
+        Tex3.g = Tex3.r;
+        Tex3.b = Tex3.r;
+
+
+        Cube[3] << Tex1; // negative y
+        Cube[4] << Tex2; // positive z
+        Cube[5] << Tex3; // negative z
 
         //===============================================================
 
@@ -149,13 +151,13 @@ int main()
         //================================================================
         // 4. Load the Texture Array shader
         //================================================================
-        ShaderProgram TextureArrayShader = ShaderProgram::Load( "./resources/shaders/TextureArray.s" );
+        ShaderProgram TextureArrayShader = ShaderProgram::Load( "./resources/shaders/TextureCube.s" );
 
 
 
         // Get the IDs of the uniform variables inside the shader.
         auto uTextureArrayID = TextureArrayShader.GetUniformLocation("uTextureArray");
-        auto uSpeedID        = TextureArrayShader.GetUniformLocation("uSpeed");
+
         //==========================================================
 
 
@@ -167,14 +169,11 @@ int main()
             TextureArrayShader.Bind();
 
             // Set the TextureArray as the current texture 0;
-            TexArray2D.SetActive(0);
+            Cube.SetActive(0);
 
-
-            vec2 Speed = Timer.getElapsedTime() * vec2(0.15,0.4) * 0.2f;
 
             // Send the Uniforms to the shader.
             TextureArrayShader.Uniform( uTextureArrayID, 0);      //which texture unit our Sampler2D array is bound to
-            TextureArrayShader.Uniform( uSpeedID ,        Speed); //a constant variable that we are using in the shader
 
 
             VAO.Draw(Primitave::TRIANGLE_FAN, 4);

@@ -2,14 +2,95 @@
 #define GLA_RENDERTOTEXTURE_H
 
 #include<gla/core/framebuffer.h>
+#include<gla/core/sampler2darray.h>
+#include<gla/core/sampler_cube.h>
+#include<gla/core/sampler.h>
 #include <map>
 
 namespace gla
 {
 
-    /**
-     * @brief The RenderToTexture class
-     */
+// Temporary class, will figure out how to deal with this later.
+class SamplerVar
+{
+public:
+    enum _type
+    {
+        SAMPLER2D, ARRAY, CUBE
+    };
+
+    operator bool() const
+    {
+        return static_cast<bool>(sampler2d) || static_cast<bool>(sampler2darray ) || static_cast<bool>(samplercube);
+    }
+
+
+    SamplerVar & operator = (const Sampler2D & S)
+    {
+        type = SAMPLER2D;
+        sampler2d = S;
+        sampler2darray.Release();
+        samplercube.Release();
+        return *this;
+    }
+
+    SamplerVar & operator = (const Sampler2DArray & S)
+    {
+        type = ARRAY;
+        sampler2darray = S;
+        sampler2d.Release();
+        samplercube.Release();
+        return *this;
+    }
+
+    SamplerVar & operator = (const SamplerCube & S)
+    {
+        type = CUBE;
+        samplercube = S;
+        sampler2darray.Release();
+        sampler2d.Release();
+        return *this;
+    }
+
+
+    Sampler2D & GetSampler2D() {
+        return sampler2d;
+    }
+
+    Sampler2DArray & GetSampler2DArray() {
+        return sampler2darray;
+    }
+
+    SamplerCube & GetSamplerCube() {
+        return samplercube;
+    }
+
+    void SetActive(unsigned int i)
+    {
+        switch(type)
+        {
+            case SAMPLER2D:
+                sampler2d.SetActive(i); break;
+            case ARRAY:
+                sampler2darray.SetActive(i); break;
+            case CUBE:
+                samplercube.SetActive(i); break;
+            default:
+                break;
+        }
+    }
+
+public:
+    _type          type;
+    Sampler2D      sampler2d;
+    Sampler2DArray sampler2darray;
+    SamplerCube    samplercube;
+};
+
+
+/**
+ * @brief The RenderToTexture class
+ */
 class RenderToTexture
 {
 public:
@@ -91,6 +172,7 @@ public:
          *
          * Create a texture to render to.
          */
+
         void CreateTexture(Target Targ,  glm::uvec2 size,  TextureType texture_type )
         {
             if( !m_FBO)
@@ -140,6 +222,20 @@ public:
             m_FBO.UnBind();
         }
 
+        void Attach( const SamplerCube & S, Target targ = COLOR0)
+        {
+            if( !m_FBO)
+            {
+                GLA_LOGV << "Frame buffer not created. Creating one now!" << std::endl;
+                m_FBO.Generate();
+            }
+
+            m_Samplers[ targ ]  = S;
+            m_FBO.Attach(S, static_cast<FrameBuffer::Attachment>(targ) );
+            Update();
+            m_FBO.Unbind();
+        }
+
         void Attach( const Sampler2D & S, Target targ = COLOR0)
         {
             if( !m_FBO)
@@ -151,7 +247,10 @@ public:
             m_Samplers[ targ ]  = S;
             m_FBO.Attach(S, static_cast<FrameBuffer::Attachment>(targ) );
             Update();
+            m_FBO.Unbind();
         }
+
+
 
         void Clear()
         {
@@ -208,6 +307,7 @@ public:
             }
             else
             {
+                Bind();
                 if( m_Samplers.count(DEPTH) )
                 {
                     glDrawBuffer(GL_NONE);
@@ -227,22 +327,35 @@ public:
         }
 
 
-
-        Sampler2D & Sampler(Target t)
+        SamplerVar & Sampler(Target t)
         {
             return m_Samplers.at(t);
         }
 
+        Sampler2D & GetSampler2D(Target t)
+        {
+            return m_Samplers.at(t).GetSampler2D();
+        }
+
+        Sampler2DArray & GetSampler2DArray(Target t)
+        {
+            return m_Samplers.at(t).GetSampler2DArray();
+        }
+
+        SamplerCube & GetSamplerCube(Target t)
+        {
+            return m_Samplers.at(t).GetSamplerCube();
+        }
 private:
         struct SamplerAttacher
         {
 
             ~SamplerAttacher()
             {
-                rtt.Update();
+                //rtt.Update();
             }
 
-            void operator=(const Sampler2D & T)
+            void operator << (const gla::Sampler2D & T)
             {
                 rtt.Attach(T, targ);
             }
@@ -266,7 +379,8 @@ public:
         //}
     protected:
         FrameBuffer                 m_FBO;
-        std::map<Target, Sampler2D> m_Samplers;
+        //std::map<Target, Sampler2D> m_Samplers;
+        std::map<Target, SamplerVar> m_Samplers;
         friend class RenderToTexture::SamplerAttacher;
 
 

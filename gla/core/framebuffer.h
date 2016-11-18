@@ -27,7 +27,8 @@
 
 #include "handle.h"
 #include "sampler2d.h"
-
+#include "sampler.h"
+#include "sampler_cube.h"
 
 namespace gla {
 
@@ -165,6 +166,8 @@ public:
         glBindFramebuffer(GL_FRAMEBUFFER,  0);
     }
 
+    void Attach( const Sampler & texture, Attachment attachment);
+    void Attach( const SamplerCube & texture, Attachment attachment);
     void Attach(const Sampler2D & Tex,  FrameBuffer::Attachment attachment);
 
     void Detach(Attachment attachment);
@@ -270,6 +273,20 @@ inline void FrameBuffer::Attach( const Sampler2D & texture, Attachment attachmen
     Bind();
     //texture.Bind();
     glFramebufferTexture2D(GL_FRAMEBUFFER, static_cast<GLenum>(attachment), GL_TEXTURE_2D, texture.Get(), 0);
+}
+
+inline void FrameBuffer::Attach( const Sampler & texture, Attachment attachment)
+{
+    Bind();
+    //texture.Bind();
+    glFramebufferTexture(GL_FRAMEBUFFER, static_cast<GLenum>(attachment), texture.Get(), 0);
+}
+
+inline void FrameBuffer::Attach(const SamplerCube &texture, Attachment attachment)
+{
+    Bind();
+    //texture.Bind();
+    glFramebufferTexture(GL_FRAMEBUFFER, static_cast<GLenum>(attachment), texture.Get(), 0);
 }
 
 inline void FrameBuffer::Detach( Attachment attachment)

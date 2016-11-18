@@ -30,22 +30,41 @@
 
 
 
-#define GLM_FORCE_RADIANS
+//#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
-#define GLM_FORCE_RADIANS
+//#define GLM_FORCE_RADIANS
 #include <glm/gtc/quaternion.hpp>
-#define GLM_FORCE_RADIANS
+//#define GLM_FORCE_RADIANS
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
 #include <chrono>
 #include <ctime>
 #include <iomanip>
-
+#include <string>
 
 
 namespace gla
 {
+
+static void CheckError()
+{
+    auto err = glGetError();
+
+    switch(err)
+    {
+                                 case GL_INVALID_ENUM:
+           throw std::runtime_error( "GL_INVALID_ENUM" );
+                      case GL_INVALID_OPERATION:
+throw std::runtime_error( "GL_INVALID_OPERATION" );
+                      case GL_INVALID_VALUE:
+throw std::runtime_error( "GL_INVALID_VALUE" );
+    default:
+            return;
+    }
+
+}
+
 
 class NormalizeFlags
 {

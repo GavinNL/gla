@@ -30,11 +30,11 @@
 #ifndef GLA_EXP_Transform_H
 #define GLA_EXP_Transform_H
 
-#define GLM_FORCE_RADIANS
+//#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
-#define GLM_FORCE_RADIANS
+//#define GLM_FORCE_RADIANS
 #include <glm/gtc/quaternion.hpp>
-#define GLM_FORCE_RADIANS
+//#define GLM_FORCE_RADIANS
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace gla {

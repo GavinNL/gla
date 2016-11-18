@@ -47,6 +47,14 @@ struct DestSampler2DArray
     }
 };
 
+struct Sampler2DArrayData
+{
+    glm::uvec2  m_Size;
+    std::size_t m_Depth;
+    std::size_t m_MipmapCount;
+    std::size_t m_Components;
+};
+
 
     class Sampler2DArray;
 
@@ -64,7 +72,7 @@ struct DestSampler2DArray
             friend class Sampler2DArray;
     };
 
-    class Sampler2DArray : public BaseHandle<GLuint, GenSampler2DArray, DestSampler2DArray>
+    class Sampler2DArray : public BaseHandle<GLuint, GenSampler2DArray, DestSampler2DArray, Sampler2DArrayData>
     {
         public:
 
@@ -89,10 +97,7 @@ struct DestSampler2DArray
 
         private:
 
-            glm::uvec2  m_Size;
-            std::size_t m_Depth;
-            std::size_t m_MipmapCount;
-            std::size_t m_Components;
+
 
       //      Sampler2DArrayLayerRef m_LayerRef;
     };
@@ -118,8 +123,9 @@ struct DestSampler2DArray
             throw std::runtime_error("Error: Sampler2DArray not generated\n");
         }
 
-        auto mSize       = m_Size;
-        auto mComponents = m_Components;
+        auto mSize       = SharedData().m_Size;
+        auto mComponents = SharedData().m_Components;
+        auto m_Depth     = SharedData().m_Depth;
 
         if( Layer >= m_Depth)
         {
@@ -168,10 +174,10 @@ struct DestSampler2DArray
         GLuint format[4] = {GL_R8, GL_RG8, GL_RGB8, GL_RGBA8};
         glTexStorage3D( GL_TEXTURE_2D_ARRAY, mipmaps, format[components-1], size.x, size.y, static_cast<GLsizei>(depth) );
 
-        m_Size        = size;
-        m_Depth       = depth;
-        m_MipmapCount = mipmaps;
-        m_Components  = components;
+        SharedData().m_Size        = size;
+        SharedData().m_Depth       = depth;
+        SharedData().m_MipmapCount = mipmaps;
+        SharedData().m_Components  = components;
 
         SetFilter( SamplerFilter::LINEAR_MIPMAP_LINEAR, SamplerFilter::LINEAR_MIPMAP_LINEAR);
         SetWrap(SamplerWrap::REPEAT, SamplerWrap::REPEAT);
@@ -215,15 +221,6 @@ struct DestSampler2DArray
     {
         glActiveTexture(GL_TEXTURE0+unit);
         Bind();
-        ////static unsigned int CurrentlyBoundTextureUnits[128] = {0};
-        //auto CurrentlyBoundTextureUnits = gla::GetActiveTextures();
-        //
-        //if( CurrentlyBoundTextureUnits[unit] != m_Handle.GetID() )
-        //{
-        //    glActiveTexture(GL_TEXTURE0+unit);
-        //    m_Handle.Bind();
-        //    CurrentlyBoundTextureUnits[unit] = m_Handle.GetID();
-        //}
     }
 }
 

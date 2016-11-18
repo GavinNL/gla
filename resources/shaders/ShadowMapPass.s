@@ -73,6 +73,9 @@ float ShadowCalculation(vec4 fragPosLightSpace, sampler2D shadow_map)
     // Get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
 
+    if( length( projCoords.xy-vec2(0.5,0.5) ) > 0.5)
+        return 1.0;
+
     // Check whether current frag pos is in shadow
     float shadow = currentDepth-0.005 > closestDepth  ? 1.0 : 0.0;
 

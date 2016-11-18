@@ -134,12 +134,10 @@ int main()
         // Create the Shadow map
         //==========================================================
         RenderToTexture mShadowMap;
-        auto mShadowMapTexture = Sampler2D::DepthTexture16f( glm::uvec2{320, 1024} );
-        mShadowMapTexture.ClampToEdge();
+        auto mShadowMapTexture = Sampler2D::DepthTexture16f( glm::uvec2{1024, 1024} );
         //mShadowMap.CreateTexture( RenderToTexture::DEPTH , glm::uvec2{1024, 1024}, RenderToTexture::depth_16f);
-        mShadowMap[RenderToTexture::DEPTH] << mShadowMapTexture;//mShadowMapTexture;
-        mShadowMap.Bind();
-
+        mShadowMap[RenderToTexture::DEPTH] << mShadowMapTexture;
+       // mShadowMap.Bind();
 
 
 
@@ -168,7 +166,7 @@ int main()
         // so they won't be destroyed
         RTT[RenderToTexture::COLOR0] << Sampler2D::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
         RTT[RenderToTexture::COLOR1] << Sampler2D::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
-        RTT[RenderToTexture::COLOR2] << Sampler2D::RGBATexture(    glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}    );
+        RTT[RenderToTexture::COLOR2] << Sampler2D::RGBATexture( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}    );
         RTT[RenderToTexture::DEPTH ] << Sampler2D::DepthTexture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
 
 #endif
@@ -202,7 +200,7 @@ int main()
         // 6. Create a camera Object to help position the camera
         //================================================================
         Camera C;
-        C.SetPosition( {1.0, 3.0, 10.0f});
+        C.SetPosition( {1.0, 3.0, 25.0f});
         C.Perspective(45.0f, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1f);
 
         Camera L;
@@ -265,10 +263,11 @@ int main()
                 mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_ProjMatrix"),    C.GetProjectionMatrix() );
 
 
-
-
-                mShadowMap.Sampler(RenderToTexture::DEPTH).SetActive(1);
                 Samp1.SetActive(0);
+
+                mShadowMapTexture.SetActive(1);
+                mShadowMapTexture.ClampToEdge();
+                mShadowMapTexture.Bind();
 
                 mShadowMapShader_ShadowPass.Uniform( "u_Diffuse"   , 0 );
                 mShadowMapShader_ShadowPass.Uniform( "u_ShadowMap" , 1 );
@@ -289,10 +288,10 @@ int main()
                 // Unbind the RenderToTexture so we now render to the actual screen
                 RTT.Unbind();
 
-                RTT.Sampler(RenderToTexture::COLOR0).SetActive(0);//Positions.SetActive(0);
-                RTT.Sampler(RenderToTexture::COLOR1).SetActive(1);//Normals.SetActive(1);
-                RTT.Sampler(RenderToTexture::COLOR2).SetActive(2);//Colours.SetActive(2);
-                RTT.Sampler(RenderToTexture::DEPTH ).SetActive(3);//Depth.SetActive(3);
+                RTT.Sampler(RenderToTexture::COLOR0).GetSampler2D().SetActive(0);//Positions.SetActive(0);
+                RTT.Sampler(RenderToTexture::COLOR1).GetSampler2D().SetActive(1);//Normals.SetActive(1);
+                RTT.Sampler(RenderToTexture::COLOR2).GetSampler2D().SetActive(2);//Colours.SetActive(2);
+                RTT.Sampler(RenderToTexture::DEPTH ).GetSampler2D().SetActive(3);//Depth.SetActive(3);
 
                 mShadowMap.Sampler(RenderToTexture::DEPTH).GetSampler2D().SetActive(4);//Depth.SetActive(3);
             }

@@ -102,6 +102,10 @@ target_link_libraries (04_HelloTexturedTriangle ${LIBS_GLAD})
              examples/05_Sampler2DArray.cpp glad.cpp)
 target_link_libraries(05_Sampler2DArray ${LIBS_GLAD})
 
+       add_executable(05_02_SamplerCube
+             examples/05_02_SamplerCube.cpp glad.cpp)
+target_link_libraries(05_02_SamplerCube ${LIBS_GLAD})
+
        add_executable(06_UniformBuffer
              examples/06_UniformBuffer.cpp glad.cpp)
 target_link_libraries(06_UniformBuffer ${LIBS_GLAD})
@@ -127,6 +131,10 @@ target_link_libraries(09_InstanceRendering ${LIBS_GLAD})
        add_executable(10_Shadows
              examples/10_Shadows.cpp glad.cpp)
 target_link_libraries(10_Shadows ${LIBS_GLAD})
+
+       add_executable(10_02_PointShadows
+             examples/10_02_PointShadows.cpp glad.cpp)
+target_link_libraries(10_02_PointShadows ${LIBS_GLAD})
 
 
        add_executable(11_01_Filters

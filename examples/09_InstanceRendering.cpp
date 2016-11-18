@@ -25,10 +25,10 @@
 #include <stdio.h>
 
 #define GLA_VERBOSE 1
-#define GLA_INFO 1
-#define GLA_TIMER 1
-#define GLA_ERROR 1
-#define GLA_DEBUG 1
+#define GLA_INFO    1
+#define GLA_TIMER   1
+#define GLA_ERROR   1
+#define GLA_DEBUG   1
 
 #include "glad.h"
 #include <iostream>

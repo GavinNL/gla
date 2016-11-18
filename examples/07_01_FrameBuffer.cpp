@@ -141,10 +141,10 @@ int main()
         FBO.Bind();
 
         // Use framebuffer helper functions to create textures to be used for holding paricular types of data
-        auto Positions = FrameBuffer::CreateBufferTexture_Vec3_16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
-        auto Normals   = FrameBuffer::CreateBufferTexture_Vec3_16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
-        auto Colours   = FrameBuffer::CreateBufferTexture_RGBA(     glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
-        auto Depth     = FrameBuffer::CreateBufferTexture_Depth16F( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
+        auto Positions = Sampler::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
+        auto Normals   = Sampler::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
+        auto Colours   = Sampler::RGBATexture(glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
+        auto Depth     = Sampler::DepthTexture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
 
         //FBO.Bind();
         FBO.Attach(Positions, FrameBuffer::COLOR0);

@@ -141,14 +141,14 @@ int main()
         RenderToTexture RTT;
 
         // Create two textures that will hold some kind fo floating point value
-        RTT.CreateTexture( RenderToTexture::COLOR0, glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}, RenderToTexture::vec3_16f);
-        RTT.CreateTexture( RenderToTexture::COLOR1, glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}, RenderToTexture::vec3_16f);
+        RTT[RenderToTexture::COLOR0] << Sampler2D::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
+        RTT[RenderToTexture::COLOR1] << Sampler2D::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
 
         // create a texture that will hold the colour value
-        RTT.CreateTexture( RenderToTexture::COLOR2, glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}, RenderToTexture::rgba);
+        RTT[RenderToTexture::COLOR2] << Sampler2D::RGBATexture(glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT});
 
         // Create a depth texture that will render the depth information to
-        RTT.CreateTexture( RenderToTexture::DEPTH , glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}, RenderToTexture::depth_16f);
+        RTT[RenderToTexture::DEPTH] << Sampler2D::DepthTexture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
 
 
         //==========================================================================
@@ -214,10 +214,10 @@ int main()
             // Access the individual textures by referring to them by
             // their attachment. It will throw an exception if
             // that attachment does not exist.
-            RTT.Sampler(RenderToTexture::COLOR0).SetActive(0);//Positions.SetActive(0);
-            RTT.Sampler(RenderToTexture::COLOR1).SetActive(1);//Normals.SetActive(1);
-            RTT.Sampler(RenderToTexture::COLOR2).SetActive(2);//Colours.SetActive(2);
-            RTT.Sampler(RenderToTexture::DEPTH ).SetActive(3);//Depth.SetActive(3);
+            RTT.Sampler(RenderToTexture::COLOR0).GetSampler2D().SetActive(0);//Positions.SetActive(0);
+            RTT.Sampler(RenderToTexture::COLOR1).GetSampler2D().SetActive(1);//Normals.SetActive(1);
+            RTT.Sampler(RenderToTexture::COLOR2).GetSampler2D().SetActive(2);//Colours.SetActive(2);
+            RTT.Sampler(RenderToTexture::DEPTH ).GetSampler2D().SetActive(3);//Depth.SetActive(3);
 
             static int i=0;
             DO_EVERY(2.0)
