@@ -39,7 +39,7 @@
 
 /**
  * This is the same as 11_01_Filters, but uses the
- * Sampler2DFilter helper class to perform the filters
+ * SamplerFilter helper class to perform the filters
  */
 
 
@@ -48,8 +48,8 @@ using namespace gla;
 //=================================================================================
 // Global Variables and Function Prototypes
 //=================================================================================
-#define WINDOW_WIDTH  1920
-#define WINDOW_HEIGHT 1080
+#define WINDOW_WIDTH  1024
+#define WINDOW_HEIGHT 1024
 #define WINDOW_TITLE  "Framebuffers and Differed Rendering"
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
@@ -73,18 +73,21 @@ int main()
         // Create a 2d filter object. Only one needs to be created
         // and can be reused multiple times. Do not create more than one
         // since all shaders/geometry are stored within the object
-        Sampler2DFilter s2df;
+        SamplerFilter s2df;
         s2df.Init();
 
 
         // Load some textures. And force using 3 components (r,g,b)
         Image Tex1("./resources/textures/rocks1024.jpg",  3 );
         // send the image to the GPU
-        Sampler2D RocksTexture(Tex1);
+        Sampler RocksTexture(Tex1);
 
         // Create two textures that will hold the filtered versions of RocksTexture
-        auto Sampler1 = Sampler2D::RGBTexture(Tex1.size());
-        auto Sampler2 = Sampler2D::RGBTexture(Tex1.size());
+        auto Sampler1 = Sampler::RGBTexture(Tex1.size());
+        auto Sampler2 = Sampler::RGBTexture(Tex1.size());
+
+        Sampler1.SetFilter( Sampler::LINEAR, Sampler::LINEAR );
+        Sampler2.SetFilter( Sampler::LINEAR, Sampler::LINEAR );
 
         // First run the gaussian filter in the y direction
         // and saving the output to Sampler1
@@ -97,7 +100,6 @@ int main()
         // do it a bunch more times so we can acutaly see the blurring
         s2df.Gaussian( Sampler2, Sampler1, vec2(0.0,1.0) );
         s2df.Gaussian( Sampler1, Sampler2, vec2(1.0,0.0) );
-
 
         s2df.Gaussian( Sampler2, Sampler1, vec2(0.0,1.0) );
         s2df.Gaussian( Sampler1, Sampler2, vec2(1.0,0.0) );

@@ -128,9 +128,9 @@ target_link_libraries(08_MeshBuffer ${LIBS_GLAD})
              examples/09_InstanceRendering.cpp glad.cpp)
 target_link_libraries(09_InstanceRendering ${LIBS_GLAD})
 
-       add_executable(10_Shadows
-             examples/10_Shadows.cpp glad.cpp)
-target_link_libraries(10_Shadows ${LIBS_GLAD})
+       add_executable(10_01_Shadows
+             examples/10_01_Shadows.cpp glad.cpp)
+target_link_libraries(10_01_Shadows ${LIBS_GLAD})
 
        add_executable(10_02_PointShadows
              examples/10_02_PointShadows.cpp glad.cpp)

@@ -94,7 +94,7 @@ int main()
         Image Tex1("./resources/textures/rocks.jpg",  3 );
 
         // send the image to the GPU
-        Sampler2D Samp1(Tex1);
+        Sampler Samp1(Tex1);
 
         //================================================================
         // 2. Create the plane to use during the second render pass
@@ -141,14 +141,14 @@ int main()
         RenderToTexture RTT;
 
         // Create two textures that will hold some kind fo floating point value
-        RTT[RenderToTexture::COLOR0] << Sampler2D::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
-        RTT[RenderToTexture::COLOR1] << Sampler2D::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
+        RTT[RenderToTexture::COLOR0] << Sampler::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
+        RTT[RenderToTexture::COLOR1] << Sampler::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
 
         // create a texture that will hold the colour value
-        RTT[RenderToTexture::COLOR2] << Sampler2D::RGBATexture(glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT});
+        RTT[RenderToTexture::COLOR2] << Sampler::RGBATexture(glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT});
 
         // Create a depth texture that will render the depth information to
-        RTT[RenderToTexture::DEPTH] << Sampler2D::DepthTexture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
+        RTT[RenderToTexture::DEPTH] << Sampler::DepthTexture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
 
 
         //==========================================================================
@@ -192,9 +192,10 @@ int main()
             T.SetEuler( { Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0 } );
 
             // Tell the shader that we are using Texture Unit 0 for the sampler
-            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uSampler"), 0 );
-            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uTransform"),  T.GetMatrix() );
-            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uCamera"),  C.GetProjectionMatrix() );
+            GBufferShader.Uniform( "uSampler"   , 0 );
+            GBufferShader.Uniform( "uTransform" ,  T.GetMatrix() );
+            GBufferShader.Uniform( "uCameraView",  C.GetMatrix() );
+            GBufferShader.Uniform( "uCameraProj",  C.GetProjectionMatrix() );
 
             // Draw the 3d Object
 
@@ -214,10 +215,10 @@ int main()
             // Access the individual textures by referring to them by
             // their attachment. It will throw an exception if
             // that attachment does not exist.
-            RTT.Sampler(RenderToTexture::COLOR0).GetSampler2D().SetActive(0);//Positions.SetActive(0);
-            RTT.Sampler(RenderToTexture::COLOR1).GetSampler2D().SetActive(1);//Normals.SetActive(1);
-            RTT.Sampler(RenderToTexture::COLOR2).GetSampler2D().SetActive(2);//Colours.SetActive(2);
-            RTT.Sampler(RenderToTexture::DEPTH ).GetSampler2D().SetActive(3);//Depth.SetActive(3);
+            RTT.Texture(RenderToTexture::COLOR0).SetActive(0);//Positions.SetActive(0);
+            RTT.Texture(RenderToTexture::COLOR1).SetActive(1);//Normals.SetActive(1);
+            RTT.Texture(RenderToTexture::COLOR2).SetActive(2);//Colours.SetActive(2);
+            RTT.Texture(RenderToTexture::DEPTH ).SetActive(3);//Depth.SetActive(3);
 
             static int i=0;
             DO_EVERY(2.0)
@@ -228,7 +229,7 @@ int main()
 
             GBufferSPass_Shader.Uniform( "gPosition"   , 0 );
             GBufferSPass_Shader.Uniform( "gNormal"     , 1 );
-            GBufferSPass_Shader.Uniform( "gAlbedoSpec" , i );
+            GBufferSPass_Shader.Uniform( "gAlbedoSpec" , 2 );
             GBufferSPass_Shader.Uniform( "gDepth"      , 3 );
 
             PlaneVAO.Draw(Primitave::TRIANGLES, 6 );

@@ -89,7 +89,7 @@ int main()
         Image Tex1("./resources/textures/rocks.jpg",  3 );
 
         // send the image to the GPU
-        Sampler2D Samp1(Tex1);
+        Sampler Samp1(Tex1);
 
         //================================================================
         // 2. Create the plane to use during the second render pass
@@ -141,9 +141,9 @@ int main()
         FBO.Bind();
 
         // Use framebuffer helper functions to create textures to be used for holding paricular types of data
-        auto Positions = Sampler::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
-        auto Normals   = Sampler::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
-        auto Colours   = Sampler::RGBATexture(glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
+        auto Positions = Sampler::Vec3Texture16f(  glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
+        auto Normals   = Sampler::Vec3Texture16f(  glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
+        auto Colours   = Sampler::RGBATexture(     glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
         auto Depth     = Sampler::DepthTexture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
 
         //FBO.Bind();
@@ -158,7 +158,7 @@ int main()
         if( FBO.Check() != FrameBuffer::COMPLETE )
             std::cout << "ERROR!!!" << std::endl;
 
-
+        FBO.Unbind();
         //==========================================================================
 
 
@@ -202,9 +202,10 @@ int main()
             T.SetEuler( { Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0 } );
 
             // Tell the shader that we are using Texture Unit 0 for the sampler
-            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uSampler"), 0 );
-            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uTransform"),  T.GetMatrix() );
-            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uCamera"),  C.GetProjectionMatrix() );
+            GBufferShader.Uniform( "uSampler"   , 0 );
+            GBufferShader.Uniform( "uTransform" ,  T.GetMatrix() );
+            GBufferShader.Uniform( "uCameraView",  C.GetMatrix() );
+            GBufferShader.Uniform( "uCameraProj",  C.GetProjectionMatrix() );
 
             // Draw the 3d Object
 
@@ -213,6 +214,7 @@ int main()
             // Unbind the FBO so we now render to the actual screen
             FBO.UnBind();
 
+#if 1
             //================================================================
             // 8. Perform the pixel pass
             //================================================================
@@ -239,7 +241,7 @@ int main()
             GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gDepth")     , 3 );
 
             PlaneVAO.Draw(Primitave::TRIANGLES, 6 );
-
+#endif
             glfwSwapBuffers(gMainWindow);
             glfwPollEvents();
         }

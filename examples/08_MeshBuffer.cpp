@@ -117,7 +117,7 @@ int main()
         Image Tex1("./resources/textures/rocks.jpg",  3 );
 
         // send the image to the GPU
-        Sampler2D Samp1(Tex1);
+        Sampler Samp1(Tex1);
 
         //================================================================
         // 2. Create the plane to use during the second render pass
@@ -129,13 +129,13 @@ int main()
         };
         std::vector< MyVertex > VertexBuffer;
 
-        VertexBuffer.push_back( { glm::vec3(-1.0,  1.0, 0.0) , glm::vec2(0.0,0.0) }); // 3
-        VertexBuffer.push_back( { glm::vec3(-1.0, -1.0, 0.0) , glm::vec2(0.0,1.0) }); // 0
-        VertexBuffer.push_back( { glm::vec3( 1.0, -1.0, 0.0) , glm::vec2(1.0,1.0) }); // 1
+        VertexBuffer.push_back( { glm::vec3(-1.0,  1.0, 0.0) , glm::vec2(0.0,1.0) }); // 3
+        VertexBuffer.push_back( { glm::vec3(-1.0, -1.0, 0.0) , glm::vec2(0.0,0.0) }); // 0
+        VertexBuffer.push_back( { glm::vec3( 1.0, -1.0, 0.0) , glm::vec2(1.0,0.0) }); // 1
 
-        VertexBuffer.push_back( { glm::vec3(-1.0,  1.0, 0.0) , glm::vec2(0.0,0.0) }); // 0
-        VertexBuffer.push_back( { glm::vec3( 1.0, -1.0, 0.0) , glm::vec2(1.0,1.0) }); // 2
-        VertexBuffer.push_back( { glm::vec3( 1.0,  1.0, 0.0) , glm::vec2(1.0,0.0) }); // 2
+        VertexBuffer.push_back( { glm::vec3(-1.0,  1.0, 0.0) , glm::vec2(0.0,1.0) }); // 0
+        VertexBuffer.push_back( { glm::vec3( 1.0, -1.0, 0.0) , glm::vec2(1.0,0.0) }); // 2
+        VertexBuffer.push_back( { glm::vec3( 1.0,  1.0, 0.0) , glm::vec2(1.0,1.0) }); // 2
 
         VertexArray  PlaneVAO;
         ArrayBuffer  PlaneBuff( VertexBuffer );
@@ -169,10 +169,10 @@ int main()
         FBO.Bind();
 
         // Use framebuffer helper functions to create textures to be used for holding paricular types of data
-        Sampler2D Positions = FrameBuffer::CreateBufferTexture_Vec3_16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
-        Sampler2D Normals   = FrameBuffer::CreateBufferTexture_Vec3_16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
-        Sampler2D Colours   = FrameBuffer::CreateBufferTexture_RGBA(     glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
-        Sampler2D Depth     = FrameBuffer::CreateBufferTexture_Depth16F( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
+        Sampler Positions = Sampler::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
+        Sampler Normals   = Sampler::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
+        Sampler Colours   = Sampler::RGBATexture(    glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}    );
+        Sampler Depth     = Sampler::DepthTexture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
 
         //FBO.Bind();
         FBO.Attach(Positions, FrameBuffer::COLOR0);
@@ -196,14 +196,14 @@ int main()
         Transform T1;
         Transform T2;
 
-        T1.SetPosition( { 1,1,-3});
-        T2.SetPosition( {-1,1,-3});
+        T1.SetPosition( { 1,-2,-1});
+        T2.SetPosition( {-1,-2,-1});
 
         //================================================================
         // 6. Create a camera Object to help position the camera
         //================================================================
         Camera C;
-        C.SetPosition( {0.0,0.0,1.0f});
+        C.SetPosition( {0.0,0.0,3.0f});
         C.Perspective(45.0f, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1f);
 
 
@@ -236,8 +236,9 @@ int main()
 
 
             // Tell the shader that we are using Texture Unit 0 for the sampler
-            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uSampler"), 0 );
-            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uCamera"),  C.GetProjectionMatrix() * C.GetMatrix() );
+            GBufferShader.Uniform( "uSampler"   ,  0 );
+            GBufferShader.Uniform( "uCameraView",  C.GetMatrix() );
+            GBufferShader.Uniform( "uCameraProj",  C.GetProjectionMatrix() );
 
             //================================================================
             // 7.1. Draw the two meshs

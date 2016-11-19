@@ -25,7 +25,7 @@
 #ifndef GLA_ATLAS_H
 #define GLA_ATLAS_H
 
-#include <gla/core/sampler2d.h>
+#include <gla/core/sampler.h>
 
 namespace gla
 {
@@ -45,12 +45,12 @@ class Atlas2D
      */
     class Ref
     {
-        Sampler2D m_Sampler;
+        Sampler m_Sampler;
         glm::vec4 m_uv_xywh;
     };
 
 
-    Sampler2D m_Sampler;
+    Sampler m_Sampler;
 };
 
 

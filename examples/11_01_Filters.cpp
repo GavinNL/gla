@@ -116,13 +116,13 @@ int main()
         // Load some textures. And force using 3 components (r,g,b)
         Image Tex1("./resources/textures/rocks.jpg",  3 );
         // send the image to the GPU
-        Sampler2D RocksTexture(Tex1);
+        Sampler RocksTexture(Tex1);
 
 
         // Create two blank RGB textures that will hold
         // the newly flitered texture
-        auto Sampler1 = Sampler2D::RGBTexture(Tex1.size());
-        auto Sampler2 = Sampler2D::RGBTexture(Tex1.size());
+        auto Sampler1 = Sampler::RGBTexture(Tex1.size());
+        auto Sampler2 = Sampler::RGBTexture(Tex1.size());
 
         // Create a rendertotexture object
         RenderToTexture FilterRTT;
@@ -143,10 +143,16 @@ int main()
 
         RocksTexture.SetActive(0); // use the rocks as the input texture
         FilterPassShader.Uniform( FilterPassShader.GetUniformLocation("u_Texture"), 0);
-        FilterPassShader.Uniform( FilterPassShader.GetUniformLocation("u_Direction"), vec2(0.0, 3.0) );
+        FilterPassShader.Uniform( FilterPassShader.GetUniformLocation("u_Direction"), vec2(0.0, 2.0) );
         FilterPassShader.Uniform( FilterPassShader.GetUniformLocation("u_TexelSize"), 1.0f/vec2( Tex1.size() ));
 
         PlaneVAO.Draw(Primitave::TRIANGLES, 6 );
+
+
+        Sampler2.SetFilter( Sampler::LINEAR, Sampler::LINEAR);
+        Sampler1.SetFilter( Sampler::LINEAR, Sampler::LINEAR);
+
+
 
         // Attach the second sampler
         FilterRTT.Attach(Sampler2);   // default second paramter it to COLOR0
@@ -155,7 +161,7 @@ int main()
         FilterRTT.Bind();
 
         // filter the image again using different uniform parameters
-        FilterPassShader.Uniform( FilterPassShader.GetUniformLocation("u_Direction"), vec2(3.0, 0.0) );
+        FilterPassShader.Uniform( FilterPassShader.GetUniformLocation("u_Direction"), vec2(2.0, 0.0) );
         PlaneVAO.Draw(Primitave::TRIANGLES, 6 );
         FilterRTT.Unbind();
         glEnable(GL_DEPTH_TEST);

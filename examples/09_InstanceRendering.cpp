@@ -67,7 +67,7 @@ class Instance_Rendering_App : public DiffRenderingApp
 
         // Load textures
         Image Tex1("./resources/textures/rocks.jpg",  3 );
-        m_Sampler.emplace_back( Sampler2D(Tex1) );
+        m_Sampler.emplace_back( Sampler(Tex1) );
 
         m_MeshBuffer.ReserveIndices(1000000);
         m_MeshBuffer.ReserveVertices(1000000);
@@ -206,12 +206,12 @@ class Instance_Rendering_App : public DiffRenderingApp
     gla::MeshBuffer<unsigned int, vec3,vec2,vec3> m_MeshBuffer;
 
     FrameBuffer m_FBO;
-    Sampler2D m_fb_Positions;
-    Sampler2D m_fb_Normals  ;
-    Sampler2D m_fb_Colours  ;
-    Sampler2D m_fb_Depth    ;
+    Sampler m_fb_Positions;
+    Sampler m_fb_Normals  ;
+    Sampler m_fb_Colours  ;
+    Sampler m_fb_Depth    ;
 
-    std::vector<Sampler2D>        m_Sampler;
+    std::vector<Sampler>        m_Sampler;
     std::vector<gla::Mesh_T>      m_Meshs;
     std::vector<gla::Transform>   m_Transforms;
     std::vector<glm::mat4>        m_TransformsMat4;

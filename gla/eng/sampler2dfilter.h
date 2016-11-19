@@ -1,4 +1,4 @@
-#ifndef SAMPLER2DFILTER_H
+#ifndef SamplerFILTER_H
 #define SMPALER2DFILTER_H
 
 #include <gla/core/vertexarray.h>
@@ -10,7 +10,7 @@
 namespace gla
 {
 
-class Sampler2DFilter
+class SamplerFilter
 {
     public:
 
@@ -21,9 +21,9 @@ class Sampler2DFilter
         }
 
         // draws directly to screen.
-        void Null( Sampler2D Input)
+        void Null( Sampler Input)
         {
-            const glm::uvec2 InputSize  = Input.SharedData().m_Size;
+            const glm::uvec2 InputSize  = uvec2( Input.SharedData().m_Size.x, Input.SharedData().m_Size.y);
 
             m_RTT.Unbind();
 
@@ -53,10 +53,10 @@ class Sampler2DFilter
             if(depth) glEnable(GL_DEPTH_TEST);
         }
 
-        void Null( Sampler2D Input, Sampler2D Output)
+        void Null( Sampler Input, Sampler Output)
         {
-            const glm::uvec2 OutputSize = Output.SharedData().m_Size;
-            const glm::uvec2 InputSize  = Input.SharedData().m_Size;
+            const glm::uvec2 OutputSize = uvec2(Output.SharedData().m_Size);
+            const glm::uvec2 InputSize  = uvec2(Input.SharedData().m_Size );
 
             GLint viewport_dim[4];
             glGetIntegerv(GL_VIEWPORT, viewport_dim);
@@ -93,10 +93,10 @@ class Sampler2DFilter
             glViewport(viewport_dim[0], viewport_dim[1], viewport_dim[2], viewport_dim[3]);
         }
 
-        void Gaussian( Sampler2D Input, Sampler2D Output, const glm::vec2 dir)
+        void Gaussian( Sampler Input, Sampler Output, const glm::vec2 dir)
         {
-            const glm::uvec2 OutputSize = Output.SharedData().m_Size;
-            const glm::uvec2 InputSize  = Input.SharedData().m_Size;
+            const glm::uvec2 OutputSize = uvec2(Output.SharedData().m_Size);
+            const glm::uvec2 InputSize  = uvec2(Input.SharedData().m_Size );
 
             GLint viewport_dim[4];
             glGetIntegerv(GL_VIEWPORT, viewport_dim);

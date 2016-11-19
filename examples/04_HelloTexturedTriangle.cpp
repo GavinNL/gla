@@ -91,7 +91,7 @@ int main()
 
         // A texture in GLSL is called a Sampler2D, we send the data to the GPU
         // by creating a Sampler2D object and initializing it with the Image object
-        Sampler2D MyTexture(Img);
+        Sampler MyTexture(Img);
 
 
         // We can modify the red channel using a lambda function
@@ -102,7 +102,7 @@ int main()
         Img.b = IMAGE_EXPRESSION( glm::clamp(2*x + y,0.0f,1.0f) );
 
         // We can update the sampler with the new data
-        MyTexture.PasteSubImage( uvec2(0,0), Img);
+        MyTexture.Copy( Img, 0, uvec2(0,0) );
 
 
         //================================================================

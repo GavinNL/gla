@@ -89,7 +89,7 @@ int main()
         Image Tex1("./resources/textures/rocks.jpg",  3 );
 
         // send the image to the GPU
-        Sampler2D Samp1(Tex1);
+        Sampler Samp1(Tex1);
 
         //================================================================
         // 2. Create the plane to use during the second render pass
@@ -134,7 +134,7 @@ int main()
         // Create the Shadow map
         //==========================================================
         RenderToTexture mShadowMap;
-        auto mShadowMapTexture = Sampler2D::DepthTexture16f( glm::uvec2{1024, 1024} );
+        auto mShadowMapTexture = Sampler::DepthTexture16f( glm::uvec2{1024, 1024} );
         //mShadowMap.CreateTexture( RenderToTexture::DEPTH , glm::uvec2{1024, 1024}, RenderToTexture::depth_16f);
         mShadowMap[RenderToTexture::DEPTH] << mShadowMapTexture;
        // mShadowMap.Bind();
@@ -164,10 +164,10 @@ int main()
 
         // Can also attach samplers to each target manually. The RTT will store a refernce to the samplers
         // so they won't be destroyed
-        RTT[RenderToTexture::COLOR0] << Sampler2D::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
-        RTT[RenderToTexture::COLOR1] << Sampler2D::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
-        RTT[RenderToTexture::COLOR2] << Sampler2D::RGBATexture( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}    );
-        RTT[RenderToTexture::DEPTH ] << Sampler2D::DepthTexture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
+        RTT[RenderToTexture::COLOR0] << Sampler::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
+        RTT[RenderToTexture::COLOR1] << Sampler::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
+        RTT[RenderToTexture::COLOR2] << Sampler::RGBATexture( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}    );
+        RTT[RenderToTexture::DEPTH ] << Sampler::DepthTexture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
 
 #endif
         //==========================================================================
@@ -288,12 +288,12 @@ int main()
                 // Unbind the RenderToTexture so we now render to the actual screen
                 RTT.Unbind();
 
-                RTT.Sampler(RenderToTexture::COLOR0).GetSampler2D().SetActive(0);//Positions.SetActive(0);
-                RTT.Sampler(RenderToTexture::COLOR1).GetSampler2D().SetActive(1);//Normals.SetActive(1);
-                RTT.Sampler(RenderToTexture::COLOR2).GetSampler2D().SetActive(2);//Colours.SetActive(2);
-                RTT.Sampler(RenderToTexture::DEPTH ).GetSampler2D().SetActive(3);//Depth.SetActive(3);
+                RTT.Texture(RenderToTexture::COLOR0).SetActive(0);//Positions.SetActive(0);
+                RTT.Texture(RenderToTexture::COLOR1).SetActive(1);//Normals.SetActive(1);
+                RTT.Texture(RenderToTexture::COLOR2).SetActive(2);//Colours.SetActive(2);
+                RTT.Texture(RenderToTexture::DEPTH ).SetActive(3);//Depth.SetActive(3);
 
-                mShadowMap.Sampler(RenderToTexture::DEPTH).GetSampler2D().SetActive(4);//Depth.SetActive(3);
+                mShadowMap.Texture(RenderToTexture::DEPTH).SetActive(4);//Depth.SetActive(3);
             }
             //================================================================
             // 8. Perform the pixel pass

@@ -126,10 +126,10 @@ class DiffRenderingApp : public gla::utils::GLFW_App
         m_FBO.Bind();
 
         // Use framebuffer helper functions to create textures to be used for holding paricular types of data
-        m_fb_Positions = FrameBuffer::CreateBufferTexture_Vec3_16f( glm::uvec2{Width(), Height() }  );
-        m_fb_Normals   = FrameBuffer::CreateBufferTexture_Vec3_16f( glm::uvec2{Width(), Height() }  );
-        m_fb_Colours   = FrameBuffer::CreateBufferTexture_RGBA(     glm::uvec2{Width(), Height() }  );
-        m_fb_Depth     = FrameBuffer::CreateBufferTexture_Depth16F( glm::uvec2{Width(), Height() }  );
+        m_fb_Positions = Sampler::Vec3Texture16f( glm::uvec2 { Width(), Height() } );
+        m_fb_Normals   = Sampler::Vec3Texture16f( glm::uvec2 { Width(), Height() } );
+        m_fb_Colours   = Sampler::RGBATexture(    glm::uvec2 { Width(), Height() }    );
+        m_fb_Depth     = Sampler::DepthTexture16f( glm::uvec2{ Width(), Height() } );
 
         //FBO.Bind();
         m_FBO.Attach(m_fb_Positions, FrameBuffer::COLOR0);
@@ -166,10 +166,10 @@ class DiffRenderingApp : public gla::utils::GLFW_App
 
 
     FrameBuffer m_FBO;
-    Sampler2D m_fb_Positions;
-    Sampler2D m_fb_Normals  ;
-    Sampler2D m_fb_Colours  ;
-    Sampler2D m_fb_Depth    ;
+    Sampler m_fb_Positions;
+    Sampler m_fb_Normals  ;
+    Sampler m_fb_Colours  ;
+    Sampler m_fb_Depth    ;
 
     gla::VertexArray  m_Plane; // must be drawn as a triangle fan
 

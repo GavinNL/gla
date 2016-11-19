@@ -208,9 +208,17 @@ public:
 
     Sampler()
     {
-
     }
 
+    Sampler(const Image & I)
+    {
+        Format typ[] = {Sampler::R8, Sampler::RG8, Sampler::RGB8, Sampler::RGBA8};
+
+        CreateTexture2D(I.size(), typ[I.getChannels()-1]);
+
+        (*this) << I;
+
+    }
 
     void Bind() const
     {
