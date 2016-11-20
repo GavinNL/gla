@@ -225,6 +225,10 @@ public:
         inline GLint GetUniformLocation(const GLchar *name)
         {            
             auto x = glGetUniformLocation( Get(), name);
+            if( x== -1)
+            {
+                throw std::runtime_error( std::string("Unknown Uniform name: ") + std::string(name) );
+            }
             //GLA_DOUT  << "Uniform locatiom("<<mProgram<<"):,  " << name << ": " <<  x << std::endl;
             return x;
         }
@@ -232,6 +236,10 @@ public:
         inline GLint GetUniformLocation(const std::string & name)
         {
             auto x = glGetUniformLocation( Get() , name.c_str());
+            if( x== -1)
+            {
+                throw std::runtime_error( std::string("Unknown Uniform name: ") + name );
+            }
             //GLA_DOUT  << "Uniform locatiom("<<mProgram<<"):,  " << name << ": " <<  x << std::endl;
             return x;
         }
@@ -461,7 +469,12 @@ public:
             {
                 auto name  = P.GetUniformName(i);
 
+                try {
                 GLA_LOGI << "Uniform [" << name << "] - location: " << P.GetUniformLocation( name.c_str() ) << std::endl;
+                } catch (std::exception & e )
+                {
+
+                }
             }
             //std::cout << "Shader Loaded Successfully: " << path.c_str() << std::endl;
             return P;

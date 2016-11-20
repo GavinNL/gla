@@ -55,7 +55,7 @@ void main()
 
 
     float Depth    = texture(gDepth,      TexCoords ).r;
-    vec3 FragPos   = texture2D(gPosition, TexCoords ).rgb;
+    vec3 FragPos   = texture(gPosition, TexCoords ).rgb;
     vec3 Normal    = texture(gNormal,     TexCoords ).rgb;
     vec3 Diffuse   = texture(gAlbedoSpec, TexCoords ).rgb;
     float Specular = texture(gAlbedoSpec, TexCoords ).a;
@@ -98,7 +98,7 @@ void main()
 
     }*/
 
-    FragColor = vec4( Diffuse,1.0);
+    FragColor = vec4( Diffuse,1.0) + vec4(FragPos,0)*0.0001 +  vec4(Normal,0)*0.0001 + vec4(Depth)*0.0001;
 
 }
 

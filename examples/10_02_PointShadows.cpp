@@ -120,10 +120,10 @@ int main()
         //       - The G Buffer Shader used to draw geometry
         //       - The Shader pass
         //================================================================
-        ShaderProgram mShadowMapShader            = ShaderProgram::Load( "./resources/shaders/ShadowMap.s" );
-        ShaderProgram mShadowMapShader_ShadowPass = ShaderProgram::Load( "./resources/shaders/ShadowMapPass.s" );
+        ShaderProgram mCubeShadowMapShader        = ShaderProgram::Load( "./resources/shaders/CubeShadowMap.s" );
+        ShaderProgram mShadowMapShader_ShadowPass = ShaderProgram::Load( "./resources/shaders/CubeShadowMapPass.s" );
 
-        ShaderProgram GBufferShader       = ShaderProgram::Load( "./resources/shaders/GBuffer.s" );
+
         ShaderProgram GBufferSPass_Shader = ShaderProgram::Load( "./resources/shaders/GBuffer_SPass.s" );
 
 
@@ -133,11 +133,14 @@ int main()
         //==========================================================
         // Create the Shadow map
         //==========================================================
+
+        Sampler ShadowTexture;
+        ShadowTexture.CreateTextureCubeMap( uvec2(1024), Sampler::DEPTH_COMPONENT16 );
+        ShadowTexture.ClampToEdgeX().ClampToEdgeY().ClampToEdgeZ();
+
         RenderToTexture mShadowMap;
-        auto mShadowMapTexture = Sampler::DepthTexture16f( glm::uvec2{1024, 1024} );
-        //mShadowMap.CreateTexture( RenderToTexture::DEPTH , glm::uvec2{1024, 1024}, RenderToTexture::depth_16f);
-        mShadowMap[RenderToTexture::DEPTH] << mShadowMapTexture;
-       // mShadowMap.Bind();
+
+        mShadowMap[RenderToTexture::DEPTH] << ShadowTexture;
 
 
 
@@ -182,14 +185,8 @@ int main()
         Transform m_PlaneT;
 
 
-        vec3 LightPosition        = glm::vec3(-2.0f, 4.0f, -1.0f);
-        GLfloat near_plane        = 1.0f, far_plane = 500.5f;
-
-        glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-        glm::mat4 lightView       = glm::lookAt(LightPosition,
-                                          glm::vec3( 0.0f, 0.0f,  0.0f),
-                                          glm::vec3( 0.0f, 1.0f,  0.0f));
-
+        vec3  m_LightPos = vec3(0,5,0);
+        float m_FarPlane = 1000;
 
 
 
@@ -201,19 +198,17 @@ int main()
         //================================================================
         Camera C;
         C.SetPosition( {1.0, 3.0, 25.0f});
-        C.Perspective(45.0f, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1f);
+        C.Perspective(45.0f, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 1.0f, m_FarPlane);
 
-        Camera L;
-        L.Perspective(90.0f, 1.0, near_plane, far_plane);
 
 
         Timer_T<float> Timer;
 
         while (!glfwWindowShouldClose(gMainWindow) )
         {
-            auto t = Timer.getElapsedTime()*0.1;
+            auto t = Timer.getElapsedTime();
             m_BoxT.SetEuler( { Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0 } );
-
+            m_BoxT.SetPosition(    vec3( cos(t), 0, sin(t) )*5.0f );
             if(1)
             {
                 mShadowMap.Bind(); // Bind the RenderToTexture object (basically a framebuffer object)
@@ -222,19 +217,35 @@ int main()
                 glClear( GL_DEPTH_BUFFER_BIT );
                 // Shadow Pass
 
-                mShadowMapShader.Bind();
+                mCubeShadowMapShader.Bind();
+
+                glm::mat4 shadowProj = glm::perspective(90.0f, 1.0f, 1.0f, m_FarPlane);
+
+                std::vector<glm::mat4> m_ShadowMatrices =
+                {
+                    shadowProj*glm::lookAt(m_LightPos, m_LightPos + glm::vec3( 1.0, 0.0, 0.0), glm::vec3(0.0,  -1.0, 0.0)) ,
+                    shadowProj*glm::lookAt(m_LightPos, m_LightPos + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0,  -1.0, 0.0)) ,
+                    shadowProj*glm::lookAt(m_LightPos, m_LightPos + glm::vec3( 0.0, 1.0, 0.0), glm::vec3(0.0,  0.0, 1.0)) ,
+                    shadowProj*glm::lookAt(m_LightPos, m_LightPos + glm::vec3( 0.0,-1.0, 0.0), glm::vec3(0.0,  0.0,-1.0)) ,
+                    shadowProj*glm::lookAt(m_LightPos, m_LightPos + glm::vec3( 0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)) ,
+                    shadowProj*glm::lookAt(m_LightPos, m_LightPos + glm::vec3( 0.0, 0.0,-1.0), glm::vec3(0.0, -1.0, 0.0))
+                };
+
+
+                mCubeShadowMapShader.Uniform("u_ShadowMatrices[0]", m_ShadowMatrices[0] );
+                mCubeShadowMapShader.Uniform("u_ShadowMatrices[1]", m_ShadowMatrices[1] );
+                mCubeShadowMapShader.Uniform("u_ShadowMatrices[2]", m_ShadowMatrices[2] );
+                mCubeShadowMapShader.Uniform("u_ShadowMatrices[3]", m_ShadowMatrices[3] );
+                mCubeShadowMapShader.Uniform("u_ShadowMatrices[4]", m_ShadowMatrices[4] );
+                mCubeShadowMapShader.Uniform("u_ShadowMatrices[5]", m_ShadowMatrices[5] );
+                mCubeShadowMapShader.Uniform("u_LightPos"     ,  m_LightPos);
+                mCubeShadowMapShader.Uniform("u_FarPlane"     ,  m_FarPlane);
 
 
 
-                glm::mat4 m_LightMatrix = L.GetProjectionMatrix() * lightView;
-                //glm::mat4 m_LightMatrix = lightProjection * lightView;
-
-                mShadowMapShader.Uniform( mShadowMapShader.GetUniformLocation("u_LightMatrix"), m_LightMatrix );
-
-
-                mShadowMapShader.Uniform( mShadowMapShader.GetUniformLocation("u_ModelMatrix"), m_PlaneT.GetMatrix() );
+                mCubeShadowMapShader.Uniform("u_ModelMatrix", m_PlaneT.GetMatrix() );
                     m_PlaneMesh.Draw();
-                mShadowMapShader.Uniform( mShadowMapShader.GetUniformLocation("u_ModelMatrix"), m_BoxT.GetMatrix() );
+                mCubeShadowMapShader.Uniform("u_ModelMatrix", m_BoxT.GetMatrix() );
                     m_BoxMesh.Draw();
 
 
@@ -253,27 +264,21 @@ int main()
                 // Attach the Sampler to Texture Unit 0.
 
 
-
                  // Tell the shader that we are using Texture Unit 0 for the sampler
-                mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_LightSpaceMatrix"), m_LightMatrix );
-
-
-
-                mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_ViewMatrix"),    C.GetMatrix() );
-                mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_ProjMatrix"),    C.GetProjectionMatrix() );
 
 
                 Samp1.SetActive(0);
 
-                mShadowMapTexture.SetActive(1);
-                mShadowMapTexture.ClampToEdge();
-                mShadowMapTexture.Bind();
+                ShadowTexture.SetActive(1);
 
+
+                mShadowMapShader_ShadowPass.Uniform( "u_FarPlane",    m_FarPlane);
+                mShadowMapShader_ShadowPass.Uniform( "u_ViewMatrix",  C.GetMatrix() );
+                mShadowMapShader_ShadowPass.Uniform( "u_ProjMatrix",  C.GetProjectionMatrix() );
                 mShadowMapShader_ShadowPass.Uniform( "u_Diffuse"   , 0 );
                 mShadowMapShader_ShadowPass.Uniform( "u_ShadowMap" , 1 );
-
-                mShadowMapShader_ShadowPass.Uniform( "u_LightPos",  LightPosition);
-                mShadowMapShader_ShadowPass.Uniform( "u_ViewPos" ,  C.GetPosition() );
+                mShadowMapShader_ShadowPass.Uniform( "u_LightPos",   m_LightPos );
+                mShadowMapShader_ShadowPass.Uniform( "u_ViewPos" ,   C.GetPosition() );
 
 
                 mShadowMapShader_ShadowPass.Uniform( "u_ModelMatrix", m_PlaneT.GetMatrix() );
@@ -307,10 +312,10 @@ int main()
             // their attachment. It will throw an exception if
             // that attachment does not exist.
 
-            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gPosition")  , 0 );
-            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gNormal")    , 1 );
-            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gAlbedoSpec"), 2 );
-            GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gDepth")     , 3 );
+            GBufferSPass_Shader.Uniform( "gPosition"  , 0 );
+            GBufferSPass_Shader.Uniform( "gNormal"    , 1 );
+            GBufferSPass_Shader.Uniform( "gAlbedoSpec", 2 );
+            GBufferSPass_Shader.Uniform( "gDepth"     , 3 );
 
             PlaneVAO.Draw(Primitave::TRIANGLES, 6 );
 

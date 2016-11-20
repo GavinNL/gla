@@ -226,6 +226,29 @@ public:
             auto ch = m_FBO.Check();
             if( ch != FrameBuffer::COMPLETE )
             {
+                switch(ch) {
+                    case FrameBuffer::COMPLETE                      :
+                        break;
+                    case FrameBuffer::UNDEFINED                     :
+                        break;
+                    case FrameBuffer::INCOMPLETE_ATTACHMENT         :
+                        break;
+                    case FrameBuffer::INCOMPLETE_MISSING_ATTACHMENT :
+                        break;
+                    case FrameBuffer::INCOMPLETE_DRAW_BUFFER        :
+                        break;
+                    case FrameBuffer::INCOMPLETE_READ_BUFFER        :
+                        break;
+                    case FrameBuffer::UNSUPPORTED                   :
+                        break;
+                    case FrameBuffer::INCOMPLETE_MULTISAMPLE        :
+                        break;
+                    case FrameBuffer::INCOMPLETE_LAYER_TARGETS:
+                        break;
+                    default:
+                        break;
+                }
+
                 std::cout << "ERROR!!!: " << std::hex << static_cast<int>(ch) << std::endl;
             }
 

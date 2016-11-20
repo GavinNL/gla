@@ -60,25 +60,7 @@ struct DestSampler
     }
 };
 
-/*
 
-
-
-enum class SamplerWrap {
-    CLAMP_TO_EDGE          = GL_CLAMP_TO_EDGE,
-    REPEAT                 = GL_REPEAT
-};
-
-
-enum class Filter {
-    NEAREST                = GL_NEAREST,
-    LINEAR                 = GL_LINEAR,
-    NEAREST_MIPMAP_NEAREST = GL_NEAREST_MIPMAP_NEAREST,
-    LINEAR_MIPMAP_NEAREST  = GL_LINEAR_MIPMAP_NEAREST,
-    NEAREST_MIPMAP_LINEAR  = GL_NEAREST_MIPMAP_LINEAR,
-    LINEAR_MIPMAP_LINEAR   = GL_LINEAR_MIPMAP_LINEAR
-};
-*/
 
 struct SamplerInfo
 {
@@ -230,6 +212,10 @@ public:
         glBindTexture(SharedData().m_Type, 0 );
     }
 
+    Type GetType() const
+    {
+        return static_cast<Type>(SharedData().m_Type);
+    }
 
     std::uint32_t GetLayers() const
     {
@@ -319,6 +305,65 @@ public:
         SetWrap( Wrap::CLAMP_TO_EDGE, Wrap::CLAMP_TO_EDGE);
     }
 
+    Sampler & ClampToEdgeX()
+    {
+        Bind();
+
+        glTexParameteri( static_cast<GLenum>( GetType() ), GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+
+        Unbind();
+        return *this;
+    }
+
+    Sampler & ClampToEdgeY()
+    {
+        Bind();
+
+        glTexParameteri( static_cast<GLenum>( GetType() ), GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        Unbind();
+        return *this;
+    }
+
+    Sampler & ClampToEdgeZ()
+    {
+        Bind();
+
+        glTexParameteri( static_cast<GLenum>( GetType() ), GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+        Unbind();
+        return *this;
+    }
+
+    Sampler & RepeatX()
+    {
+        Bind();
+
+        glTexParameteri( static_cast<GLenum>( GetType() ), GL_TEXTURE_WRAP_S, GL_REPEAT);
+
+        Unbind();
+        return *this;
+    }
+
+    Sampler & RepeatY()
+    {
+        Bind();
+
+        glTexParameteri( static_cast<GLenum>( GetType() ), GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+        Unbind();
+        return *this;
+    }
+
+    Sampler & RepeatZ()
+    {
+        Bind();
+
+        glTexParameteri( static_cast<GLenum>( GetType() ), GL_TEXTURE_WRAP_R, GL_REPEAT);
+
+        Unbind();
+        return *this;
+    }
     inline void SetWrap( Wrap S_direction, Wrap T_direction)
     {
         Bind();
@@ -503,12 +548,18 @@ inline void Sampler::CreateTextureCubeMap(const uvec2 &pSize, Sampler::Format pF
     SharedData().m_Layers = 6;
     Bind();
 
-    glTexStorage2D(GL_TEXTURE_CUBE_MAP,
-                   1,
-                   static_cast<GLenum>(pFormat),
-                   static_cast<GLint>(pSize.x),
-                   static_cast<GLint>(pSize.y));
+  glTexStorage2D(GL_TEXTURE_CUBE_MAP,
+                 1,
+                 static_cast<GLenum>(pFormat),
+                 static_cast<GLint>(pSize.x),
+                 static_cast<GLint>(pSize.y));
 
+// glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 0, 0, GL_DEPTH_COMPONENT,  static_cast<GLint>(pSize.x), static_cast<GLint>(pSize.y), 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+// glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 1, 0, GL_DEPTH_COMPONENT,  static_cast<GLint>(pSize.x), static_cast<GLint>(pSize.y), 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+// glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 2, 0, GL_DEPTH_COMPONENT,  static_cast<GLint>(pSize.x), static_cast<GLint>(pSize.y), 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+// glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 3, 0, GL_DEPTH_COMPONENT,  static_cast<GLint>(pSize.x), static_cast<GLint>(pSize.y), 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+// glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 4, 0, GL_DEPTH_COMPONENT,  static_cast<GLint>(pSize.x), static_cast<GLint>(pSize.y), 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+// glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 5, 0, GL_DEPTH_COMPONENT,  static_cast<GLint>(pSize.x), static_cast<GLint>(pSize.y), 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     Unbind();
 }
 

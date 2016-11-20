@@ -79,6 +79,7 @@ int main()
         m_MeshBuffer.ReserveVertices(10000);
 
         auto BoxVertices   = createBox();  // returns a vector of vertices. It does not use an index buffer
+        //auto BoxVertices   = createSphere();
         auto PlaneVertices = createPlane(50,50);
 
         auto m_BoxMesh   = m_MeshBuffer.Insert( BoxVertices.vertices, BoxVertices.indices);
@@ -141,8 +142,6 @@ int main()
         mShadowMap.Bind();
 
 
-
-
         //================================================================
         // 4. We will use the RenderToTexture class to help construct
         // the framebuffers and textures needed to render geometry
@@ -181,6 +180,7 @@ int main()
         //    position/orientation of the 3d object
         //================================================================
         Transform m_BoxT;
+        Transform m_Box2T;
         Transform m_PlaneT;
 
 
@@ -202,19 +202,28 @@ int main()
         // 6. Create a camera Object to help position the camera
         //================================================================
         Camera C;
-        C.SetPosition( {1.0, 3.0, 20.0f});
+        C.SetPosition( {1.0, 3.0, 10.0f});
         C.Perspective(45.0f, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1f);
-
-        Camera L;
-        L.Perspective(90.0f, 1.0, near_plane, far_plane);
 
 
         Timer_T<float> Timer;
 
         while (!glfwWindowShouldClose(gMainWindow) )
         {
-            auto t = Timer.getElapsedTime()*0.1;
-            m_BoxT.SetEuler( { Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0 } );
+            auto t = Timer.getElapsedTime();
+
+            m_BoxT.SetEuler( { t, t * 0.4, -0.0 } );
+
+
+            // Set up the light matrix.
+            glm::vec3 lPos    = glm::vec3(4.0f*cos(t), 1.2 , 4.0f*sin(t));
+            glm::vec3 lLookat = m_BoxT.GetPosition(); // always look at the rotating box
+            glm::vec3 lUp     = glm::vec3( 0,1,0 );
+
+            glm::mat4 LightMatrix = glm::perspective(90.0f, 1.0f, 1.0f, 500.0f) * glm::lookAt( lPos, lLookat, lUp );
+
+            auto CameraProj = C.GetProjectionMatrix();
+            auto CameraView = C.GetMatrix();
 
             if(1)
             {
@@ -224,14 +233,16 @@ int main()
                 glClear( GL_DEPTH_BUFFER_BIT );
                 // Shadow Pass
 
+                glCullFace(GL_FRONT);
+
+
+
                 mShadowMapShader.Bind();
 
 
+                mShadowMapShader.Uniform( mShadowMapShader.GetUniformLocation("u_LightMatrix"), LightMatrix );
 
-                glm::mat4 m_LightMatrix = L.GetProjectionMatrix() * lightView;
-                //glm::mat4 m_LightMatrix = lightProjection * lightView;
-
-                mShadowMapShader.Uniform( mShadowMapShader.GetUniformLocation("u_LightMatrix"), m_LightMatrix );
+                m_Box2T.SetPosition( lPos*1.2f);
 
 
                 mShadowMapShader.Uniform( mShadowMapShader.GetUniformLocation("u_ModelMatrix"), m_PlaneT.GetMatrix() );
@@ -240,29 +251,26 @@ int main()
                     m_BoxMesh.Draw();
 
 
+
                 mShadowMap.Unbind();
 
-           // } else {
 
                 RTT.Bind();
+
                 glEnable(GL_DEPTH_TEST);
                 glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                glCullFace(GL_BACK);
 
                 // Use the GBufferShader
                 mShadowMapShader_ShadowPass.Bind();
 
-                // Attach the Sampler to Texture Unit 0.
-
 
 
                  // Tell the shader that we are using Texture Unit 0 for the sampler
-                mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_LightSpaceMatrix"), m_LightMatrix );
-
-
-
-                mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_ViewMatrix"),    C.GetMatrix() );
-                mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_ProjMatrix"),    C.GetProjectionMatrix() );
+                mShadowMapShader_ShadowPass.Uniform( "u_LightSpaceMatrix", LightMatrix );
+                mShadowMapShader_ShadowPass.Uniform( "u_ViewMatrix",       CameraView );
+                mShadowMapShader_ShadowPass.Uniform( "u_ProjMatrix",       CameraProj );
 
 
 
@@ -272,8 +280,7 @@ int main()
 
                 mShadowMapShader_ShadowPass.Uniform( "u_Diffuse"   , 0 );
                 mShadowMapShader_ShadowPass.Uniform( "u_ShadowMap" , 1 );
-
-                mShadowMapShader_ShadowPass.Uniform( "u_LightPos",  LightPosition);
+                mShadowMapShader_ShadowPass.Uniform( "u_LightPos",  lPos);
                 mShadowMapShader_ShadowPass.Uniform( "u_ViewPos" ,  C.GetPosition() );
 
 
@@ -281,24 +288,19 @@ int main()
                 m_PlaneMesh.Draw();
 
                 mShadowMapShader_ShadowPass.Uniform( "u_ModelMatrix", m_BoxT.GetMatrix() );
-                //mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_ModelMatrix"), m_BoxT.GetMatrix() );
                 m_BoxMesh.Draw();
 
-                //VAO.Draw(Primitave::TRIANGLES, Vertices.indices.size() );
+                mShadowMapShader_ShadowPass.Uniform( "u_ModelMatrix", m_Box2T.GetMatrix() );
+                m_BoxMesh.Draw();
 
                 // Unbind the RenderToTexture so we now render to the actual screen
                 RTT.Unbind();
 
-                RTT.Texture(RenderToTexture::COLOR0).SetActive(0);//Positions.SetActive(0);
-                RTT.Texture(RenderToTexture::COLOR1).SetActive(1);//Normals.SetActive(1);
-                RTT.Texture(RenderToTexture::COLOR2).SetActive(2);//Colours.SetActive(2);
-                RTT.Texture(RenderToTexture::DEPTH ).SetActive(3);//Depth.SetActive(3);
-
-                mShadowMap.Texture(RenderToTexture::DEPTH).SetActive(4);//Depth.SetActive(3);
             }
             //================================================================
             // 8. Perform the pixel pass
             //================================================================
+
             glDisable(GL_DEPTH_TEST);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -307,6 +309,12 @@ int main()
             // Access the individual textures by referring to them by
             // their attachment. It will throw an exception if
             // that attachment does not exist.
+            RTT.Texture(RenderToTexture::COLOR0).SetActive(0);//Positions.SetActive(0);
+            RTT.Texture(RenderToTexture::COLOR1).SetActive(1);//Normals.SetActive(1);
+            RTT.Texture(RenderToTexture::COLOR2).SetActive(2);//Colours.SetActive(2);
+            RTT.Texture(RenderToTexture::DEPTH ).SetActive(3);//Depth.SetActive(3);
+
+            mShadowMap.Texture(RenderToTexture::DEPTH).SetActive(4);//Depth.SetActive(3);
 
             GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gPosition")  , 0 );
             GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gNormal")    , 1 );

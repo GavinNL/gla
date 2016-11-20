@@ -10,7 +10,6 @@ layout(location = 2) in vec3 in_Normal;
 uniform mat4 u_ProjMatrix;
 uniform mat4 u_ViewMatrix;
 uniform mat4 u_ModelMatrix;
-
 uniform mat4 u_LightSpaceMatrix;
 
 out vec3 f_Position;
@@ -25,7 +24,9 @@ void main()
     gl_Position = u_ProjMatrix * u_ViewMatrix * mPosition;
 
     f_Position = mPosition.xyz;
-    f_Normal   = transpose( inverse(mat3(u_ModelMatrix))) * in_Normal;
+
+    //f_Normal   = transpose( inverse(mat3(u_ModelMatrix))) * in_Normal;
+    f_Normal   = mat3(u_ModelMatrix)*in_Normal;
     f_TexCoord = in_TexCoord;
 
     f_PosLightSpace = u_LightSpaceMatrix * vec4(f_Position,1.0);
@@ -40,10 +41,13 @@ void main()
 <fragment>
 #version 330 core
 
+//out vec4 out_FragColour;
+
 // Ouput data
-layout (location = 0) out vec3 out_Position;
-layout (location = 1) out vec3 out_Normal;
-layout (location = 2) out vec4 out_AlbedoSpec;
+layout (location = 0) out vec3  out_Position;
+layout (location = 1) out vec3  out_Normal;
+layout (location = 2) out vec4  out_AlbedoSpec;
+
 
 in vec3 f_Position;
 in vec2 f_TexCoord;
@@ -73,7 +77,9 @@ float ShadowCalculation(vec4 fragPosLightSpace, sampler2D shadow_map)
     // Get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
 
-    if( length( projCoords.xy-vec2(0.5,0.5) ) > 0.5)
+    // make sure everything outside a circle is in a shadow
+    // this is to make sure that the spot light is circular
+    if( length( projCoords.xy-vec2(0.5,0.5) ) > 0.50)
         return 1.0;
 
     // Check whether current frag pos is in shadow
@@ -83,31 +89,22 @@ float ShadowCalculation(vec4 fragPosLightSpace, sampler2D shadow_map)
 }
 
 
-
-//vec3 lightDir = normalize(light_position - position)
-//vec3 viewDir  = normalize(camera_position - position);
-
 float CalculateDiffuse( vec3 lightDir, vec3 normal)
 {
-    //vec3 lightDir = normalize(light_position - position)
-
-    float diff    = max(dot(lightDir, normal), 0.0);
-    //vec3 diffuse  = diff;
+    float diff    = max( dot(lightDir, normal), 0.0);
 
     return diff;
 }
 
 float CalculateSpecular(vec3 lightDir, vec3 viewDir, vec3 normal)
 {
-    // Specular
-    //vec3 viewDir    = normalize(camera_position - position);
+    float spec1      = 0.0;
 
-    float spec      = 0.0;
     vec3 halfwayDir = normalize(lightDir + viewDir);
 
-    spec            = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
+    spec1            = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
 
-    return spec;
+    return spec1;
 }
 
 
@@ -115,12 +112,12 @@ float CalculateSpecular(vec3 lightDir, vec3 viewDir, vec3 normal)
 void main()
 {
     vec3 color      = texture( u_Diffuse, f_TexCoord).rgb;
-    vec3 normal     = normalize(f_Normal);
-    vec3 lightColor = vec3(1.0,1,1);
+    vec3 f_Normal   = normalize(f_Normal);
+    vec3 lightColor = vec3(1,1,1);
 
 
     vec3 lightDir = normalize(u_LightPos - f_Position);
-    vec3 viewDir  = normalize(u_ViewPos - f_Position);
+    vec3 viewDir  = normalize(u_ViewPos  - f_Position);
 
 
     vec3 ambient  = 0.15 * color;
@@ -131,6 +128,7 @@ void main()
 
     // Calculate shadow
     float shadow = ShadowCalculation( f_PosLightSpace, u_ShadowMap);
+
 
 
     vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
