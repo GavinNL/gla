@@ -38,7 +38,7 @@ class Camera : public Transform
 
         }
 
-        void Perspective(float FOV, float AspectRatio, float zMin=0.5f, float zMax=10000.f)
+        void Perspective( float FOV, float AspectRatio, float zMin=0.5f, float zMax=10000.f)
         {
              mAspectRatio = AspectRatio;
              mFOV         = FOV;

@@ -203,7 +203,7 @@ int main()
         //================================================================
         Camera C;
         C.SetPosition( {1.0, 3.0, 10.0f});
-        C.Perspective(45.0f, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1f);
+        C.Perspective(45.0f * 3.14159f / 2.0f, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1f);
 
 
         Timer_T<float> Timer;
@@ -216,11 +216,11 @@ int main()
 
 
             // Set up the light matrix.
-            glm::vec3 lPos    = glm::vec3(4.0f*cos(t), 1.2 , 4.0f*sin(t));
+            glm::vec3 lPos    = glm::vec3(4.0f*cos(t), 5.0f , 4.0f*sin(t));
             glm::vec3 lLookat = m_BoxT.GetPosition(); // always look at the rotating box
             glm::vec3 lUp     = glm::vec3( 0,1,0 );
 
-            glm::mat4 LightMatrix = glm::perspective(90.0f, 1.0f, 1.0f, 500.0f) * glm::lookAt( lPos, lLookat, lUp );
+            glm::mat4 LightMatrix = glm::perspective( glm::radians(45.f) , 1.0f, 1.0f, 500.0f) * glm::lookAt( lPos, lLookat, lUp );
 
             auto CameraProj = C.GetProjectionMatrix();
             auto CameraView = C.GetMatrix();

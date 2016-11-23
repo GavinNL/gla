@@ -473,7 +473,7 @@ public:
                 GLA_LOGI << "Uniform [" << name << "] - location: " << P.GetUniformLocation( name.c_str() ) << std::endl;
                 } catch (std::exception & e )
                 {
-
+                GLA_LOGI << "Uniform [" << name << "] - location: unknown " << std::endl;
                 }
             }
             //std::cout << "Shader Loaded Successfully: " << path.c_str() << std::endl;

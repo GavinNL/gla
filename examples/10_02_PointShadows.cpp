@@ -81,8 +81,15 @@ int main()
         auto BoxVertices   = createBox();  // returns a vector of vertices. It does not use an index buffer
         auto PlaneVertices = createPlane(50,50);
 
-        auto m_BoxMesh   = m_MeshBuffer.Insert( BoxVertices.vertices, BoxVertices.indices);
-        auto m_PlaneMesh = m_MeshBuffer.Insert( PlaneVertices.vertices, PlaneVertices.indices);
+        auto m_BoxMesh    = m_MeshBuffer.Insert( BoxVertices.vertices, BoxVertices.indices);
+        for(auto & n : BoxVertices.vertices)
+            n.n = -n.n;
+//#define USEPLANE
+#ifndef USEPLANE
+        auto m_OutBoxMesh = m_MeshBuffer.Insert( BoxVertices.vertices, BoxVertices.indices);
+#else
+        auto m_OutBoxMesh = m_MeshBuffer.Insert( PlaneVertices.vertices, PlaneVertices.indices);
+#endif
 
 
         // Load some textures. And force using 3 components (r,g,b)
@@ -135,7 +142,7 @@ int main()
         //==========================================================
 
         Sampler ShadowTexture;
-        ShadowTexture.CreateTextureCubeMap( uvec2(1024), Sampler::DEPTH_COMPONENT16 );
+        ShadowTexture.CreateTextureCubeMap( uvec2(1024), Sampler::DEPTH_COMPONENT32 );
         ShadowTexture.ClampToEdgeX().ClampToEdgeY().ClampToEdgeZ();
 
         RenderToTexture mShadowMap;
@@ -181,24 +188,25 @@ int main()
         // 5. Create a transform structure used to transform the
         //    position/orientation of the 3d object
         //================================================================
-        Transform m_BoxT;
+        Transform m_Box1T;
+        Transform m_Box2T;
         Transform m_PlaneT;
 
 
-        vec3  m_LightPos = vec3(0,5,0);
-        float m_FarPlane = 1000;
 
 
+        //m_BoxT.SetPosition(   { 0 ,     1 , -0  } );
 
-        m_BoxT.SetPosition(   { 0 ,     1 , -0  } );
-        m_PlaneT.SetPosition( { 0 ,    -1 , -0 } );
+#ifndef USEPLANE
+        m_PlaneT.SetScale( vec3(30) );
+#endif
 
         //================================================================
         // 6. Create a camera Object to help position the camera
         //================================================================
-        Camera C;
-        C.SetPosition( {1.0, 3.0, 25.0f});
-        C.Perspective(45.0f, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 1.0f, m_FarPlane);
+//        Camera C;
+//        C.SetPosition( {1.0, 3.0, 25.0f});
+//        C.Perspective(45.0f, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 1.0f, 100.0f);
 
 
 
@@ -206,9 +214,41 @@ int main()
 
         while (!glfwWindowShouldClose(gMainWindow) )
         {
-            auto t = Timer.getElapsedTime();
-            m_BoxT.SetEuler( { Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0 } );
-            m_BoxT.SetPosition(    vec3( cos(t), 0, sin(t) )*5.0f );
+            auto t = Timer.getElapsedTime()*0.25;
+
+            m_Box1T.SetEuler( { t, t * 0.4, -0.0 } );
+
+#ifndef USEPLANE
+            m_PlaneT.SetPosition( { 0 ,  14 ,  0 } );
+#else
+            m_PlaneT.SetPosition( { 0 ,  -1 ,  0 } );
+#endif
+            m_Box1T.SetPosition(    vec3(  cos(t), 0, sin(t) )*5.0f );
+            m_Box2T.SetPosition(    vec3(  0*cos(t), 100, -0*sin(t) )*5.0f );
+
+
+
+            vec3  m_LightPos = vec3(0,3,0);
+
+            float m_FarPlane = 50.0f;
+
+            auto CameraPosition   = vec3(-4,7,-7);
+
+            auto CameraViewMatrix = glm::lookAt( CameraPosition , glm::vec3( 0.0, 0.0, 0.0), glm::vec3(0.0,  1.0, 0.0));
+            auto CameraProjMatrix = glm::perspective( glm::radians(45.0f), (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 1.0f, m_FarPlane );
+
+            glm::mat4 shadowProj  = glm::perspective( glm::radians(90.0f), 1.0f, 0.1f, m_FarPlane );
+
+            std::vector<glm::mat4> m_ShadowMatrices =
+            {
+                shadowProj*glm::lookAt( m_LightPos, m_LightPos + glm::vec3( 1.0, 0.0, 0.0),  glm::vec3(0.0, -1.0, 0.0)) ,
+                shadowProj*glm::lookAt( m_LightPos, m_LightPos + glm::vec3(-1.0, 0.0, 0.0),  glm::vec3(0.0, -1.0, 0.0)) ,
+                shadowProj*glm::lookAt( m_LightPos, m_LightPos + glm::vec3( 0.0, 1.0, 0.0),  glm::vec3(0.0,  0.0, 1.0)) ,
+                shadowProj*glm::lookAt( m_LightPos, m_LightPos + glm::vec3( 0.0,-1.0, 0.0),  glm::vec3(0.0,  0.0,-1.0)) ,
+                shadowProj*glm::lookAt( m_LightPos, m_LightPos + glm::vec3( 0.0, 0.0, 1.0),  glm::vec3(0.0, -1.0, 0.0)) ,
+                shadowProj*glm::lookAt( m_LightPos, m_LightPos + glm::vec3( 0.0, 0.0,-1.0),  glm::vec3(0.0, -1.0, 0.0))
+            };
+
             if(1)
             {
                 mShadowMap.Bind(); // Bind the RenderToTexture object (basically a framebuffer object)
@@ -216,20 +256,11 @@ int main()
                 glEnable(GL_DEPTH_TEST);
                 glClear( GL_DEPTH_BUFFER_BIT );
                 // Shadow Pass
+                //glEnable(GL_CULL_FACE);
+                //glCullFace(GL_FRONT);
 
                 mCubeShadowMapShader.Bind();
 
-                glm::mat4 shadowProj = glm::perspective(90.0f, 1.0f, 1.0f, m_FarPlane);
-
-                std::vector<glm::mat4> m_ShadowMatrices =
-                {
-                    shadowProj*glm::lookAt(m_LightPos, m_LightPos + glm::vec3( 1.0, 0.0, 0.0), glm::vec3(0.0,  -1.0, 0.0)) ,
-                    shadowProj*glm::lookAt(m_LightPos, m_LightPos + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0,  -1.0, 0.0)) ,
-                    shadowProj*glm::lookAt(m_LightPos, m_LightPos + glm::vec3( 0.0, 1.0, 0.0), glm::vec3(0.0,  0.0, 1.0)) ,
-                    shadowProj*glm::lookAt(m_LightPos, m_LightPos + glm::vec3( 0.0,-1.0, 0.0), glm::vec3(0.0,  0.0,-1.0)) ,
-                    shadowProj*glm::lookAt(m_LightPos, m_LightPos + glm::vec3( 0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)) ,
-                    shadowProj*glm::lookAt(m_LightPos, m_LightPos + glm::vec3( 0.0, 0.0,-1.0), glm::vec3(0.0, -1.0, 0.0))
-                };
 
 
                 mCubeShadowMapShader.Uniform("u_ShadowMatrices[0]", m_ShadowMatrices[0] );
@@ -244,8 +275,10 @@ int main()
 
 
                 mCubeShadowMapShader.Uniform("u_ModelMatrix", m_PlaneT.GetMatrix() );
-                    m_PlaneMesh.Draw();
-                mCubeShadowMapShader.Uniform("u_ModelMatrix", m_BoxT.GetMatrix() );
+                    m_OutBoxMesh.Draw();
+                mCubeShadowMapShader.Uniform("u_ModelMatrix", m_Box1T.GetMatrix() );
+                    m_BoxMesh.Draw();
+                mCubeShadowMapShader.Uniform("u_ModelMatrix", m_Box2T.GetMatrix() );
                     m_BoxMesh.Draw();
 
 
@@ -257,7 +290,7 @@ int main()
                 glEnable(GL_DEPTH_TEST);
                 glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+                glCullFace(GL_BACK);
                 // Use the GBufferShader
                 mShadowMapShader_ShadowPass.Bind();
 
@@ -272,20 +305,21 @@ int main()
                 ShadowTexture.SetActive(1);
 
 
-                mShadowMapShader_ShadowPass.Uniform( "u_FarPlane",    m_FarPlane);
-                mShadowMapShader_ShadowPass.Uniform( "u_ViewMatrix",  C.GetMatrix() );
-                mShadowMapShader_ShadowPass.Uniform( "u_ProjMatrix",  C.GetProjectionMatrix() );
-                mShadowMapShader_ShadowPass.Uniform( "u_Diffuse"   , 0 );
-                mShadowMapShader_ShadowPass.Uniform( "u_ShadowMap" , 1 );
-                mShadowMapShader_ShadowPass.Uniform( "u_LightPos",   m_LightPos );
-                mShadowMapShader_ShadowPass.Uniform( "u_ViewPos" ,   C.GetPosition() );
+                mShadowMapShader_ShadowPass.Uniform( "u_FarPlane"  ,  m_FarPlane);
+                mShadowMapShader_ShadowPass.Uniform( "u_ViewMatrix",  CameraViewMatrix );
+                mShadowMapShader_ShadowPass.Uniform( "u_ProjMatrix",  CameraProjMatrix );
+                mShadowMapShader_ShadowPass.Uniform( "u_Diffuse"   ,  0 );
+                mShadowMapShader_ShadowPass.Uniform( "u_ShadowMap" ,  1 );
+                mShadowMapShader_ShadowPass.Uniform( "u_LightPos"  ,  m_LightPos );
+                mShadowMapShader_ShadowPass.Uniform( "u_ViewPos"   ,  CameraPosition );
 
 
                 mShadowMapShader_ShadowPass.Uniform( "u_ModelMatrix", m_PlaneT.GetMatrix() );
-                m_PlaneMesh.Draw();
+                m_OutBoxMesh.Draw();
 
-                mShadowMapShader_ShadowPass.Uniform( "u_ModelMatrix", m_BoxT.GetMatrix() );
-                //mShadowMapShader_ShadowPass.Uniform( mShadowMapShader_ShadowPass.GetUniformLocation("u_ModelMatrix"), m_BoxT.GetMatrix() );
+                mShadowMapShader_ShadowPass.Uniform( "u_ModelMatrix", m_Box1T.GetMatrix() );
+                m_BoxMesh.Draw();
+                mShadowMapShader_ShadowPass.Uniform( "u_ModelMatrix", m_Box2T.GetMatrix() );
                 m_BoxMesh.Draw();
 
                 //VAO.Draw(Primitave::TRIANGLES, Vertices.indices.size() );
@@ -303,7 +337,7 @@ int main()
             //================================================================
             // 8. Perform the pixel pass
             //================================================================
-            glDisable(GL_DEPTH_TEST);
+            //glDisable(GL_DEPTH_TEST);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             GBufferSPass_Shader.Bind();

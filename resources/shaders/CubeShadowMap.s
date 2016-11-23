@@ -30,6 +30,7 @@ void main()
         for(int i = 0; i < 3; ++i) // for each triangle's vertices
         {
             f_FragPos   = gl_in[i].gl_Position;
+
             gl_Position = u_ShadowMatrices[face] * f_FragPos;
             EmitVertex();
         }
@@ -42,6 +43,7 @@ void main()
 <fragment>
 
 #version 330 core
+
 in vec4 f_FragPos;
 
 uniform vec3  u_LightPos;
@@ -57,6 +59,8 @@ void main()
 
     // Write this as modified depth
     gl_FragDepth = lightDistance;
+
+
 
 }
 </fragment>
