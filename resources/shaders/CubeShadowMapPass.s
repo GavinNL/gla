@@ -58,10 +58,44 @@ uniform vec3        u_ViewPos;
 uniform float       u_FarPlane;
 
 
+
+vec3 gridSamplingDisk[20] = vec3[]
+(
+   vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1),
+   vec3( 1,  1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1,  1, -1),
+   vec3( 1,  1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1,  1,  0),
+   vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
+   vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
+);
+
+
 float ShadowCalculation(vec3 fragPosition, samplerCube shadow_map)
 {
     // Get vector between fragment position and light position
     vec3 fragToLight = fragPosition.xyz - u_LightPos;
+
+    // Now get current linear depth as the length between the fragment and light position
+    float currentDepth = length(fragToLight);
+
+
+    float shadow = 0.0;
+    float bias   = 0.15;
+    int   samples  = 20;
+
+    float viewDistance = length( u_ViewPos - fragPosition );
+    float diskRadius   = ( 1.0 + (viewDistance / u_FarPlane ) ) / 50.0;
+    //----
+    for(int i = 0; i < samples; ++i)
+    {
+        float closestDepth = texture(shadow_map, fragToLight + gridSamplingDisk[i] * diskRadius).r;
+        closestDepth *= u_FarPlane;   // Undo mapping [0;1]
+        if(currentDepth - bias > closestDepth)
+            shadow += 1.0;
+    }
+    shadow /= float(samples);
+
+    return shadow;
+    //----
 
 
     // Use the light to fragment vector to sample from the depth map
@@ -70,13 +104,10 @@ float ShadowCalculation(vec3 fragPosition, samplerCube shadow_map)
     // It is currently in linear range between [0,1]. Re-transform back to original value
     closestDepth *= u_FarPlane;
 
-    // Now get current linear depth as the length between the fragment and light position
-    float currentDepth = length(fragToLight);
 
     // Now test for shadows
 
-    float bias   = 0.01;
-    float shadow = (currentDepth -  bias) > closestDepth ? 1.0 : 0.0;
+    shadow = (currentDepth -  bias) > closestDepth ? 1.0 : 0.0;
 
     return shadow;// + closestDepth/u_FarPlane;
 
@@ -108,14 +139,14 @@ void main()
 {
     vec3 color      = texture( u_Diffuse, f_TexCoord).rgb;
     vec3 normal     = normalize(f_Normal);
-    vec3 lightColor = vec3(1.0,1,1);
+    vec3 lightColor = vec3(1,1,1);
 
 
     vec3 lightDir = normalize(u_LightPos - f_Position);
     vec3 viewDir  = normalize(u_ViewPos  - f_Position);
 
 
-    vec3 ambient  = 0.15 * color;
+    vec3 ambient  = 0.05 * color;
 
     vec3 diffuse  = CalculateDiffuse(  lightDir , f_Normal) * lightColor;
     vec3 specular = CalculateSpecular( lightDir , viewDir, f_Normal) * lightColor;
@@ -124,17 +155,13 @@ void main()
     float shadow = ShadowCalculation( f_Position, u_ShadowMap);
 
 
-    vec3 lighting = ambient + (1.0 - shadow) * (diffuse*0.0001 + specular*0.0001 + vec3(1.0)) * color;
+    vec3 lighting = ambient + (1.0 - shadow) * (diffuse + specular) * color;
 
 
 
-    out_AlbedoSpec = vec4(lighting,1.0);// * 0.0001 + vec4(shadow,shadow ,shadow, 1.0);
-
-    //out_AlbedoSpec = vec4(shadow) + vec4(lighting,1)*0.0001;// * 0.0001 + vec4(shadow,shadow ,shadow, 1.0);
-    //out_AlbedoSpec.a = 1.0;
-
+    out_AlbedoSpec = vec4(lighting,1.0);
     out_Normal     = f_Normal;
-    out_Position   = f_Position / 25.0;
+    out_Position   = f_Position;
 }
 
 
