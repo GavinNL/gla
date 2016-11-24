@@ -89,10 +89,10 @@ int main()
         //=========================================================================================
         //2. Create the Texture array
         //=========================================================================================
-        Sampler2DArray TexArray2D;
+        Sampler TexArray2D;
 
         // Create the GPUTexture array with 3 layers that hold 256x256 images with 3 components each, and 2 mipmaps.
-        TexArray2D.Create( uvec2(256,256), 3, 3 , 2);
+        TexArray2D.CreateTexture2DArray( uvec2(256,256), 3, Sampler::RGB8);
 
         // Set the red channel using a lambda function
         Tex3.r =  IMAGE_EXPRESSION( perlin( vec2(x,y) * 4.0f, vec2(4.0,4.0) )*0.5 + 0.5f )
@@ -108,9 +108,9 @@ int main()
         //   Note: If the Image does not match the Sampler2D dimensions, it will be rescaled
         //         to the appropriate dimensions and channels. If that is not desired
         //          use TexArray2D.SetLayer(Tex1, 0, uvec2(0,0);
-        TexArray2D[0] = Tex1;
-        TexArray2D[1] = Tex2;
-        TexArray2D[2] = Tex3;
+        TexArray2D[0] << Tex1;
+        TexArray2D[1] << Tex2;
+        TexArray2D[2] << Tex3;
 
         // Alternatively, one can use the following
         //   TexArray2D.SetLayer( Tex1, 0, uvec2(0 ,0) );

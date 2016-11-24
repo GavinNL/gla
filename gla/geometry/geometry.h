@@ -29,5 +29,6 @@
 #include<gla/geometry/line3d.h>
 #include<gla/geometry/plane3d.h>
 #include<gla/geometry/boundingbox.h>
+#include<gla/geometry/frustrum.h>
 
 #endif

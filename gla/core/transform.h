@@ -30,7 +30,12 @@
 #ifndef GLA_EXP_Transform_H
 #define GLA_EXP_Transform_H
 
-#include "types.h"
+//#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+//#define GLM_FORCE_RADIANS
+#include <glm/gtc/quaternion.hpp>
+//#define GLM_FORCE_RADIANS
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace gla {
 
@@ -41,49 +46,52 @@ namespace gla {
 class Transform
 {
     public:
+
+
+
         Transform() : Position(0,0,0) , Orientation(1,0,0,0) , Scale(1.0,1.0,1.0)
         {
         }
 
-        Transform(const vec3 & position, const quat & rot, const vec3 & scale) : Position(position), Orientation(rot), Scale(scale)
+        Transform(const glm::vec3 & position, const glm::quat & rot, const glm::vec3 & scale) : Position(position), Orientation(rot), Scale(scale)
         {
         }
 
-        Transform(const vec3 & position, const quat & rot) : Position(position), Orientation(rot), Scale(1.0f,1.0f,1.0f)
+        Transform(const glm::vec3 & position, const glm::quat & rot) : Position(position), Orientation(rot), Scale(1.0f,1.0f,1.0f)
         {
         }
 
-        Transform(const vec3 & position) : Position(position), Orientation(1,0,0,0), Scale(1,1,1)
+        Transform(const glm::vec3 & position) : Position(position), Orientation(1,0,0,0), Scale(1,1,1)
         {
 
         }
 
         // positional Transforms
-        inline virtual void Translate(const vec3 & T)  { Position += T; }
-        inline virtual void SetPosition(const vec3 & P){ Position  = P; }
+        inline virtual void Translate(const glm::vec3 & T)  { Position += T; }
+        inline virtual void SetPosition(const glm::vec3 & P){ Position  = P; }
 
         // scaling Transforms
-        inline virtual void SetScale(const vec3 & scale){Scale = scale;}
+        inline virtual void SetScale(const glm::vec3 & scale){Scale = scale;}
 
         // rotational Transform
-        inline virtual void SetOrientation(const quat & q) { Orientation = q; }
-        inline virtual void Rotate(const vec3 & axis, float AngleRadians) { Orientation = glm::rotate( Orientation, AngleRadians, axis ); }
+        inline virtual void SetOrientation(const glm::quat & q) { Orientation = q; }
+        inline virtual void Rotate(const glm::vec3 & axis, float AngleRadians) { Orientation = glm::rotate( Orientation, AngleRadians, axis ); }
 
-        inline void SetEuler( const vec3 & PitchYawRoll )
+        inline void SetEuler( const glm::vec3 & PitchYawRoll )
         {
-            Orientation = quat(PitchYawRoll);
+            Orientation = glm::quat(PitchYawRoll);
         }
 
-        inline virtual mat4 GetMatrix() const
+        inline virtual glm::mat4 GetMatrix() const
         {
-            return glm::translate(mat4(1.0f), Position) * glm::mat4_cast(Orientation) * glm::scale( mat4(1.0), Scale);
+            return glm::translate(glm::mat4(1.0f), Position) * glm::mat4_cast(Orientation) * glm::scale( glm::mat4(1.0), Scale);
         }
 
-        const quat   & GetOrientation() const { return Orientation; }
-        const vec3   & GetPosition   () const { return Position;    }
-        const vec3   & GetScale      () const { return Scale;       }
+        const glm::quat   & GetOrientation() const { return Orientation; }
+        const glm::vec3   & GetPosition   () const { return Position;    }
+        const glm::vec3   & GetScale      () const { return Scale;       }
 
-        quat Reverse() const {  return quat(Orientation.w, -Orientation.x,  -Orientation.y, -Orientation.z); }
+        glm::quat Reverse() const {  return glm::quat(Orientation.w, -Orientation.x,  -Orientation.y, -Orientation.z); }
 
         Transform Inverse() const
         {
@@ -117,11 +125,11 @@ class Transform
 
 
     public:
-        vec3    Position;
-        quat    Orientation;
-        vec3    Scale;
+        glm::vec3    Position;
+        glm::quat    Orientation;
+        glm::vec3    Scale;
 
-        //vec3    mEulerAngles; //pitch,roll,yaw
+        //glm::vec3    mEulerAngles; //pitch,roll,yaw
 
 };
 
@@ -152,9 +160,9 @@ inline Transform operator/(const Transform& ws, const Transform& ps)
 {
     Transform ls;
 
-    const quat psConjugate( ps.Orientation.w, -ps.Orientation.x, -ps.Orientation.y, -ps.Orientation.z);
+    const glm::quat psConjugate( ps.Orientation.w, -ps.Orientation.x, -ps.Orientation.y, -ps.Orientation.z);
 
-    //const quat psConjugate(); ps.Orientation. conjugate(ps.orientation);
+    //const glm::quat psConjugate(); ps.Orientation. conjugate(ps.orientation);
 
     ls.Position    = (psConjugate * (ws.Position - ps.Position)) / ps.Scale;
     ls.Orientation = psConjugate * ws.Orientation;

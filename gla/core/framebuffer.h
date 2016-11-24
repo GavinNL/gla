@@ -26,8 +26,9 @@
 #define EXP_FRAMEBUFFER_
 
 #include "handle.h"
-#include "sampler2d.h"
-
+#include "sampler.h"
+//#include "sampler2d.h"
+//#include "sampler_cube.h"
 
 namespace gla {
 
@@ -36,7 +37,7 @@ struct GenFrameBuff
     void operator()(GLuint & x)
     {
         glGenFramebuffers(1, &x);
-        std::cout << "Frame Buffer Generated: " << x << std::endl;
+        GLA_LOGD << "Frame Buffer Generated: " << x << std::endl;
     }
 };
 
@@ -44,7 +45,7 @@ struct DestFrameBuff
 {
     void operator()(GLuint & x)
     {
-        std::cout << "Destroying Frame Buffer: " << x << std::endl;
+        GLA_LOGD << "Destroying Frame Buffer: " << x << std::endl;
         glDeleteFramebuffers( 1, &x );
         x = 0;
     }
@@ -155,12 +156,19 @@ public:
         glBindFramebuffer(GL_FRAMEBUFFER,  Get());
     }
 
+    void Unbind()
+    {
+        UnBind();
+    }
+
     void UnBind()
     {
         glBindFramebuffer(GL_FRAMEBUFFER,  0);
     }
 
-    void Attach(const Sampler2D & Tex,  FrameBuffer::Attachment attachment);
+    void Attach( const Sampler & texture, Attachment attachment);
+
+    void Detach(Attachment attachment);
 
     void Use( std::vector<FrameBuffer::Attachment> attach);
 
@@ -175,69 +183,8 @@ public:
         return Check()==COMPLETE;
     }
 
-    /**
-     * @brief GenDepthTexture
-     * @param size
-     * @return
-     *
-     * Generates a depth texture that can be used with FrameBuffers
-     *
-     */
-    static Sampler2D CreateBufferTexture_Depth16F( const glm::uvec2 & size)
-    {
-        gla::Sampler2D Depth( size , gla::SamplerFormat::DEPTH_COMPONENT16,  gla::ImageFormat::DEPTH_COMPONENT, gla::DataType::FLOAT);
-        Depth.SetFilter( gla::SamplerFilter::NEAREST , gla::SamplerFilter::NEAREST );
-        return Depth;
-    }
 
-    static Sampler2D CreateBufferTexture_Depth24F( const glm::uvec2 & size)
-    {
-        gla::Sampler2D Depth( size , gla::SamplerFormat::DEPTH_COMPONENT24,  gla::ImageFormat::DEPTH_COMPONENT, gla::DataType::FLOAT);
-        Depth.SetFilter( gla::SamplerFilter::NEAREST , gla::SamplerFilter::NEAREST );
-        return Depth;
-    }
 
-    static Sampler2D CreateBufferTexture_RGB( const glm::uvec2 & size)
-    {
-        gla::Sampler2D Colours( size );
-        Colours.SetFilter( gla::SamplerFilter::NEAREST , gla::SamplerFilter::NEAREST );
-        return Colours;
-    }
-
-    static Sampler2D CreateBufferTexture_RGBA( const glm::uvec2 & size)
-    {
-        gla::Sampler2D Colours( size , gla::SamplerFormat::RGBA,  gla::ImageFormat::RGBA, gla::DataType::UNSIGNED_BYTE);
-        Colours.SetFilter( gla::SamplerFilter::NEAREST , gla::SamplerFilter::NEAREST );
-        return Colours;
-    }
-
-    static Sampler2D CreateBufferTexture_Vec3_16f( const glm::uvec2 & size)
-    {
-        gla::Sampler2D Depth( size , gla::SamplerFormat::RGB16F,  gla::ImageFormat::RGB, gla::DataType::FLOAT);
-        Depth.SetFilter( gla::SamplerFilter::NEAREST , gla::SamplerFilter::NEAREST );
-        return Depth;
-    }
-
-    static Sampler2D CreateBufferTexture_Vec4_16f( const glm::uvec2 & size)
-    {
-        gla::Sampler2D Depth( size , gla::SamplerFormat::RGBA16F,  gla::ImageFormat::RGBA, gla::DataType::FLOAT);
-        Depth.SetFilter( gla::SamplerFilter::NEAREST , gla::SamplerFilter::NEAREST );
-        return Depth;
-    }
-
-    static Sampler2D CreateBufferTexture_Vec3_32f( const glm::uvec2 & size)
-    {
-        gla::Sampler2D Depth( size , gla::SamplerFormat::RGB32F,  gla::ImageFormat::RGB, gla::DataType::FLOAT);
-        Depth.SetFilter( gla::SamplerFilter::NEAREST , gla::SamplerFilter::NEAREST );
-        return Depth;
-    }
-
-    static Sampler2D CreateBufferTexture_Vec4_32f( const glm::uvec2 & size)
-    {
-        gla::Sampler2D Depth( size , gla::SamplerFormat::RGBA32F,  gla::ImageFormat::RGBA, gla::DataType::FLOAT);
-        Depth.SetFilter( gla::SamplerFilter::NEAREST , gla::SamplerFilter::NEAREST );
-        return Depth;
-    }
 };
 
 
@@ -250,11 +197,21 @@ inline void FrameBuffer::Use( std::vector<FrameBuffer::Attachment> attach)
     glDrawBuffers( static_cast<GLsizei>(attach.size()),  static_cast<const GLenum*>( p ) );
 }
 
-inline void FrameBuffer::Attach( const Sampler2D & texture, Attachment attachment)
+
+inline void FrameBuffer::Attach( const Sampler & texture, Attachment attachment)
 {
     Bind();
     //texture.Bind();
-    glFramebufferTexture2D(GL_FRAMEBUFFER, static_cast<GLenum>(attachment), GL_TEXTURE_2D, texture.Get(), 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, static_cast<GLenum>(attachment), texture.Get(), 0);
+}
+
+
+
+inline void FrameBuffer::Detach( Attachment attachment)
+{
+    Bind();
+    //texture.Bind();
+    glFramebufferTexture2D(GL_FRAMEBUFFER, static_cast<GLenum>(attachment), GL_TEXTURE_2D, 0, 0);
 }
 
 }

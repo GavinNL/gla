@@ -28,21 +28,43 @@
 
 
 
-#include <GL/gl.h>
 
-#define GLM_FORCE_RADIANS
+
+//#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
-#define GLM_FORCE_RADIANS
+//#define GLM_FORCE_RADIANS
 #include <glm/gtc/quaternion.hpp>
-#define GLM_FORCE_RADIANS
+//#define GLM_FORCE_RADIANS
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <iostream>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <string>
 
-#ifndef GLA_DOUT
-#define GLA_DOUT std::cout
-#endif
 
-namespace gla {
+namespace gla
+{
+
+static void CheckError()
+{
+    auto err = glGetError();
+
+    switch(err)
+    {
+                                 case GL_INVALID_ENUM:
+           throw std::runtime_error( "GL_INVALID_ENUM" );
+                      case GL_INVALID_OPERATION:
+throw std::runtime_error( "GL_INVALID_OPERATION" );
+                      case GL_INVALID_VALUE:
+throw std::runtime_error( "GL_INVALID_VALUE" );
+    default:
+            return;
+    }
+
+}
+
 
 class NormalizeFlags
 {
@@ -121,78 +143,8 @@ enum class Primitave
 
 };
 
-enum class AttributeTypes
-{
-    v1 ,
-    v1n, // normalized
-    v2 ,
-    v2n, // normalized
-    v3 ,
-    v3n, // normalized
-    v4 ,
-    v4n, // normalized
 
-    // Integer
-    iv1 ,
-    iv1n, // normalized
-    iv2 ,
-    iv2n, // normalized
-    iv3 ,
-    iv3n, // normalized
-    iv4 ,
-    iv4n, // normalized
-
-    // unsigned int
-    uv1 ,
-    uv1n, // normalized
-    uv2 ,
-    uv2n, // normalized
-    uv3 ,
-    uv3n, // normalized
-    uv4 ,
-    uv4n, // normalized
-
-    // short
-    i16v1 ,
-    i16v1n, // normalized
-    i16v2 ,
-    i16v2n, // normalized
-    i16v3 ,
-    i16v3n, // normalized
-    i16v4 ,
-    i16v4n, // normalized
-
-    // unsigned short
-    u16v1 ,
-    u16v1n, // normalized
-    u16v2 ,
-    u16v2n, // normalized
-    u16v3 ,
-    u16v3n, // normalized
-    u16v4 ,
-    u16v4n, // normalized
-
-    // byte
-    i8v1 ,
-    i8v1n, // normalized
-    i8v2 ,
-    i8v2n, // normalized
-    i8v3 ,
-    i8v3n, // normalized
-    i8v4 ,
-    i8v4n, // normalized
-
-    // unsigned byte
-    u8v1 ,
-    u8v1n, // normalized
-    u8v2 ,
-    u8v2n, // normalized
-    u8v3 ,
-    u8v3n, // normalized
-    u8v4 ,
-    u8v4n // normalized
-};
-
+using sizei = GLsizei;
 
 using bvec2 = glm::bvec2 ;
 using bvec3 = glm::bvec3 ;
@@ -218,6 +170,161 @@ using col4  = glm::vec4  ;
 using col3  = glm::vec3  ;
 using col2  = glm::vec2  ;
 
+#ifdef _WIN32
+static void print_time()
+#else
+static std::ostream& print_time()
+#endif
+{
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+    std::cout << "[" << std::put_time(std::localtime(&now_c), "%F %T") << "] - ";
+
+#ifndef _WIN32
+    return std::cout;
+#endif
 }
+
+
+
+#ifdef GLA_LOG_ALL
+    #define GLA_INFO 1
+    #define GLA_DEBUG 1
+    #define GLA_VERBOSE 1
+    #define GLA_TIMER 1
+#endif
+
+
+#ifdef GLA_INFO
+    #define GLA_INFO 1
+#else
+    #define GLA_INFO 0
+#endif
+
+#ifdef GLA_DEBUG
+    #define GLA_DEBUG 1
+#else
+    #define GLA_DEBUG 0
+#endif
+
+#ifdef GLA_VERBOSE
+    #define GLA_VERBOSE 1
+#else
+    #define GLA_VERBOSE 0
+#endif
+
+#ifdef GLA_TIMER
+    #define GLA_TIMER 1
+#else
+    #define GLA_TIMER 0
+#endif
+
+#ifdef GLA_ERROR
+    #define GLA_ERROR 1
+#else
+    #define GLA_ERROR 0
+#endif
+
+#if 0
+#include <iostream>
+#include <windows.h>
+
+using namespace std;
+HANDLE hCon;
+
+enum Color { DARKBLUE = 1, DARKGREEN, DARKTEAL, DARKRED, DARKPINK, DARKYELLOW, GRAY, DARKGRAY, BLUE, GREEN, TEAL, RED, PINK, YELLOW, WHITE };
+
+void SetColor(Color c){
+        if(hCon == NULL)
+                hCon = GetStdHandle(STD_OUTPUT_HANDLE);
+
+}
+
+#endif
+
+static const std::string default_console = "\033[0m";
+static const std::string color           = "\033[0;1m";
+
+static const std::string c_black_b      = "\033[1;30m";
+static const std::string c_red_b        = "\033[1;31m";
+static const std::string c_green_b      = "\033[1;32m";
+static const std::string c_brown_b      = "\033[1;33m";
+static const std::string c_blue_b       = "\033[1;34m";
+static const std::string c_magenta_b    = "\033[1;35m";
+static const std::string c_cyan_b       = "\033[1;36m";
+static const std::string c_lightgray_b  = "\033[1;37m";
+
+static const std::string c_black      = "\033[0;30m";
+static const std::string c_red        = "\033[0;31m";
+static const std::string c_green      = "\033[0;32m";
+static const std::string c_brown      = "\033[0;33m";
+static const std::string c_blue       = "\033[0;34m";
+static const std::string c_magenta    = "\033[0;35m";
+static const std::string c_cyan       = "\033[0;36m";
+static const std::string c_lightgray  = "\033[0;37m";
+
+#ifdef _WIN32
+//#define GLA_LOGD  if(GLA_DEBUG   ) gla::print_time() << "[Debug] - "
+//#define GLA_LOGI  if(GLA_INFO    ) gla::print_time() << "[Info] - "
+//#define GLA_LOGV  if(GLA_VERBOSE ) gla::print_time() << "[Verbose] - "
+//#define GLA_LOGT  if(GLA_TIMER   ) gla::print_time() << "[Timer] - "
+#define GLA_LOGD  if(GLA_DEBUG   )  std::cout << c_red_b.c_str()     << "[ Debug ] - "
+#define GLA_LOGI  if(GLA_INFO    )  std::cout << c_green_b.c_str()   << "[ Info  ] - "
+#define GLA_LOGV  if(GLA_VERBOSE )  std::cout << c_cyan_b.c_str()    << "[Verbose] - "
+#define GLA_LOGT  if(GLA_TIMER   )  std::cout << c_magenta_b.c_str() << "[ Timer ] - "
+#else
+#define GLA_LOGE  if(GLA_ERROR   && (std::cout<<c_red_b))       gla::print_time() << "[ERROR] - "
+#define GLA_LOGD  if(GLA_DEBUG   && (std::cout<<c_brown_b))     gla::print_time() << "[Debug] - "
+#define GLA_LOGI  if(GLA_INFO    && (std::cout<<c_green_b))     gla::print_time() << "[Info] - "
+#define GLA_LOGV  if(GLA_VERBOSE && (std::cout<<c_cyan_b))      gla::print_time() << "[Verbose] - "
+#define GLA_LOGT  if(GLA_TIMER   && (std::cout<<c_magenta_b))   gla::print_time() << "[Timer] - "
+#endif
+
+
+
+#define DO_ONCE(  A )       \
+    {                          \
+        static bool ____iii____=true;    \
+        if(____iii____)                  \
+        {                      \
+            ____iii____=false;
+
+#define END_ONCE \
+            A                  \
+        }                      \
+    }
+
+#define DO_EVERY( seconds  )              \
+    {                               \
+        static std::chrono::system_clock::time_point start = std::chrono::system_clock::now(); \
+        std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now()-start;\
+        if( elapsed_seconds.count() > seconds )   \
+        {   start = std::chrono::system_clock::now();                     \
+
+
+#define END_EVERY              \
+                               \
+        }                      \
+    }
+
+
+
+
+#define START_TIMER()              \
+    {                               \
+        static std::chrono::system_clock::time_point start = std::chrono::system_clock::now(); \
+        {   start = std::chrono::system_clock::now();
+
+
+#define END_TIMER(Description)              \
+                               \
+            std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now()-start; \
+            GLA_LOGT << Description << " : " << elapsed_seconds.count() << " seconds" << std::endl; \
+        }\
+    }
+
+
+
+} // gla namespace
 
 #endif

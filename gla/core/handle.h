@@ -88,6 +88,7 @@ class BaseHandle
 {
 
 public:
+    using GL_id_type       = HandleType;
     using Handle           = BaseHandle<HandleType, CallableCreate, CallableDestroy, SharedDataType>;
     using SharedHandle     = std::shared_ptr< std::pair<HandleType, SharedDataType> >;
 
@@ -135,7 +136,6 @@ public:
     {
     }
 
-
     /**
      * @brief Get - returns the openGL handle type
      * @return The OpenGL handle type (GLuint)
@@ -169,13 +169,22 @@ public:
         static CallableCreate C;
 
         if(m_ID->first) D( m_ID->first );
-        C(m_ID->first);
+        C( m_ID->first);
     }
 
     void Release()
     {
         m_ID.reset( new std::pair<HandleType, SharedDataType>() , Deleter() );
         m_ID->first = 0;
+    }
+
+    void ForceDelete()
+    {
+        static CallableDestroy D;
+
+        if(m_ID->first) D( m_ID->first );
+
+        m_ID->second = SharedDataType();
     }
 
     SharedDataType & SharedData() const
@@ -186,6 +195,16 @@ public:
     SharedDataType & SharedData()
     {
         return m_ID->second;//.get();
+    }
+
+    const HandleType & GetHandle() const
+    {
+        return m_ID->first;
+    }
+
+    HandleType & GetHandle()
+    {
+        return m_ID->first;
     }
 
     operator bool() const

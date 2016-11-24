@@ -53,9 +53,9 @@ endif (UNIX)
 find_package(OpenGL REQUIRED)
 #find_package(GLEW REQUIRED)
 find_package(glfw3 REQUIRED)
-#find_package(PkgConfig REQUIRED)
+find_package(PkgConfig REQUIRED)
 
-#pkg_search_module(GLFW REQUIRED glfw3)
+pkg_search_module(GLFW REQUIRED glfw3)
 
 include_directories(${OpenGL_INCLUDE_DIRS})
 #include_directories(${GLEW_INCLUDE_DIRS})
@@ -71,53 +71,20 @@ set(LIBS_FULL
 set(LIBS_GLAD
     ${GLFW_STATIC_LIBRARIES}
     ${OPENGL_gl_LIBRARY}
+ #   glfw3
 )
 
 
-#  add_executable(TextureArray
-#                 examples/TextureArray.cpp)
-#  target_link_libraries (TextureArray ${LIBS_FULL})
-#
-#  add_executable(HelloTriangle
-#                 examples/HelloTriangle.cpp)
-#  target_link_libraries (HelloTriangle ${LIBS_FULL})
-#
-#  add_executable(HelloTriangleVAO
-#                 examples/HelloTriangleVAO.cpp)
-#  target_link_libraries (HelloTriangleVAO ${LIBS_FULL})
-#
-#  add_executable(HelloTriangleEncapsulatedVAO
-#                 examples/HelloTriangleEncapsulatedVAO.cpp)
-#  target_link_libraries (HelloTriangleEncapsulatedVAO ${LIBS_FULL})
-#
-#  add_executable(Textures
-#                 examples/Textures.cpp)
-#  target_link_libraries (Textures ${LIBS_FULL})
-#
-#  #        add_executable(TransformSequence
-#  #                       examples/TransformSequence.cpp)
-#  #target_link_libraries (TransformSequence ${LIBS_FULL})
-#
-#  add_executable(UniformBuffer
-#        examples/UniformBuffer.cpp)
-#  target_link_libraries (UniformBuffer ${LIBS_FULL})
-#
-#  add_executable(FrameBufferObject
-#        examples/FrameBufferObject.cpp)
-#  target_link_libraries (FrameBufferObject ${LIBS_FULL})
-#
-#  add_executable(Tesselation
-#        examples/Tesselation.cpp)
-#  target_link_libraries (Tesselation ${LIBS_FULL})
-#
-#  add_executable(Shadows
-#        examples/Shadows.cpp)
-#  target_link_libraries (Shadows ${LIBS_FULL})
-#
 
-        add_executable(01_HelloTriangle
-              examples/01_HelloTriangle.cpp glad.cpp)
-target_link_libraries (01_HelloTriangle ${LIBS_GLAD})
+
+
+        add_executable(01_01_HelloTriangle
+              examples/01_01_HelloTriangle.cpp glad.cpp)
+target_link_libraries (01_01_HelloTriangle ${LIBS_GLAD})
+
+        add_executable(01_02_HelloTriangleMultiBuffer
+              examples/01_02_HelloTriangleMultiBuffer.cpp glad.cpp)
+target_link_libraries (01_02_HelloTriangleMultiBuffer ${LIBS_GLAD})
 
         add_executable(02_HelloTriangleIndexed
               examples/02_HelloTriangleIndexed.cpp glad.cpp)
@@ -135,17 +102,53 @@ target_link_libraries (04_HelloTexturedTriangle ${LIBS_GLAD})
              examples/05_Sampler2DArray.cpp glad.cpp)
 target_link_libraries(05_Sampler2DArray ${LIBS_GLAD})
 
+       add_executable(05_02_SamplerCube
+             examples/05_02_SamplerCube.cpp glad.cpp)
+target_link_libraries(05_02_SamplerCube ${LIBS_GLAD})
+
        add_executable(06_UniformBuffer
              examples/06_UniformBuffer.cpp glad.cpp)
 target_link_libraries(06_UniformBuffer ${LIBS_GLAD})
 
-       add_executable(07_FrameBuffer
-             examples/07_FrameBuffer.cpp glad.cpp)
-target_link_libraries(07_FrameBuffer ${LIBS_GLAD})
+       add_executable(07_01_FrameBuffer
+             examples/07_01_FrameBuffer.cpp glad.cpp)
+target_link_libraries(07_01_FrameBuffer ${LIBS_GLAD})
+
+       add_executable(07_02_RenderToTexture
+             examples/07_02_RenderToTexture.cpp glad.cpp)
+target_link_libraries(07_02_RenderToTexture ${LIBS_GLAD})
+
 
        add_executable(08_MeshBuffer
              examples/08_MeshBuffer.cpp glad.cpp)
 target_link_libraries(08_MeshBuffer ${LIBS_GLAD})
+
+
+       add_executable(09_InstanceRendering
+             examples/09_InstanceRendering.cpp glad.cpp)
+target_link_libraries(09_InstanceRendering ${LIBS_GLAD})
+
+       add_executable(10_01_Shadows
+             examples/10_01_Shadows.cpp glad.cpp)
+target_link_libraries(10_01_Shadows ${LIBS_GLAD})
+
+       add_executable(10_02_PointShadows
+             examples/10_02_PointShadows.cpp glad.cpp)
+target_link_libraries(10_02_PointShadows ${LIBS_GLAD})
+
+
+       add_executable(11_01_Filters
+             examples/11_01_Filters.cpp glad.cpp)
+target_link_libraries(11_01_Filters ${LIBS_GLAD})
+
+
+       add_executable(11_02_Sampler2dFilter
+             examples/11_02_Sampler2dFilter.cpp glad.cpp)
+target_link_libraries(11_02_Sampler2dFilter ${LIBS_GLAD})
+
+       add_executable(octree_test
+                      octree_test.cpp )
+target_link_libraries(octree_test ${LIBS_GLAD})
 
 # This command b
 add_custom_command(

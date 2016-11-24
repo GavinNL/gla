@@ -46,7 +46,7 @@ struct GenShaderUnit
     void operator()(GLuint & x)
     {
         x = glCreateShader( SHADER_TYPE );
-        std::cout << "Shader Unit Generated: " << x << std::endl;
+        GLA_LOGD << "Shader Unit Generated: " << x << std::endl;
     }
 };
 
@@ -54,7 +54,7 @@ struct DestShaderUnit
 {
     void operator()(GLuint & x)
     {
-        std::cout << "Destroying Shader Unit: " << x << std::endl;
+        GLA_LOGD << "Destroying Shader Unit: " << x << std::endl;
         glDeleteShader( x );
         x = 0;
         //glDeleteFramebuffers( 1, &x );
@@ -184,7 +184,7 @@ struct GenShaderProgram
     void operator()(GLuint & x)
     {
         x = glCreateProgram();
-        std::cout << "Shader Program Generated: " << x << std::endl;
+        GLA_LOGD << "Shader Program Generated: " << x << std::endl;
     }
 };
 
@@ -193,7 +193,7 @@ struct DestShaderProgram
     void operator()(GLuint & x)
     {
         glDeleteProgram(x);
-        std::cout << "Shader Program Destroyed: " << x << std::endl;
+        GLA_LOGD << "Shader Program Destroyed: " << x << std::endl;
         x = 0;
     }
 };
@@ -225,6 +225,10 @@ public:
         inline GLint GetUniformLocation(const GLchar *name)
         {            
             auto x = glGetUniformLocation( Get(), name);
+            if( x== -1)
+            {
+                throw std::runtime_error( std::string("Unknown Uniform name: ") + std::string(name) );
+            }
             //GLA_DOUT  << "Uniform locatiom("<<mProgram<<"):,  " << name << ": " <<  x << std::endl;
             return x;
         }
@@ -232,6 +236,10 @@ public:
         inline GLint GetUniformLocation(const std::string & name)
         {
             auto x = glGetUniformLocation( Get() , name.c_str());
+            if( x== -1)
+            {
+                throw std::runtime_error( std::string("Unknown Uniform name: ") + name );
+            }
             //GLA_DOUT  << "Uniform locatiom("<<mProgram<<"):,  " << name << ": " <<  x << std::endl;
             return x;
         }
@@ -317,6 +325,76 @@ public:
             Bind() ; // <<---- Use Program
         }
 
+        static ShaderProgram LoadFromString(const std::string & source_code, const std::map<std::string, std::string> & Replacements = std::map<std::string, std::string>() )
+        {
+            auto vertex_shader               = get_shader_sub_code( source_code, "vertex")                  ;
+            auto fragment_shader             = get_shader_sub_code( source_code, "fragment")                ;
+            auto geometry_shader             = get_shader_sub_code( source_code, "geometry")                ;
+            auto tessellation_control_shader = get_shader_sub_code( source_code, "tessellation_control")    ;
+            auto tessellation_eval_shader    = get_shader_sub_code( source_code, "tessellation_evaluation") ;
+
+            int mask = 0;
+            if( vertex_shader               != "") mask |= 1;
+            if( fragment_shader             != "") mask |= 2;
+            if( geometry_shader             != "") mask |= 4;
+            if( tessellation_control_shader != "") mask |= 8;
+            if( tessellation_eval_shader    != "") mask |= 16;
+
+            ShaderProgram P;
+
+            switch(mask)
+            {
+                case 1|2:
+                    P.AttachShaders(
+                                VertexShader(vertex_shader, true ),
+                                FragmentShader(fragment_shader, true ) );
+                    P.SharedData().hasFragmentShader = true;
+                    P.SharedData().hasVertexShader = true;
+                    break;
+
+                case 1|2|4:
+                    P.AttachShaders(
+                                VertexShader(vertex_shader, true ),
+                                FragmentShader(fragment_shader, true ),
+                                GeometryShader(geometry_shader, true ));
+                    P.SharedData().hasFragmentShader = true;
+                    P.SharedData().hasVertexShader = true;
+                    P.SharedData().hasGeometryShader = true;
+                    break;
+
+                case 1|2|4|8|16:
+
+                    P.AttachShaders(
+                                VertexShader(vertex_shader, true ),
+                                FragmentShader(fragment_shader, true ),
+                                GeometryShader(geometry_shader, true ),
+                                TessellationControlShader(tessellation_control_shader, true ),
+                                TessellationEvaluationShader(tessellation_eval_shader, true ));
+                    P.SharedData().hasFragmentShader = true;
+                    P.SharedData().hasVertexShader = true;
+                    P.SharedData().hasGeometryShader = true;
+                    P.SharedData().hasTEShader = true;
+                    P.SharedData().hasTCShader = true;
+                    break;
+
+                default:
+                        break;
+            }
+
+            GLA_LOGD << "Shader Loaded Successfully:" << std::endl;
+            GLA_LOGV << source_code << std::endl;
+
+            auto s = P.GetNumUniforms();
+            for(int i=0;i< s ; i++)
+            {
+                auto name  = P.GetUniformName(i);
+
+                GLA_LOGI << "Uniform [" << name << "] - location: " << P.GetUniformLocation( name.c_str() ) << std::endl;
+            }
+            //std::cout << "Shader Loaded Successfully: " << path.c_str() << std::endl;
+            return P;
+        }
+
         static ShaderProgram Load(const std::string & path, const std::map<std::string, std::string> & Replacements = std::map<std::string, std::string>())
         {
             std::ifstream v(path, std::ifstream::in);
@@ -384,6 +462,21 @@ public:
                         break;
             }
 
+            GLA_LOGD << "Shader Loaded Successfully: " << path.c_str() << std::endl;
+
+            auto s = P.GetNumUniforms();
+            for(int i=0;i< s ; i++)
+            {
+                auto name  = P.GetUniformName(i);
+
+                try {
+                GLA_LOGI << "Uniform [" << name << "] - location: " << P.GetUniformLocation( name.c_str() ) << std::endl;
+                } catch (std::exception & e )
+                {
+                GLA_LOGI << "Uniform [" << name << "] - location: unknown " << std::endl;
+                }
+            }
+            //std::cout << "Shader Loaded Successfully: " << path.c_str() << std::endl;
             return P;
 
         }

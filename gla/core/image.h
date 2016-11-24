@@ -58,22 +58,8 @@ namespace gla {
     class ChannelRef;
     class ImageBase;
 
-    class GPUImageInfo
-    {
-        int temp;
-    };
 
-    inline std::vector<unsigned int> & GetActiveImages()
-    {
-        static auto s = std::make_shared< std::vector<unsigned int> > ();
-        static bool init = false;
-        if(!init)
-        {
-            s->resize(128);
-            init = true;
-        }
-        return *s;
-    }
+
 
 
 
@@ -272,7 +258,7 @@ namespace gla {
                 {
                     _handleRawPixels(img, static_cast<unsigned int>( x ), static_cast<unsigned int>( y ) );
                     mComponents = ForceNumberChannels!=0 ? ForceNumberChannels : comp;
-                    GLA_DOUT  << "ImageBase loaded with #components = " << mComponents << std::endl;
+                    GLA_LOGD  << "ImageBase loaded with #components = " << mComponents << std::endl;
 
                 } else {
                     //GLA_DOUT  << "Error loading Image: " << path << std::endl;

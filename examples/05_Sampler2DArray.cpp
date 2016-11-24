@@ -107,10 +107,15 @@ int main()
         //================================================================
         // 3. Create the Texture Array
         //================================================================
+        #if 0
         Sampler2DArray TexArray2D;
-
         // Create the GPUTexture array with 3 layers that hold 256x256 images with 3 components each, and 2 mipmaps.
         TexArray2D.Create( uvec2(256,256), 3, 3 , 2);
+        #else
+        Sampler        TexArray2D;
+        TexArray2D.CreateTexture2DArray( uvec2(256,256), 3, Sampler::RGB8  );
+        #endif
+
 
 
         // Resize the textures so they match the TextureArray. This will throw an exception if
@@ -124,9 +129,9 @@ int main()
         //   Note: If the Image does not match the Sampler2D dimensions, it will be rescaled
         //         to the appropriate dimensions and channels. If that is not desired
         //          use TexArray2D.SetLayer(Tex1, 0, uvec2(0,0);
-        TexArray2D[0] = Tex1;
-        TexArray2D[1] = Tex2;
-        TexArray2D[2] = Tex3;
+        TexArray2D[0] << Tex1;
+        TexArray2D[1] << Tex2;
+        TexArray2D[2] << Tex3;
 
         // Alternatively, one can use the following
         //   TexArray2D.SetLayer( Tex1, 0, uvec2(0 ,0) );
@@ -136,17 +141,17 @@ int main()
         //===============================================================
 
 
-        // we dont need the cpu texture anymore, so we can clear it.
+        // We dont need the cpu texture anymore, so we can clear it.
         Tex1.clear();
         Tex2.clear();
         Tex3.clear();
 
-
-
         //================================================================
         // 4. Load the Texture Array shader
         //================================================================
-        ShaderProgram TextureArrayShader = ShaderProgram::Load(  "./resources/shaders/TextureArray.s" );
+        ShaderProgram TextureArrayShader = ShaderProgram::Load( "./resources/shaders/TextureArray.s" );
+
+
 
         // Get the IDs of the uniform variables inside the shader.
         auto uTextureArrayID = TextureArrayShader.GetUniformLocation("uTextureArray");

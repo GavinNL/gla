@@ -22,13 +22,16 @@
  * SOFTWARE.
  */
 
+
+#define GLA_LOG_ALL
+
 #include <stdio.h>
 
 #include "glad.h"
 
 #include <gla/gla.h>
 #include <gla/eng/atlas.h>
-#include <gla/eng/mesh_buffer.h>
+#include <gla/eng/meshbuffer.h>
 
 #include <GLFW/glfw3.h> // GLFW helper library
 
@@ -41,19 +44,17 @@ using namespace gla;
 //=================================================================================
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 480
-#define WINDOW_TITLE  "Framebuffers and Differed Rendering"
+#define WINDOW_TITLE  "Mesh Buffer"
 GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 //=================================================================================
 
 using namespace gla;
 
+
 int main()
 {
 
-
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
-
-
     { // create a scope around the main GL calls so that glfwTerminate is not called before
         // the gla objects are automatically destroyed.
 
@@ -78,7 +79,10 @@ int main()
         //   vec3 - position,   vec2 - UV coords,   vec3 - normals
         //
         // and use an unsigned int as the index type
-        gla::eng::MeshBuffer< unsigned int, vec3, vec2, vec3> MB;
+        using MyMeshBuffer = gla::MeshBuffer< unsigned int, vec3, vec2, vec3>;
+
+        auto * mb = new MyMeshBuffer();
+        gla::MeshBuffer< unsigned int, vec3, vec2, vec3> & MB = *mb;
 
 
         MB.ReserveIndices(10000); // Allocate enough memory on the GPU to hold 10,000 vertices
@@ -86,19 +90,23 @@ int main()
 
         //====================== Create the geometry for the box ==============================
         // These all exist on the CPU, not on the GPU
-        Mesh CylVertices    = createCylinder(0.2f, 10);
+        //Mesh CylVertices    = createCylinder(0.2f, 10);
+        Mesh CylVertices    = createBox();
+        //Mesh CylVertices    = createPlane(5,5);
+
         Mesh SphereVertices = createSphere(0.5);
         //=====================================================================================
 
 
+
         // Add each of the meshs to the buffer
         // Returns a Mesh_T type which can be used to draw
-        //
-        gla::eng::Mesh_T SphereMesh = MB.Append( SphereVertices.vertices , SphereVertices.indices);
-        gla::eng::Mesh_T CylMesh    = MB.Append( CylVertices.vertices    , CylVertices.indices);
+
+        gla::Mesh_T SphereMesh = MB.Insert( SphereVertices.vertices , SphereVertices.indices);  // create a mesh using vertices + indices
+        gla::Mesh_T CylMesh    = MB.Insert( CylVertices.vertices    , CylVertices.indices );                            // create a mesh using only vertices.
 
 
-
+        delete mb;
         //================================================================
         // The rest of all the initialization is the same as the
         // FrameBuffer example. Procede to the render loop to see
@@ -107,9 +115,11 @@ int main()
 
         // Load some textures. And force using 3 components (r,g,b)
         Image Tex1("./resources/textures/rocks.jpg",  3 );
+        Image Tex2("./resources/textures/marble.jpg",  3 );
 
         // send the image to the GPU
-        Sampler2D Samp1(Tex1);
+        Sampler Samp1(Tex1);
+        Sampler Samp2(Tex2);
 
         //================================================================
         // 2. Create the plane to use during the second render pass
@@ -121,13 +131,13 @@ int main()
         };
         std::vector< MyVertex > VertexBuffer;
 
-        VertexBuffer.push_back( { glm::vec3(-1.0,  1.0, 0.0) , glm::vec2(0.0,0.0) }); // 3
-        VertexBuffer.push_back( { glm::vec3(-1.0, -1.0, 0.0) , glm::vec2(0.0,1.0) }); // 0
-        VertexBuffer.push_back( { glm::vec3( 1.0, -1.0, 0.0) , glm::vec2(1.0,1.0) }); // 1
+        VertexBuffer.push_back( { glm::vec3(-1.0,  1.0, 0.0) , glm::vec2(0.0,1.0) }); // 3
+        VertexBuffer.push_back( { glm::vec3(-1.0, -1.0, 0.0) , glm::vec2(0.0,0.0) }); // 0
+        VertexBuffer.push_back( { glm::vec3( 1.0, -1.0, 0.0) , glm::vec2(1.0,0.0) }); // 1
 
-        VertexBuffer.push_back( { glm::vec3(-1.0,  1.0, 0.0) , glm::vec2(0.0,0.0) }); // 0
-        VertexBuffer.push_back( { glm::vec3( 1.0, -1.0, 0.0) , glm::vec2(1.0,1.0) }); // 2
-        VertexBuffer.push_back( { glm::vec3( 1.0,  1.0, 0.0) , glm::vec2(1.0,0.0) }); // 2
+        VertexBuffer.push_back( { glm::vec3(-1.0,  1.0, 0.0) , glm::vec2(0.0,1.0) }); // 0
+        VertexBuffer.push_back( { glm::vec3( 1.0, -1.0, 0.0) , glm::vec2(1.0,0.0) }); // 2
+        VertexBuffer.push_back( { glm::vec3( 1.0,  1.0, 0.0) , glm::vec2(1.0,1.0) }); // 2
 
         VertexArray  PlaneVAO;
         ArrayBuffer  PlaneBuff( VertexBuffer );
@@ -161,10 +171,10 @@ int main()
         FBO.Bind();
 
         // Use framebuffer helper functions to create textures to be used for holding paricular types of data
-        auto Positions = FrameBuffer::CreateBufferTexture_Vec3_16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
-        auto Normals   = FrameBuffer::CreateBufferTexture_Vec3_16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
-        auto Colours   = FrameBuffer::CreateBufferTexture_RGBA(     glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
-        auto Depth     = FrameBuffer::CreateBufferTexture_Depth16F( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}  );
+        Sampler Positions = Sampler::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
+        Sampler Normals   = Sampler::Vec3Texture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
+        Sampler Colours   = Sampler::RGBATexture(    glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}    );
+        Sampler Depth     = Sampler::DepthTexture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
 
         //FBO.Bind();
         FBO.Attach(Positions, FrameBuffer::COLOR0);
@@ -188,20 +198,23 @@ int main()
         Transform T1;
         Transform T2;
 
-        T1.SetPosition( { 1,0,-3});
-        T2.SetPosition( {-1,0,-3});
+        T1.SetPosition( { 1,0,-1});
+        T2.SetPosition( {-1,0,-1});
 
         //================================================================
         // 6. Create a camera Object to help position the camera
         //================================================================
         Camera C;
-        C.SetPosition( {0.0,0.0,0.0f});
-        C.Perspective(45.0f, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1f);
+        C.SetPosition( {0.0,0.0,3.0f});
+        C.Perspective( glm::radians(45.0f), (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1f);
 
 
 
         Timer_T<float> Timer;
         Timer_T<float> Timer2;
+
+
+
 
         while (!glfwWindowShouldClose(gMainWindow) )
         {
@@ -219,13 +232,17 @@ int main()
 
             // Attach the Sampler to Texture Unit 0.
             Samp1.SetActive(0);
+            Samp2.SetActive(1);
 
             T1.SetEuler( { Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0 } );
-            T2.SetEuler( { Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0 } );
+            T2.SetEuler( {0*Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0 } );
+
 
             // Tell the shader that we are using Texture Unit 0 for the sampler
-            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uSampler"), 0 );
-            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uCamera"),  C.GetProjectionMatrix() );
+            GBufferShader.Uniform( "uSampler1"   ,  0 );
+            GBufferShader.Uniform( "uSampler2"   ,  1 );
+            GBufferShader.Uniform( "uCameraView",  C.GetMatrix() );
+            GBufferShader.Uniform( "uCameraProj",  C.GetProjectionMatrix() );
 
             //================================================================
             // 7.1. Draw the two meshs
@@ -238,7 +255,7 @@ int main()
             GBufferShader.Uniform( GBufferShader.GetUniformLocation("uTransform"),  T1.GetMatrix() );
             SphereMesh.Draw<true>();  // bind the first one
 
-            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uTransform"),  T2.GetMatrix() );
+            GBufferShader.Uniform( GBufferShader.GetUniformLocation("uTransform"),  T2.GetMatrix()  );
             CylMesh.Draw<false>();    // no need to bind again.
 
             // Unbind the FBO so we now render to the actual screen
@@ -257,12 +274,13 @@ int main()
             Colours.SetActive(2);
             Depth.SetActive(3);
 
-            static int i=0;
+            static int i = 0;
             if( Timer2.getElapsedTime() > 2.0 )
             {
                 i = (i+1)%4;
                 Timer2.reset();
             }
+
 
             GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gPosition")  , 0 );
             GBufferSPass_Shader.Uniform( GBufferSPass_Shader.GetUniformLocation("gNormal")    , 1 );
@@ -276,8 +294,10 @@ int main()
         }
 
     }
+
     glfwDestroyWindow(gMainWindow);
     glfwTerminate();
+
     return 0;
 }
 

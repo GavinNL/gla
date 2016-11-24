@@ -28,7 +28,7 @@
 #include <glm/glm.hpp>
 #include "boundingrect.h"
 #include <algorithm>
-
+#include <type_traits>
 
 namespace gla
 {
@@ -64,7 +64,7 @@ struct BoundingBox
 
     vec_type Centre() const
     {
-        return 0.5f*(min + max);
+        return (min + max)/static_cast<T>(2);
         //return (min + max) / typename vec_type::value_type(2);
     }
 
@@ -82,7 +82,7 @@ struct BoundingBox
     }
 
 
-    BoundingBox<T> Transform(const gla::mat4 & M) const
+    BoundingBox<T> Transform(const glm::mat4 & M) const
     {
         auto s = this->Size();
 
@@ -294,8 +294,19 @@ template<typename T>
 inline BoundingBox<T> operator*(const BoundingBox<T> & left, const T & x )
 {
     auto c = left.Centre();
-    auto s = left.Size()*0.5f;
-    return BoundingBox<T>( c-s*x, c+s*x);
+
+
+    if( std::is_floating_point<T>::value )
+    {
+        auto s = left.Size()*static_cast<T>(0.5);
+        return BoundingBox<T>( c-s*x, c+s*x);
+    }
+    else
+    {
+        auto s = left.Size()/static_cast<T>(2);
+        return BoundingBox<T>( c - s*x, c+s*x);
+    }
+
 }
 
 

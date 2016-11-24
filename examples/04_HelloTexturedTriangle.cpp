@@ -91,7 +91,7 @@ int main()
 
         // A texture in GLSL is called a Sampler2D, we send the data to the GPU
         // by creating a Sampler2D object and initializing it with the Image object
-        Sampler2D Sampler(Img);
+        Sampler MyTexture(Img);
 
 
         // We can modify the red channel using a lambda function
@@ -102,7 +102,7 @@ int main()
         Img.b = IMAGE_EXPRESSION( glm::clamp(2*x + y,0.0f,1.0f) );
 
         // We can update the sampler with the new data
-        Sampler.PasteSubImage( uvec2(0,0), Img);
+        MyTexture.Copy( Img, 0, uvec2(0,0) );
 
 
         //================================================================
@@ -111,10 +111,18 @@ int main()
         //  The .s shader file has each component of the shader
         //  separated by xml tags:  <vertex>, <fragment> <geometry> <tessellation_control>
         //  and <tessellation_evaluation>
+        //
+        //  You can also provide a string map to automatically replace
+        //  text in the shader to something else
+        //   map<std::string, std::string> Replace;
+        //  Replace["
         //================================================================
         auto TriangleShader = ShaderProgram::Load("./resources/shaders/Textures.s");
 
+        Sampler Test;
+        Test.CreateTexture2D( Img.size(), Sampler::RGB8 );
 
+        Test << Img; // copy the Image into the Sampler
         //================================================================
 
         while ( !glfwWindowShouldClose(gMainWindow) )
@@ -123,7 +131,7 @@ int main()
             TriangleShader.Bind();
 
             // Attach the Sampler to Texture Unit 0.
-            Sampler.SetActive(0);
+            Test.SetActive(0);
 
             // Tell the shader that we are using Texture Unit 0 for the sampler
             TriangleShader.Uniform( TriangleShader.GetUniformLocation("uSampler")  , 0           );

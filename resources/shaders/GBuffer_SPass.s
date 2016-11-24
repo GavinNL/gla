@@ -4,6 +4,7 @@
 layout(location = 0) in vec3 vertexPosition;
 layout(location = 1) in vec2 vertexTexCoord;
 
+
 out vec2 TexCoords;
 
 void main(){
@@ -48,15 +49,16 @@ layout (std140) uniform LightBlock140
 };
 
 
-
 void main()
 {
     // Retrieve data from gbuffer
-    vec3 FragPos   = texture2D(gPosition, TexCoords).rgb;
-    vec3 Normal    = texture(gNormal, TexCoords).rgb;
-    vec3 Diffuse   = texture(gAlbedoSpec, TexCoords).rgb;
-    float Specular = texture(gAlbedoSpec, TexCoords).a;
-    float Depth    = texture(gDepth,      TexCoords).r;
+
+
+    float Depth    = texture(gDepth,      TexCoords ).r;
+    vec3 FragPos   = texture(gPosition, TexCoords ).rgb;
+    vec3 Normal    = texture(gNormal,     TexCoords ).rgb;
+    vec3 Diffuse   = texture(gAlbedoSpec, TexCoords ).rgb;
+    float Specular = texture(gAlbedoSpec, TexCoords ).a;
 
 /*
     // Then calculate lighting as usual
@@ -96,7 +98,7 @@ void main()
 
     }*/
 
-    FragColor = vec4( Diffuse,1.0);
+    FragColor = vec4( Diffuse,1.0) + vec4(FragPos,0)*0.0001 +  vec4(Normal,0)*0.0001 + vec4(Depth)*0.0001;
 
 }
 

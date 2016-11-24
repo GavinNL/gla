@@ -40,7 +40,7 @@ struct BoundingRect
     vec_type min;
     vec_type max;
 	
-    glm::vec3 x;
+    //glm::vec3 x;
 
     BoundingRect( const vec_type & pMin) : min(pMin), max(pMin)
 	{

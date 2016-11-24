@@ -25,7 +25,7 @@
 #ifndef EXP_UNIFORM_BUFER_ARRAY
 #define EXP_UNIFORM_BUFER_ARRAY
 
-#include "buffer_base.h"
+#include "bufferbase.h"
 
 namespace gla {
 
