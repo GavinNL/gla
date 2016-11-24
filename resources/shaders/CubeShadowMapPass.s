@@ -69,7 +69,7 @@ vec3 gridSamplingDisk[20] = vec3[]
 );
 
 
-float ShadowCalculation(vec3 fragPosition, samplerCube shadow_map)
+float ShadowCalculation(vec3 fragPosition, samplerCube shadow_map, float max_light_distance)
 {
     // Get vector between fragment position and light position
     vec3 fragToLight = fragPosition.xyz - u_LightPos;
@@ -77,13 +77,16 @@ float ShadowCalculation(vec3 fragPosition, samplerCube shadow_map)
     // Now get current linear depth as the length between the fragment and light position
     float currentDepth = length(fragToLight);
 
-
     float shadow = 0.0;
     float bias   = 0.15;
     int   samples  = 20;
 
     float viewDistance = length( u_ViewPos - fragPosition );
     float diskRadius   = ( 1.0 + (viewDistance / u_FarPlane ) ) / 50.0;
+
+    if(currentDepth > max_light_distance)
+        return 1.0;
+
     //----
     for(int i = 0; i < samples; ++i)
     {
@@ -92,6 +95,7 @@ float ShadowCalculation(vec3 fragPosition, samplerCube shadow_map)
         if(currentDepth - bias > closestDepth)
             shadow += 1.0;
     }
+
     shadow /= float(samples);
 
     return shadow;
@@ -152,7 +156,7 @@ void main()
     vec3 specular = CalculateSpecular( lightDir , viewDir, f_Normal) * lightColor;
 
     // Calculate shadow
-    float shadow = ShadowCalculation( f_Position, u_ShadowMap);
+    float shadow = ShadowCalculation( f_Position, u_ShadowMap, 10.0);
 
 
     vec3 lighting = ambient + (1.0 - shadow) * (diffuse + specular) * color;

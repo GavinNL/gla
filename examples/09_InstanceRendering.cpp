@@ -67,7 +67,10 @@ class Instance_Rendering_App : public DiffRenderingApp
 
         // Load textures
         Image Tex1("./resources/textures/rocks.jpg",  3 );
+        Image Tex2("./resources/textures/marble.jpg",  3 );
+
         m_Sampler.emplace_back( Sampler(Tex1) );
+        m_Sampler.emplace_back( Sampler(Tex2) );
 
         m_MeshBuffer.ReserveIndices(1000000);
         m_MeshBuffer.ReserveVertices(1000000);
@@ -86,7 +89,7 @@ class Instance_Rendering_App : public DiffRenderingApp
 
 
         m_Camera.SetPosition( {0.0, -2.0, 10.0f});
-        m_Camera.Perspective(45.0f, (float)Width()/(float)Height(), 0.1f);
+        m_Camera.Perspective(glm::radians(45.0f), (float)Width()/(float)Height(), 0.1f);
 
         m_Transforms.resize(10);
 
@@ -146,10 +149,12 @@ class Instance_Rendering_App : public DiffRenderingApp
 
         // Attach the Sampler to Texture Unit 0.
         m_Sampler[0].SetActive(0);
+        m_Sampler[1].SetActive(1);
 
         // Tell the shader that we are using Texture Unit 0 for the sampler
-        m_MultiDrawShader.Uniform( m_MultiDrawShader.GetUniformLocation("uSampler"), 0 );
-        m_MultiDrawShader.Uniform( m_MultiDrawShader.GetUniformLocation("uCamera"),  m_Camera.GetProjectionMatrix() * m_Camera.Camera::GetMatrix() );
+        m_MultiDrawShader.Uniform( "uSampler1", 0 );
+        m_MultiDrawShader.Uniform( "uSampler2", 1 );
+        m_MultiDrawShader.Uniform( "uCamera" ,  m_Camera.GetProjectionMatrix() * m_Camera.Camera::GetMatrix() );
 
 
         // loop through all the tranforms and get a model matrix
@@ -211,7 +216,7 @@ class Instance_Rendering_App : public DiffRenderingApp
     Sampler m_fb_Colours  ;
     Sampler m_fb_Depth    ;
 
-    std::vector<Sampler>        m_Sampler;
+    std::vector<Sampler>          m_Sampler;
     std::vector<gla::Mesh_T>      m_Meshs;
     std::vector<gla::Transform>   m_Transforms;
     std::vector<glm::mat4>        m_TransformsMat4;

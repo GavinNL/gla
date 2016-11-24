@@ -83,8 +83,10 @@ int main()
         auto PlaneVertices = createPlane(50,50);
 
         auto m_BoxMesh    = m_MeshBuffer.Insert( BoxVertices.vertices, BoxVertices.indices);
-        for(auto & n : BoxVertices.vertices)
-            n.n = -n.n;
+
+//        for(auto & n : BoxVertices.vertices)
+//            n.n = -n.n;
+
 #define USEPLANE
 #ifndef USEPLANE
         auto m_OutBoxMesh = m_MeshBuffer.Insert( BoxVertices.vertices, BoxVertices.indices);

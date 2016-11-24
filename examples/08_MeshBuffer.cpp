@@ -115,9 +115,11 @@ int main()
 
         // Load some textures. And force using 3 components (r,g,b)
         Image Tex1("./resources/textures/rocks.jpg",  3 );
+        Image Tex2("./resources/textures/marble.jpg",  3 );
 
         // send the image to the GPU
         Sampler Samp1(Tex1);
+        Sampler Samp2(Tex2);
 
         //================================================================
         // 2. Create the plane to use during the second render pass
@@ -196,15 +198,15 @@ int main()
         Transform T1;
         Transform T2;
 
-        T1.SetPosition( { 1,-2,-1});
-        T2.SetPosition( {-1,-2,-1});
+        T1.SetPosition( { 1,0,-1});
+        T2.SetPosition( {-1,0,-1});
 
         //================================================================
         // 6. Create a camera Object to help position the camera
         //================================================================
         Camera C;
         C.SetPosition( {0.0,0.0,3.0f});
-        C.Perspective(45.0f, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1f);
+        C.Perspective( glm::radians(45.0f), (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1f);
 
 
 
@@ -230,13 +232,15 @@ int main()
 
             // Attach the Sampler to Texture Unit 0.
             Samp1.SetActive(0);
+            Samp2.SetActive(1);
 
             T1.SetEuler( { Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0 } );
             T2.SetEuler( {0*Timer.getElapsedTime(), Timer.getElapsedTime() * 0.4, -0.0 } );
 
 
             // Tell the shader that we are using Texture Unit 0 for the sampler
-            GBufferShader.Uniform( "uSampler"   ,  0 );
+            GBufferShader.Uniform( "uSampler1"   ,  0 );
+            GBufferShader.Uniform( "uSampler2"   ,  1 );
             GBufferShader.Uniform( "uCameraView",  C.GetMatrix() );
             GBufferShader.Uniform( "uCameraProj",  C.GetProjectionMatrix() );
 
