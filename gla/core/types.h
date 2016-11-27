@@ -26,10 +26,6 @@
 #ifndef EXP_TYPES
 #define EXP_TYPES
 
-
-
-
-
 //#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 //#define GLM_FORCE_RADIANS
@@ -53,12 +49,12 @@ static void CheckError()
 
     switch(err)
     {
-                                 case GL_INVALID_ENUM:
-           throw std::runtime_error( "GL_INVALID_ENUM" );
-                      case GL_INVALID_OPERATION:
-throw std::runtime_error( "GL_INVALID_OPERATION" );
-                      case GL_INVALID_VALUE:
-throw std::runtime_error( "GL_INVALID_VALUE" );
+        case GL_INVALID_ENUM:
+            throw std::runtime_error( "GL_INVALID_ENUM" );
+        case GL_INVALID_OPERATION:
+            throw std::runtime_error( "GL_INVALID_OPERATION" );
+        case GL_INVALID_VALUE:
+            throw std::runtime_error( "GL_INVALID_VALUE" );
     default:
             return;
     }
