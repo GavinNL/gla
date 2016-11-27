@@ -168,6 +168,7 @@ class GLFW_App
             MENU               =GLFW_KEY_MENU           ,
             LAST               =GLFW_KEY_LAST
         };
+
         Value v;
     };
 

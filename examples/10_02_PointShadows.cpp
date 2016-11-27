@@ -36,6 +36,7 @@
 
 #include<gla/utils/cameracontrol.h>
 
+#include <gla/utils/glfw_events.h>
 /**
  * This is the same as 07_FrameBuffers, but uses the
  * RenderToTexture helper class to build the framebuffers.
@@ -55,38 +56,6 @@ GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 
 using namespace gla;
 
-//void OnWindowPosition(GLFWwindow* window,int x, int y)                    { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnWindowPosition(x,y); }
-//void OnWindowSize(GLFWwindow* window,int width, int height)               { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnWindowSize(width, height); }
-//void OnFramebufferSize(GLFWwindow* window,int width, int height)          { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnFramebufferSize(width,height); }
-//void OnClose(GLFWwindow* window)                                          { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnClose(); }
-//void OnRefresh(GLFWwindow* window)                                        { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnRefresh(); }
-//void OnFocus(GLFWwindow* window,int focused)                              { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnFocus(focused); }
-//void OnIconify(GLFWwindow* window,int iconified)                          { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnIconify(iconified); }
-//void OnMouseEnter(GLFWwindow* window,int entered)                         { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnMouseEnter(entered); }
-//void OnScroll(GLFWwindow* window,double x, double y)                      { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnScroll(x,y); }
-//void OnCharacter(GLFWwindow* window,unsigned int codepoint)               { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnCharacter(codepoint); }
-//void OnCharacterMods(GLFWwindow* window,unsigned int codepoint, int mods) { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnCharacterMods(codepoint, mods); }
-//void OnDrop(GLFWwindow* window,int count, const char** paths)             { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnDrop(count, paths); }
-
-gla::CameraControl<GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, GLFW_MOUSE_BUTTON_RIGHT> Camera_Controller;
-
-
-void MouseButtonCallback(GLFWwindow* window,int button, int action, int mods)
-{
-    Camera_Controller.InsertButton(button, action);
-}
-
-void MousePosCallback(GLFWwindow* window,double x, double y)
-{
-    Camera_Controller.InsertMouse(x, y);
-}
-
-void KeyCallback(GLFWwindow* window,int key, int scancode, int action, int mods)
-{
-    Camera_Controller.InsertKey(key, action);
-}
-
-
 
 int main()
 {
@@ -95,9 +64,14 @@ int main()
 
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
 
-   glfwSetKeyCallback          ( gMainWindow, KeyCallback);
-   glfwSetCursorPosCallback    ( gMainWindow, MousePosCallback);
-   glfwSetMouseButtonCallback  ( gMainWindow, MouseButtonCallback);
+    gla::CameraControl<GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, GLFW_MOUSE_BUTTON_RIGHT> Camera_Controller;
+
+
+   glfw_events Events(gMainWindow);
+
+   Events.onKey         =  [&Camera_Controller] (int key, int action) { Camera_Controller.InsertKey(key, action); };
+   Events.onMouseMove   =  [&Camera_Controller] (double x, double y) {  Camera_Controller.InsertMouse(x, y);      };
+   Events.onMouseButton =  [&Camera_Controller] (int button, int action) {  Camera_Controller.InsertButton(button,action);      };
 
     { // create a scope around the main GL calls so that glfwTerminate is not called before
         // the gla objects are automatically destroyed.
