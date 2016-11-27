@@ -58,7 +58,7 @@ public:
         {
             mCamera = &C;
             mSpeed = vec3(0.0f);
-            mEulerAngles = glm::eulerAngles( C.getTransform().getOrientation() );
+            mEulerAngles = glm::eulerAngles( C.GetOrientation() );
 
         }
 
@@ -71,7 +71,7 @@ public:
               const float ACC_MAG = _acc;
 
               // The acceleration vector in worldspace
-              vec3 oAcc  = ACC_MAG*( mCamera->getTransform().getOrientation() * mAcc );
+              vec3 oAcc  = ACC_MAG*( mCamera->GetOrientation() * mAcc );
 
               // The drag force is proportional to the velocity of the camera
               vec3 dragForce = -_drag * mSpeed;
@@ -91,7 +91,7 @@ public:
               mSpeed      =   speed >  5.0f ? (5.0f * (mSpeed / speed) ) : mSpeed;
 
               // Set the new position of the camera
-              mCamera->setPosition( mCamera->getTransform().getPosition() + t*mSpeed + 0.0f*oAcc*t*t );
+              mCamera->SetPosition( mCamera->GetPosition() + t*mSpeed + 0.0f*oAcc*t*t );
             }
         }
 
@@ -111,7 +111,7 @@ public:
                 mEulerAngles.y -= dx * 0.0025f;
 
                 mEulerAngles = glm::clamp( mEulerAngles, vec3( -3.14159f/180.0f*89 ,-INFINITY, 0), vec3(3.14159f/180.0f*89, INFINITY, 0) );
-                mCamera->setEuler(mEulerAngles);
+                mCamera->SetEuler(mEulerAngles);
             }
         }
 
@@ -141,6 +141,8 @@ public:
                     break;
                 case Right:
                     mAcc[0] = Down ? 1.0f : 0.0f;
+                    break;
+                default:
                     break;
             }
         }

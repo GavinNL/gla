@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.3)
 
 project(gla)
 
@@ -10,11 +10,14 @@ add_custom_target(headers   SOURCES ${HeaderFiles})
 add_custom_target(resources SOURCES ${ResourceFiles})
 add_custom_target(other     SOURCES ${OtherFiles})
 
-set(MYLIB_VERSION_MAJOR 0)
-set(MYLIB_VERSION_MINOR 1)
-set(MYLIB_VERSION_PATCH 1)
-set(MYLIB_VERSION_STRING ${MYLIB_VERSION_MAJOR}.${MYLIB_VERSION_MINOR}.${MYLIB_VERSION_PATCH})
+# set(MYLIB_VERSION_MAJOR 0)
+# set(MYLIB_VERSION_MINOR 1)
+# set(MYLIB_VERSION_PATCH 1)
+# set(MYLIB_VERSION_STRING ${MYLIB_VERSION_MAJOR}.${MYLIB_VERSION_MINOR}.${MYLIB_VERSION_PATCH})
 
+
+
+set(BUILD_EXAMPLES ON CACHE BOOL "Build Examples")
 
 include_directories ("${PROJECT_SOURCE_DIR}")
 
@@ -29,7 +32,6 @@ ADD_DEFINITIONS (
     -Werror=shadow
     -Wpointer-arith
     -Wcast-align
-    -Wstrict-prototypes
     -Wstrict-overflow=5
     -Wwrite-strings
     -Wcast-qual
@@ -47,112 +49,62 @@ endif (UNIX)
 #===========================================================================
 # Find packages
 #===========================================================================
-#SET( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules"
-#                       "${CMAKE_MODULE_PATH}" )
+SET( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules"
+                       "${CMAKE_MODULE_PATH}" )
 
 find_package(OpenGL REQUIRED)
-#find_package(GLEW REQUIRED)
 find_package(glfw3 REQUIRED)
-find_package(PkgConfig REQUIRED)
 
-pkg_search_module(GLFW REQUIRED glfw3)
-
-include_directories(${OpenGL_INCLUDE_DIRS})
-#include_directories(${GLEW_INCLUDE_DIRS})
+include_directories(${OPENGL_INCLUDE_DIRS})
 include_directories(${GLFW_INCLUDE_DIRS} )
 
 # A variable of all the libraries we need
 set(LIBS_FULL
     ${GLFW_STATIC_LIBRARIES}
     ${OPENGL_gl_LIBRARY}
-#    ${GLEW_LIBRARIES}
+    dl
+    glfw
 )
+
 
 set(LIBS_GLAD
     ${GLFW_STATIC_LIBRARIES}
     ${OPENGL_gl_LIBRARY}
- #   glfw3
+    dl
+    glfw
+)
+
+set(LIBS
+    ${LIBS_GLAD}
 )
 
 
+function(BuildExample base_name)
+  add_executable(${base_name}  examples/${base_name}.cpp glad.cpp)
+  target_link_libraries (${base_name} ${LIBS})
+endfunction()
 
 
-
-        add_executable(01_01_HelloTriangle
-              examples/01_01_HelloTriangle.cpp glad.cpp)
-target_link_libraries (01_01_HelloTriangle ${LIBS_GLAD})
-
-        add_executable(01_02_HelloTriangleMultiBuffer
-              examples/01_02_HelloTriangleMultiBuffer.cpp glad.cpp)
-target_link_libraries (01_02_HelloTriangleMultiBuffer ${LIBS_GLAD})
-
-        add_executable(02_HelloTriangleIndexed
-              examples/02_HelloTriangleIndexed.cpp glad.cpp)
-target_link_libraries (02_HelloTriangleIndexed ${LIBS_GLAD})
-
-        add_executable(03_HelloTriangleVertexArray
-              examples/03_HelloTriangleVertexArray.cpp glad.cpp)
-target_link_libraries (03_HelloTriangleVertexArray ${LIBS_GLAD})
-
-        add_executable(04_HelloTexturedTriangle
-              examples/04_HelloTexturedTriangle.cpp glad.cpp)
-target_link_libraries (04_HelloTexturedTriangle ${LIBS_GLAD})
-
-       add_executable(05_Sampler2DArray
-             examples/05_Sampler2DArray.cpp glad.cpp)
-target_link_libraries(05_Sampler2DArray ${LIBS_GLAD})
-
-       add_executable(05_02_SamplerCube
-             examples/05_02_SamplerCube.cpp glad.cpp)
-target_link_libraries(05_02_SamplerCube ${LIBS_GLAD})
-
-       add_executable(06_UniformBuffer
-             examples/06_UniformBuffer.cpp glad.cpp)
-target_link_libraries(06_UniformBuffer ${LIBS_GLAD})
-
-       add_executable(07_01_FrameBuffer
-             examples/07_01_FrameBuffer.cpp glad.cpp)
-target_link_libraries(07_01_FrameBuffer ${LIBS_GLAD})
-
-       add_executable(07_02_RenderToTexture
-             examples/07_02_RenderToTexture.cpp glad.cpp)
-target_link_libraries(07_02_RenderToTexture ${LIBS_GLAD})
-
-
-       add_executable(08_MeshBuffer
-             examples/08_MeshBuffer.cpp glad.cpp)
-target_link_libraries(08_MeshBuffer ${LIBS_GLAD})
-
-
-       add_executable(09_InstanceRendering
-             examples/09_InstanceRendering.cpp glad.cpp)
-target_link_libraries(09_InstanceRendering ${LIBS_GLAD})
-
-       add_executable(10_01_Shadows
-             examples/10_01_Shadows.cpp glad.cpp)
-target_link_libraries(10_01_Shadows ${LIBS_GLAD})
-
-       add_executable(10_02_PointShadows
-             examples/10_02_PointShadows.cpp glad.cpp)
-target_link_libraries(10_02_PointShadows ${LIBS_GLAD})
-
-
-       add_executable(11_01_Filters
-             examples/11_01_Filters.cpp glad.cpp)
-target_link_libraries(11_01_Filters ${LIBS_GLAD})
-
-
-       add_executable(11_02_Sampler2dFilter
-             examples/11_02_Sampler2dFilter.cpp glad.cpp)
-target_link_libraries(11_02_Sampler2dFilter ${LIBS_GLAD})
-
-       add_executable(octree_test
-                      octree_test.cpp )
-target_link_libraries(octree_test ${LIBS_GLAD})
+BuildExample(01_01_HelloTriangle)
+BuildExample(01_02_HelloTriangleMultiBuffer)
+BuildExample(02_HelloTriangleIndexed)
+BuildExample(03_HelloTriangleVertexArray)
+BuildExample(04_HelloTexturedTriangle)
+BuildExample(05_Sampler2DArray)
+BuildExample(05_02_SamplerCube)
+BuildExample(06_UniformBuffer)
+BuildExample(07_01_FrameBuffer)
+BuildExample(07_02_RenderToTexture)
+BuildExample(08_MeshBuffer)
+BuildExample(09_InstanceRendering)
+BuildExample(10_01_Shadows)
+BuildExample(10_02_PointShadows)
+BuildExample(11_01_Filters)
+BuildExample(11_02_Sampler2dFilter)
 
 # This command b
 add_custom_command(
-   TARGET 01_HelloTriangle POST_BUILD
+   TARGET 01_01_HelloTriangle POST_BUILD
    COMMAND rm resources || true
    COMMAND ln -s ${PROJECT_SOURCE_DIR}/resources resources)
 

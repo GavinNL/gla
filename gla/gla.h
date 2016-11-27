@@ -31,9 +31,6 @@
 
 #include <gla/core/image.h>
 #include <gla/core/sampler.h>
-//#include <gla/core/sampler2d.h>
-//#include <gla/core/sampler2darray.h>
-//#include <gla/core/sampler.h>
 
 #include <gla/core/framebuffer.h>
 #include <gla/core/geometry.h>

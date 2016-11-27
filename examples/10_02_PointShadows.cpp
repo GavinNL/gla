@@ -34,6 +34,7 @@
 #include <gla/eng/rendertotexture.h>
 #include <GLFW/glfw3.h> // GLFW helper library
 
+#include<gla/utils/cameracontrol.h>
 
 /**
  * This is the same as 07_FrameBuffers, but uses the
@@ -54,12 +55,49 @@ GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
 
 using namespace gla;
 
+//void OnWindowPosition(GLFWwindow* window,int x, int y)                    { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnWindowPosition(x,y); }
+//void OnWindowSize(GLFWwindow* window,int width, int height)               { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnWindowSize(width, height); }
+//void OnFramebufferSize(GLFWwindow* window,int width, int height)          { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnFramebufferSize(width,height); }
+//void OnClose(GLFWwindow* window)                                          { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnClose(); }
+//void OnRefresh(GLFWwindow* window)                                        { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnRefresh(); }
+//void OnFocus(GLFWwindow* window,int focused)                              { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnFocus(focused); }
+//void OnIconify(GLFWwindow* window,int iconified)                          { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnIconify(iconified); }
+//void OnMouseEnter(GLFWwindow* window,int entered)                         { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnMouseEnter(entered); }
+//void OnScroll(GLFWwindow* window,double x, double y)                      { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnScroll(x,y); }
+//void OnCharacter(GLFWwindow* window,unsigned int codepoint)               { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnCharacter(codepoint); }
+//void OnCharacterMods(GLFWwindow* window,unsigned int codepoint, int mods) { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnCharacterMods(codepoint, mods); }
+//void OnDrop(GLFWwindow* window,int count, const char** paths)             { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnDrop(count, paths); }
+
+gla::CameraControl<GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, GLFW_MOUSE_BUTTON_RIGHT> Camera_Controller;
+
+
+void MouseButtonCallback(GLFWwindow* window,int button, int action, int mods)
+{
+    Camera_Controller.InsertButton(button, action);
+}
+
+void MousePosCallback(GLFWwindow* window,double x, double y)
+{
+    Camera_Controller.InsertMouse(x, y);
+}
+
+void KeyCallback(GLFWwindow* window,int key, int scancode, int action, int mods)
+{
+    Camera_Controller.InsertKey(key, action);
+}
+
+
+
 int main()
 {
 
 
+
     GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
 
+   glfwSetKeyCallback          ( gMainWindow, KeyCallback);
+   glfwSetCursorPosCallback    ( gMainWindow, MousePosCallback);
+   glfwSetMouseButtonCallback  ( gMainWindow, MouseButtonCallback);
 
     { // create a scope around the main GL calls so that glfwTerminate is not called before
         // the gla objects are automatically destroyed.
@@ -195,9 +233,10 @@ int main()
         Transform m_Box2T;
         Transform m_PlaneT;
 
+        Camera m_Camera;
+        m_Camera.Perspective( glm::radians(45.0f),(float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 1.0f, 100.0f );
 
-
-
+        Camera_Controller.attachCamera( m_Camera );
         //m_BoxT.SetPosition(   { 0 ,     1 , -0  } );
 
 #ifndef USEPLANE
@@ -214,10 +253,16 @@ int main()
 
 
         Timer_T<float> Timer;
+        Timer_T<float> Timer2;
 
         while (!glfwWindowShouldClose(gMainWindow) )
         {
             auto t = Timer.getElapsedTime()*0.25;
+
+            float dt = Timer2.getElapsedTime();
+            Timer2.reset();
+
+            Camera_Controller.Calculate(dt);
 
             m_Box1T.SetEuler( { t, t * 0.4, -0.0 } );
 
@@ -235,10 +280,13 @@ int main()
 
             float m_FarPlane = 50.0f;
 
-            auto CameraPosition   = vec3(-4,7,-7);
+            //auto CameraPosition   = vec3(-4,7,-7);
+            //auto CameraViewMatrix = glm::lookAt( CameraPosition , glm::vec3( 0.0, 0.0, 0.0), glm::vec3(0.0,  1.0, 0.0));
+            //auto CameraProjMatrix = glm::perspective( glm::radians(45.0f), (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 1.0f, m_FarPlane );
 
-            auto CameraViewMatrix = glm::lookAt( CameraPosition , glm::vec3( 0.0, 0.0, 0.0), glm::vec3(0.0,  1.0, 0.0));
-            auto CameraProjMatrix = glm::perspective( glm::radians(45.0f), (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 1.0f, m_FarPlane );
+            auto CameraPosition   = m_Camera.GetPosition();//vec3(-4,7,-7);
+            auto CameraViewMatrix = m_Camera.GetMatrix();//glm::lookAt( CameraPosition , glm::vec3( 0.0, 0.0, 0.0), glm::vec3(0.0,  1.0, 0.0));
+            auto CameraProjMatrix = m_Camera.GetProjectionMatrix();//glm::perspective( glm::radians(45.0f), (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 1.0f, m_FarPlane );
 
             glm::mat4 shadowProj  = glm::perspective( glm::radians(90.0f), 1.0f, 0.1f, m_FarPlane );
 
