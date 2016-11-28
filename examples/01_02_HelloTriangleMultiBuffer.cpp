@@ -29,16 +29,17 @@
 #include <gla/gla.h>
 #include <GLFW/glfw3.h>
 
+#include <gla/utils/glfw_window.h>
 //=================================================================================
 // Global Variables and Function Prototypes
 //=================================================================================
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 480
-GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
+#define WINDOW_TITLE "Hello Triangle - Multibuffer"
 //=================================================================================
 
 
-//using namespace gla;
+
 using namespace gla;
 
 
@@ -46,7 +47,7 @@ using namespace gla;
 int main(int argc, char **argv)
 {
 
-    GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
+    GLFW_Window mWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
 
 
     { // adding an extra scope here because we want all gla objects automatically destroyed when they go out of scope
@@ -93,7 +94,7 @@ int main(int argc, char **argv)
 
         PosBuffer.EnableAttributes<vec3, mat4, vec2>();
 
-        while (!glfwWindowShouldClose(gMainWindow) )
+        while ( mWindow )
         {
 
             // Set the triangle shader to be the one that we will use
@@ -117,50 +118,13 @@ int main(int argc, char **argv)
             PosBuffer.Draw<false>(Primitave::TRIANGLES, 3, 0);
 
 
-            glfwSwapBuffers(gMainWindow);
-            glfwPollEvents();
+            mWindow.Poll();
+            mWindow.SwapBuffers();
         }
     }
 
 
-    glfwDestroyWindow(gMainWindow);
-    glfwTerminate();
-
     return 0;
 }
 
-
-//=============================================================================
-// Set up GLFW and GLEW
-//=============================================================================
-GLFWwindow* SetupOpenGLLibrariesAndCreateWindow()
-{
-    //    glewExperimental = GL_TRUE;
-
-    if (!glfwInit())
-        exit(EXIT_FAILURE);
-
-    auto gMainWindow = glfwCreateWindow(640, 480, "Hello Triangle", NULL, NULL);
-
-    if (!gMainWindow)
-    {
-        glfwTerminate();
-        exit(EXIT_FAILURE);
-    }
-    glfwMakeContextCurrent(gMainWindow);
-
-    int width, height;
-    glfwGetFramebufferSize(gMainWindow, &width, &height);
-    //    GLenum err = glewInit();
-
-    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize OpenGL context" << std::endl;
-        return NULL;
-    }
-
-    return(gMainWindow);
-
-}
-//=============================================================================
 
