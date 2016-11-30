@@ -43,8 +43,8 @@
 #elif GLA_IMAGE_USE_FREEIMAGE
     #include <freeimage.h>
 #else
-    #include <gla/core/stb_image_headeronly.h>
-    #include <gla/core/stb_image_write_headeronly.h>
+    #include "stb_image_headeronly.h"
+    #include "stb_image_write_headeronly.h"
 #endif
 
 

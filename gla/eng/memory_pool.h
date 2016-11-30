@@ -25,7 +25,7 @@
 #ifndef GLA_MULTI_OBJECT_BUFFER
 #define GLA_MULTI_OBJECT_BUFFER
 
-#include<gla/core/buffers.h>
+
 #include <set>
 
 namespace gla {
