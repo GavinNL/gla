@@ -27,7 +27,7 @@
 
 #include "boundingbox.h"
 #include "line3d.h"
-
+#include "../core/camera.h"
 
 namespace gla {
 /*
@@ -43,10 +43,10 @@ struct Frustum
     }
 
 
-    //Frustum(const gla::Camera & camera) : Frustum( camera.GetProjectionMatrix() )
-    //{
-    //    Transform( camera.GetMatrix() );
-    //}
+    Frustum(const gla::Camera & camera) : Frustum( camera.GetProjectionMatrix() )
+    {
+        Transform( camera.GetMatrix() );
+    }
 
     /**
      * @brief Frustum
