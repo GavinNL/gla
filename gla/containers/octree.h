@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 
 #include "../geometry/boundingbox.h"
-#include "../geometry/frustrum.h"
+#include "../geometry/frustum.h"
 
 #include <vector>
 #include <map>
