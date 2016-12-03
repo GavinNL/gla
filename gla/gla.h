@@ -25,16 +25,14 @@
 #ifndef GLA_H
 #define GLA_H
 
-#include <gla/core/timer.h>
-#include <gla/core/buffers.h>
-#include <gla/core/camera.h>
-
-#include <gla/core/image.h>
-#include <gla/core/sampler.h>
-
-#include <gla/core/framebuffer.h>
-#include <gla/core/geometry.h>
-#include <gla/core/shader.h>
+#include "core/timer.h"
+#include "core/buffers.h"
+#include "core/camera.h"
+#include "core/image.h"
+#include "core/sampler.h"
+#include "core/framebuffer.h"
+#include "core/geometry.h"
+#include "core/shader.h"
 
 
 #endif // GLA_H

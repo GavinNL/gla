@@ -1,8 +1,8 @@
 #ifndef GLA_RENDERTOTEXTURE_H
 #define GLA_RENDERTOTEXTURE_H
 
-#include<gla/core/framebuffer.h>
-#include<gla/core/sampler.h>
+#include"../core/framebuffer.h"
+#include"../core/sampler.h"
 #include <map>
 
 namespace gla

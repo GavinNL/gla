@@ -25,9 +25,9 @@
 #ifndef GLA_FRUSTRUM_H
 #define GLA_FRUSTRUM_H
 
-#include <gla/geometry/boundingbox.h>
-#include <gla/geometry/line3d.h>
-//#include <gla/core/camera.h>
+#include "boundingbox.h"
+#include "line3d.h"
+#include "../core/camera.h"
 
 namespace gla {
 /*
@@ -43,10 +43,10 @@ struct Frustum
     }
 
 
-    //Frustum(const gla::Camera & camera) : Frustum( camera.GetProjectionMatrix() )
-    //{
-    //    Transform( camera.GetMatrix() );
-    //}
+    Frustum(const gla::Camera & camera) : Frustum( camera.GetProjectionMatrix() )
+    {
+        Transform( camera.GetMatrix() );
+    }
 
     /**
      * @brief Frustum
@@ -127,10 +127,10 @@ struct Frustum
      * Determines if a bounding box intersects the fustrum
      */
     template<typename T>
-    bool Intersects(const gla::BoundingBox<T> & B)
+    bool Intersects(const gla::BoundingBox<T> & B) const
     {
         // for each plane, check if the corners of the bounding box are on the same side of the plane
-        gla::Line3d * L = &top;
+        gla::Line3d const * L = &top;
 
         const glm::vec3 P[] =
         {
@@ -168,9 +168,9 @@ struct Frustum
      * @param point
      * @return true if the point is within the furstrum
      */
-    bool Intersects(const glm::vec3 & P )
+    bool Intersects(const glm::vec3 & P ) const
     {
-        gla::Line3d * L = &top;
+        gla::Line3d const * L = &top;
 
         for(int i=0;i<6;i++)
         {

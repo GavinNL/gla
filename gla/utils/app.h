@@ -25,7 +25,7 @@
 #ifndef GLA_UTILS_APP_H
 #define GLA_UTILS_APP_H
 
-#include <gla/core/timer.h>
+#include "../core/timer.h"
 #include <map>
 #include <functional>
 
@@ -168,6 +168,7 @@ class GLFW_App
             MENU               =GLFW_KEY_MENU           ,
             LAST               =GLFW_KEY_LAST
         };
+
         Value v;
     };
 

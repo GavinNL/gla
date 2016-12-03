@@ -25,10 +25,10 @@
 #ifndef EXP_BUFFERS_BASE
 #define EXP_BUFFERS_BASE
 
-#include <gla/core/arraybuffer.h>
-#include <gla/core/elementarraybuffer.h>
-#include <gla/core/vertexarray.h>
-#include <gla/core/uniformbuffer.h>
+#include "arraybuffer.h"
+#include "elementarraybuffer.h"
+#include "vertexarray.h"
+#include "uniformbuffer.h"
 
 
 #endif

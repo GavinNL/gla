@@ -52,6 +52,11 @@ struct BoundingBox
 
     }
 
+    BoundingBox( const vec_type & pCenter, const T & half_length) : min( pCenter-vec_type(half_length)), max( pCenter+vec_type(half_length) )
+    {
+
+    }
+
     BoundingBox()
     {
 

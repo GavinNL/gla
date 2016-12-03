@@ -1,10 +1,10 @@
 #ifndef SamplerFILTER_H
 #define SMPALER2DFILTER_H
 
-#include <gla/core/vertexarray.h>
-#include <gla/core/framebuffer.h>
-#include <gla/core/shader.h>
-#include <gla/eng/rendertotexture.h>
+#include "../core/vertexarray.h"
+#include "../core/framebuffer.h"
+#include "../core/shader.h"
+#include "rendertotexture.h"
 
 
 namespace gla

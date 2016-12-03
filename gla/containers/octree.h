@@ -2,8 +2,10 @@
 #define GLA_OCTREE_HPP
 
 #include <glm/glm.hpp>
-#include <gla/geometry/boundingbox.h>
-#include <gla/geometry/frustrum.h>
+
+#include "../geometry/boundingbox.h"
+#include "../geometry/frustum.h"
+
 #include <vector>
 #include <map>
 #include <unordered_map>
@@ -219,7 +221,7 @@ public:
     }
 
 
-    void ForAllInFrustum( gla::Frustum & F, std::function<void(object&)> & f)
+    void ForAllInFrustum( const gla::Frustum & F, const std::function<void(object&)> & f)
     {
         for(auto & ob : m_Obj)
         {

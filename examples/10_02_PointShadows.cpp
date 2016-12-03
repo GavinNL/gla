@@ -36,6 +36,7 @@
 
 #include<gla/utils/cameracontrol.h>
 
+#include <gla/utils/glfw_window.h>
 /**
  * This is the same as 07_FrameBuffers, but uses the
  * RenderToTexture helper class to build the framebuffers.
@@ -50,54 +51,22 @@ using namespace gla;
 #define WINDOW_WIDTH  1920
 #define WINDOW_HEIGHT 1080
 #define WINDOW_TITLE  "Framebuffers and Differed Rendering"
-GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
+
 //=================================================================================
 
 using namespace gla;
-
-//void OnWindowPosition(GLFWwindow* window,int x, int y)                    { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnWindowPosition(x,y); }
-//void OnWindowSize(GLFWwindow* window,int width, int height)               { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnWindowSize(width, height); }
-//void OnFramebufferSize(GLFWwindow* window,int width, int height)          { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnFramebufferSize(width,height); }
-//void OnClose(GLFWwindow* window)                                          { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnClose(); }
-//void OnRefresh(GLFWwindow* window)                                        { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnRefresh(); }
-//void OnFocus(GLFWwindow* window,int focused)                              { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnFocus(focused); }
-//void OnIconify(GLFWwindow* window,int iconified)                          { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnIconify(iconified); }
-//void OnMouseEnter(GLFWwindow* window,int entered)                         { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnMouseEnter(entered); }
-//void OnScroll(GLFWwindow* window,double x, double y)                      { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnScroll(x,y); }
-//void OnCharacter(GLFWwindow* window,unsigned int codepoint)               { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnCharacter(codepoint); }
-//void OnCharacterMods(GLFWwindow* window,unsigned int codepoint, int mods) { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnCharacterMods(codepoint, mods); }
-//void OnDrop(GLFWwindow* window,int count, const char** paths)             { static_cast<GLFW_App*>(glfwGetWindowUserPointer(window))->OnDrop(count, paths); }
-
-gla::CameraControl<GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, GLFW_MOUSE_BUTTON_RIGHT> Camera_Controller;
-
-
-void MouseButtonCallback(GLFWwindow* window,int button, int action, int mods)
-{
-    Camera_Controller.InsertButton(button, action);
-}
-
-void MousePosCallback(GLFWwindow* window,double x, double y)
-{
-    Camera_Controller.InsertMouse(x, y);
-}
-
-void KeyCallback(GLFWwindow* window,int key, int scancode, int action, int mods)
-{
-    Camera_Controller.InsertKey(key, action);
-}
-
 
 
 int main()
 {
 
+    gla::CameraControl<GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, GLFW_MOUSE_BUTTON_RIGHT> Camera_Controller;
 
+    GLFW_Window mWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
 
-    GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
-
-   glfwSetKeyCallback          ( gMainWindow, KeyCallback);
-   glfwSetCursorPosCallback    ( gMainWindow, MousePosCallback);
-   glfwSetMouseButtonCallback  ( gMainWindow, MouseButtonCallback);
+    mWindow.onKey         =  [&Camera_Controller] (GLFW_Key key, int action)       { Camera_Controller.InsertKey( static_cast<int>(key), action);      };
+    mWindow.onMouseMove   =  [&Camera_Controller] (double x, double y)             { Camera_Controller.InsertMouse(x, y);           };
+    mWindow.onMouseButton =  [&Camera_Controller] (GLFW_Button button, int action) { Camera_Controller.InsertButton( static_cast<int>(button),action); };
 
     { // create a scope around the main GL calls so that glfwTerminate is not called before
         // the gla objects are automatically destroyed.
@@ -199,19 +168,7 @@ int main()
         //================================================================
         RenderToTexture RTT;
 
-#if 0
-        // Create two textures that will hold some kind fo floating point value
-        RTT.CreateTexture( RenderToTexture::COLOR0, glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}, RenderToTexture::vec3_16f);
-        RTT.CreateTexture( RenderToTexture::COLOR1, glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}, RenderToTexture::vec3_16f);
 
-        // create a texture that will hold the colour value
-        RTT.CreateTexture( RenderToTexture::COLOR2, glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}, RenderToTexture::rgba);
-
-
-        // Create a depth texture that will render the depth information to
-        RTT.CreateTexture( RenderToTexture::DEPTH , glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}, RenderToTexture::depth_16f);
-
-#else
 
         // Can also attach samplers to each target manually. The RTT will store a refernce to the samplers
         // so they won't be destroyed
@@ -220,7 +177,7 @@ int main()
         RTT[RenderToTexture::COLOR2] << Sampler::RGBATexture( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT}    );
         RTT[RenderToTexture::DEPTH ] << Sampler::DepthTexture16f( glm::uvec2{WINDOW_WIDTH, WINDOW_HEIGHT} );
 
-#endif
+
         //==========================================================================
 
 
@@ -255,7 +212,7 @@ int main()
         Timer_T<float> Timer;
         Timer_T<float> Timer2;
 
-        while (!glfwWindowShouldClose(gMainWindow) )
+        while( mWindow )
         {
             auto t = Timer.getElapsedTime()*0.25;
 
@@ -314,12 +271,12 @@ int main()
 
 
 
-                mCubeShadowMapShader.Uniform("u_ShadowMatrices[0]", m_ShadowMatrices[0] );
-                mCubeShadowMapShader.Uniform("u_ShadowMatrices[1]", m_ShadowMatrices[1] );
-                mCubeShadowMapShader.Uniform("u_ShadowMatrices[2]", m_ShadowMatrices[2] );
-                mCubeShadowMapShader.Uniform("u_ShadowMatrices[3]", m_ShadowMatrices[3] );
-                mCubeShadowMapShader.Uniform("u_ShadowMatrices[4]", m_ShadowMatrices[4] );
-                mCubeShadowMapShader.Uniform("u_ShadowMatrices[5]", m_ShadowMatrices[5] );
+                mCubeShadowMapShader.Uniform("u_ShadowMatrices[0]", m_ShadowMatrices[0] , 6);
+                //mCubeShadowMapShader.Uniform("u_ShadowMatrices[1]", m_ShadowMatrices[1] );
+                //mCubeShadowMapShader.Uniform("u_ShadowMatrices[2]", m_ShadowMatrices[2] );
+                //mCubeShadowMapShader.Uniform("u_ShadowMatrices[3]", m_ShadowMatrices[3] );
+                //mCubeShadowMapShader.Uniform("u_ShadowMatrices[4]", m_ShadowMatrices[4] );
+                //mCubeShadowMapShader.Uniform("u_ShadowMatrices[5]", m_ShadowMatrices[5] );
                 mCubeShadowMapShader.Uniform("u_LightPos"     ,  m_LightPos);
                 mCubeShadowMapShader.Uniform("u_FarPlane"     ,  m_FarPlane);
 
@@ -404,8 +361,11 @@ int main()
 
             PlaneVAO.Draw(Primitave::TRIANGLES, 6 );
 
-            glfwSwapBuffers(gMainWindow);
-            glfwPollEvents();
+         //   glfwSwapBuffers(gMainWindow);
+         //   glfwPollEvents();
+
+            mWindow.Poll();
+            mWindow.SwapBuffers();
         }
 
         // Clear the VAO
@@ -414,44 +374,7 @@ int main()
         //VAO.Release();
 
     }
-    glfwDestroyWindow(gMainWindow);
-    glfwTerminate();
+
     return 0;
 }
 
-
-
-//=============================================================================
-// Set up GLFW and GLEW
-//=============================================================================
-GLFWwindow* SetupOpenGLLibrariesAndCreateWindow()
-{
-    //    glewExperimental = GL_TRUE;
-
-    if (!glfwInit())
-        exit(EXIT_FAILURE);
-
-    auto gMainWindow = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE, NULL, NULL);
-
-    if (!gMainWindow)
-    {
-        glfwTerminate();
-        exit(EXIT_FAILURE);
-    }
-    glfwMakeContextCurrent(gMainWindow);
-
-    int width, height;
-    glfwGetFramebufferSize(gMainWindow, &width, &height);
-    //    GLenum err = glewInit();
-
-    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize OpenGL context" << std::endl;
-        return NULL;
-    }
-
-
-    return(gMainWindow);
-
-}
-//=============================================================================

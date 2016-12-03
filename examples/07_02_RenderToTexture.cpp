@@ -31,9 +31,11 @@
 #include <gla/gla.h>
 #include <gla/eng/atlas.h>
 #include <gla/eng/meshbuffer.h>
-#include <gla/eng/rendertotexture.h>
 #include <GLFW/glfw3.h> // GLFW helper library
 
+#include <gla/eng/rendertotexture.h>
+
+#include <gla/utils/glfw_window.h>
 
 /**
  * This is the same as 07_FrameBuffers, but uses the
@@ -49,7 +51,7 @@ using namespace gla;
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 480
 #define WINDOW_TITLE  "Framebuffers and Differed Rendering"
-GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
+
 //=================================================================================
 
 using namespace gla;
@@ -57,8 +59,7 @@ using namespace gla;
 int main()
 {
 
-
-    GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
+    GLFW_Window mWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
 
 
     { // create a scope around the main GL calls so that glfwTerminate is not called before
@@ -174,7 +175,7 @@ int main()
         Timer_T<float> Timer;
         Timer_T<float> Timer2;
 
-        while (!glfwWindowShouldClose(gMainWindow) )
+        while ( mWindow )
         {
             //================================================================
             // 7. Perform the GBuffer pass
@@ -239,54 +240,12 @@ int main()
 
             PlaneVAO.Draw(Primitave::TRIANGLES, 6 );
 
-            glfwSwapBuffers(gMainWindow);
-            glfwPollEvents();
+            mWindow.Poll();
+            mWindow.SwapBuffers();
         }
-
-        // Clear the VAO
-        // Since we had flagged the array buffers for deletion ,they will now be
-        // cleared as well since they are no longer bound to any VAOs
-        VAO.Release();
-
     }
-    glfwDestroyWindow(gMainWindow);
-    glfwTerminate();
+
+
     return 0;
 }
 
-
-
-//=============================================================================
-// Set up GLFW and GLEW
-//=============================================================================
-GLFWwindow* SetupOpenGLLibrariesAndCreateWindow()
-{
-    //    glewExperimental = GL_TRUE;
-
-    if (!glfwInit())
-        exit(EXIT_FAILURE);
-
-    auto gMainWindow = glfwCreateWindow(640, 480, WINDOW_TITLE, NULL, NULL);
-
-    if (!gMainWindow)
-    {
-        glfwTerminate();
-        exit(EXIT_FAILURE);
-    }
-    glfwMakeContextCurrent(gMainWindow);
-
-    int width, height;
-    glfwGetFramebufferSize(gMainWindow, &width, &height);
-    //    GLenum err = glewInit();
-
-    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize OpenGL context" << std::endl;
-        return NULL;
-    }
-
-
-    return(gMainWindow);
-
-}
-//=============================================================================

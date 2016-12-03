@@ -25,8 +25,7 @@
 #ifndef GLA_MESH_BUFFER
 #define GLA_MESH_BUFFER
 
-#include<gla/core/buffers.h>
-
+#include "../gla.h"
 #include "memory_pool.h"
 
 namespace gla {

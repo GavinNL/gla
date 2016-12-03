@@ -25,12 +25,13 @@
 #include <gla/gla.h>
 #include <GLFW/glfw3.h>
 
+#include <gla/utils/glfw_window.h>
 //=================================================================================
 // Global Variables and Function Prototypes
 //=================================================================================
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 480
-GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
+#define WINDOW_TITLE "Hello Triangle"
 //=================================================================================
 
 
@@ -42,7 +43,7 @@ using namespace gla;
 int main(int argc, char **argv)
 {
 
-    GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
+    GLFW_Window mWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
 
 
     { // adding an extra scope here because we want all gla objects automatically destroyed when they go out of scope
@@ -93,7 +94,7 @@ int main(int argc, char **argv)
         TriangleShader.AttachShaders( VertexShader  ("./resources/shaders/HelloTriangle.v"),
                                       FragmentShader("./resources/shaders/HelloTriangle.f") );
 
-        while (!glfwWindowShouldClose(gMainWindow) )
+        while ( mWindow )
         {
 
             // Set the triangle shader to be the one that we will use
@@ -116,14 +117,12 @@ int main(int argc, char **argv)
             another_buffer_reference.Draw(Primitave::TRIANGLES, 3, 0);
 
 
-            glfwSwapBuffers(gMainWindow);
-            glfwPollEvents();
+            mWindow.Poll();
+            mWindow.SwapBuffers();
         }
     }
 
 
-    glfwDestroyWindow(gMainWindow);
-    glfwTerminate();
 
     return 0;
 }

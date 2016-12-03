@@ -25,7 +25,7 @@
 #ifndef GLA_DRAW_H
 #define GLA_DRAW_H
 
-#include<gla/core/types.h>
+#include "types.h"
 
 namespace gla
 {

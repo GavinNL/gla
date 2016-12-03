@@ -34,6 +34,8 @@
 #include <gla/eng/rendertotexture.h>
 #include <GLFW/glfw3.h> // GLFW helper library
 
+#include<gla/utils/cameracontrol.h>
+#include <gla/utils/glfw_window.h>
 
 /**
  * This is the same as 07_FrameBuffers, but uses the
@@ -49,7 +51,7 @@ using namespace gla;
 #define WINDOW_WIDTH  1920
 #define WINDOW_HEIGHT 1080
 #define WINDOW_TITLE  "Framebuffers and Differed Rendering"
-GLFWwindow* SetupOpenGLLibrariesAndCreateWindow();
+
 //=================================================================================
 
 using namespace gla;
@@ -58,7 +60,13 @@ int main()
 {
 
 
-    GLFWwindow * gMainWindow = SetupOpenGLLibrariesAndCreateWindow();
+    gla::CameraControl<GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, GLFW_MOUSE_BUTTON_RIGHT> Camera_Controller;
+
+    GLFW_Window mWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
+
+    mWindow.onKey         =  [&Camera_Controller] (GLFW_Key key, int action)       { Camera_Controller.InsertKey( static_cast<int>(key), action);      };
+    mWindow.onMouseMove   =  [&Camera_Controller] (double x, double y)             { Camera_Controller.InsertMouse(x, y);           };
+    mWindow.onMouseButton =  [&Camera_Controller] (GLFW_Button button, int action) { Camera_Controller.InsertButton( static_cast<int>(button),action); };
 
 
     { // create a scope around the main GL calls so that glfwTerminate is not called before
@@ -203,27 +211,37 @@ int main()
         //================================================================
         Camera C;
         C.SetPosition( {1.0, 3.0, 10.0f});
-        C.Perspective(45.0f * 3.14159f / 2.0f, (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1f);
+        C.Perspective( glm::radians(45.0f) , (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.1f);
 
 
         Timer_T<float> Timer;
 
-        while (!glfwWindowShouldClose(gMainWindow) )
+        Camera_Controller.attachCamera(C);
+
+        auto t = Timer.getElapsedTime();
+        Timer.reset();
+
+        while ( mWindow )
         {
-            auto t = Timer.getElapsedTime();
+            auto dt = Timer.getElapsedTime();
+            t      += dt;
+
+            Timer.reset();
+
+            Camera_Controller.Calculate( dt );
 
             m_BoxT.SetEuler( { t, t * 0.4, -0.0 } );
 
 
             // Set up the light matrix.
-            glm::vec3 lPos    = glm::vec3(4.0f*cos(t), 5.0f , 4.0f*sin(t));
-            glm::vec3 lLookat = m_BoxT.GetPosition(); // always look at the rotating box
-            glm::vec3 lUp     = glm::vec3( 0,1,0 );
+            glm::vec3 lPos        = glm::vec3(4.0f*cos(t), 5.0f , 4.0f*sin(t));
+            glm::vec3 lLookat     = m_BoxT.GetPosition(); // always look at the rotating box
+            glm::vec3 lUp         = glm::vec3( 0,1,0 );
 
             glm::mat4 LightMatrix = glm::perspective( glm::radians(45.f) , 1.0f, 1.0f, 500.0f) * glm::lookAt( lPos, lLookat, lUp );
 
-            auto CameraProj = C.GetProjectionMatrix();
-            auto CameraView = C.GetMatrix();
+            auto CameraProj       = C.GetProjectionMatrix();
+            auto CameraView       = C.GetMatrix();
 
             if(1)
             {
@@ -231,18 +249,15 @@ int main()
                 glViewport(0, 0, 1024, 1024);
                 glEnable(GL_DEPTH_TEST);
                 glClear( GL_DEPTH_BUFFER_BIT );
+
                 // Shadow Pass
-
                 glCullFace(GL_FRONT);
-
-
 
                 mShadowMapShader.Bind();
 
-
                 mShadowMapShader.Uniform( mShadowMapShader.GetUniformLocation("u_LightMatrix"), LightMatrix );
 
-                m_Box2T.SetPosition( lPos*1.2f);
+                m_Box2T.SetPosition( lPos * 1.2f );
 
 
                 mShadowMapShader.Uniform( mShadowMapShader.GetUniformLocation("u_ModelMatrix"), m_PlaneT.GetMatrix() );
@@ -275,7 +290,7 @@ int main()
 
 
 
-                mShadowMap.Texture(RenderToTexture::DEPTH).SetActive(1);
+                mShadowMap.Texture(RenderToTexture::DEPTH).SetActive( 1 );
                 Samp1.SetActive(0);
 
                 mShadowMapShader_ShadowPass.Uniform( "u_Diffuse"   , 0 );
@@ -323,8 +338,9 @@ int main()
 
             PlaneVAO.Draw(Primitave::TRIANGLES, 6 );
 
-            glfwSwapBuffers(gMainWindow);
-            glfwPollEvents();
+
+            mWindow.Poll();
+            mWindow.SwapBuffers();
         }
 
         // Clear the VAO
@@ -333,44 +349,7 @@ int main()
         //VAO.Release();
 
     }
-    glfwDestroyWindow(gMainWindow);
-    glfwTerminate();
+
     return 0;
 }
 
-
-
-//=============================================================================
-// Set up GLFW and GLEW
-//=============================================================================
-GLFWwindow* SetupOpenGLLibrariesAndCreateWindow()
-{
-    //    glewExperimental = GL_TRUE;
-
-    if (!glfwInit())
-        exit(EXIT_FAILURE);
-
-    auto gMainWindow = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE, NULL, NULL);
-
-    if (!gMainWindow)
-    {
-        glfwTerminate();
-        exit(EXIT_FAILURE);
-    }
-    glfwMakeContextCurrent(gMainWindow);
-
-    int width, height;
-    glfwGetFramebufferSize(gMainWindow, &width, &height);
-    //    GLenum err = glewInit();
-
-    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize OpenGL context" << std::endl;
-        return NULL;
-    }
-
-
-    return(gMainWindow);
-
-}
-//=============================================================================
