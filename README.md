@@ -106,4 +106,74 @@ Img.b = IMAGE_EXPRESSION( glm::clamp(2*x + y,0.0f,1.0f) );
 
 
 
-## More Coming Soon
+## Examples
+
+GLA Comes with a set of examples to get you started.
+
+### Hello Triangle
+
+<img align="right" width="200"  src="images/01_01_hello_triangle.jpg">
+
+The very basic OpenGL example. This example shows you how to open a window,
+compile the shaders, initialize the vertex buffers and raw the triangle onto the
+screen.
+
+---
+
+### Hello Textured Triangle
+
+<img align="right" width="200"  src="images/04_hello_textured_triangle.jpg">
+
+Take the Hello Triangle example and provide a texture to it. This example shows
+you how to load an image from disk, manipulate it on the cpu, pass it to
+the GPU as a sampler and then apply the texture to a primative.
+
+---
+
+### Sampler Cube
+
+<img align="right" width="200"  src="images/05_sampler_cube.jpg">
+
+Create a sampler cube and apply it to a texture. Sampler cubes can be used or
+various things such as sky boxes and point shadows. This example loads 6 images
+onto each side of the sampler cube and applies that to a flat texture to
+demonstrate the mapping of a sampler cube.
+
+---
+
+### Uniform Buffers
+
+<img align="right" width="200"  src="images/06_Uniformbuffer.jpg">
+
+Uniform buffers are used to pass data to your shader. This example uses a
+uniform buffer to pass in a velocity value to change the direction of the noise
+on the texture.
+
+---
+
+### Frame Buffers and Rendering to Textures
+
+<img align="right" width="200"  src="images/07_frame_buffers.jpg">
+
+Render an object to a texture and then use that texture on another object. This technique is the basis for Deferred Rendering and Shadow Mapping.
+
+---
+
+### Mesh Buffers
+
+<img align="right" width="200"  src="images/08_mesh_buffer.jpg">
+
+Mesh Buffers are not an OpenGL entity. It is designed for GLA. A Mesh Buffer
+stores multiple full meshes in a single buffer. Doing this reduces the overhead
+of binding different buffers during the rendering phase which allows for a
+perfomance increase.
+
+---
+
+### Shdows
+
+<img align="right" width="200"  src="images/10_shadows.jpg">
+
+The shadow mapping examples demonstrate how to use shadow maps as well as filters to create soft shadows. It includes point shadows which project omnidirectional shadows (point sources of light) as well as directional shadows (spot lights)
+
+---
